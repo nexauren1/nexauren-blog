@@ -195,7 +195,41 @@ img{max-width:100%;display:block}
 }
 
 
-/* Ads are injected only inside published article content. Monetag controls the ad creative itself. */
-.post-ad-slot{width:100%;min-height:24px;margin:30px 0;display:block;position:relative;clear:both}
-.post-ad-slot:empty{display:none}
-.post-ad-slot-middle,.post-ad-slot-lower{min-height:24px}
+
+/* Nexauren Story — reading, sharing and performance refinements */
+.card{content-visibility:auto;contain-intrinsic-size:320px 360px}
+.article{max-width:900px}
+.article .meta{flex-wrap:wrap}
+.article h1{max-width:860px}
+.article-excerpt{line-height:1.5;margin-bottom:4px}
+.article-cover{display:block;width:100%;height:auto;max-height:680px;object-fit:cover;background:var(--surface-soft);box-shadow:0 10px 35px rgba(16,19,24,.08)}
+.article-actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 32px}
+.share-button{border:1px solid var(--black);background:var(--black);color:#fff;border-radius:12px;padding:10px 14px;font-weight:900;font-size:13px}
+.share-button:hover{transform:translateY(-1px);background:var(--blue);border-color:var(--blue)}
+.share-secondary{background:#fff;color:var(--black);border-color:var(--line)}
+.share-secondary:hover{color:#fff}
+.article-content{font-size:18px;line-height:1.82}
+.article-content h2,.article-content h3{scroll-margin-top:100px}
+.article-content img{width:100%;height:auto;border-radius:18px;margin:24px 0;box-shadow:0 8px 30px rgba(16,19,24,.07)}
+.article-content p,.article-content li{max-width:76ch}
+.article-content pre{font-size:14px;line-height:1.6}
+.article-content blockquote{margin:28px 0;padding:16px 18px;background:var(--surface-soft);border-radius:0 14px 14px 0}
+.article-content hr{border:0;border-top:1px solid var(--line);margin:36px 0}
+.article-content a{overflow-wrap:anywhere}
+.featured-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}
+.featured-primary,.featured-secondary{border:1px solid var(--line);border-radius:22px;background:#fff;overflow:hidden;box-shadow:0 4px 16px rgba(16,19,24,.03)}
+.featured-primary{display:grid;grid-template-columns:1.05fr .95fr}
+.featured-primary .featured-media{min-height:420px}
+.featured-primary .featured-copy{padding:34px}
+.featured-secondary{display:grid;grid-template-rows:1fr 1fr}
+.featured-secondary article{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:14px;border-bottom:1px solid var(--line)}
+.featured-secondary article:last-child{border-bottom:0}
+.featured-secondary .card-media{aspect-ratio:1/1;border-radius:13px;overflow:hidden}
+.featured-secondary .card-body{padding:2px 0}
+.featured-secondary h3{margin:6px 0;font-size:16px}
+.featured-secondary p{display:none}
+.featured-secondary .read-more{margin-top:4px}
+.hero-note{margin:0;color:#c5cbd5}
+@media(max-width:900px){.featured-layout{grid-template-columns:1fr}.featured-primary{grid-template-columns:1fr}.featured-secondary{grid-template-columns:1fr 1fr;grid-template-rows:none}.featured-secondary article{border-bottom:0;border-right:1px solid var(--line)}.featured-secondary article:last-child{border-right:0}}
+@media(max-width:700px){.article-content{font-size:17px;line-height:1.78}.article h1{font-size:42px}.article-excerpt{font-size:18px}.article-cover{border-radius:17px;margin:20px 0 24px}.article-actions{margin:18px 0 26px}.share-button{flex:1;min-width:150px}.featured-secondary{grid-template-columns:1fr}.featured-secondary article{border-right:0;border-bottom:1px solid var(--line)}.featured-secondary article:last-child{border-bottom:0}.featured-secondary .card-media{aspect-ratio:16/10}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card:hover,.category-tile:hover,.share-button:hover{transform:none}}
