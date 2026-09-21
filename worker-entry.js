@@ -74,6 +74,7 @@ async function dbCheck(env){
     tags:["id","name","slug","created_at"],
     media:["id","imagekit_file_id","url","thumbnail_url","filename","mime_type","size_bytes","width","height","alt_text","caption","uploaded_by","created_at"],
     posts:["id","author_id","title","slug","excerpt","content","content_format","type","status","category_id","cover_media_id","published_at","scheduled_at","featured","allow_comments","meta_title","meta_description","created_at","updated_at"],
+    post_translations:["id","post_id","language","title","excerpt","content","meta_title","meta_description","created_at","updated_at"],
     post_tags:["post_id","tag_id"], revisions:["id","post_id","editor_id","title","excerpt","content","revision_number","created_at"],
     settings:["key","value","type","updated_at"], navigation:["id","location","label","url","icon","sort_order","visible","parent_id"],
     redirects:["id","source","destination","status_code","created_at"],
@@ -95,12 +96,25 @@ async function dbCheck(env){
 }
 async function dbReady(env){return (await dbCheck(env)).ready;}
 
+async function saveTranslations(env,postId,translations){
+  for(const lang of ["pt","en"]){
+    const t=translations?.[lang];if(!t)continue;
+    const title=text(t.title,180).trim(),content=text(t.content,2000000),excerpt=text(t.excerpt,500).trim();
+    if(!title&&!content&&!excerpt)continue;
+    const row=await env.DB.prepare("SELECT id FROM post_translations WHERE post_id=? AND language=?").bind(postId,lang).first();
+    const id=row?.id||crypto.randomUUID(),ts=nowIso();
+    await env.DB.prepare(`INSERT INTO post_translations (id,post_id,language,title,excerpt,content,meta_title,meta_description,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(post_id,language) DO UPDATE SET title=excluded.title,excerpt=excluded.excerpt,content=excluded.content,meta_title=excluded.meta_title,meta_description=excluded.meta_description,updated_at=excluded.updated_at`)
+      .bind(id,postId,lang,title||"",excerpt,content,text(t.meta_title,180).trim(),text(t.meta_description,300).trim(),ts,ts).run();
+  }
+}
 async function getPost(env,id){
   const p=await env.DB.prepare(`SELECT p.*,c.name category_name,c.slug category_slug,m.url cover_url,u.display_name author_name
     FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id
     WHERE p.id=? LIMIT 1`).bind(id).first();
   if(!p)return null;const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(id).all();
-  return {...p,tags:tags.results};
+  const trs=await env.DB.prepare("SELECT language,title,excerpt,content,meta_title,meta_description FROM post_translations WHERE post_id=?").bind(id).all();
+  return {...p,tags:tags.results,translations:Object.fromEntries((trs.results||[]).map(x=>[x.language,x]))};
 }
 async function saveTags(env,postId,tags){
   await env.DB.prepare("DELETE FROM post_tags WHERE post_id=?").bind(postId).run();
@@ -120,13 +134,13 @@ async function postsAdmin(env,url){
   return json({ok:true,posts:r.results});
 }
 async function publicPosts(env,url){
-  const w=["p.status='published'","p.published_at IS NOT NULL"],b=[],type=url.searchParams.get("type"),cat=url.searchParams.get("category");
+  const w=["p.status='published'","p.published_at IS NOT NULL"],b=[],type=url.searchParams.get("type"),cat=url.searchParams.get("category"),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
   if(type){w.push("p.type=?");b.push(type)}if(cat){w.push("c.slug=?");b.push(cat)}
-  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url
-    FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id
+  const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
+    FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY p.featured DESC,p.published_at DESC LIMIT ? OFFSET ?`)
-    .bind(...b,Math.min(Number(url.searchParams.get("limit")||24),60),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
-  return json({ok:true,posts:r.results});
+    .bind(lang,...b,Math.min(Number(url.searchParams.get("limit")||24),60),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
+  return json({ok:true,language:lang,posts:r.results});
 }
 async function createPost(env,a,d){
   const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);
@@ -137,7 +151,7 @@ async function createPost(env,a,d){
   const id=crypto.randomUUID(),ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);
   await env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,a.id,title,slug,excerpt,content,"markdown",type,status,d.category_id||null,d.cover_media_id||null,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,ts).run();
-  await saveTags(env,id,d.tags);await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts).run();
+  await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts).run();
   await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
 }
 async function updatePost(env,a,id,d){
@@ -149,7 +163,7 @@ async function updatePost(env,a,id,d){
   const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);
   await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
     .bind(title,slug,excerpt,content,type,status,d.category_id||null,d.cover_media_id||null,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id).run();
-  await saveTags(env,id,d.tags);const max=await env.DB.prepare("SELECT COALESCE(MAX(revision_number),0) n FROM revisions WHERE post_id=?").bind(id).first();
+  await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);const max=await env.DB.prepare("SELECT COALESCE(MAX(revision_number),0) n FROM revisions WHERE post_id=?").bind(id).first();
   await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,Number(max?.n||0)+1,ts).run();
   await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
 }
@@ -214,8 +228,8 @@ async function api(env,request,url){
   const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
   if(idm&&m==="PUT"){const g=await guard(env,request);if(g.error)return g.error;return updatePost(env,g.auth,idm[1],(await bodyJson(request))||{});}
   if(idm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const row=await env.DB.prepare("SELECT title FROM posts WHERE id=?").bind(idm[1]).first();if(!row)return fail("Artigo não encontrado.",404);await env.DB.prepare("DELETE FROM posts WHERE id=?").bind(idm[1]).run();await audit(env,g.auth.id,"post.deleted","post",idm[1],{title:row.title});return json({ok:true});}
-  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.url cover_url,u.display_name author_name FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id WHERE p.slug=? AND p.status='published' LIMIT 1").bind(slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();return json({ok:true,post:{...row,tags:tags.results}});}
-  if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim();if(q.length<2)return json({ok:true,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (p.title LIKE ? OR p.excerpt LIKE ? OR p.content LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(s,s,s).all();return json({ok:true,posts:r.results});}
+  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.url cover_url,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;return json({ok:true,language:lang,post});}
+  if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim(),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";if(q.length<2)return json({ok:true,language:lang,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (COALESCE(NULLIF(t.title,''),p.title) LIKE ? OR COALESCE(NULLIF(t.excerpt,''),p.excerpt) LIKE ? OR COALESCE(NULLIF(t.content,''),p.content) LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(lang,s,s,s).all();return json({ok:true,language:lang,posts:r.results});}
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
 async function page(env,request,url){
@@ -223,7 +237,7 @@ async function page(env,request,url){
   if(url.pathname.match(/^\/post\/[^/]+$/)){
     const asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
     if(!(await dbReady(env))) return asset;
-    const slug=decodeURIComponent(url.pathname.slice(6)),p=await env.DB.prepare("SELECT title,excerpt,meta_title,meta_description FROM posts WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();if(!asset.ok||!p)return asset;let h=await asset.text();const title=p.meta_title||p.title,desc=p.meta_description||p.excerpt||"Nexauren Story";h=h.replace(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(title)+" — Nexauren Story</title>").replace(/<meta name="description" content="[^"]*">/i,'<meta name="description" content="'+esc(desc.slice(0,300))+'">').replace(/<meta property="og:title" content="[^"]*">/i,'<meta property="og:title" content="'+esc(title)+'">').replace(/<meta property="og:description" content="[^"]*">/i,'<meta property="og:description" content="'+esc(desc.slice(0,300))+'">');return new Response(h,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=60"}});}
+    const slug=decodeURIComponent(url.pathname.slice(6)),cookieLang=(getCookie(request,"ns_lang")||"pt"),lang=["en","pt"].includes(cookieLang)?cookieLang:"pt",p=await env.DB.prepare("SELECT p.title,p.excerpt,p.meta_title,p.meta_description,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!asset.ok||!p)return asset;let h=await asset.text();const title=p.translation_meta_title||p.translation_title||p.meta_title||p.title,desc=p.translation_meta_description||p.translation_excerpt||p.meta_description||p.excerpt||"Nexauren Story";h=h.replace(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(title)+" — Nexauren Story</title>").replace(/<meta name="description" content="[^"]*">/i,'<meta name="description" content="'+esc(desc.slice(0,300))+'">').replace(/<meta property="og:title" content="[^"]*">/i,'<meta property="og:title" content="'+esc(title)+'">').replace(/<meta property="og:description" content="[^"]*">/i,'<meta property="og:description" content="'+esc(desc.slice(0,300))+'">');return new Response(h,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=60"}});}
   if(url.pathname==="/admin"||url.pathname.startsWith("/admin/"))return env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
   return env.ASSETS.fetch(request);
 }
