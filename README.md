@@ -29,11 +29,13 @@ ADMIN_PASSWORD
 IMAGEKIT_PUBLIC_KEY
 IMAGEKIT_PRIVATE_KEY
 IMAGEKIT_URL_ENDPOINT
+OPENAI_API_KEY
+TRANSLATION_MODEL
 ```
 
 The first successful login using `ADMIN_EMAIL` + `ADMIN_PASSWORD` creates the first `owner` account in D1. Change that password later in Admin → Settings → Security.
 
-Never commit an ImageKit private key to GitHub or frontend code.
+Never commit an ImageKit private key or OpenAI API key to GitHub or frontend code.
 
 ## Deploy
 
@@ -76,3 +78,17 @@ Admin:
 - Password change
 - Automatic scheduled publication via Worker cron
 
+
+## Idiomas
+
+O portal público começa por pedir ao visitante o idioma, Português ou Inglês. A escolha fica guardada no navegador e pode ser alterada pelo botão de idioma.
+
+As publicações possuem armazenamento bilingue em D1. Ao definir `OPENAI_API_KEY`, o Worker pode gerar automaticamente a versão em inglês quando uma publicação é criada ou atualizada; `TRANSLATION_MODEL` pode alterar o modelo usado.
+
+Antes de usar a nova versão, execute `database/editorial-upgrade.sql` no D1 existente. Esse SQL também substitui a taxonomia antiga pelas novas categorias e preserva a classificação básica das publicações.
+
+## Publicidade
+
+`frontend/assets/ads.js` é carregado no shell público, mas os anúncios só são inseridos pelo renderizador de páginas `/post/*`. Assim, páginas de categoria, pesquisa e início não recebem os dois scripts publicitários.
+
+A verificação automática do encaixe dos anúncios está em `.github/workflows/validate-post-ads.yml`.
