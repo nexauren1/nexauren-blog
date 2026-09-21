@@ -45,7 +45,7 @@ function updateSeo(meta){
   const fullTitle=baseTitle+" — Nexauren Story";
   const desc=String(meta.description||"Nexauren Story").slice(0,300);
   const pageUrl=meta.url||location.href;
-  const image=meta.image||location.origin+"/og-image.jpg";
+  const image=meta.image||location.origin+"/social-preview.png";
   document.title=fullTitle;
   document.documentElement.lang=lang;
   setMeta("name","description",desc);
@@ -72,7 +72,7 @@ function updateSeo(meta){
   setLink("alternate","x-default",pt.href);
 }
 function updatePageSeo(path){
-  const image=location.origin+"/og-image.jpg";
+  const image=location.origin+"/social-preview.png";
   const current=new URL(location.href);
   if(path==="/"){
     updateSeo({title:"Nexauren Story",description:lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.",image,url:new URL("/"+(lang==="en"?"?lang=en":""),location.origin).href});
@@ -187,7 +187,7 @@ async function post(slug){
     const description=p.meta_description||p.excerpt||excerpt(p);
     const canonical=new URL(location.pathname,location.origin);if(lang==="en")canonical.searchParams.set("lang","en");
     const canonicalUrl=(lang==="en"&&!p.translation_available)?new URL(location.pathname,location.origin).href:canonical.href;
-    updateSeo({title:p.meta_title||p.title,description,type:"article",image:p.cover_url||location.origin+"/og-image.jpg",url:canonicalUrl,hasEnglish:p.translation_available,robots:(lang==="en"&&!p.translation_available)?"noindex,follow":undefined});
+    updateSeo({title:p.meta_title||p.title,description,type:"article",image:p.social_image||p.cover_url||location.origin+"/social-preview.png",url:canonicalUrl,hasEnglish:p.translation_available,robots:(lang==="en"&&!p.translation_available)?"noindex,follow":undefined});
     const translationNotice=(lang==="en"&&!p.translation_available)?'<div class="translation-note">'+t("translationFallback")+"</div>":"";
     const words=String(p.content||"").replace(/https?:\/\/\S+|[#*_\x60>\[\](){}/!-]/g," ").trim().split(/\s+/).filter(Boolean).length;
     const reading=Math.max(1,Math.round(words/200));
