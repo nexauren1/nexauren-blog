@@ -152,7 +152,7 @@ async function rss(env,request){
 }
 async function api(env,request,url){
   const p=url.pathname,m=request.method;
-  if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:true,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),version:"1.1.0"},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),version:"1.1.0"},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
