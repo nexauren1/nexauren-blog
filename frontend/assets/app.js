@@ -53,9 +53,17 @@ async function loadCategories(){
 function setup(){
   setLanguage(lang||"pt",false);
   nav.innerHTML='<a href="/" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="/'+c[0]+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("");
-  if(!document.querySelector(".mobile-nav")){const m=document.createElement("div");m.className="mobile-nav";m.innerHTML=nav.innerHTML+'<button class="mobile-lang" id="mobile-language">'+(lang==="en"?"PT":"EN")+"</button>";document.querySelector(".site-header").appendChild(m);}
+  let mobile=document.querySelector(".mobile-nav");
+  if(!mobile){mobile=document.createElement("div");mobile.className="mobile-nav";document.querySelector(".site-header").appendChild(mobile);}
+  mobile.innerHTML=nav.innerHTML+'<button class="mobile-lang" id="mobile-language">'+(lang==="en"?"PT":"EN")+"</button>";
   let lb=document.getElementById("language-button");if(!lb){lb=document.createElement("button");lb.id="language-button";lb.className="language-button";lb.type="button";lb.textContent=lang==="en"?"PT":"EN";document.querySelector(".header-actions").insertBefore(lb,document.getElementById("menu-toggle"));}else lb.textContent=lang==="en"?"PT":"EN";
   lb.onclick=openLanguage;document.getElementById("mobile-language")?.addEventListener("click",openLanguage);
+  document.getElementById("search-toggle").setAttribute("aria-label",t("search"));document.getElementById("menu-toggle").setAttribute("aria-label",t("menu"));
+  document.getElementById("search-input").placeholder=lang==="en"?"Search Nexauren Story…":"Pesquisar no Nexauren Story…";
+  const submit=document.getElementById("search-submit");if(submit)submit.textContent=t("search");
+  const fd=document.getElementById("footer-description"),fe=document.getElementById("footer-explore"),fr=document.getElementById("footer-resources");
+  if(fd)fd.textContent=t("footer");if(fe)fe.textContent=lang==="en"?"Explore":"Explorar";if(fr)fr.textContent=t("resources");
+  const fc=document.getElementById("footer-cats");if(fc)fc.innerHTML=cats.slice(0,6).map(x=>'<a href="/'+x[0]+'">'+esc(catLabel(x[0],x[1]))+"</a>").join("");
   document.getElementById("search-toggle").onclick=()=>{searchPanel.classList.toggle("open");if(searchPanel.classList.contains("open"))searchInput.focus();};
   searchForm.onsubmit=e=>{e.preventDefault();const q=searchInput.value.trim();if(q)location.href="/search?q="+encodeURIComponent(q)};
   document.getElementById("menu-toggle").onclick=()=>document.querySelector(".mobile-nav")?.classList.toggle("open");
