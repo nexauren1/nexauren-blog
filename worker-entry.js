@@ -290,7 +290,7 @@ async function robots(request){
 function seoHead(html,o){
   const set=(re,val)=>{html=html.replace(re,val);};
   set(/<html lang="[^"]*">/i,'<html lang="'+esc(o.lang)+'">');
-  set(/<title>[\\s\\S]*?<\\/title>/i,"<title>"+esc(o.title)+"</title>");
+  set(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(o.title)+"</title>");
   set(/<meta name="description" content="[^"]*">/i,'<meta name="description" content="'+esc(o.desc)+'">');
   set(/<meta name="robots" content="[^"]*">/i,'<meta name="robots" content="'+esc(o.robots)+'">');
   set(/<link rel="canonical" href="[^"]*">/i,'<link rel="canonical" href="'+esc(o.canonical)+'">');
@@ -314,8 +314,8 @@ function seoHead(html,o){
   set(/<meta name="twitter:image" content="[^"]*">/i,'<meta name="twitter:image" content="'+esc(o.image)+'">');
   set(/<meta name="twitter:image:alt" content="[^"]*">/i,'<meta name="twitter:image:alt" content="'+esc(o.title)+'">');
   html=html.replace(/<meta property="article:[^>]+>\s*/gi,"");
-  if(o.articleMeta)html=html.replace(/<\\/head>/i,o.articleMeta+"</head>");
-  html=html.replace(/<script id="nexauren-structured-data" type="application\\/ld\\+json">[\\s\\S]*?<\\/script>/i,'<script id="nexauren-structured-data" type="application/ld+json">'+safeJsonLd(o.structured)+'</script>');
+  if(o.articleMeta)html=html.replace(/<\/head>/i,o.articleMeta+"</head>");
+  html=html.replace(/<script id="nexauren-structured-data" type="application\/ld\+json">[\s\S]*?<\/script>/i,'<script id="nexauren-structured-data" type="application/ld+json">'+safeJsonLd(o.structured)+'</script>');
   return html;
 }
 async function rss(env,request){
@@ -404,7 +404,7 @@ async function page(env,request,url){
     type="article";
     const img=p.cover_url||image,section=p.category_name||"Posts",sectionEn={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"}[p.category_slug]||section;
     articleMeta='<meta property="article:published_time" content="'+esc(p.published_at||"")+'"><meta property="article:modified_time" content="'+esc(p.updated_at||p.published_at||"")+'"><meta property="article:section" content="'+esc(section)+'">';
-    structured={"@context":"https://schema.org","@graph":[{"@type":p.type==="news"?"NewsArticle":"Article","@id":canonical+"#article","headline":(p.translation_title||p.title).slice(0,180),"description":desc,"url":canonical,"image":[img],"datePublished":p.published_at,"dateModified":p.updated_at||p.published_at,"wordCount":String(p.content||"").trim().split(/\s+/).filter(Boolean).length,"isAccessibleForFree":true,"author":{"@type":"Person","name":p.author_name||"Nexauren Story"},"publisher":{"@type":"Organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/favicon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":lang,"articleSection":lang==="en"?sectionEn:section},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Nexauren Story","item":"https://nexaurenstory.com/"},{"@type":"ListItem","position":2,"name":lang==="en"?sectionEn:section,"item":publicUrl("/"+(p.category_slug||"posts"),lang)},{"@type":"ListItem","position":3,"name":localizedTitle,"item":canonical}]}]};
+    structured={"@context":"https://schema.org","@graph":[{"@type":p.type==="news"?"NewsArticle":"Article","@id":canonical+"#article","headline":localizedTitle.slice(0,180),"description":desc,"url":canonical,"image":[img],"datePublished":p.published_at,"dateModified":p.updated_at||p.published_at,"wordCount":String(p.content||"").trim().split(/\s+/).filter(Boolean).length,"isAccessibleForFree":true,"author":{"@type":"Person","name":p.author_name||"Nexauren Story"},"publisher":{"@type":"Organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/favicon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":lang,"articleSection":lang==="en"?sectionEn:section},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Nexauren Story","item":"https://nexaurenstory.com/"},{"@type":"ListItem","position":2,"name":lang==="en"?sectionEn:section,"item":publicUrl("/"+(p.category_slug||"posts"),lang)},{"@type":"ListItem","position":3,"name":localizedTitle,"item":canonical}]}]};
     structured['@graph'][0].image=[img];
     const hasEnglish=!!p.translation_title;
     return new Response(seoHead(h,{lang,title,desc,robots:"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",canonical,ptUrl,enUrl:hasEnglish?enUrl:"",type,image:img,imageWidth:p.cover_width||1200,imageHeight:p.cover_height||630,articleMeta,structured}),{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=300"}});
