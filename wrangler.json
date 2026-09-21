@@ -19,11 +19,12 @@
     {
       "binding": "DB",
       "database_name": "nexauren-blog",
-      "database_id": "61bc46d2-fe1f-41f7-a12a-883a1e5956b0",
-      "migrations_dir": "migrations"
+      "database_id": "61bc46d2-fe1f-41f7-a12a-883a1e5956b0"
     }
   ],
   "triggers": {
-    "crons": ["*/5 * * * *"]
+    "crons": [
+      "*/5 * * * *"
+    ]
   }
 }
