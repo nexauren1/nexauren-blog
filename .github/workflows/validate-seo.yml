@@ -1,0 +1,47 @@
+name: SEO and Sitemap Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate SEO implementation
+        run: |
+          set -euo pipefail
+          test -f frontend/favicon.svg
+          test -f frontend/manifest.json
+          grep -q 'rel="canonical"' frontend/index.html
+          grep -q 'property="og:title"' frontend/index.html
+          grep -q 'name="twitter:card"' frontend/index.html
+          grep -q 'nexauren-structured-data' frontend/index.html
+          grep -q '/assets/ads.js' frontend/index.html
+          grep -q '11183778' frontend/assets/ads.js
+          ! grep -q '11177602' frontend/assets/ads.js
+          ! grep -q 'vignette.min.js' frontend/assets/ads.js
+          grep -q 'function sitemap' worker-entry.js
+          grep -q 'function robots' worker-entry.js
+          grep -q 'Disallow: /admin' worker-entry.js
+          grep -q 'Disallow: /api/' worker-entry.js
+          grep -q 'Disallow: /search' worker-entry.js
+          echo "SEO source checks passed."
+
+      - name: Validate public sitemap
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 https://nexaurenstory.com/robots.txt -o /tmp/robots.txt
+          curl -fsSL --retry 3 https://nexaurenstory.com/sitemap.xml -o /tmp/sitemap.xml
+          grep -q 'Sitemap: https://nexaurenstory.com/sitemap.xml' /tmp/robots.txt
+          grep -q '<urlset' /tmp/sitemap.xml
+          ! grep -qE '<loc>[^<]*(/admin|/api/|/search)' /tmp/sitemap.xml
+          echo "Public sitemap checks passed."
