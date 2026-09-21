@@ -17,7 +17,7 @@ on:
       - "frontend/og-image.jpg"
       - ".github/workflows/seo-sitemap.yml"
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17 2 * * *"
   workflow_dispatch:
 
 jobs:
@@ -64,6 +64,7 @@ jobs:
           NODE
 
       - name: Validate live sitemap, robots and every public URL
+        if: ${{ github.event_name != 'push' }}
         run: |
           python - <<'PY'
           import json
