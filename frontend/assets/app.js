@@ -44,7 +44,7 @@ function card(p){
 }
 function categoryTile(c){
   const [slug,name,icon,desc]=c;const count=c[4]??null;
-  return '<a class="category-tile" href="/'+encodeURIComponent(slug)+'"><span class="category-icon">'+esc(icon||"✦")+'</span><span class="category-name">'+esc(catLabel(slug,name))+'</span><span class="category-desc">'+esc((lang==="en"?({tecnologia:"Technology, innovation and digital products.",entretenimento:"Music, video, games and culture.",nexauren:"Products, apps and Nexauren projects.",eventos:"Events and live launches.",ferramentas:"Tools and utilities.", "breaking-news":"Urgent news and recent events."}[slug]||desc):(desc||"")))+'</span><span class="category-arrow">→</span>'+ (count!==null?'<small>'+count+" posts</small>":"")+"</a>";
+  return '<a class="category-tile" href="/'+encodeURIComponent(slug)+'"><span class="category-icon">'+esc(icon||"✦")+'</span><span class="category-name">'+esc(catLabel(slug,name))+'</span><span class="category-desc">'+esc((lang==="en"?({"tecnologia":"Technology, innovation and digital products.","entretenimento":"Music, video, games and culture.","nexauren":"Products, apps and Nexauren projects.","eventos":"Events and live launches.","ferramentas":"Tools and utilities.","breaking-news":"Urgent news and recent events."}[slug]||desc):(desc||"")))+'</span><span class="category-arrow">→</span>'+ (count!==null?'<small>'+count+" posts</small>":"")+"</a>";
 }
 async function loadCategories(){
   try{const d=await api("/api/categories");if((d.categories||[]).length)cats=d.categories.map(c=>[c.slug,c.name,c.icon,c.description,c.post_count]);}
