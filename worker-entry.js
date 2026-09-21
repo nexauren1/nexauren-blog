@@ -65,6 +65,12 @@ async function guard(env,request,owner=false){
 async function bodyJson(request){try{return await request.json();}catch{return null;}}
 async function publishDue(env){const t=nowIso();await env.DB.prepare("UPDATE posts SET status='published',published_at=COALESCE(published_at,scheduled_at,?),updated_at=? WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?").bind(t,t,t).run();}
 async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}
+async function dbReady(env){
+  try{
+    const r=await env.DB.prepare("SELECT COUNT(*) n FROM sqlite_master WHERE type='table' AND name IN ('users','sessions','login_attempts','categories','tags','media','posts','post_tags','revisions','settings','navigation','redirects','audit_logs','notifications')").first();
+    return Number(r?.n||0)===14;
+  }catch{return false;}
+}
 
 async function getPost(env,id){
   const p=await env.DB.prepare(`SELECT p.*,c.name category_name,c.slug category_slug,m.url cover_url,u.display_name author_name
@@ -130,19 +136,25 @@ async function uploadAuth(env,request){
   return json({ok:true,token,expire,signature,publicKey:env.IMAGEKIT_PUBLIC_KEY,urlEndpoint:env.IMAGEKIT_URL_ENDPOINT||""});
 }
 async function sitemap(env,request){
-  const base=new URL(request.url).origin,rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 5000").all();
+  const base=new URL(request.url).origin;
+  if(!(await dbReady(env))) return new Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=300"}});
+  const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 5000").all();
   const stat=["/","/news","/apps","/products","/guides","/tutorials","/releases","/updates","/announcements","/about"].map(p=>"<url><loc>"+base+p+"</loc></url>").join("");
   const posts=rows.results.map(p=>"<url><loc>"+base+"/post/"+esc(p.slug)+"</loc><lastmod>"+esc(p.updated_at)+"</lastmod></url>").join("");
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${stat+posts}</urlset>`,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function rss(env,request){
-  const base=new URL(request.url).origin,rows=await env.DB.prepare("SELECT title,slug,excerpt,published_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 30").all();
+  const base=new URL(request.url).origin;
+  if(!(await dbReady(env))) return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Base de dados ainda não inicializada.</description></channel></rss>',{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=300"}});
+  const rows=await env.DB.prepare("SELECT title,slug,excerpt,published_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 30").all();
   const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
   return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Stories, releases, guides and updates from Nexauren.</description>'+items+"</channel></rss>",{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=1800"}});
 }
 async function api(env,request,url){
-  await publishDue(env);const p=url.pathname,m=request.method;
-  if(p==="/api/health"&&m==="GET"){try{await env.DB.prepare("SELECT 1").first();return json({ok:true,db:true,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),version:"1.0.0"});}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  const p=url.pathname,m=request.method;
+  if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:true,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),version:"1.1.0"},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
+  try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
     if(!sameOrigin(request))return fail("Origem não autorizada.",403);const d=await bodyJson(request),email=normalizeEmail(d?.email),pw=String(d?.password||"");
     if(!email||!pw||pw.length>200)return fail("Email e senha são obrigatórios.",422);const identifier=email+"|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
@@ -183,7 +195,10 @@ async function api(env,request,url){
 }
 async function page(env,request,url){
   if(url.pathname==="/sitemap.xml")return sitemap(env,request);if(url.pathname==="/rss.xml")return rss(env,request);
-  if(url.pathname.match(/^\/post\/[^/]+$/)){const slug=decodeURIComponent(url.pathname.slice(6)),p=await env.DB.prepare("SELECT title,excerpt,meta_title,meta_description FROM posts WHERE slug=? AND status='published' LIMIT 1").bind(slug).first(),asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));if(!asset.ok||!p)return asset;let h=await asset.text();const title=p.meta_title||p.title,desc=p.meta_description||p.excerpt||"Nexauren Story";h=h.replace(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(title)+" — Nexauren Story</title>").replace(/<meta name="description" content="[^"]*">/i,'<meta name="description" content="'+esc(desc.slice(0,300))+'">').replace(/<meta property="og:title" content="[^"]*">/i,'<meta property="og:title" content="'+esc(title)+'">').replace(/<meta property="og:description" content="[^"]*">/i,'<meta property="og:description" content="'+esc(desc.slice(0,300))+'">');return new Response(h,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=60"}});}
+  if(url.pathname.match(/^\/post\/[^/]+$/)){
+    const asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+    if(!(await dbReady(env))) return asset;
+    const slug=decodeURIComponent(url.pathname.slice(6)),p=await env.DB.prepare("SELECT title,excerpt,meta_title,meta_description FROM posts WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();if(!asset.ok||!p)return asset;let h=await asset.text();const title=p.meta_title||p.title,desc=p.meta_description||p.excerpt||"Nexauren Story";h=h.replace(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(title)+" — Nexauren Story</title>").replace(/<meta name="description" content="[^"]*">/i,'<meta name="description" content="'+esc(desc.slice(0,300))+'">').replace(/<meta property="og:title" content="[^"]*">/i,'<meta property="og:title" content="'+esc(title)+'">').replace(/<meta property="og:description" content="[^"]*">/i,'<meta property="og:description" content="'+esc(desc.slice(0,300))+'">');return new Response(h,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=60"}});}
   if(url.pathname==="/admin"||url.pathname.startsWith("/admin/"))return env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
   return env.ASSETS.fetch(request);
 }
