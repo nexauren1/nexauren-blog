@@ -1,0 +1,44 @@
+name: Verify live sitemap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker-entry.js"
+      - "wrangler.json"
+      - "frontend/index.html"
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check robots.txt
+        run: |
+          curl -fsSL https://nexaurenstory.com/robots.txt | tee /tmp/robots.txt
+          grep -Fq "Sitemap: https://nexaurenstory.com/sitemap.xml" /tmp/robots.txt
+      - name: Fetch and verify every sitemap URL entry
+        run: |
+          curl -fsSL https://nexaurenstory.com/sitemap.xml -o /tmp/sitemap.xml
+          node <<'NODE'
+          const fs=require('fs');
+          const xml=fs.readFileSync('/tmp/sitemap.xml','utf8');
+          const locs=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1].trim());
+          if(!locs.length)throw new Error('Sitemap contains no URLs');
+          const unique=new Set(locs);
+          if(unique.size!==locs.length)throw new Error('Sitemap contains duplicate URLs');
+          const privatePath=/^https:\/\/nexaurenstory\.com\/(admin|api(?:\/|$))/;
+          const forbiddenQuery=/[?&](?:token|session|password)=/i;
+          for(const u of locs){
+            const url=new URL(u);
+            if(url.origin!=="https://nexaurenstory.com")throw new Error('Non-canonical host in sitemap: '+u);
+            if(privatePath.test(u)||url.pathname==="/search")throw new Error('Private/search URL in sitemap: '+u);
+            if(forbiddenQuery.test(u))throw new Error('Sensitive query string in sitemap: '+u);
+          }
+          console.log(`Verified ${locs.length} public canonical sitemap URLs.`);
+          NODE
