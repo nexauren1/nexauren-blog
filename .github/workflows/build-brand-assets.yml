@@ -1,0 +1,36 @@
+name: Build brand assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/favicon.svg"
+      - "frontend/og-image.svg"
+      - ".github/workflows/build-brand-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate PNG/JPEG assets
+        run: |
+          set -e
+          convert -background none frontend/favicon.svg -resize 512x512 frontend/favicon.png
+          convert -background none frontend/favicon.svg -resize 180x180 frontend/apple-touch-icon.png
+          convert -background none frontend/og-image.svg -quality 88 frontend/og-image.jpg
+      - name: Commit generated assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/favicon.png frontend/apple-touch-icon.png frontend/og-image.jpg
+          if git diff --cached --quiet; then
+            echo "Brand assets are already current."
+          else
+            git commit -m "Generate brand preview assets"
+            git push
+          fi
