@@ -78,7 +78,7 @@ async function dbCheck(env){
     categories:["id","name","slug","description","icon","parent_id","sort_order","created_at","updated_at"],
     tags:["id","name","slug","created_at"],
     media:["id","imagekit_file_id","url","thumbnail_url","filename","mime_type","size_bytes","width","height","alt_text","caption","uploaded_by","created_at"],
-    posts:["id","author_id","title","slug","excerpt","content","content_format","type","status","category_id","cover_media_id","published_at","scheduled_at","featured","allow_comments","meta_title","meta_description","created_at","updated_at"],
+    posts:["id","author_id","title","slug","excerpt","content","content_format","type","status","category_id","cover_media_id","social_image","published_at","scheduled_at","featured","allow_comments","meta_title","meta_description","created_at","updated_at"],
     post_translations:["id","post_id","language","title","excerpt","content","meta_title","meta_description","created_at","updated_at"],
     post_tags:["post_id","tag_id"], revisions:["id","post_id","editor_id","title","excerpt","content","revision_number","created_at"],
     settings:["key","value","type","updated_at"], navigation:["id","location","label","url","icon","sort_order","visible","parent_id"],
@@ -92,8 +92,11 @@ async function dbCheck(env){
     const missingTables=[],missingColumns=[];
     for(const [table,cols] of Object.entries(required)){
       if(!existing.has(table)){missingTables.push(table);continue;}
-      const info=await env.DB.prepare("PRAGMA table_info("+table+")").all();
-      const have=new Set((info.results||[]).map(x=>x.name));
+      let info=await env.DB.prepare("PRAGMA table_info("+table+")").all();
+      let have=new Set((info.results||[]).map(x=>x.name));
+      if(table==="posts"&&!have.has("social_image")){
+        try{await env.DB.prepare("ALTER TABLE posts ADD COLUMN social_image TEXT DEFAULT ''").run();info=await env.DB.prepare("PRAGMA table_info(posts)").all();have=new Set((info.results||[]).map(x=>x.name));}catch{}
+      }
       for(const col of cols)if(!have.has(col))missingColumns.push(table+"."+col);
     }
     return {ready:missingTables.length===0&&missingColumns.length===0,missingTables,missingColumns};
@@ -214,7 +217,7 @@ async function saveTags(env,postId,tags){
 async function postsAdmin(env,url){
   const w=["1=1"],b=[],status=url.searchParams.get("status"),type=url.searchParams.get("type"),q=url.searchParams.get("search");
   if(status){w.push("p.status=?");b.push(status)}if(type){w.push("p.type=?");b.push(type)}if(q){w.push("(p.title LIKE ? OR p.slug LIKE ? OR p.excerpt LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
-  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,m.url cover_url
+  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.social_image,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,m.url cover_url
     FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
   return json({ok:true,posts:r.results});
@@ -222,7 +225,7 @@ async function postsAdmin(env,url){
 async function publicPosts(env,url){
   const w=["p.status='published'","p.published_at IS NOT NULL"],b=[],type=url.searchParams.get("type"),cat=url.searchParams.get("category"),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
   if(type){w.push("p.type=?");b.push(type)}if(cat){w.push("c.slug=?");b.push(cat)}
-  const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
+  const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,p.social_image,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
     FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY p.featured DESC,p.published_at DESC LIMIT ? OFFSET ?`)
     .bind(lang,...b,Math.min(Number(url.searchParams.get("limit")||24),60),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
@@ -235,8 +238,8 @@ async function createPost(env,a,d,ctx){
   if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);if(status==="published"&&!published)published=nowIso();
   if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
   const id=crypto.randomUUID(),ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);
-  await env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,a.id,title,slug,excerpt,content,"markdown",type,status,d.category_id||null,d.cover_media_id||null,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,ts).run();
+  await env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,social_image,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,a.id,title,slug,excerpt,content,"markdown",type,status,d.category_id||null,d.cover_media_id||null,text(d.social_image,2000).trim(),published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,ts).run();
   await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts).run();
   await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
 }
@@ -247,8 +250,8 @@ async function updatePost(env,a,id,d,ctx){
   if(status==="published"&&!published)published=nowIso();if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);
   if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
   const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);
-  await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
-    .bind(title,slug,excerpt,content,type,status,d.category_id||null,d.cover_media_id||null,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id).run();
+  await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,social_image=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
+    .bind(title,slug,excerpt,content,type,status,d.category_id||null,d.cover_media_id||null,text(d.social_image,2000).trim(),published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id).run();
   await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));const max=await env.DB.prepare("SELECT COALESCE(MAX(revision_number),0) n FROM revisions WHERE post_id=?").bind(id).first();
   await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,Number(max?.n||0)+1,ts).run();
   await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
@@ -259,36 +262,22 @@ async function uploadAuth(env,request){
   return json({ok:true,token,expire,signature,publicKey:env.IMAGEKIT_PUBLIC_KEY,urlEndpoint:env.IMAGEKIT_URL_ENDPOINT||""});
 }
 
-async function sitemap(env,request){
-  if(!(await dbReady(env)))return new Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=300"}});
+async function sitemapPages(env){
   const maxRow=await env.DB.prepare("SELECT MAX(updated_at) lastmod FROM posts WHERE status='published' AND published_at IS NOT NULL").first();
   const catRows=await env.DB.prepare("SELECT c.slug,MAX(p.updated_at) lastmod FROM categories c LEFT JOIN posts p ON p.category_id=c.id AND p.status='published' AND p.published_at IS NOT NULL GROUP BY c.id,c.slug ORDER BY c.sort_order,c.name").all();
-  const paths=[{path:"/",lastmod:maxRow?.lastmod},{path:"/posts",lastmod:maxRow?.lastmod},{path:"/about",lastmod:null}];
-  for(const c of (catRows.results||[]))paths.push({path:"/"+c.slug,lastmod:c.lastmod||null});
-  const rows=await env.DB.prepare("SELECT p.slug,p.updated_at,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END has_en FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language='en' WHERE p.status='published' AND p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT 50000").all();
-  const out=[];
-  const entry=(path,lastmod,hasEn=true)=>{
-    const add=(language)=>{
-      const loc=publicUrl(path,language),altPt=publicUrl(path,"pt"),altEn=publicUrl(path,"en");
-      const lines=[
-        "  <url>",
-        "    <loc>"+xml(loc)+"</loc>"
-      ];
-      if(lastmod)lines.push("    <lastmod>"+xml(lastmod)+"</lastmod>");
-      lines.push(
-        '    <xhtml:link rel="alternate" hreflang="pt" href="'+xml(altPt)+'"/>',
-        '    <xhtml:link rel="alternate" hreflang="x-default" href="'+xml(altPt)+'"/>'
-      );
-      if(hasEn)lines.push('    <xhtml:link rel="alternate" hreflang="en" href="'+xml(altEn)+'"/>');
-      lines.push("  </url>");
-      out.push(lines.join("\n"));
-    };
-    add("pt");
-    if(hasEn)add("en");
-  };
-  for(const p of paths)entry(p.path,p.lastmod,true);
-  for(const p of (rows.results||[]))entry("/post/"+encodeURIComponent(p.slug),p.updated_at,Boolean(Number(p.has_en)));
-  const body='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'+out.join("\n")+"\n</urlset>";  return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
+  const pages=[{path:"/",lastmod:maxRow?.lastmod},{path:"/posts",lastmod:maxRow?.lastmod},{path:"/about",lastmod:null}];
+  for(const c of (catRows.results||[]))pages.push({path:"/"+c.slug,lastmod:c.lastmod||null});
+  const out=pages.map(x=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com"+x.path)+"</loc>"];if(x.lastmod)lines.push("    <lastmod>"+xml(x.lastmod)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
+  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
+}
+async function sitemapPosts(env){
+  const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' AND published_at IS NOT NULL ORDER BY published_at DESC LIMIT 50000").all();
+  const out=(rows.results||[]).map(p=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com/post/"+encodeURIComponent(p.slug))+"</loc>"];if(p.updated_at)lines.push("    <lastmod>"+xml(p.updated_at)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
+  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
+}
+async function sitemapIndex(){
+  const body='<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://nexaurenstory.com/sitemap-pages.xml</loc></sitemap>\n  <sitemap><loc>https://nexaurenstory.com/sitemap-posts.xml</loc></sitemap>\n</sitemapindex>';
+  return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function robots(request){
   return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}});
@@ -373,15 +362,17 @@ async function api(env,request,url,ctx){
   const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
   if(idm&&m==="PUT"){const g=await guard(env,request);if(g.error)return g.error;return updatePost(env,g.auth,idm[1],(await bodyJson(request))||{},ctx);}
   if(idm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const row=await env.DB.prepare("SELECT title FROM posts WHERE id=?").bind(idm[1]).first();if(!row)return fail("Artigo não encontrado.",404);await env.DB.prepare("DELETE FROM posts WHERE id=?").bind(idm[1]).run();await audit(env,g.auth.id,"post.deleted","post",idm[1],{title:row.title});return json({ok:true});}
-  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;return json({ok:true,language:lang,post});}
+  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,p.social_image,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;return json({ok:true,language:lang,post});}
   if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim(),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";if(q.length<2)return json({ok:true,language:lang,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (COALESCE(NULLIF(t.title,''),p.title) LIKE ? OR COALESCE(NULLIF(t.excerpt,''),p.excerpt) LIKE ? OR COALESCE(NULLIF(t.content,''),p.content) LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(lang,s,s,s).all();return json({ok:true,language:lang,posts:r.results});}
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
 async function page(env,request,url){
-  if(url.pathname==="/sitemap.xml")return sitemap(env,request);
+  if(url.pathname==="/sitemap.xml")return sitemapIndex();
+  if(url.pathname==="/sitemap-pages.xml")return sitemapPages(env);
+  if(url.pathname==="/sitemap-posts.xml")return sitemapPosts(env);
   if(url.pathname==="/robots.txt")return robots(request);
   if(url.pathname==="/rss.xml")return rss(env,request);
-  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/favicon.png","/apple-touch-icon.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
+  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/favicon.png","/apple-touch-icon.png","/social-preview.svg","/social-preview.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
   if(url.pathname==="/admin"||url.pathname.startsWith("/admin/")){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
@@ -392,7 +383,7 @@ async function page(env,request,url){
   const path=url.pathname;
   const cookieLang=getCookie(request,"ns_lang")||"pt";
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
-  const image="https://nexaurenstory.com/og-image.jpg";
+  const image="https://nexaurenstory.com/social-preview.png";
   let title=lang==="en"?"Nexauren Story — Official stories and updates":"Nexauren Story — Histórias e novidades oficiais";
   let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
   let type="website",articleMeta="";
@@ -409,7 +400,7 @@ async function page(env,request,url){
     title=(localizedMetaTitle||localizedTitle)+" — Nexauren Story";
     desc=localizedDesc.slice(0,300);
     type="article";
-    const img=p.cover_url||image,section=p.category_name||"Posts",sectionEn={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"}[p.category_slug]||section;
+    const imgRaw=p.social_image||p.cover_url||image,img=imgRaw.startsWith("http")?imgRaw:new URL(imgRaw,"https://nexaurenstory.com").href,section=p.category_name||"Posts",sectionEn={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"}[p.category_slug]||section;
     articleMeta='<meta property="article:published_time" content="'+esc(p.published_at||"")+'"><meta property="article:modified_time" content="'+esc(p.updated_at||p.published_at||"")+'"><meta property="article:section" content="'+esc(section)+'">';
     structured={"@context":"https://schema.org","@graph":[{"@type":p.type==="news"?"NewsArticle":"Article","@id":canonical+"#article","headline":localizedTitle.slice(0,180),"description":desc,"url":canonical,"image":[img],"datePublished":p.published_at,"dateModified":p.updated_at||p.published_at,"wordCount":String(p.content||"").trim().split(/\s+/).filter(Boolean).length,"isAccessibleForFree":true,"author":{"@type":"Person","name":p.author_name||"Nexauren Story","url":"https://nexaurenstory.com/about"},"publisher":{"@type":"Organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/favicon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":lang,"articleSection":lang==="en"?sectionEn:section},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Nexauren Story","item":"https://nexaurenstory.com/"},{"@type":"ListItem","position":2,"name":lang==="en"?sectionEn:section,"item":publicUrl("/"+(p.category_slug||"posts"),lang)},{"@type":"ListItem","position":3,"name":localizedTitle,"item":canonical}]}]};
     structured['@graph'][0].image=[img];
