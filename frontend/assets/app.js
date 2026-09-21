@@ -74,7 +74,6 @@ function updateSeo(meta){
 function updatePageSeo(path){
   const image=location.origin+"/og-image.jpg";
   const current=new URL(location.href);
-  current.search=current.search;
   if(path==="/"){
     updateSeo({title:"Nexauren Story",description:lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.",image,url:new URL("/"+(lang==="en"?"?lang=en":""),location.origin).href});
   }else if(path==="/posts"){
@@ -187,7 +186,7 @@ async function post(slug){
     const p=(await api(langQuery("/api/posts/slug/"+encodeURIComponent(slug)))).post;
     const description=p.meta_description||p.excerpt||excerpt(p);
     const canonical=new URL(location.pathname,location.origin);if(lang==="en")canonical.searchParams.set("lang","en");
-    updateSeo({title:p.meta_title||p.title,description,type:"article",image:p.cover_url||location.origin+"/og-image.jpg",url:canonical.href});
+    updateSeo({title:p.meta_title||p.title,description,type:"article",image:p.cover_url||location.origin+"/og-image.jpg",url:canonical.href,hasEnglish:p.translation_available});
     const translationNotice=(lang==="en"&&!p.translation_available)?'<div class="translation-note">'+t("translationFallback")+"</div>":"";
     const words=String(p.content||"").replace(/https?:\/\/\S+|[#*_\x60>\[\](){}/!-]/g," ").trim().split(/\s+/).filter(Boolean).length;
     const reading=Math.max(1,Math.round(words/200));
