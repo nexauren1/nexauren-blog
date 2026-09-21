@@ -1,17 +1,14 @@
 (function(){
-  // Monetag official integration: ad-channel tags belong in <head>.
-  // We load them only on article pages so ads do not run across the public site.
-  const ADS=[
-    {zone:"11183778",src:"https://nap5k.com/tag.min.js"},
-    {zone:"11177602",src:"https://n6wxm.com/vignette.min.js"}
-  ];
+  // Monetag official integration: In-Page Push (Banner) in <head>.
+  // Loaded only when an article is rendered. Vignette and Direct Link are not used.
+  const AD={zone:"11183778",src:"https://nap5k.com/tag.min.js"};
 
-  function load(ad){
-    if(!ad||document.querySelector('script[data-monetag-zone="'+ad.zone+'"]'))return;
+  function load(){
+    if(document.querySelector('script[data-monetag-zone="'+AD.zone+'"]'))return;
     const script=document.createElement("script");
-    script.dataset.monetagZone=ad.zone;
-    script.dataset.zone=ad.zone;
-    script.src=ad.src;
+    script.dataset.monetagZone=AD.zone;
+    script.dataset.zone=AD.zone;
+    script.src=AD.src;
     script.async=true;
     document.head.appendChild(script);
   }
@@ -19,7 +16,7 @@
   function apply(article){
     if(!article||article.dataset.adsReady==="1")return;
     article.dataset.adsReady="1";
-    ADS.forEach(load);
+    load();
   }
 
   window.NexaurenAds={apply};
