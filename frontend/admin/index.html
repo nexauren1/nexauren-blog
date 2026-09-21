@@ -5,31 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b0d12">
   <title>Admin — Nexauren Story</title>
-  <link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="/admin-assets/admin.css">
 </head>
 <body class="admin-body">
   <div id="login-view" class="login-shell">
     <div class="login-card">
       <a class="admin-brand" href="/"><span class="admin-mark">N</span><span>Nexauren <b>Story</b></span></a>
-      <div class="eyebrow">Private workspace</div>
-      <h1>Welcome back.</h1>
+      <div class="eyebrow">Private workspace</div><h1>Welcome back.</h1>
       <p class="muted">Sign in to manage stories, releases, guides and media.</p>
       <form id="login-form">
         <label>Email<input id="login-email" type="email" autocomplete="username" required></label>
         <label>Password<input id="login-password" type="password" autocomplete="current-password" required></label>
-        <button class="primary wide" type="submit">Sign in</button>
-        <p id="login-error" class="form-error"></p>
+        <button class="primary wide" type="submit">Sign in</button><p id="login-error" class="form-error"></p>
       </form>
       <a class="back-link" href="/">← Back to Nexauren Story</a>
     </div>
   </div>
-
   <div id="app-shell" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="sidebar-top">
-        <a class="admin-brand" href="/"><span class="admin-mark">N</span><span>Nexauren <b>Story</b></span></a>
-        <button id="sidebar-close" class="mobile-only close-btn">×</button>
-      </div>
+      <div class="sidebar-top"><a class="admin-brand" href="/"><span class="admin-mark">N</span><span>Nexauren <b>Story</b></span></a><button id="sidebar-close" class="mobile-only">×</button></div>
       <nav id="side-nav">
         <button data-view="dashboard" class="nav-item active"><span>⌂</span>Dashboard</button>
         <button data-view="posts" class="nav-item"><span>✎</span>Posts</button>
@@ -38,22 +32,10 @@
         <button data-view="settings" class="nav-item"><span>⚙</span>Settings</button>
         <button data-view="activity" class="nav-item"><span>◷</span>Activity</button>
       </nav>
-      <div class="sidebar-bottom">
-        <a href="/" class="nav-link">↗ View site</a>
-        <button id="logout-btn" class="nav-link danger">⇥ Sign out</button>
-      </div>
+      <div class="sidebar-bottom"><a href="/" class="nav-link">↗ View site</a><button id="logout-btn" class="nav-link danger">⇥ Sign out</button></div>
     </aside>
-
     <main class="admin-main">
-      <header class="topbar">
-        <button id="mobile-menu" class="mobile-only menu-trigger">☰</button>
-        <div>
-          <div class="eyebrow">Nexauren Story</div>
-          <strong id="top-title">Dashboard</strong>
-        </div>
-        <div class="top-actions"><span id="user-pill" class="user-pill"></span></div>
-      </header>
-
+      <header class="topbar"><button id="mobile-menu" class="mobile-only">☰</button><div><div class="eyebrow">Nexauren Story</div><strong id="top-title">Dashboard</strong></div><div class="top-actions"><span id="user-pill" class="user-pill"></span></div></header>
       <section id="view-dashboard" class="view active-view"></section>
       <section id="view-posts" class="view"></section>
       <section id="view-editor" class="view"></section>
@@ -64,6 +46,6 @@
     </main>
   </div>
   <div id="toast-root"></div>
-  <script src="/admin/admin.js"></script>
+  <script src="/admin-assets/admin.js"></script>
 </body>
 </html>
