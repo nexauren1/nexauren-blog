@@ -65,12 +65,35 @@ async function guard(env,request,owner=false){
 async function bodyJson(request){try{return await request.json();}catch{return null;}}
 async function publishDue(env){const t=nowIso();await env.DB.prepare("UPDATE posts SET status='published',published_at=COALESCE(published_at,scheduled_at,?),updated_at=? WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?").bind(t,t,t).run();}
 async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}
-async function dbReady(env){
+async function dbCheck(env){
+  const required={
+    users:["id","email","password_hash","display_name","role","status","email_verified","last_login_at","created_at","updated_at"],
+    sessions:["id","user_id","token_hash","expires_at","created_at","last_seen_at","ip_hash","user_agent"],
+    login_attempts:["id","identifier","success","created_at"],
+    categories:["id","name","slug","description","icon","parent_id","sort_order","created_at","updated_at"],
+    tags:["id","name","slug","created_at"],
+    media:["id","imagekit_file_id","url","thumbnail_url","filename","mime_type","size_bytes","width","height","alt_text","caption","uploaded_by","created_at"],
+    posts:["id","author_id","title","slug","excerpt","content","content_format","type","status","category_id","cover_media_id","published_at","scheduled_at","featured","allow_comments","meta_title","meta_description","created_at","updated_at"],
+    post_tags:["post_id","tag_id"], revisions:["id","post_id","editor_id","title","excerpt","content","revision_number","created_at"],
+    settings:["key","value","type","updated_at"], navigation:["id","location","label","url","icon","sort_order","visible","parent_id"],
+    redirects:["id","source","destination","status_code","created_at"],
+    audit_logs:["id","user_id","action","entity_type","entity_id","metadata","ip_hash","created_at"],
+    notifications:["id","user_id","type","title","message","link","read_at","created_at"]
+  };
   try{
-    const r=await env.DB.prepare("SELECT COUNT(*) n FROM sqlite_master WHERE type='table' AND name IN ('users','sessions','login_attempts','categories','tags','media','posts','post_tags','revisions','settings','navigation','redirects','audit_logs','notifications')").first();
-    return Number(r?.n||0)===14;
-  }catch{return false;}
+    const tables=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+    const existing=new Set((tables.results||[]).map(x=>x.name));
+    const missingTables=[],missingColumns=[];
+    for(const [table,cols] of Object.entries(required)){
+      if(!existing.has(table)){missingTables.push(table);continue;}
+      const info=await env.DB.prepare("PRAGMA table_info("+table+")").all();
+      const have=new Set((info.results||[]).map(x=>x.name));
+      for(const col of cols)if(!have.has(col))missingColumns.push(table+"."+col);
+    }
+    return {ready:missingTables.length===0&&missingColumns.length===0,missingTables,missingColumns};
+  }catch(e){return {ready:false,missingTables:[],missingColumns:[],error:String(e?.message||e)};}
 }
+async function dbReady(env){return (await dbCheck(env)).ready;}
 
 async function getPost(env,id){
   const p=await env.DB.prepare(`SELECT p.*,c.name category_name,c.slug category_slug,m.url cover_url,u.display_name author_name
@@ -152,7 +175,7 @@ async function rss(env,request){
 }
 async function api(env,request,url){
   const p=url.pathname,m=request.method;
-  if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),version:"1.1.0"},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),version:"1.2.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
@@ -169,7 +192,7 @@ async function api(env,request,url){
     const ok=u&&u.status==="active"&&await verifyPassword(pw,u.password_hash);await env.DB.prepare("INSERT INTO login_attempts (id,identifier,success,created_at) VALUES (?,?,?,?)").bind(crypto.randomUUID(),identifier,ok?1:0,nowIso()).run();
     if(!ok)return fail("Email ou senha inválidos.",401,"INVALID_CREDENTIALS");const ts=nowIso();await env.DB.prepare("UPDATE users SET last_login_at=?,updated_at=? WHERE id=?").bind(ts,ts,u.id).run();const s=await createSession(env,u.id,request);await audit(env,u.id,"auth.login","user",u.id,{});
     return json({ok:true,user:{id:u.id,email:u.email,display_name:u.display_name,role:u.role}},200,{"set-cookie":cookie(COOKIE,s.token,{maxAge:SESSION_SECONDS})});
-    }catch(e){console.error("auth.login",e);return fail("Falha ao autenticar no D1. Verifique se o schema.sql completo foi executado neste banco.","500","AUTH_DB_ERROR");}
+    }catch(e){console.error("auth.login",e);return fail("Falha ao autenticar no D1. " + String(e?.message||"Verifique o schema.sql e a configuração do D1."),500,"AUTH_DB_ERROR");}
   }
   if(p==="/api/auth/logout"&&m==="POST"){const raw=getCookie(request,COOKIE);if(raw){const h=await sha256(raw),s=await env.DB.prepare("SELECT user_id FROM sessions WHERE token_hash=?").bind(h).first();if(s)await audit(env,s.user_id,"auth.logout","user",s.user_id,{});await env.DB.prepare("DELETE FROM sessions WHERE token_hash=?").bind(h).run();}return json({ok:true},200,{"set-cookie":cookie(COOKIE,"",{maxAge:0})});}
   if(p==="/api/auth/me"&&m==="GET"){const u=await auth(env,request);return u?json({ok:true,user:{id:u.id,email:u.email,display_name:u.display_name,role:u.role}}):json({ok:false,user:null},401);}
