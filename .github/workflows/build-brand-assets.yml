@@ -10,6 +10,10 @@ on:
       - ".github/workflows/build-brand-assets.yml"
   workflow_dispatch:
 
+concurrency:
+  group: build-brand-assets-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -36,5 +40,18 @@ jobs:
             echo "Brand assets are already current."
           else
             git commit -m "Generate brand preview assets"
-            git push
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                echo "Brand assets pushed successfully."
+                exit 0
+              fi
+              echo "Push race detected; retrying ($attempt/5)..."
+              git reset --hard origin/main
+              git add frontend/favicon.png frontend/apple-touch-icon.png frontend/social-preview.png frontend/og-image.jpg
+              git commit -m "Generate brand preview assets" || true
+            done
+            echo "Unable to push generated brand assets after retries."
+            exit 1
           fi
