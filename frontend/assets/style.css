@@ -144,10 +144,6 @@ img{max-width:100%;display:block}
 .related-section{margin-top:56px;padding-top:30px;border-top:1px solid var(--line)}
 .related-section .grid{grid-template-columns:repeat(3,1fr)}
 .translation-note{margin:20px 0;padding:12px 14px;border-radius:12px;background:var(--green-soft);border:1px solid #c9efc1;color:#2b5124;font-size:13px}
-.post-ad{position:relative;min-height:88px;margin:34px 0;padding:14px 8px;border:1px solid var(--line);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;clear:both}
-.post-ad:before{content:"Publicidade";position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:8px;text-transform:uppercase;letter-spacing:.13em;font-weight:900;color:#a0a7b2;z-index:1;pointer-events:none}
-.post-ad-middle{min-height:96px}
-.post-ad-lower{min-height:96px}
 .footer-links{display:flex;flex-direction:column;gap:7px}
 .footer-links a{color:#d9dde4;font-size:13px}
 .footer-links a:hover{color:#fff}
@@ -197,3 +193,9 @@ img{max-width:100%;display:block}
   .card h3{font-size:17px}
   .footer-grid{grid-template-columns:1fr}
 }
+
+
+/* Ads are injected only inside published article content. Monetag controls the ad creative itself. */
+.post-ad-slot{width:100%;min-height:24px;margin:30px 0;display:block;position:relative;clear:both}
+.post-ad-slot:empty{display:none}
+.post-ad-slot-middle,.post-ad-slot-lower{min-height:24px}
