@@ -198,7 +198,7 @@ async function sitemap(env,request){
   const base=new URL(request.url).origin;
   if(!(await dbReady(env))) return new Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=300"}});
   const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 5000").all();
-  const stat=["/","/breaking-news","/tecnologia","/entretenimento","/nexauren","/eventos","/ferramentas","/about"].map(p=>"<url><loc>"+base+p+"</loc></url>").join("");
+  const stat=["/","/posts","/breaking-news","/tecnologia","/entretenimento","/nexauren","/eventos","/ferramentas","/about"].map(p=>"<url><loc>"+base+p+"</loc></url>").join("");
   const posts=rows.results.map(p=>"<url><loc>"+base+"/post/"+esc(p.slug)+"</loc><lastmod>"+esc(p.updated_at)+"</lastmod></url>").join("");
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${stat+posts}</urlset>`,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
