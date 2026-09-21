@@ -6,26 +6,24 @@
   "assets": {
     "directory": "./frontend",
     "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
     "run_worker_first": [
       "/api/*",
-      "/admin*"
+      "/admin*",
+      "/post/*",
+      "/sitemap.xml",
+      "/rss.xml"
     ]
-  },
-  "ai": {
-    "binding": "AI"
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "nexauren-db",
-      "database_id": "fb3b3106-59a9-4b96-b28a-9559e0ed344d",
-      "migrations_dir": "migrations/global"
-    },
-    {
-      "binding": "BOOKS_DB",
       "database_name": "nexauren-blog",
-      "database_id": "f249fa45-41ba-41e5-9e0a-9642afa6b1fd",
-      "migrations_dir": "migrations/books"
+      "database_id": "61bc46d2-fe1f-41f7-a12a-883a1e5956b0",
+      "migrations_dir": "migrations"
     }
-  ]
+  ],
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  }
 }
