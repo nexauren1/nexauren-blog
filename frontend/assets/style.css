@@ -240,3 +240,26 @@ img{max-width:100%;display:block}
 @media(max-width:900px){.featured-layout{grid-template-columns:1fr}.featured-primary{grid-template-columns:1fr}.featured-secondary{grid-template-columns:1fr 1fr;grid-template-rows:none}.featured-secondary article{border-bottom:0;border-right:1px solid var(--line)}.featured-secondary article:last-child{border-right:0}}
 @media(max-width:700px){.article{max-width:100%}.article-content{font-size:18px;line-height:1.82}.article h1{font-size:clamp(36px,10vw,46px);line-height:1.03}.article-excerpt{font-size:18px}.article-cover{border-radius:17px;margin:20px 0 24px}.article-actions{margin:18px 0 26px}.share-button{flex:1;min-width:120px}.featured-secondary{grid-template-columns:1fr}.featured-secondary article{border-right:0;border-bottom:1px solid var(--line)}.featured-secondary article:last-child{border-bottom:0}.featured-secondary .card-media{aspect-ratio:16/10}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card:hover,.category-tile:hover,.share-button:hover{transform:none}}
+
+/* Article reading + mobile performance polish */
+.article{padding-bottom:20px}
+.article-actions{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 30px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.share-button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--black);font-size:12px;font-weight:900}
+.share-button:hover{border-color:#aeb6c2;background:var(--surface-soft)}
+.share-link{color:var(--blue)}
+.share-secondary{color:#4d5663}
+.article-content img{width:auto;max-width:100%;height:auto;margin:28px auto;border-radius:16px}
+.article-content h2,.article-content h3{scroll-margin-top:92px}
+.article-cover{background:var(--surface-soft);aspect-ratio:16/9}
+@media(max-width:760px){
+  .article{width:100%;max-width:100%}
+  .article h1{font-size:clamp(34px,10vw,48px);line-height:1.02;letter-spacing:-.045em}
+  .article-excerpt{font-size:18px;line-height:1.5}
+  .article-content{font-size:17px;line-height:1.75}
+  .article-content h2{font-size:28px;margin-top:34px}
+  .article-content h3{font-size:22px;margin-top:28px}
+  .article-cover{margin:18px 0 26px;border-radius:16px}
+  .article-actions{gap:6px;margin-top:20px}
+  .share-button{flex:1 1 auto}
+  .related-section .grid{grid-template-columns:1fr}
+}
