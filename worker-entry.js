@@ -296,6 +296,7 @@ async function page(env,request,url){
   if(url.pathname==="/sitemap.xml")return sitemap(env,request);
   if(url.pathname==="/robots.txt")return robots(request);
   if(url.pathname==="/rss.xml")return rss(env,request);
+  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/favicon.png","/apple-touch-icon.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
   if(url.pathname==="/admin"||url.pathname.startsWith("/admin/")){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
