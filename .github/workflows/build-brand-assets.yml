@@ -6,6 +6,7 @@ on:
     paths:
       - "frontend/favicon.svg"
       - "frontend/og-image.svg"
+      - "frontend/social-preview.svg"
       - ".github/workflows/build-brand-assets.yml"
   workflow_dispatch:
 
@@ -22,14 +23,15 @@ jobs:
           set -e
           sudo apt-get update
           sudo apt-get install -y imagemagick
-          convert -background none frontend/favicon.svg -resize 192x192 frontend/favicon.png
+          convert -background none frontend/favicon.svg -resize 512x512 frontend/favicon.png
           convert -background none frontend/favicon.svg -resize 180x180 frontend/apple-touch-icon.png
-          convert -background none frontend/og-image.svg -quality 88 frontend/og-image.jpg
+          convert -background none frontend/social-preview.svg -quality 100 frontend/social-preview.png
+          convert -background none frontend/social-preview.svg -quality 88 frontend/og-image.jpg
       - name: Commit generated assets
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/favicon.png frontend/apple-touch-icon.png frontend/og-image.jpg
+          git add frontend/favicon.png frontend/apple-touch-icon.png frontend/social-preview.png frontend/og-image.jpg
           if git diff --cached --quiet; then
             echo "Brand assets are already current."
           else
