@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS posts (
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','scheduled','published','archived')),
   category_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
   cover_media_id TEXT REFERENCES media(id) ON DELETE SET NULL,
+  social_image TEXT DEFAULT '',
   published_at TEXT,
   scheduled_at TEXT,
   featured INTEGER NOT NULL DEFAULT 0 CHECK (featured IN (0,1)),
