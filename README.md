@@ -1,6 +1,6 @@
 # Nexauren Story
 
-The official Nexauren editorial portal.
+The official Nexauren editorial portal, powered by Cloudflare Workers, D1, ImageKit and Workers AI.
 
 ## Stack
 
@@ -35,7 +35,7 @@ TRANSLATION_MODEL
 
 The first successful login using `ADMIN_EMAIL` + `ADMIN_PASSWORD` creates the first `owner` account in D1. Change that password later in Admin → Settings → Security.
 
-Never commit an ImageKit private key or OpenAI API key to GitHub or frontend code.
+Never commit ImageKit private keys, admin credentials, or other secrets to GitHub or frontend code. Cloudflare Workers AI is accessed through the `AI` binding in `wrangler.json`.
 
 ## Deploy
 
