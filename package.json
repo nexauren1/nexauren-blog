@@ -1,0 +1,17 @@
+{
+  "name": "nexauren-blog",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Nexauren Story — editorial platform on Cloudflare Workers",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "check": "wrangler deploy --dry-run"
+  },
+  "dependencies": {
+    "wrangler": "4.135.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
