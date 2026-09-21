@@ -26,19 +26,17 @@ jobs:
         run: |
           curl -fsSL https://nexaurenstory.com/sitemap.xml -o /tmp/sitemap.xml
           node <<'NODE'
-          const fs=require('fs');
-          const xml=fs.readFileSync('/tmp/sitemap.xml','utf8');
-          const locs=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1].trim());
-          if(!locs.length)throw new Error('Sitemap contains no URLs');
-          const unique=new Set(locs);
-          if(unique.size!==locs.length)throw new Error('Sitemap contains duplicate URLs');
-          const privatePath=/^https:\/\/nexaurenstory\.com\/(admin|api(?:\/|$))/;
-          const forbiddenQuery=/[?&](?:token|session|password)=/i;
-          for(const u of locs){
-            const url=new URL(u);
-            if(url.origin!=="https://nexaurenstory.com")throw new Error('Non-canonical host in sitemap: '+u);
-            if(privatePath.test(u)||url.pathname==="/search")throw new Error('Private/search URL in sitemap: '+u);
-            if(forbiddenQuery.test(u))throw new Error('Sensitive query string in sitemap: '+u);
-          }
-          console.log(`Verified ${locs.length} public canonical sitemap URLs.`);
+          const fs=require('fs'),https=require('https');
+          const root=fs.readFileSync('/tmp/sitemap.xml','utf8');
+          const locs=xml=>[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1].trim());
+          const get=u=>new Promise((ok,no)=>https.get(u,{headers:{'User-Agent':'NexaurenStory-SEO-Check/1.0'}},r=>{let b='';r.setEncoding('utf8');r.on('data',c=>b+=c);r.on('end',()=>ok({status:r.statusCode,body:b}));}).on('error',no));
+          (async()=>{
+            if(!/<sitemapindex[\s>]/.test(root)) throw new Error('Root sitemap must be a sitemap index');
+            const children=locs(root); if(!children.length) throw new Error('Sitemap index is empty');
+            const all=[];
+            for(const u of children){const r=await get(u);if(r.status!==200)throw new Error('Child sitemap status='+r.status+': '+u);if(!/<urlset[\s>]/.test(r.body))throw new Error('Child sitemap is not a urlset: '+u);all.push(...locs(r.body));}
+            const seen=new Set();
+            for(const u of all){const x=new URL(u);if(x.origin!=='https://nexaurenstory.com')throw new Error('Non-canonical host: '+u);if(/^\/(admin|api(?:\/|$)|search)/.test(x.pathname))throw new Error('Private/search URL: '+u);if(x.search)throw new Error('Query-string URL: '+u);if(seen.has(u))throw new Error('Duplicate URL: '+u);seen.add(u);}
+            console.log(`Verified ${all.length} public canonical sitemap URLs across ${children.length} child sitemaps.`);
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE
