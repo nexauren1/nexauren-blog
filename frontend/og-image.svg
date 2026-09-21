@@ -1,14 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-<rect width="1200" height="630" fill="#101318"/>
-<g transform="translate(80 105)">
-  <rect width="420" height="420" rx="46" fill="#101318"/>
-  <path d="M45 58h68v175l-68 60z" fill="#1557ff"/>
-  <path d="M113 58h76l188 188v94h-72L113 157z" fill="#e21b2d"/>
-  <path d="M45 233l68-60v102l-68 60z" fill="#ffd43b"/>
-  <path d="M323 42l48-34v306l-48 35V119l-54 54-48-48z" fill="#42ff1a"/>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#020817"/><stop offset=".5" stop-color="#06133d"/><stop offset="1" stop-color="#050021"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b6cff"/><stop offset=".5" stop-color="#00cfff"/><stop offset="1" stop-color="#7a00ff"/></linearGradient>
+ <linearGradient id="n" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#00d9ff"/><stop offset=".42" stop-color="#2370ff"/><stop offset=".72" stop-color="#9b28ff"/><stop offset="1" stop-color="#ff35c7"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<path d="M0 170L330 0H650L0 360Z" fill="#005cff" opacity=".35"/>
+<path d="M1200 520L910 630H560L1200 270Z" fill="#7300ff" opacity=".35"/>
+<path d="M0 70L390 0" stroke="#00cfff" stroke-width="5" opacity=".55"/>
+<path d="M810 630L1200 470" stroke="#00cfff" stroke-width="5" opacity=".55"/>
+<rect x="28" y="28" width="1144" height="574" rx="28" fill="none" stroke="url(#edge)" stroke-width="3"/>
+<g transform="translate(92 145)">
+ <rect width="250" height="250" rx="48" fill="#030a21" stroke="url(#edge)" stroke-width="4"/>
+ <path d="M58 178V82c0-12 9-21 21-21 7 0 12 3 17 8l86 83V82c0-12 9-21 21-21s21 9 21 21v96c0 12-10 22-22 22-7 0-13-3-18-8l-86-83v69c0 12-9 21-21 21s-19-9-19-21Z" fill="url(#n)" filter="url(#glow)"/>
 </g>
-<text x="560" y="245" fill="#ffffff" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="700">Nexauren Story</text>
-<text x="562" y="314" fill="#c5cbd5" font-family="Arial,Helvetica,sans-serif" font-size="28">Official stories, launches, guides and updates</text>
-<text x="562" y="360" fill="#1557ff" font-family="Arial,Helvetica,sans-serif" font-size="28">nexaurenstory.com</text>
-<rect x="562" y="405" width="290" height="8" rx="4" fill="#e21b2d"/>
+<line x1="400" y1="170" x2="400" y2="380" stroke="#e7ecff" stroke-width="3" opacity=".75"/>
+<text x="450" y="235" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="70" font-weight="700">Nexauren</text>
+<text x="452" y="300" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="40" letter-spacing="14">STORY</text>
+<line x1="760" y1="165" x2="760" y2="385" stroke="#e7ecff" stroke-width="3" opacity=".75"/>
+<text x="800" y="225" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="25">Notícias, Tecnologia.</text>
+<text x="800" y="263" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="25">Entretenimento e muito mais.</text>
+<text x="800" y="301" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="25">Conteúdo de qualidade,</text>
+<text x="800" y="339" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="25">sempre com você.</text>
 </svg>
