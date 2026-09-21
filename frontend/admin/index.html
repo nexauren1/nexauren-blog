@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -11,31 +11,31 @@
   <div id="login-view" class="login-shell">
     <div class="login-card">
       <a class="admin-brand" href="/"><span class="admin-mark">N</span><span>Nexauren <b>Story</b></span></a>
-      <div class="eyebrow">Private workspace</div><h1>Welcome back.</h1>
-      <p class="muted">Sign in to manage stories, releases, guides and media.</p>
+      <div class="eyebrow">Área privada</div><h1>Bem-vindo.</h1>
+      <p class="muted">Entre para gerir histórias, lançamentos, guias e multimédia.</p>
       <form id="login-form">
         <label>Email<input id="login-email" type="email" autocomplete="username" required></label>
-        <label>Password<input id="login-password" type="password" autocomplete="current-password" required></label>
-        <button class="primary wide" type="submit">Sign in</button><p id="login-error" class="form-error"></p>
+        <label>Palavra-passe<input id="login-password" type="password" autocomplete="current-password" required></label>
+        <button class="primary wide" type="submit">Entrar</button><p id="login-error" class="form-error"></p>
       </form>
-      <a class="back-link" href="/">← Back to Nexauren Story</a>
+      <a class="back-link" href="/">← Voltar ao Nexauren Story</a>
     </div>
   </div>
   <div id="app-shell" class="app-shell hidden">
     <aside class="sidebar">
       <div class="sidebar-top"><a class="admin-brand" href="/"><span class="admin-mark">N</span><span>Nexauren <b>Story</b></span></a><button id="sidebar-close" class="mobile-only">×</button></div>
       <nav id="side-nav">
-        <button data-view="dashboard" class="nav-item active"><span>⌂</span>Dashboard</button>
-        <button data-view="posts" class="nav-item"><span>✎</span>Posts</button>
-        <button data-view="media" class="nav-item"><span>▣</span>Media</button>
-        <button data-view="categories" class="nav-item"><span>#</span>Categories</button>
-        <button data-view="settings" class="nav-item"><span>⚙</span>Settings</button>
-        <button data-view="activity" class="nav-item"><span>◷</span>Activity</button>
+        <button data-view="dashboard" class="nav-item active"><span>⌂</span>Painel</button>
+        <button data-view="posts" class="nav-item"><span>✎</span>Publicações</button>
+        <button data-view="media" class="nav-item"><span>▣</span>Multimédia</button>
+        <button data-view="categories" class="nav-item"><span>#</span>Categorias</button>
+        <button data-view="settings" class="nav-item"><span>⚙</span>Definições</button>
+        <button data-view="activity" class="nav-item"><span>◷</span>Atividade</button>
       </nav>
-      <div class="sidebar-bottom"><a href="/" class="nav-link">↗ View site</a><button id="logout-btn" class="nav-link danger">⇥ Sign out</button></div>
+      <div class="sidebar-bottom"><a href="/" class="nav-link">↗ Ver site</a><button id="logout-btn" class="nav-link danger">⇥ Terminar sessão</button></div>
     </aside>
     <main class="admin-main">
-      <header class="topbar"><button id="mobile-menu" class="mobile-only">☰</button><div><div class="eyebrow">Nexauren Story</div><strong id="top-title">Dashboard</strong></div><div class="top-actions"><span id="user-pill" class="user-pill"></span></div></header>
+      <header class="topbar"><button id="mobile-menu" class="mobile-only">☰</button><div><div class="eyebrow">Nexauren Story</div><strong id="top-title">Painel</strong></div><div class="top-actions"><span id="user-pill" class="user-pill"></span></div></header>
       <section id="view-dashboard" class="view active-view"></section>
       <section id="view-posts" class="view"></section>
       <section id="view-editor" class="view"></section>
