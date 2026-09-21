@@ -270,18 +270,25 @@ async function sitemap(env,request){
   const entry=(path,lastmod,hasEn=true)=>{
     const add=(language)=>{
       const loc=publicUrl(path,language),altPt=publicUrl(path,"pt"),altEn=publicUrl(path,"en");
-      let x="<url><loc>"+xml(loc)+"</loc>";
-      if(lastmod)x+="<lastmod>"+xml(lastmod)+"</lastmod>";
-      x+='<xhtml:link rel="alternate" hreflang="pt" href="'+xml(altPt)+'"/><xhtml:link rel="alternate" hreflang="x-default" href="'+xml(altPt)+'"/>';
-      if(hasEn)x+='<xhtml:link rel="alternate" hreflang="en" href="'+xml(altEn)+'"/>';
-      x+="</url>";
-      out.push(x);
+      const lines=[
+        "  <url>",
+        "    <loc>"+xml(loc)+"</loc>"
+      ];
+      if(lastmod)lines.push("    <lastmod>"+xml(lastmod)+"</lastmod>");
+      lines.push(
+        '    <xhtml:link rel="alternate" hreflang="pt" href="'+xml(altPt)+'"/>',
+        '    <xhtml:link rel="alternate" hreflang="x-default" href="'+xml(altPt)+'"/>'
+      );
+      if(hasEn)lines.push('    <xhtml:link rel="alternate" hreflang="en" href="'+xml(altEn)+'"/>');
+      lines.push("  </url>");
+      out.push(lines.join("\n"));
     };
-    add("pt");if(hasEn)add("en");
+    add("pt");
+    if(hasEn)add("en");
   };
   for(const p of paths)entry(p.path,p.lastmod,true);
   for(const p of (rows.results||[]))entry("/post/"+encodeURIComponent(p.slug),p.updated_at,Boolean(Number(p.has_en)));
-  return new Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'+out.join("")+"</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
+  const body='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'+out.join("\n")+"\n</urlset>";  return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function robots(request){
   return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}});
