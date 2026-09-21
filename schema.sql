@@ -82,6 +82,21 @@ CREATE TABLE IF NOT EXISTS posts (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS post_translations (
+  id TEXT PRIMARY KEY,
+  post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  language TEXT NOT NULL CHECK (language IN ('pt','en')),
+  title TEXT NOT NULL,
+  excerpt TEXT DEFAULT '',
+  content TEXT NOT NULL DEFAULT '',
+  meta_title TEXT DEFAULT '',
+  meta_description TEXT DEFAULT '',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(post_id, language)
+);
+CREATE INDEX IF NOT EXISTS idx_post_translations_post_lang ON post_translations(post_id,language);
+
 CREATE TABLE IF NOT EXISTS post_tags (
   post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
   tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
@@ -157,28 +172,24 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id,read_
 INSERT OR IGNORE INTO settings (key,value,type,updated_at) VALUES
 ('site_name','Nexauren Story','string',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 ('site_description','Histórias, novidades, guias e atualizações do ecossistema Nexauren.','string',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('default_language','en','string',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+('default_language','pt','string',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 ('timezone','Africa/Maputo','string',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 ('posts_per_page','12','number',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 ('social_github','https://github.com/nexauren1','string',strftime('%Y-%m-%dT%H:%M:%fZ','now'));
 
 INSERT OR IGNORE INTO categories (id,name,slug,description,icon,parent_id,sort_order,created_at,updated_at) VALUES
-('cat-news','News','news','Novidades e acontecimentos da Nexauren.','📰',NULL,10,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-apps','Apps','apps','Aplicativos e experiências digitais da Nexauren.','📱',NULL,20,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-products','Products','products','Produtos, lançamentos e atualizações.','📦',NULL,30,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-guides','Guides','guides','Guias práticos para usar os produtos Nexauren.','📖',NULL,40,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-tutorials','Tutorials','tutorials','Tutoriais passo a passo.','🧭',NULL,50,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-releases','Releases','releases','Lançamentos e versões.','🚀',NULL,60,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-updates','Updates','updates','Atualizações, changelogs e melhorias.','✨',NULL,70,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-announcements','Announcements','announcements','Comunicados oficiais.','📢',NULL,80,strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-('cat-stories','Stories','stories','Histórias, bastidores e ideias.','✦',NULL,90,strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+('cat-breaking-news','Notícias de última hora','breaking-news','Informações urgentes e acontecimentos recentes.','⚡',NULL,10,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+('cat-tecnologia','Tecnologia','tecnologia','Tecnologia, inovação, software, dispositivos e tendências.','💻',NULL,20,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+('cat-entretenimento','Entretenimento','entretenimento','Cultura digital, música, vídeo, jogos e entretenimento.','🎬',NULL,30,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+('cat-nexauren','Nexauren','nexauren','Produtos, aplicativos, projetos e novidades da Nexauren.','✦',NULL,40,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+('cat-eventos','Eventos','eventos','Eventos, lançamentos ao vivo e encontros da Nexauren.','📅',NULL,50,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+('cat-ferramentas','Ferramentas','ferramentas','Ferramentas, utilitários e soluções publicadas pela Nexauren.','🧰',NULL,60,strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now'));
 
 INSERT OR IGNORE INTO navigation (id,location,label,url,icon,sort_order,visible,parent_id) VALUES
-('nav-home','header','Home','/','⌂',10,1,NULL),
-('nav-news','header','News','/news','📰',20,1,NULL),
-('nav-apps','header','Apps','/apps','📱',30,1,NULL),
-('nav-products','header','Products','/products','📦',40,1,NULL),
-('nav-guides','header','Guides','/guides','📖',50,1,NULL),
-('nav-tutorials','header','Tutorials','/tutorials','🧭',60,1,NULL),
-('nav-releases','header','Releases','/releases','🚀',70,1,NULL),
-('nav-about','header','About','/about','✦',80,1,NULL);
+('nav-home','header','Início','/','⌂',10,1,NULL),
+('nav-breaking-news','header','Últimas notícias','/breaking-news','⚡',20,1,NULL),
+('nav-tecnologia','header','Tecnologia','/tecnologia','💻',30,1,NULL),
+('nav-entretenimento','header','Entretenimento','/entretenimento','🎬',40,1,NULL),
+('nav-nexauren','header','Nexauren','/nexauren','✦',50,1,NULL),
+('nav-eventos','header','Eventos','/eventos','📅',60,1,NULL),
+('nav-ferramentas','header','Ferramentas','/ferramentas','🧰',70,1,NULL);
