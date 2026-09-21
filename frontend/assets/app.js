@@ -45,7 +45,7 @@ function updateSeo(meta){
   const fullTitle=baseTitle+" — Nexauren Story";
   const desc=String(meta.description||"Nexauren Story").slice(0,300);
   const pageUrl=meta.url||location.href;
-  const image=meta.image||location.origin+"/social-preview.png";
+  const image=meta.image||location.origin+"/social-preview.png?v=20260921-2";
   document.title=fullTitle;
   document.documentElement.lang=lang;
   setMeta("name","description",desc);
@@ -72,7 +72,7 @@ function updateSeo(meta){
   setLink("alternate","x-default",pt.href);
 }
 function updatePageSeo(path){
-  const image=location.origin+"/social-preview.png";
+  const image=location.origin+"/social-preview.png?v=20260921-2";
   const current=new URL(location.href);
   if(path==="/"){
     updateSeo({title:"Nexauren Story",description:lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.",image,url:new URL("/"+(lang==="en"?"?lang=en":""),location.origin).href});
