@@ -104,9 +104,9 @@ async function dbReady(env){return (await dbCheck(env)).ready;}
 async function autoTranslatePost(env,postId){
   if(!env.AI)return;
   try{
-    const existing=await env.DB.prepare("SELECT id FROM post_translations WHERE post_id=? AND language='en' LIMIT 1").bind(postId).first();
-    if(existing)return;
-    const p=await env.DB.prepare("SELECT title,excerpt,content,meta_title,meta_description FROM posts WHERE id=? LIMIT 1").bind(postId).first();
+    const existing=await env.DB.prepare("SELECT updated_at FROM post_translations WHERE post_id=? AND language='en' LIMIT 1").bind(postId).first();
+    const p=await env.DB.prepare("SELECT title,excerpt,content,meta_title,meta_description,updated_at FROM posts WHERE id=? LIMIT 1").bind(postId).first();
+    if(existing&&p?.updated_at&&existing.updated_at>=p.updated_at)return;
     if(!p?.title)return;
     const response=await env.AI.run(env.TRANSLATION_AI_MODEL||"@cf/meta/llama-3.2-3b-instruct",{
       messages:[
