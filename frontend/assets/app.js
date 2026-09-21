@@ -68,7 +68,7 @@ function updateSeo(meta){
   const en=new URL(location.pathname,location.origin);
   en.searchParams.set("lang","en");
   setLink("alternate","pt",pt.href);
-  setLink("alternate","en",meta.hasEnglish===false?"":en.href);
+  if(meta.hasEnglish===false){document.head.querySelector('link[rel="alternate"][hreflang="en"]')?.remove();}else setLink("alternate","en",en.href);
   setLink("alternate","x-default",pt.href);
 }
 function updatePageSeo(path){
