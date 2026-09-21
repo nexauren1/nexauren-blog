@@ -115,3 +115,85 @@ img{max-width:100%;display:block}
 @media(max-width:1050px){.main-nav{gap:2px}.main-nav a{padding:8px 8px}.hero,.featured{grid-template-columns:1fr}.featured-media{min-height:300px}.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.container{width:min(calc(100% - 24px),var(--max))}.nav-wrap{min-height:68px}.main-nav{display:none}.menu-button{display:block}.page{padding-top:28px}.hero{min-height:auto}.hero h1{font-size:50px}.hero p{font-size:16px}.hero-card{min-height:300px}.grid{grid-template-columns:1fr}.featured-copy{padding:28px}.listing-head h1{font-size:40px}.article h1{font-size:42px}.article-content{font-size:17px}.footer-grid{grid-template-columns:1fr 1fr}.footer-grid>div:first-child{grid-column:1/-1}.footer-bottom{flex-direction:column;gap:10px}.mobile-nav{top:68px}}
 @media(max-width:470px){.hero h1{font-size:44px}.footer-grid{grid-template-columns:1fr}.footer-grid>div:first-child{grid-column:auto}}
+
+/* Nexauren Story — compact discovery, categories, language and post ads */
+.main-nav{overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.main-nav::-webkit-scrollbar{display:none}
+.main-nav a{font-size:12px;padding:8px 9px}
+.language-button{border:1px solid var(--line);background:#fff;color:var(--black);height:40px;min-width:44px;border-radius:11px;font-size:11px;font-weight:950}
+.language-button:hover{border-color:#cbd0d8;background:var(--surface-soft)}
+.mobile-nav{display:none}
+.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.category-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:132px;padding:18px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 4px 16px rgba(16,19,24,.03);transition:.2s}
+.category-tile:hover{transform:translateY(-3px);border-color:#c7ced8;box-shadow:var(--shadow)}
+.category-icon{font-size:24px;line-height:1}
+.category-name{font-size:16px;font-weight:900;letter-spacing:-.02em}
+.category-desc{font-size:12px;color:var(--muted);line-height:1.4;max-width:280px}
+.category-arrow{position:absolute;right:16px;top:16px;font-weight:900;color:var(--blue)}
+.category-tile small{margin-top:auto;font-size:10px;color:var(--muted);font-weight:800}
+.card-body{padding:16px}
+.card{border-radius:17px}
+.card h3{font-size:18px;margin:8px 0}
+.card p{font-size:13px;line-height:1.55}
+.card-media{aspect-ratio:16/9}
+.card-placeholder,.featured-placeholder{width:100%;height:100%;display:grid;place-items:center;font-size:46px;font-weight:950;color:#fff;background:linear-gradient(135deg,#101318,var(--blue) 55%,var(--red))}
+.read-more{font-size:12px}
+.compact-head{margin-top:10px;margin-bottom:12px}
+.article{max-width:900px}
+.article-content{font-size:18px}
+.related-section{margin-top:56px;padding-top:30px;border-top:1px solid var(--line)}
+.related-section .grid{grid-template-columns:repeat(3,1fr)}
+.translation-note{margin:20px 0;padding:12px 14px;border-radius:12px;background:var(--green-soft);border:1px solid #c9efc1;color:#2b5124;font-size:13px}
+.post-ad{min-height:90px;margin:26px 0;border:1px solid var(--line);border-radius:14px;background:var(--surface-soft);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.post-ad:before{content:"Publicidade";font-size:9px;text-transform:uppercase;letter-spacing:.13em;font-weight:900;color:#9aa2ae}
+.post-ad-top{min-height:100px}
+.post-ad-middle{min-height:120px}
+.footer-links{display:flex;flex-direction:column;gap:7px}
+.footer-links a{color:#d9dde4;font-size:13px}
+.footer-links a:hover{color:#fff}
+.language-overlay{position:fixed;inset:0;z-index:200;background:rgba(10,13,18,.60);backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px}
+.language-card{width:min(520px,100%);background:#fff;border-radius:28px;padding:34px;box-shadow:0 30px 90px rgba(0,0,0,.25);text-align:center}
+.language-mark{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;margin:0 auto 16px;background:linear-gradient(135deg,var(--red) 0 34%,var(--blue) 34% 68%,var(--yellow) 68%);color:#fff;font-size:25px;font-weight:950}
+.language-card h2{font-size:34px;line-height:1.02;letter-spacing:-.045em;margin:8px 0}
+.language-card p{color:var(--muted);margin:0 auto 22px;max-width:410px}
+.language-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.language-options button{border:1px solid var(--line);background:#fff;padding:14px 12px;border-radius:13px;font-weight:900}
+.language-options button:first-child{background:var(--black);color:#fff;border-color:var(--black)}
+.language-options button:hover{transform:translateY(-1px)}
+@media(max-width:1050px){
+  .main-nav{display:none}
+  .menu-button{display:block}
+  .mobile-nav{position:absolute;left:0;right:0;top:100%;display:none;padding:10px 20px 16px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 16px 34px rgba(16,19,24,.08)}
+  .mobile-nav.open{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+  .mobile-nav a,.mobile-lang{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-weight:850;font-size:12px}
+  .mobile-nav a.active{background:var(--black);color:#fff;border-color:var(--black)}
+  .mobile-lang{color:var(--blue)}
+  .category-grid{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:700px){
+  .container{width:min(calc(100% - 28px),var(--max))}
+  .page{padding:30px 0 62px}
+  .hero{grid-template-columns:1fr;min-height:0}
+  .hero h1{font-size:48px}
+  .hero-card{min-height:280px}
+  .grid,.related-section .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .category-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .category-tile{min-height:126px;padding:14px}
+  .featured{grid-template-columns:1fr}
+  .featured-media{min-height:250px}
+  .featured-copy{padding:24px}
+  .article h1{font-size:44px}
+  .article-content{font-size:17px}
+  .language-options{grid-template-columns:1fr}
+  .site-footer{padding-top:40px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:24px}
+}
+@media(max-width:460px){
+  .header-actions{gap:5px}
+  .language-button{min-width:40px}
+  .grid{grid-template-columns:1fr}
+  .category-grid{grid-template-columns:1fr 1fr}
+  .card h3{font-size:17px}
+  .footer-grid{grid-template-columns:1fr}
+}
