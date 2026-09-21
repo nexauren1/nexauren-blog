@@ -37,7 +37,7 @@ jobs:
           const h=fs.readFileSync('frontend/index.html','utf8');
           const wr=fs.readFileSync('wrangler.json','utf8');
           if(!wr.includes('"binding": "AI"')) throw new Error('Cloudflare Workers AI binding is missing');
-          for(const x of ['SITE_URL','sitemap','robots','applySeoHead','nexauren-structured-data','post_translations']) if(!w.includes(x)) throw new Error('SEO/AI marker missing: '+x);
+          for(const x of ['SITE_URL','sitemap','robots','seoHead','nexauren-structured-data','post_translations']) if(!w.includes(x)) throw new Error('SEO/AI marker missing: '+x);
           for(const x of ['rel="canonical"','hreflang="pt"','hreflang="en"','og:image','twitter:card','application/ld+json','/favicon.png','/og-image.jpg']) if(!h.includes(x)) throw new Error('Head marker missing: '+x);
           const sm=w.slice(w.indexOf('async function sitemap'),w.indexOf('async function robots'));
           if(/\/admin|\/api\//.test(sm)) throw new Error('Private routes must not be emitted by sitemap');
