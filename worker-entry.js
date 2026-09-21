@@ -113,7 +113,7 @@ async function autoTranslatePost(env,postId){
     const needsEnMeta=!!tr&&(!String(tr.meta_title||"").trim()||!String(tr.meta_description||"").trim());
     if(!needsTranslation&&!needsPtMeta&&!needsEnMeta)return;
 
-    const model=env.TRANSLATION_AI_MODEL||"@cf/meta/llama-3.2-3b-instruct";
+    const model=env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it";
     const prompt=needsTranslation
       ? [
           "You are the SEO editor and translator for Nexauren Story.",
