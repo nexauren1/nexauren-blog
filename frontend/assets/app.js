@@ -40,7 +40,64 @@ function hrefFor(path){const u=new URL(path,location.origin);if(lang==="en")u.se
 function setMeta(attr,key,value){let m=document.head.querySelector("meta["+attr+"=\""+key+"\"]");if(!m){m=document.createElement("meta");m.setAttribute(attr,key);document.head.appendChild(m)}m.setAttribute("content",value||"")}
 function setLink(rel,hrefLang,href){let l=document.head.querySelector('link[rel="'+rel+'"][hreflang="'+hrefLang+'"]');if(!l){l=document.createElement("link");l.rel=rel;l.hreflang=hrefLang;document.head.appendChild(l)}l.href=href}
 function setCanonical(href){let l=document.head.querySelector('link[rel="canonical"]');if(!l){l=document.createElement("link");l.rel="canonical";document.head.appendChild(l)}l.href=href}
-function updateSeo(meta){const baseTitle=meta.title||"Nexauren Story";const fullTitle=baseTitle+" — Nexauren Story";const desc=String(meta.description||"").slice(0,300);document.title=fullTitle;document.documentElement.lang=lang;setMeta("name","description",desc);setMeta("property","og:title",fullTitle);setMeta("property","og:description",desc);setMeta("property","og:type",meta.type==="article"?"article":"website");setMeta("property","og:url",meta.url||location.href);setMeta("property","og:image",meta.image||location.origin+"/og-image.jpg");setMeta("property","og:image:alt",fullTitle);setMeta("name","twitter:title",fullTitle);setMeta("name","twitter:description",desc);setMeta("name","twitter:image",meta.image||location.origin+"/og-image.jpg");setMeta("name","twitter:image:alt",fullTitle);setCanonical(meta.url||location.href);const pt=new URL(location.pathname,location.origin);const en=new URL(location.pathname,location.origin);en.searchParams.set("lang","en");setLink("alternate","pt",pt.href);setLink("alternate","en",en.href);setLink("alternate","x-default",pt.href)}
+function updateSeo(meta){
+  const baseTitle=meta.title||"Nexauren Story";
+  const fullTitle=baseTitle+" — Nexauren Story";
+  const desc=String(meta.description||"Nexauren Story").slice(0,300);
+  const pageUrl=meta.url||location.href;
+  const image=meta.image||location.origin+"/og-image.jpg";
+  document.title=fullTitle;
+  document.documentElement.lang=lang;
+  setMeta("name","description",desc);
+  setMeta("name","robots",meta.robots||"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
+  setMeta("property","og:title",fullTitle);
+  setMeta("property","og:description",desc);
+  setMeta("property","og:type",meta.type==="article"?"article":"website");
+  setMeta("property","og:url",pageUrl);
+  setMeta("property","og:image",image);
+  setMeta("property","og:image:alt",fullTitle);
+  setMeta("property","og:locale",lang==="en"?"en_US":"pt_PT");
+  setMeta("property","og:locale:alternate",lang==="en"?"pt_PT":"en_US");
+  setMeta("name","twitter:card","summary_large_image");
+  setMeta("name","twitter:title",fullTitle);
+  setMeta("name","twitter:description",desc);
+  setMeta("name","twitter:image",image);
+  setMeta("name","twitter:image:alt",fullTitle);
+  setCanonical(pageUrl);
+  const pt=new URL(location.pathname,location.origin);
+  const en=new URL(location.pathname,location.origin);
+  en.searchParams.set("lang","en");
+  setLink("alternate","pt",pt.href);
+  setLink("alternate","en",meta.hasEnglish===false?"":en.href);
+  setLink("alternate","x-default",pt.href);
+}
+function updatePageSeo(path){
+  const image=location.origin+"/og-image.jpg";
+  const current=new URL(location.href);
+  current.search=current.search;
+  if(path==="/"){
+    updateSeo({title:"Nexauren Story",description:lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.",image,url:new URL("/"+(lang==="en"?"?lang=en":""),location.origin).href});
+  }else if(path==="/posts"){
+    updateSeo({title:lang==="en"?"Latest stories":"Mais recentes",description:lang==="en"?"Browse the latest stories, launches, guides and updates from Nexauren.":"Veja as histórias, lançamentos, guias e atualizações mais recentes da Nexauren.",image,url:hrefFor("/posts")&&new URL(hrefFor("/posts"),location.origin).href});
+  }else if(path==="/about"){
+    updateSeo({title:lang==="en"?"About Nexauren Story":"Sobre o Nexauren Story",description:lang==="en"?"The official public home for Nexauren products, applications, ideas and milestones.":"O espaço público oficial para produtos, aplicações, ideias e marcos da Nexauren.",image,url:new URL(hrefFor("/about"),location.origin).href});
+  }else if(path==="/search"){
+    updateSeo({title:lang==="en"?"Search":"Pesquisar",description:lang==="en"?"Search Nexauren Story.":"Pesquisar no Nexauren Story.",image,robots:"noindex,follow",url:new URL(hrefFor("/search"+(current.search||"")),location.origin).href});
+  }else{
+    const cat=cats.find(x=>x[0]===path.slice(1));
+    if(cat){
+      const descriptions={
+        "breaking-news":lang==="en"?"Urgent news and recent events.":"Notícias urgentes e acontecimentos recentes.",
+        "tecnologia":lang==="en"?"Technology, innovation and digital products.":"Tecnologia, inovação e produtos digitais.",
+        "entretenimento":lang==="en"?"Music, video, games and culture.":"Música, vídeo, jogos e cultura.",
+        "nexauren":lang==="en"?"Products, apps and Nexauren projects.":"Produtos, aplicativos e projetos Nexauren.",
+        "eventos":lang==="en"?"Events and live launches.":"Eventos e lançamentos ao vivo.",
+        "ferramentas":lang==="en"?"Tools and utilities.":"Ferramentas e utilitários."
+      };
+      updateSeo({title:catLabel(cat[0],cat[1]),description:descriptions[cat[0]]||cat[3]||"Explore stories and updates.",image,url:new URL(hrefFor("/"+cat[0]),location.origin).href});
+    }
+  }
+}
 function setLanguage(next,persist=true){
   lang=next==="en"?"en":"pt";
   document.documentElement.lang=lang;
@@ -135,8 +192,11 @@ async function post(slug){
     const words=String(p.content||"").replace(/https?:\/\/\S+|[#*_\x60>\[\](){}/!-]/g," ").trim().split(/\s+/).filter(Boolean).length;
     const reading=Math.max(1,Math.round(words/200));
     const cover=p.cover_url?'<img class="article-cover" loading="eager" fetchpriority="high" decoding="async" src="'+esc(p.cover_url)+'" alt="'+esc(p.cover_alt||p.title)+'"'+(p.cover_width?' width="'+esc(p.cover_width)+'"':'')+(p.cover_height?' height="'+esc(p.cover_height)+'"':'')+'>':"";
-    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button><button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
     const shareUrl=canonical.href;
+    const encodedShareUrl=encodeURIComponent(shareUrl);
+    const encodedTitle=encodeURIComponent(p.title||"Nexauren Story");
+    const socialActions='<a class="share-button share-link share-whatsapp" href="https://wa.me/?text='+encodedTitle+'%20'+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">WhatsApp</a><a class="share-button share-link" href="https://www.facebook.com/sharer/sharer.php?u='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">Facebook</a><a class="share-button share-link" href="https://twitter.com/intent/tweet?text='+encodedTitle+'&url='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">X</a>';
+    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
     document.getElementById("share-story")?.addEventListener("click",async()=>{
       try{
         if(navigator.share){await navigator.share({title:p.title,text:p.excerpt||p.title,url:shareUrl});return;}
@@ -159,5 +219,18 @@ async function post(slug){
 }
 
 function about(){app.innerHTML='<section class="listing-head"><div class="eyebrow">'+t("about")+'</div><h1>Nexauren Story</h1><p>'+(lang==="en"?"A public home for Nexauren products, applications, ideas and milestones.":"Um espaço público para produtos, aplicações, ideias e marcos da Nexauren.")+'</p></section><section class="section"><div class="featured"><div class="featured-copy"><div class="pill">NEXAUREN</div><h2>'+(lang==="en"?"Build. Explain. Share the story.":"Construir. Explicar. Partilhar a história.")+'</h2><p>'+t("footer")+'</p></div><div class="hero-card"><div class="hero-orbit"><span>N</span></div><p style="color:var(--muted)">nexaurenstory.com</p></div></div></section>'}
-async function route(){await loadCategories();setup();const p=location.pathname;if(p.startsWith("/post/"))return post(decodeURIComponent(p.slice(6)));if(p.startsWith("/search"))return search(new URLSearchParams(location.search).get("q")||"");if(p==="/about")return about();if(p==="/posts")return allPosts();if(p==="/")return home();const c=cats.find(x=>x[0]===p.slice(1));if(c)return listing(c[0],c[1]);return home();}
+async function route(){
+  await loadCategories();
+  setup();
+  const p=location.pathname;
+  if(p.startsWith("/post/"))return post(decodeURIComponent(p.slice(6)));
+  updatePageSeo(p);
+  if(p.startsWith("/search"))return search(new URLSearchParams(location.search).get("q")||"");
+  if(p==="/about")return about();
+  if(p==="/posts")return allPosts();
+  if(p==="/")return home();
+  const c=cats.find(x=>x[0]===p.slice(1));
+  if(c)return listing(c[0],c[1]);
+  return home();
+}
 route().catch(e=>{console.error(e);const ready=e.code==="DB_NOT_READY";app.innerHTML='<div class="empty"><h2>'+ (ready?t("dbTitle"):(lang==="en"?"Unable to load this page":"Não foi possível carregar esta página")) +'</h2><p>'+esc(ready?t("dbText"):(e.message||"Tente novamente."))+'</p></div>';});
