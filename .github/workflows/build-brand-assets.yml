@@ -20,7 +20,9 @@ jobs:
       - name: Generate PNG/JPEG assets
         run: |
           set -e
-          convert -background none frontend/favicon.svg -resize 512x512 frontend/favicon.png
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          convert -background none frontend/favicon.svg -resize 192x192 frontend/favicon.png
           convert -background none frontend/favicon.svg -resize 180x180 frontend/apple-touch-icon.png
           convert -background none frontend/og-image.svg -quality 88 frontend/og-image.jpg
       - name: Commit generated assets
