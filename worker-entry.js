@@ -1,5 +1,7 @@
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
+const SITE_URL = "https://nexaurenstory.com";
+const DEFAULT_AI_MODEL = "@cf/meta/llama-3.2-3b-instruct";
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
@@ -97,25 +99,34 @@ async function dbCheck(env){
 async function dbReady(env){return (await dbCheck(env)).ready;}
 
 async function autoTranslatePost(env,postId){
-  if(!env.OPENAI_API_KEY)return;
+  if(!env.AI)return;
   try{
     const existing=await env.DB.prepare("SELECT content FROM post_translations WHERE post_id=? AND language='en' LIMIT 1").bind(postId).first();
     if(existing?.content)return;
     const p=await env.DB.prepare("SELECT title,excerpt,content,meta_title,meta_description FROM posts WHERE id=? LIMIT 1").bind(postId).first();
-    if(!p||!p.title)return;
+    if(!p?.title)return;
     const source=String(p.content||"").slice(0,120000);
-    const prompt="Translate the following Nexauren Story publication from Portuguese to natural, polished English. Preserve Markdown headings, links, lists, code blocks, emojis, product names and proper nouns. Do not add facts. Return ONLY valid JSON with keys title, excerpt, content, meta_title, meta_description.\n\nTITLE:\n"+p.title+"\n\nEXCERPT:\n"+(p.excerpt||"")+"\n\nCONTENT:\n"+source+"\n\nMETA TITLE:\n"+(p.meta_title||"")+"\n\nMETA DESCRIPTION:\n"+(p.meta_description||"");
-    const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+env.OPENAI_API_KEY},body:JSON.stringify({model:env.TRANSLATION_MODEL||"gpt-5.6-luna",input:prompt})});
-    if(!response.ok)throw new Error("Translation API HTTP "+response.status);
-    const data=await response.json();
-    let raw=String(data.output_text||"").trim();
-    if(!raw&&Array.isArray(data.output)){
-      for(const item of data.output){for(const part of (item.content||[])){if(part.type==="output_text"&&part.text)raw+=part.text;}}
-    }
-    raw=raw.replace(/^\x60\x60\x60(?:json)?\s*/i,"").replace(/\s*\x60\x60\x60$/,"").trim();
+    const response=await env.AI.run(env.TRANSLATION_AI_MODEL||DEFAULT_AI_MODEL,{
+      messages:[
+        {role:"system",content:"You are the English editor for Nexauren Story. Translate Portuguese editorial content into natural, polished English. Preserve Markdown headings, lists, links, code blocks, emojis, names, URLs and facts. Do not add or remove facts. Return ONLY valid JSON with exactly these keys: title, excerpt, content, meta_title, meta_description."},
+        {role:"user",content:"TITLE:\n"+p.title+"\n\nEXCERPT:\n"+(p.excerpt||"")+"\n\nCONTENT:\n"+source+"\n\nMETA TITLE:\n"+(p.meta_title||"")+"\n\nMETA DESCRIPTION:\n"+(p.meta_description||"")}
+      ],
+      temperature:0.2,
+      max_tokens:6000
+    });
+    let raw=typeof response==="string"?response:String(response?.response||"");
+    raw=raw.trim().replace(/^\x60\x60\x60(?:json)?\s*/i,"").replace(/\s*\x60\x60\x60$/,"").trim();
+    const a=raw.indexOf("{"),b=raw.lastIndexOf("}");
+    if(a>=0&&b>a)raw=raw.slice(a,b+1);
     const tr=JSON.parse(raw);
-    if(!tr||!tr.title||!tr.content)throw new Error("Translation response incomplete");
-    await saveTranslations(env,postId,{en:{title:tr.title,excerpt:tr.excerpt||"",content:tr.content,meta_title:tr.meta_title||"",meta_description:tr.meta_description||""}});
+    if(!tr?.title||!tr?.content)throw new Error("Cloudflare AI returned an incomplete translation");
+    await saveTranslations(env,postId,{en:{
+      title:String(tr.title).slice(0,180),
+      excerpt:String(tr.excerpt||"").slice(0,500),
+      content:String(tr.content).slice(0,2000000),
+      meta_title:String(tr.meta_title||"").slice(0,180),
+      meta_description:String(tr.meta_description||"").slice(0,300)
+    }});
   }catch(e){console.error("autoTranslatePost",e);}
 }
 async function saveTranslations(env,postId,translations){
@@ -158,7 +169,7 @@ async function postsAdmin(env,url){
 async function publicPosts(env,url){
   const w=["p.status='published'","p.published_at IS NOT NULL"],b=[],type=url.searchParams.get("type"),cat=url.searchParams.get("category"),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
   if(type){w.push("p.type=?");b.push(type)}if(cat){w.push("c.slug=?");b.push(cat)}
-  const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
+  const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
     FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY p.featured DESC,p.published_at DESC LIMIT ? OFFSET ?`)
     .bind(lang,...b,Math.min(Number(url.searchParams.get("limit")||24),60),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
@@ -211,7 +222,7 @@ async function rss(env,request){
 }
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
-  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.OPENAI_API_KEY,version:"1.4.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||DEFAULT_AI_MODEL,version:"1.5.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
@@ -250,18 +261,71 @@ async function api(env,request,url,ctx){
   const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
   if(idm&&m==="PUT"){const g=await guard(env,request);if(g.error)return g.error;return updatePost(env,g.auth,idm[1],(await bodyJson(request))||{},ctx);}
   if(idm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const row=await env.DB.prepare("SELECT title FROM posts WHERE id=?").bind(idm[1]).first();if(!row)return fail("Artigo não encontrado.",404);await env.DB.prepare("DELETE FROM posts WHERE id=?").bind(idm[1]).run();await audit(env,g.auth.id,"post.deleted","post",idm[1],{title:row.title});return json({ok:true});}
-  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.url cover_url,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;return json({ok:true,language:lang,post});}
+  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,p.published_at,p.updated_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;return json({ok:true,language:lang,post});}
   if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim(),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";if(q.length<2)return json({ok:true,language:lang,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (COALESCE(NULLIF(t.title,''),p.title) LIKE ? OR COALESCE(NULLIF(t.excerpt,''),p.excerpt) LIKE ? OR COALESCE(NULLIF(t.content,''),p.content) LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(lang,s,s,s).all();return json({ok:true,language:lang,posts:r.results});}
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
 async function page(env,request,url){
-  if(url.pathname==="/sitemap.xml")return sitemap(env,request);if(url.pathname==="/rss.xml")return rss(env,request);
-  if(url.pathname.match(/^\/post\/[^/]+$/)){
-    const asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
-    if(!(await dbReady(env))) return asset;
-    const slug=decodeURIComponent(url.pathname.slice(6)),cookieLang=(getCookie(request,"ns_lang")||"pt"),lang=["en","pt"].includes(cookieLang)?cookieLang:"pt",p=await env.DB.prepare("SELECT p.title,p.excerpt,p.meta_title,p.meta_description,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!asset.ok||!p)return asset;let h=await asset.text();const title=p.translation_meta_title||p.translation_title||p.meta_title||p.title,desc=p.translation_meta_description||p.translation_excerpt||p.meta_description||p.excerpt||"Nexauren Story";h=h.replace(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(title)+" — Nexauren Story</title>").replace(/<meta name="description" content="[^"]*">/i,'<meta name="description" content="'+esc(desc.slice(0,300))+'">').replace(/<meta property="og:title" content="[^"]*">/i,'<meta property="og:title" content="'+esc(title)+'">').replace(/<meta property="og:description" content="[^"]*">/i,'<meta property="og:description" content="'+esc(desc.slice(0,300))+'">');return new Response(h,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=60"}});}
-  if(url.pathname==="/admin"||url.pathname.startsWith("/admin/"))return env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
-  return env.ASSETS.fetch(request);
+  if(url.pathname==="/sitemap.xml")return sitemap(env,request);
+  if(url.pathname==="/robots.txt")return robots(request);
+  if(url.pathname==="/rss.xml")return rss(env,request);
+  if(url.pathname==="/admin"||url.pathname.startsWith("/admin/")){
+    const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
+    const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
+  }
+  const asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+  if(!asset.ok)return asset;
+  let h=await asset.text();
+  const path=url.pathname;
+  const cookieLang=getCookie(request,"ns_lang")||"pt";
+  const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
+  const imageFallback=SITE_URL+"/og-image.jpg";
+  let title=lang==="en"?"Nexauren Story — Official stories and updates":"Nexauren Story — Histórias e novidades oficiais";
+  let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
+  let ogType="website",image=imageFallback,imageAlt="Nexauren Story",section="",publishedAt="",modifiedAt="";
+  let structured={"@context":"https://schema.org","@graph":[
+    {"@type":"WebSite","@id":SITE_URL+"/#website","url":SITE_URL+"/","name":"Nexauren Story","inLanguage":lang},
+    {"@type":"Organization","@id":SITE_URL+"/#organization","name":"Nexauren Story","url":SITE_URL+"/","logo":{"@type":"ImageObject","url":SITE_URL+"/favicon.png"}}
+  ]};
+  const canonical=publicUrl(path,lang),ptUrl=publicUrl(path,"pt"),enUrl=publicUrl(path,"en");
+  if(path.match(/^\/post\/[^/]+$/)){
+    if(!(await dbReady(env)))return asset;
+    const slug=decodeURIComponent(path.slice(6));
+    const p=await env.DB.prepare("SELECT p.title,p.slug,p.excerpt,p.meta_title,p.meta_description,p.published_at,p.updated_at,p.type,c.name category_name,c.slug category_slug,m.url cover_url,m.alt_text cover_alt,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
+    if(!p)return asset;
+    title=(p.translation_meta_title||p.translation_title||p.meta_title||p.title)+" — Nexauren Story";
+    desc=(p.translation_meta_description||p.meta_description||p.translation_excerpt||p.excerpt||"Nexauren Story").slice(0,300);
+    ogType="article";image=p.cover_url||imageFallback;imageAlt=p.cover_alt||title;section=p.category_name||"Posts";publishedAt=p.published_at||"";modifiedAt=p.updated_at||p.published_at||"";
+    structured={"@context":"https://schema.org","@graph":[
+      {"@type":p.type==="news"?"NewsArticle":"Article","@id":canonical+"#article","headline":(p.translation_title||p.title).slice(0,180),"description":desc,"image":[image],"datePublished":publishedAt,"dateModified":modifiedAt,"author":{"@type":"Person","name":p.author_name||"Nexauren Story"},"publisher":{"@type":"Organization","name":"Nexauren Story","logo":{"@type":"ImageObject","url":SITE_URL+"/favicon.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":lang,"articleSection":section},
+      {"@type":"BreadcrumbList","itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Nexauren Story","item":SITE_URL+"/"},
+        {"@type":"ListItem","position":2,"name":section,"item":publicUrl("/"+(p.category_slug||"posts"),lang)},
+        {"@type":"ListItem","position":3,"name":p.translation_title||p.title,"item":canonical}
+      ]}
+    ];
+  }else if(path==="/"){
+    title=lang==="en"?"Nexauren Story — Official publication":"Nexauren Story — Publicação oficial";
+    desc=lang==="en"?"News, launches, app updates, guides, tutorials and ideas shaping the Nexauren ecosystem.":"Notícias, lançamentos, atualizações, guias, tutoriais e ideias que moldam o ecossistema Nexauren.";
+  }else if(path==="/posts"){
+    title=lang==="en"?"Latest stories — Nexauren Story":"Mais recentes — Nexauren Story";
+    desc=lang==="en"?"Browse the latest stories, launches, guides and updates from Nexauren.":"Veja as histórias, lançamentos, guias e atualizações mais recentes da Nexauren.";
+  }else if(path==="/about"){
+    title=lang==="en"?"About Nexauren Story":"Sobre o Nexauren Story";
+    desc=lang==="en"?"The official public home for Nexauren products, applications, ideas and milestones.":"O espaço público oficial para produtos, aplicações, ideias e marcos da Nexauren.";
+  }else if(path==="/search"){
+    title=lang==="en"?"Search — Nexauren Story":"Pesquisar — Nexauren Story";
+    desc=lang==="en"?"Search Nexauren Story.":"Pesquisar no Nexauren Story.";
+  }else if(await dbReady(env)){
+    const c=await env.DB.prepare("SELECT name,slug,description FROM categories WHERE slug=? LIMIT 1").bind(path.slice(1)).first();
+    if(c){
+      title=(lang==="en"?(c.slug==="breaking-news"?"Breaking News":c.name):c.name)+" — Nexauren Story";
+      desc=(lang==="en"?({"breaking-news":"Urgent news and recent events.","tecnologia":"Technology, innovation and digital products.","entretenimento":"Music, video, games and culture.","nexauren":"Products, apps and Nexauren projects.","eventos":"Events and live launches.","ferramentas":"Tools and utilities."}[c.slug]||c.description||"Explore stories and updates from this category."):c.description||"Explore histórias e atualizações desta categoria.").slice(0,300);
+    }
+  }
+  const robotsValue=path==="/search"?"noindex,follow":"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
+  h=applySeoHead(h,{title,description:desc,canonical,language:lang,ptUrl,enUrl,ogType,image,imageAlt,publishedAt,modifiedAt,section,robots:robotsValue,structured});
+  return new Response(h,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=300"}});
 }
 export default{
   async fetch(request,env,ctx){try{const url=new URL(request.url);if(url.pathname.startsWith("/api/"))return await api(env,request,url,ctx);return await page(env,request,url);}catch(e){console.error(e);return fail("Erro interno do servidor.",500,"INTERNAL_ERROR");}},
