@@ -94,7 +94,16 @@ jobs:
 
           root = ET.fromstring(sitemap_bytes)
           ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-          sitemap_urls = [n.text.strip() for n in root.findall("sm:url/sm:loc", ns) if n.text]
+          index_locs = [n.text.strip() for n in root.findall("sm:sitemap/sm:loc", ns) if n.text]
+          if index_locs:
+              sitemap_urls = []
+              for child in index_locs:
+                  st, ct, body = get(child)
+                  assert st == 200, f"child sitemap status={st}: {child}"
+                  child_root = ET.fromstring(body)
+                  sitemap_urls.extend(n.text.strip() for n in child_root.findall("sm:url/sm:loc", ns) if n.text)
+          else:
+              sitemap_urls = [n.text.strip() for n in root.findall("sm:url/sm:loc", ns) if n.text]
 
           assert sitemap_urls, "sitemap is empty"
           assert len(sitemap_urls) == len(set(sitemap_urls)), "duplicate sitemap URLs"
@@ -122,8 +131,8 @@ jobs:
           for p in posts:
               base=SITE+"/post/"+urllib.parse.quote(p["slug"], safe="-._~")
               expected.add(base)
-              if p.get("translation_available"):
-                  expected.add(base+"?lang=en")
+              # English translations are alternate page content, not duplicate sitemap URLs.
+              # The sitemap intentionally contains only canonical post URLs.
 
           sitemap_set=set(sitemap_urls)
           missing=sorted(expected-sitemap_set)
@@ -138,7 +147,7 @@ jobs:
                   continue
               if parsed.path.startswith("/admin") or parsed.path.startswith("/api") or parsed.path.startswith("/search"):
                   private.append(u)
-              if parsed.query not in ("","lang=en"):
+              if parsed.query:
                   unexpected.append(u)
 
           assert not private, "Private/search/API URLs found in sitemap:\n"+ "\n".join(private[:50])
