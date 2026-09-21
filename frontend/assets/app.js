@@ -186,7 +186,8 @@ async function post(slug){
     const p=(await api(langQuery("/api/posts/slug/"+encodeURIComponent(slug)))).post;
     const description=p.meta_description||p.excerpt||excerpt(p);
     const canonical=new URL(location.pathname,location.origin);if(lang==="en")canonical.searchParams.set("lang","en");
-    updateSeo({title:p.meta_title||p.title,description,type:"article",image:p.cover_url||location.origin+"/og-image.jpg",url:canonical.href,hasEnglish:p.translation_available});
+    const canonicalUrl=(lang==="en"&&!p.translation_available)?new URL(location.pathname,location.origin).href:canonical.href;
+    updateSeo({title:p.meta_title||p.title,description,type:"article",image:p.cover_url||location.origin+"/og-image.jpg",url:canonicalUrl,hasEnglish:p.translation_available,robots:(lang==="en"&&!p.translation_available)?"noindex,follow":undefined});
     const translationNotice=(lang==="en"&&!p.translation_available)?'<div class="translation-note">'+t("translationFallback")+"</div>":"";
     const words=String(p.content||"").replace(/https?:\/\/\S+|[#*_\x60>\[\](){}/!-]/g," ").trim().split(/\s+/).filter(Boolean).length;
     const reading=Math.max(1,Math.round(words/200));
