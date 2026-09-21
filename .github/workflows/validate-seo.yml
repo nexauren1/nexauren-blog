@@ -42,6 +42,38 @@ jobs:
           curl -fsSL --retry 3 https://nexaurenstory.com/robots.txt -o /tmp/robots.txt
           curl -fsSL --retry 3 https://nexaurenstory.com/sitemap.xml -o /tmp/sitemap.xml
           grep -q 'Sitemap: https://nexaurenstory.com/sitemap.xml' /tmp/robots.txt
-          grep -q '<urlset' /tmp/sitemap.xml
-          ! grep -qE '<loc>[^<]*(/admin|/api/|/search)' /tmp/sitemap.xml
-          echo "Public sitemap checks passed."
+          node <<'NODE'
+          const fs=require('fs');
+          const https=require('https');
+          const {URL}=require('url');
+          const root=fs.readFileSync('/tmp/sitemap.xml','utf8');
+          function parse(xml){ return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1].trim()); }
+          function get(url){
+            return new Promise((resolve,reject)=>{
+              https.get(url,{headers:{'User-Agent':'NexaurenStory-SEO-Check/1.0'}},r=>{
+                let b=''; r.setEncoding('utf8'); r.on('data',c=>b+=c); r.on('end',()=>resolve({status:r.statusCode,body:b}));
+              }).on('error',reject);
+            });
+          }
+          (async()=>{
+            if(!/<sitemapindex[\s>]/.test(root) && !/<urlset[\s>]/.test(root)) throw new Error('Invalid sitemap XML root');
+            const sitemapUrls=/<sitemapindex[\s>]/.test(root) ? parse(root) : ['https://nexaurenstory.com/sitemap.xml'];
+            const all=[];
+            for(const u of sitemapUrls){
+              const r=u==='https://nexaurenstory.com/sitemap.xml'?{status:200,body:root}:await get(u);
+              if(r.status!==200) throw new Error('Sitemap fetch failed: '+u+' status='+r.status);
+              if(!/<urlset[\s>]/.test(r.body)) throw new Error('Child sitemap is not a urlset: '+u);
+              all.push(...parse(r.body));
+            }
+            const seen=new Set();
+            for(const u of all){
+              const x=new URL(u);
+              if(x.origin!=='https://nexaurenstory.com') throw new Error('Non-canonical URL: '+u);
+              if(/^\/(admin|api(?:\/|$)|search)/.test(x.pathname)) throw new Error('Private/search URL: '+u);
+              if(x.search) throw new Error('Query-string URL in sitemap: '+u);
+              if(seen.has(u)) throw new Error('Duplicate URL: '+u);
+              seen.add(u);
+            }
+            console.log('Public sitemap checks passed: '+all.length+' canonical URLs.');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
