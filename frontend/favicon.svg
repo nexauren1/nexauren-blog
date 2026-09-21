@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="92" fill="#101318"/>
-<path d="M78 98h82v210l-82 72z" fill="#1557ff"/>
-<path d="M160 98h92l178 178v114h-86L160 214z" fill="#e21b2d"/>
-<path d="M78 308l82-72v116l-82 72z" fill="#ffd43b"/>
-<path d="M430 82l58-42v318l-58 42V172l-64 64-58-58z" fill="#42ff1a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Nexauren Story</title>
+  <desc id="desc">Nexauren Story brand mark</desc>
+  <defs>
+    <linearGradient id="n" x1="64" y1="70" x2="446" y2="442" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1557ff"/>
+      <stop offset=".34" stop-color="#42ff1a"/>
+      <stop offset=".68" stop-color="#ffd43b"/>
+      <stop offset="1" stop-color="#e21b2d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#101318"/>
+  <path d="M104 104h74v214l-74 74V104Z" fill="#1557ff"/>
+  <path d="M178 104h82l150 150v104l-82-82V186l-68-68v200l-82 74V104Z" fill="url(#n)"/>
+  <path d="M334 104h74v304h-74V104Z" fill="#42ff1a" opacity=".9"/>
 </svg>
