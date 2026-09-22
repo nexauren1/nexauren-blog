@@ -3,32 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101318">
+<meta name="theme-color" content="#f7f9fc">
 <meta name="description" content="A sua conta Nexauren para aceder às ferramentas e experiências do ecossistema.">
 <meta name="robots" content="noindex,nofollow">
 <link rel="canonical" href="https://nexaurenstory.com/account">
 <title>Conta — Nexauren Story</title>
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
 <link rel="stylesheet" href="/account/account.css">
 </head>
 <body>
 <header class="account-header">
   <div class="account-wrap nav">
     <a class="brand" href="/" aria-label="Nexauren Story">
-      <span class="mark">N</span>
-      <span>Nexauren <b>Story</b></span>
+      <img class="mark" src="/nexauren-story-favicon.svg?v=20260922-4" alt="" width="42" height="42">
+      <span class="brand-text"><strong>Nexauren</strong><span>Story</span></span>
     </a>
     <nav aria-label="Navegação principal">
       <a href="/blog/">Histórias</a>
-      <a href="/tool/">Ferramentas</a>\n      <a href="/legal/privacidade/">Legal</a>
+      <a href="/tool/">Ferramentas</a>
+      <a href="/account">Conta</a>
     </nav>
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="mobile-nav" data-mobile-nav>
+    <div class="account-wrap">
+      <a href="/blog/">Histórias</a>
+      <a href="/tool/">Ferramentas</a>
+      <a href="/account">Conta</a>
+      <a href="/legal/privacidade/">Privacidade</a>
+      <a href="/legal/termos/">Termos</a>
+    </div>
   </div>
 </header>
 
 <main class="account-wrap">
   <section class="account-hero">
-    <div class="eyebrow">NEXAUREN ACCOUNT</div>
+    <div class="eyebrow">CONTA NEXAUREN</div>
     <h1>A sua conta Nexauren.</h1>
-    <p>Um único acesso para as ferramentas, experiências e recursos do ecossistema Nexauren.</p>
+    <p>Um único acesso para ferramentas, experiências e recursos do ecossistema Nexauren.</p>
   </section>
 
   <section class="account-card" data-account-app>
@@ -37,10 +49,23 @@
 </main>
 
 <footer class="account-footer">
-  <div class="account-wrap">© <span id="year"></span> Nexauren Story</div>
+  <div class="account-wrap account-footer-row">
+    <span>© <span id="year"></span> Nexauren Story</span>
+    <span><a href="/legal/privacidade/">Privacidade</a> · <a href="/legal/termos/">Termos</a> · <a href="/legal/cookies/">Cookies</a></span>
+  </div>
 </footer>
 
+<script>
+(() => {
+  const menu=document.querySelector(".menu-toggle"), panel=document.querySelector("[data-mobile-nav]");
+  menu?.addEventListener("click",() => {
+    const open=panel.classList.toggle("open");
+    menu.setAttribute("aria-expanded",String(open));
+  });
+  panel?.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>panel.classList.remove("open")));
+  document.getElementById("year").textContent=new Date().getFullYear();
+})();
+</script>
 <script type="module" src="/account/account.js"></script>
-<script>document.getElementById("year").textContent=new Date().getFullYear()</script>
 </body>
 </html>
