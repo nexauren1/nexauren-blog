@@ -22,3 +22,32 @@ a{text-decoration:none;color:inherit}button,input{font:inherit}
 .tool-footer{padding:26px 0 34px}.tool-footer-row{display:flex;justify-content:space-between;gap:15px;color:#7a8496;font-size:10px}.tool-footer a:hover{color:var(--accent)}
 @media(max-width:960px){.tool-links{display:none}.tool-menu{display:flex}.tool-nav{min-height:70px}.tool-hero{grid-template-columns:1fr;gap:22px;padding-top:55px}.tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.tool-wrap{width:min(100% - 24px,var(--tool-max))}.tool-hero h1{font-size:clamp(43px,12.5vw,62px)}.tool-lead{font-size:15px}.tool-overview{border-radius:18px}.tool-grid{grid-template-columns:1fr}.tool-card{min-height:190px;padding:19px}.section-head{align-items:start;flex-direction:column;gap:7px}.tool-category-head{padding-top:44px}.tool-footer-row{flex-direction:column;gap:7px}}
+
+/* Product layer: richer tool browsing without changing the registry architecture. */
+.tool-header{box-shadow:0 10px 34px rgba(11,16,32,.035)}
+.tool-nav{position:relative}
+.tool-hero{min-height:530px;padding-bottom:54px;align-items:center}
+.tool-hero>div:first-child{position:relative;z-index:1}
+.tool-hero h1{max-width:760px;text-wrap:balance}
+.tool-lead{max-width:680px}
+.tool-toolbar{align-items:center;gap:10px}
+.tool-search{padding-left:18px}
+.tool-live-results{padding:0 0 28px}
+.tool-results-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:4px 0 16px}
+.tool-results-head h2{margin:0;font-size:24px;letter-spacing:-.05em}
+.tool-results-head span{font-size:10px;font-weight:900;color:#7a8496}
+.tool-grid{grid-auto-rows:1fr}
+.tool-card{min-height:220px;isolation:isolate}
+.tool-card>*{position:relative;z-index:1}
+.tool-card::after{z-index:0}
+.tool-overview{min-height:214px;display:flex;flex-direction:column;justify-content:center}
+.tool-overview-main strong{font-variant-numeric:tabular-nums}
+.tool-empty{grid-column:1/-1}
+.tool-category-head{position:relative}
+.tool-category-head::after{content:"";position:absolute;right:3%;top:28px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(18,184,166,.12),transparent 68%);pointer-events:none}
+.tool-category-head .tool-back{position:relative;z-index:1}
+.tool-category-head h1,.tool-category-head p,.tool-category-head .tool-eyebrow{position:relative;z-index:1}
+.tool-count{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.75);color:#667085;font-size:10px;font-weight:900;backdrop-filter:blur(12px)}
+.tool-card small{letter-spacing:.01em}
+@media(max-width:960px){.tool-hero{min-height:auto}.tool-results-head{align-items:start;flex-direction:column;gap:5px}}
+@media(max-width:640px){.tool-hero{padding-top:48px;padding-bottom:34px}.tool-hero h1{letter-spacing:-.075em}.tool-overview{min-height:190px}.tool-card{min-height:205px}}
