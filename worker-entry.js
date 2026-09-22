@@ -351,7 +351,7 @@ async function rss(env,request){
 }
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
-  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.7.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{ready:await accountSchemaReady(env)}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(p==="/api/account/me"&&m==="GET"){
     if(!(await accountSchemaReady(env)))return fail("As tabelas de contas ainda não foram instaladas. Execute database/platform-upgrade.sql.",503,"ACCOUNT_SCHEMA_NOT_READY");
     const a=await accountAuth(env,request);return json({ok:true,authenticated:!!a,account:a?{id:a.id,email:a.email,display_name:a.display_name,email_verified:!!a.email_verified}:null});
