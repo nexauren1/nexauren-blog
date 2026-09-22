@@ -6,6 +6,7 @@
   async function render(){
     try{
       const registry=await window.NexaurenToolRegistry.loadRegistry();
+      if(countEl)countEl.textContent=registry.tools.filter(t=>t.status!=="disabled").length;
       categories=registry.categories.map(c=>({...c,count:window.NexaurenToolRegistry.getTools(registry,c.id).length}));
       draw(categories);
     }catch(e){if(grid)grid.innerHTML='<div class="tool-empty">'+esc(e.message)+'</div>'}
