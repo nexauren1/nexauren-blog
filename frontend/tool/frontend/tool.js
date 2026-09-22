@@ -35,19 +35,19 @@
   let categories=[],tools=[];
 
   function queryText(v){return String(v||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"");}
-  function renderList(target,list,empty){
+  function renderList(target,list,empty,label="Ferramentas"){
     if(!target)return;
     if(!list.length){target.innerHTML=empty;return;}
     const cards=list.map(t=>toolCard(t,true)).join("");
-    target.innerHTML='<div class="tool-marquee" aria-label="Ferramentas em destaque"><div class="tool-marquee-track">'+cards+cards+'</div></div>';
+    target.innerHTML='<div class="tool-marquee" aria-label="'+esc(label)+'"><div class="tool-marquee-track"><div class="tool-marquee-group">'+cards+'</div><div class="tool-marquee-group" aria-hidden="true">'+cards+'</div></div></div>';
     window.NexaurenUI?.refresh?.();
   }
 
   function renderHighlights(){
     const featured=tools.filter(t=>t.featured).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)).slice(0,6);
     const popular=tools.slice().sort((a,b)=>Number(b.popular)-Number(a.popular)||(b.usageCount||0)-(a.usageCount||0)||(a.sortOrder||0)-(b.sortOrder||0)).slice(0,6);
-    if(featuredSection){featuredSection.hidden=!featured.length;renderList(featuredGrid,featured,'');}
-    if(popularSection){popularSection.hidden=!popular.length;renderList(popularGrid,popular,'');}
+    if(featuredSection){featuredSection.hidden=!featured.length;renderList(featuredGrid,featured,'',"Destaques");}
+    if(popularSection){popularSection.hidden=!popular.length;renderList(popularGrid,popular,'',"Populares");}
   }
   function renderCategories(list){
     if(!grid)return;
