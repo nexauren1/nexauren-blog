@@ -138,4 +138,4 @@ As verificações automáticas estão em `.github/workflows/validate-post-ads.ym
 
 ## Nexauren Accounts D1
 
-The public Nexauren account system is isolated from the blog database. The blog uses the `DB` binding; public Firebase-backed accounts use the separate `ACCOUNTS_DB` binding. Create a separate Cloudflare D1 database named `nexauren-accounts`, replace `REPLACE_WITH_ACCOUNTS_D1_ID` in `wrangler.json` with its database ID, and apply `database/accounts-upgrade.sql` to that database. Never apply the account migration to the blog D1.
+The public Nexauren account system is isolated from the blog database. The blog uses the `DB` binding; public Firebase-backed accounts use the separate `ACCOUNTS_DB` binding. The separate Cloudflare D1 database for Nexauren accounts is configured through `ACCOUNTS_DB` in `wrangler.json` (database ID `2f22bdb8-8e34-4036-bbd7-10053cfbca24`), and apply `database/accounts-upgrade.sql` to that database. Never apply the account migration to the blog D1.
