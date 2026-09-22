@@ -585,7 +585,9 @@ function normalizeToolRegistry(raw){
       icon:text(t?.icon||"✦",20).trim(),
       version:text(t?.version||"1.0.0",30).trim(),
       status:["active","disabled","draft"].includes(t?.status)?t.status:"active",
-      access:["public","account","premium"].includes(t?.access)?t.access:"public",
+      access:["public","account","premium","paid"].includes(t?.access)?t.access:"public",
+      price:t?.price!=null?text(t.price,20).trim():"",
+      currency:text(t?.currency||"USD",8).trim().toUpperCase(),
       path:text(t?.path||"",700).trim(),
       tags:Array.isArray(t?.tags)?t.tags.map(x=>text(x,50).trim()).filter(Boolean).slice(0,12):[],
       featured:!!t?.featured,
@@ -596,10 +598,15 @@ function normalizeToolRegistry(raw){
   return {version:Number(raw?.version||1)||1,site:"Nexauren Story",basePath:"/tool/",registry:{updatedAt:nowIso(),source:"nexauren-admin"},categories,tools};
 }
 async function loadToolRegistry(env,request){
+  let dbRegistry=null;
   try{
     const row=await env.DB.prepare("SELECT value FROM settings WHERE key='tool_registry' LIMIT 1").first();
-    if(row?.value)return normalizeToolRegistry(JSON.parse(String(row.value)));
+    if(row?.value){
+      const parsed=normalizeToolRegistry(JSON.parse(String(row.value)));
+      if(parsed.tools.length||parsed.categories.length) dbRegistry=parsed;
+    }
   }catch{}
+  if(dbRegistry)return dbRegistry;
   try{
     const r=await env.ASSETS.fetch(new Request(new URL("/tool/data/data.json",request.url)));
     if(r.ok)return normalizeToolRegistry(await r.json());
