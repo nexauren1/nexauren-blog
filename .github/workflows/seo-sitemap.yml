@@ -7,6 +7,9 @@ on:
       - "worker-entry.js"
       - "wrangler.json"
       - "frontend/index.html"
+      - "frontend/blog/index.html"
+      - "frontend/tool/index.html"
+      - "frontend/robots.txt"
       - "frontend/assets/app.js"
       - "frontend/assets/style.css"
       - "frontend/assets/ads.js"
@@ -90,7 +93,7 @@ jobs:
           assert "Sitemap: https://nexaurenstory.com/sitemap.xml" in robots_text
           assert "Disallow: /admin" in robots_text
           assert "Disallow: /api/" in robots_text
-          assert "Disallow: /search" in robots_text
+          assert "Disallow: /blog/search" in robots_text
 
           root = ET.fromstring(sitemap_bytes)
           ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
@@ -124,12 +127,12 @@ jobs:
                   break
               offset += 60
 
-          expected = {SITE+"/", SITE+"/posts", SITE+"/about"}
+          expected = {SITE+"/", SITE+"/blog/", SITE+"/blog/posts", SITE+"/blog/about"}
           for slug in cat_slugs:
-              expected.add(SITE+"/"+urllib.parse.quote(slug, safe="-._~"))
+              expected.add(SITE+"/blog/"+urllib.parse.quote(slug, safe="-._~"))
 
           for p in posts:
-              base=SITE+"/post/"+urllib.parse.quote(p["slug"], safe="-._~")
+              base=SITE+"/blog/post/"+urllib.parse.quote(p["slug"], safe="-._~")
               expected.add(base)
               # English translations are alternate page content, not duplicate sitemap URLs.
               # The sitemap intentionally contains only canonical post URLs.
@@ -145,7 +148,7 @@ jobs:
               if parsed.netloc!="nexaurenstory.com":
                   private.append(u)
                   continue
-              if parsed.path.startswith("/admin") or parsed.path.startswith("/api") or parsed.path.startswith("/search"):
+              if parsed.path.startswith("/admin") or parsed.path.startswith("/api") or parsed.path.startswith("/blog/search") or parsed.path.startswith("/search"):
                   private.append(u)
               if parsed.query:
                   unexpected.append(u)
