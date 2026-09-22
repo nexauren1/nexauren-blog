@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt">
 <head>
-<link rel="stylesheet" href="/assets/site.css?v=20260922-1">
+<link rel="stylesheet" href="/assets/site.css?v=20260922-2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f9fc">
@@ -29,6 +29,7 @@
 <meta name="twitter:description" content="Ferramentas online do Nexauren Story, organizadas por categorias.">
 <meta name="twitter:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
 <meta name="twitter:image:alt" content="Nexauren Story">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260922-4">
 </head>
 <body>
 <header class="tool-header">
@@ -100,16 +101,8 @@
   </div>
 </footer>
 
-<script>
-(() => {
-  const menu=document.querySelector(".tool-menu"),panel=document.querySelector("[data-tool-mobile]");
-  menu?.addEventListener("click",()=>{const open=panel.classList.toggle("open");menu.setAttribute("aria-expanded",String(open));});
-  panel?.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>panel.classList.remove("open")));
-  document.getElementById("year").textContent=new Date().getFullYear();
-})();
-</script>
 <script src="/tool/categories/category.js"></script>
 <script src="/tool/frontend/tool.js"></script>
-<script src="/assets/site.js?v=20260922-1" defer></script>
+<script src="/assets/public-ui.js?v=20260922-4" defer></script>
 </body>
 </html>
