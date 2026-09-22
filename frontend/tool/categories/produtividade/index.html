@@ -1,1 +1,45 @@
-<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101318"><meta name="description" content="Ferramentas de produtividade do Nexauren Story."><link rel="stylesheet" href="/tool/frontend/tool.css"><title>Produtividade — Ferramentas — Nexauren Story</title></head><body data-category="produtividade"><header class="tool-header"><div class="tool-wrap tool-nav"><a class="tool-brand" href="/"><span class="tool-mark">N</span><span>Nexauren <b>Story</b></span></a><nav class="tool-links"><a href="/blog/">Histórias</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Legal</a></nav></div></header><main class="tool-wrap" data-category-page></main><footer class="tool-footer"><div class="tool-wrap tool-footer-row"><span>© <span id="year"></span> Nexauren Story</span><span><a href="/legal/privacidade/">Privacidade</a> · <a href="/legal/termos/">Termos</a></span></div></footer><script src="/tool/categories/category.js"></script><script src="/tool/categories/category-page.js"></script><script>document.getElementById("year").textContent=new Date().getFullYear()</script></body></html>
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f9fc">
+<meta name="description" content="Ferramentas de produtividade do Nexauren Story.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/produtividade/">
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
+<title>Produtividade — Ferramentas — Nexauren Story</title>
+<link rel="stylesheet" href="/tool/frontend/tool.css">
+</head>
+<body data-category="produtividade">
+<header class="tool-header">
+  <div class="tool-wrap tool-nav">
+    <a class="tool-brand" href="/" aria-label="Nexauren Story"><img src="/nexauren-story-favicon.svg?v=20260922-4" alt="" width="42" height="42"><span class="tool-brand-text"><strong>Nexauren</strong><span>Story</span></span></a>
+    <nav class="tool-links" aria-label="Navegação principal">
+      <a href="/blog/">Histórias</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a>
+    </nav>
+    <button class="tool-menu" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="tool-mobile" data-tool-mobile>
+    <div class="tool-wrap"><a href="/blog/">Histórias</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a></div>
+  </div>
+</header>
+
+<main class="tool-wrap" data-category-page></main>
+
+<footer class="tool-footer">
+  <div class="tool-wrap tool-footer-row"><span>© <span id="year"></span> Nexauren Story</span><span><a href="/legal/privacidade/">Privacidade</a> · <a href="/legal/termos/">Termos</a> · <a href="/account">Conta</a></span></div>
+</footer>
+
+<script>
+(() => {
+  const menu=document.querySelector(".tool-menu"),panel=document.querySelector("[data-tool-mobile]");
+  menu?.addEventListener("click",()=>{const open=panel.classList.toggle("open");menu.setAttribute("aria-expanded",String(open));});
+  panel?.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>panel.classList.remove("open")));
+  document.getElementById("year").textContent=new Date().getFullYear();
+})();
+</script>
+<script src="/tool/categories/category.js"></script>
+<script src="/tool/categories/category-page.js"></script>
+</body>
+</html>
