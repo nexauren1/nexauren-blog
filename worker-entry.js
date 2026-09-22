@@ -1,7 +1,7 @@
 import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
-const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/social-preview.png?v=20260922-1";
+const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2";
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
@@ -418,7 +418,7 @@ function decoratePublicHtmlResponse(request,response){
     const robots=(html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']*)["'][^>]*>/i)||[])[1]||"index,follow,max-image-preview:large";
     const tags=[
       ['theme',/<meta[^>]+name=["']theme-color["']/i, '<meta name="theme-color" content="#0b1020">'],
-      ['icon',/<link[^>]+rel=["']icon["']/i,'<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5"><link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5">'],
+      ['icon',/<link[^>]+rel=["']icon["']/i,'<link rel="icon" href="/nexauren-story-favicon.ico?v=20260922-6"><link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-6"><link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-6">'],
       ['apple',/<link[^>]+rel=["']apple-touch-icon["']/i,'<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">'],
       ['manifest',/<link[^>]+rel=["']manifest["']/i,'<link rel="manifest" href="/manifest.json">'],
       ['style',/<link[^>]+href=["']\/assets\/site\.css/i,'<link rel="stylesheet" href="/assets/site.css?v=20260922-1">'],
