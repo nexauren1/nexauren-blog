@@ -3,16 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f7f9fc">
-<meta name="description" content="Nexauren Story: histórias, ferramentas e experiências do ecossistema Nexauren.">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Nexauren Story: blog, ferramentas e novas experiências do ecossistema Nexauren.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://nexaurenstory.com/">
-<link rel="alternate" hreflang="pt" href="https://nexaurenstory.com/">
-<link rel="alternate" hreflang="en" href="https://nexaurenstory.com/?lang=en">
-<link rel="alternate" hreflang="x-default" href="https://nexaurenstory.com/">
 <meta property="og:site_name" content="Nexauren Story">
 <meta property="og:title" content="Nexauren Story">
-<meta property="og:description" content="Histórias, ferramentas e experiências do ecossistema Nexauren.">
+<meta property="og:description" content="Blog, ferramentas e novas experiências do ecossistema Nexauren.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nexaurenstory.com/">
 <meta property="og:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
@@ -22,214 +19,135 @@
 <meta property="og:image:alt" content="Nexauren Story">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Nexauren Story">
-<meta name="twitter:description" content="Histórias, ferramentas e experiências do ecossistema Nexauren.">
+<meta name="twitter:description" content="Blog, ferramentas e novas experiências do ecossistema Nexauren.">
 <meta name="twitter:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
-<script id="nexauren-structured-data" type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/"}</script>
+<meta name="twitter:image:alt" content="Nexauren Story">
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5">
+<link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5">
+<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/assets/site.css?v=20260922-1">
 <title>Nexauren Story</title>
-<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260921-2">
-<style>
-:root{
-  --bg:#f4f6f8;--surface:#fff;--surface-2:#eef2f6;--ink:#101828;--muted:#667085;--line:#dfe4ea;
-  --accent:#155eef;--accent-soft:#eef4ff;--dark:#101828;--max:1120px;--shadow:0 18px 55px rgba(16,24,40,.08)
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-body,button{font-synthesis:none}
-a{color:inherit;text-decoration:none}button{font:inherit}
-.wrap{width:min(var(--max),calc(100% - 40px));margin:auto}
-.site-header{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(223,228,234,.9);background:rgba(255,255,255,.92);backdrop-filter:blur(18px)}
-.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.brand{display:inline-flex;align-items:center;gap:11px;font-weight:900;letter-spacing:-.04em}
-.brand-logo{width:40px;height:40px;border-radius:12px;display:block;box-shadow:0 8px 20px rgba(21,94,239,.14)}
-.brand-copy{display:flex;align-items:baseline;gap:5px;font-size:16px}.brand-copy strong{font-weight:950}.brand-copy span{color:#667085;font-weight:750}
-.nav-links{display:flex;align-items:center;gap:2px}.nav-links a{padding:9px 11px;border-radius:9px;color:#475467;font-size:13px;font-weight:820;transition:.18s}.nav-links a:hover{background:#f2f4f7;color:var(--ink)}.nav-cta{background:var(--dark)!important;color:#fff!important;padding-inline:15px!important}
-.menu-toggle{display:none;width:42px;height:42px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);align-items:center;justify-content:center}
-.menu-toggle span,.menu-toggle span:before,.menu-toggle span:after{display:block;width:17px;height:2px;border-radius:2px;background:currentColor;content:"";position:relative}.menu-toggle span:before{position:absolute;top:-6px}.menu-toggle span:after{position:absolute;top:6px}
-.mobile-menu{display:none;border-top:1px solid var(--line);padding:7px 0 12px;background:#fff}.mobile-menu.open{display:block}.mobile-menu a{display:block;padding:12px 6px;font-size:14px;font-weight:820;color:#475467}.mobile-menu a+a{border-top:1px solid #edf0f3}
-
-main{padding:64px 0 70px}.hero{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(330px,.78fr);gap:44px;align-items:center;padding:18px 0 42px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-size:10px;font-weight:950;letter-spacing:.18em}.eyebrow:before{content:"";width:24px;height:2px;border-radius:2px;background:var(--accent)}
-h1{max-width:780px;font-size:clamp(48px,6.4vw,78px);line-height:.94;letter-spacing:-.075em;margin:15px 0 20px}
-.lead{max-width:650px;color:var(--muted);font-size:18px;line-height:1.68;margin:0}
-.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:45px;padding:0 16px;border-radius:10px;font-size:13px;font-weight:900;transition:.18s}.button.primary{background:var(--dark);color:#fff}.button.primary:hover{background:var(--accent);transform:translateY(-1px)}.button.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}.button.secondary:hover{border-color:#c8d0d9;transform:translateY(-1px)}
-.hero-note{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}.hero-note span{padding:7px 9px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#667085;font-size:10px;font-weight:800}
-
-.hero-panel{position:relative;min-height:392px;padding:20px;border-radius:24px;background:var(--dark);color:#fff;box-shadow:0 20px 55px rgba(16,24,40,.16);overflow:hidden}.hero-panel:before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-100px;top:-110px;background:radial-gradient(circle,rgba(21,94,239,.48),transparent 68%)}
-.panel-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 1px 15px;color:#98a2b3;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.12em}.status{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.06);text-transform:none;letter-spacing:0;font-size:9px}.status i{width:6px;height:6px;border-radius:50%;background:#12b76a;display:block}
-.panel-stack{position:relative;display:grid;gap:9px}.panel-card{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid rgba(255,255,255,.11);border-radius:15px;background:rgba(255,255,255,.06)}.panel-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;display:grid;place-items:center;background:#fff;color:var(--dark)}.panel-icon.blue,.panel-icon.purple{background:var(--accent);color:#fff}.panel-card strong{display:block;font-size:13px}.panel-card small{display:block;margin-top:4px;color:#98a2b3;font-size:10px;line-height:1.45}
-.panel-footer{position:absolute;left:20px;right:20px;bottom:18px;padding-top:13px;border-top:1px solid rgba(255,255,255,.1);color:#98a2b3;font-size:10px;line-height:1.55}
-
-.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:8px 0 14px}.section-head h2{font-size:25px;line-height:1.1;letter-spacing:-.04em;margin:7px 0 0}.section-head p{margin:0;color:var(--muted);font-size:11px}
-.doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.door{position:relative;min-height:270px;display:flex;flex-direction:column;justify-content:space-between;padding:22px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 5px 20px rgba(16,24,40,.035);transition:.2s}.door:hover{transform:translateY(-2px);box-shadow:0 14px 35px rgba(16,24,40,.07);border-color:#cdd5dd}.door:after{content:"";position:absolute;right:-90px;top:-110px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(21,94,239,.09),transparent 66%);pointer-events:none}
-.door-head{display:flex;align-items:center;justify-content:space-between;gap:14px;position:relative;z-index:1}.door-icon{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}.door-icon.purple,.door-icon.blue{background:var(--accent-soft);color:var(--accent)}.door-label{padding:6px 8px;border:1px solid var(--line);border-radius:999px;background:#fafbfc;color:#667085;font-size:9px;font-weight:850}
-.door h3{position:relative;z-index:1;font-size:27px;letter-spacing:-.05em;line-height:1.08;margin:32px 0 8px}.door p{position:relative;z-index:1;max-width:510px;margin:0;color:var(--muted);font-size:13px;line-height:1.6}.door-link{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;margin-top:19px;color:var(--accent);font-size:12px;font-weight:900}.door-link span{transition:.18s}.door:hover .door-link span{transform:translateX(3px)}
-.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.mini-card{padding:15px 16px;border:1px solid var(--line);border-radius:15px;background:#fff}.mini-card strong{display:block;font-size:12px}.mini-card p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.55}
-
-.site-footer{margin-top:18px;border-top:1px solid var(--line);background:#fff}.footer{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:34px;padding:31px 0 34px}.footer-brand{font-size:14px;font-weight:950}.footer-copy{max-width:320px;margin:8px 0 0;color:var(--muted);font-size:10px;line-height:1.6}.footer-title{margin-bottom:9px;color:#98a2b3;font-size:9px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.footer a{display:block;width:max-content;margin:7px 0;color:#475467;font-size:11px;font-weight:760}.footer a:hover{color:var(--accent)}.footer-bottom{border-top:1px solid #edf0f3;padding:13px 0 16px;color:#98a2b3;font-size:9px}.footer-bottom .wrap{display:flex;justify-content:space-between;gap:15px}
-
-svg{display:block}
-@media(max-width:920px){.nav-links{display:none}.menu-toggle{display:flex}.hero{grid-template-columns:1fr;gap:24px}.hero-panel{min-height:350px}}
-@media(max-width:700px){.wrap{width:min(100% - 24px,var(--max))}main{padding:42px 0 48px}.hero{padding-top:5px;gap:21px}h1{font-size:clamp(43px,13vw,62px);margin-bottom:16px}.lead{font-size:16px}.hero-actions{margin-top:22px}.hero-panel{min-height:320px;border-radius:20px;padding:17px}.panel-footer{left:17px;right:17px;bottom:16px}.doors{grid-template-columns:1fr;gap:10px}.door{min-height:220px;padding:18px;border-radius:16px}.door h3{font-size:23px;margin-top:24px}.mini-grid{grid-template-columns:1fr;gap:8px}.section-head{align-items:start;flex-direction:column;gap:4px}.footer{grid-template-columns:1fr 1fr;gap:22px 16px}.footer>div:first-child{grid-column:1/-1}.footer-bottom .wrap{flex-direction:column;gap:4px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.door,.button{transition:none}}
-</style>
 </head>
 <body>
 <header class="site-header">
   <div class="wrap nav">
     <a class="brand" href="/" aria-label="Nexauren Story">
-      <img class="brand-logo" src="/nexauren-story-favicon.svg?v=20260922-4" alt="" width="42" height="42">
+      <img class="brand-logo" src="/nexauren-story-favicon.svg?v=20260922-5" alt="" width="42" height="42">
       <span class="brand-copy"><strong>Nexauren</strong><span>Story</span></span>
     </a>
     <nav class="nav-links" aria-label="Navegação principal">
-      <a href="/blog/">Histórias</a>
+      <a href="/blog/">Blog</a>
       <a href="/tool/">Ferramentas</a>
-      <a href="/account" class="nav-cta">Conta</a>
+      <a href="/account">Conta</a>
     </nav>
     <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
   </div>
   <div class="mobile-menu" data-mobile-menu>
     <div class="wrap">
-      <a href="/blog/">Histórias</a>
+      <a href="/blog/">Blog</a>
       <a href="/tool/">Ferramentas</a>
       <a href="/account">Conta</a>
-      <a href="/legal/privacidade/">Privacidade</a>
-      <a href="/legal/termos/">Termos</a>
-    </div>
-  </div>
-</header>
-
-<main>
-  <div class="wrap">
-    <section class="hero">
-      <div>
-        <div class="eyebrow">NEXAUREN STORY</div>
-        <h1>Histórias que informam. Ferramentas que ajudam.</h1>
-        <p class="lead">Um ponto de entrada para acompanhar o Nexauren, descobrir histórias e usar ferramentas criadas para o ecossistema.</p>
-        <div class="hero-actions">
-          <a class="button primary" href="/blog/">Explorar histórias</a>
-          <a class="button secondary" href="/tool/">Ver ferramentas</a>
-        </div>
-        <div class="hero-note" aria-label="Recursos">
-          <span>Histórias</span><span>Ferramentas online</span><span>Conta Nexauren</span>
-        </div>
-      </div>
-
-      <aside class="hero-panel" aria-label="Ecossistema Nexauren">
-        <div class="panel-top">
-          <span>Ecossistema</span>
-          <span class="status"><i></i> Em evolução</span>
-        </div>
-        <div class="panel-stack">
-          <div class="panel-card">
-            <div class="panel-icon">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14v14H5z" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </div>
-            <div><strong>Histórias</strong><small>Notícias, lançamentos, guias e atualizações.</small></div>
-          </div>
-          <div class="panel-card">
-            <div class="panel-icon blue">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.64 5.64l2.83 2.83M15.53 15.53l2.83 2.83M18.36 5.64l-2.83 2.83M8.47 15.53l-2.83 2.83" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>
-            </div>
-            <div><strong>Ferramentas</strong><small>Utilitários rápidos, organizados por categorias.</small></div>
-          </div>
-          <div class="panel-card">
-            <div class="panel-icon purple">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.3" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-3.4 3.2-5 7-5s6.2 1.6 7 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </div>
-            <div><strong>Conta</strong><small>Preferências e acesso às experiências do ecossistema.</small></div>
-          </div>
-        </div>
-        <div class="panel-footer">A mesma identidade, uma experiência pública mais simples e organizada.</div>
-      </aside>
-    </section>
-
-    <section aria-labelledby="explorar">
-      <div class="section-head">
-        <div><div class="eyebrow">EXPLORAR</div><h2 id="explorar">Escolha como continuar.</h2></div>
-        <p>Conteúdo, utilidade e acesso.</p>
-      </div>
-      <div class="doors">
-        <a class="door" href="/blog/">
-          <div>
-            <div class="door-head">
-              <div class="door-icon blue">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14v14H5z" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h6M8 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              </div>
-              <span class="door-label">Histórias</span>
-            </div>
-            <h3>Histórias que acompanham o Nexauren.</h3>
-            <p>Notícias, lançamentos, guias, tutoriais e histórias do ecossistema.</p>
-          </div>
-          <span class="door-link">Entrar no Blog <span>→</span></span>
-        </a>
-        <a class="door tools" href="/tool/">
-          <div>
-            <div class="door-head">
-              <div class="door-icon purple">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.64 5.64l2.83 2.83M15.53 15.53l2.83 2.83M18.36 5.64l-2.83 2.83M8.47 15.53l-2.83 2.83" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>
-              </div>
-              <span class="door-label">Ferramentas</span>
-            </div>
-            <h3>Ferramentas feitas para usar.</h3>
-            <p>Utilitários rápidos e simples, com espaço para crescer com o ecossistema.</p>
-          </div>
-          <span class="door-link">Abrir Ferramentas <span>→</span></span>
-        </a>
-      </div>
-    </section>
-
-    <section class="mini-grid" aria-label="Recursos Nexauren">
-      <div class="mini-card"><strong>Acesso simples</strong><p>Entre na sua conta para guardar preferências e experiências futuras.</p></div>
-      <div class="mini-card"><strong>Experiência rápida</strong><p>Páginas leves, responsivas e pensadas para uso em telemóvel.</p></div>
-      <div class="mini-card"><strong>Sempre a crescer</strong><p>Novas histórias e ferramentas entram no ecossistema ao longo do tempo.</p></div>
-    </section>
-  </div>
-</main>
-
-<footer class="site-footer">
-  <div class="wrap footer">
-    <div>
-      <div class="footer-brand">Nexauren Story</div>
-      <p class="footer-copy">O espaço público do ecossistema Nexauren para histórias, ferramentas e novas experiências.</p>
-    </div>
-    <div>
-      <div class="footer-title">Explorar</div>
-      <a href="/blog/">Histórias</a>
-      <a href="/tool/">Ferramentas</a>
-      <a href="/account">Conta</a>
-    </div>
-    <div>
-      <div class="footer-title">Legal</div>
       <a href="/legal/privacidade/">Privacidade</a>
       <a href="/legal/termos/">Termos</a>
       <a href="/legal/cookies/">Cookies</a>
     </div>
   </div>
-  <div class="footer-bottom">
-    <div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span>Feito para o ecossistema Nexauren.</span></div>
+</header>
+
+<div class="nx-progress"></div>
+
+<main class="home-main">
+  <div class="wrap">
+    <section class="home-hero">
+      <div class="home-hero-copy nx-reveal">
+        <div class="nx-kicker">NEXAUREN STORY</div>
+        <h1>Um só espaço. <span class="nx-gradient-text">Conteúdo, ferramentas e novas experiências.</span></h1>
+        <p>O ponto de entrada do ecossistema Nexauren: descubra o Blog, use ferramentas online e acompanhe o que estamos a construir.</p>
+        <div class="home-actions">
+          <a class="button primary" href="/blog/">Abrir Blog <span>→</span></a>
+          <a class="button secondary" href="/tool/">Explorar ferramentas <span>→</span></a>
+        </div>
+        <div class="home-proof"><span>Blog</span><span>Ferramentas online</span><span>Conta Nexauren</span></div>
+      </div>
+
+      <aside class="home-orbit nx-spotlight nx-reveal" aria-label="Ecossistema Nexauren">
+        <div class="home-orbit-core">
+          <img src="/nexauren-story-favicon.svg?v=20260922-5" alt="" width="56" height="56">
+        </div>
+        <div class="home-node"><span>01</span><b>Blog</b></div>
+        <div class="home-node"><span>02</span><b>Ferramentas</b></div>
+        <div class="home-node"><span>03</span><b>Conta</b></div>
+        <div class="home-node"><span>04</span><b>Novas experiências</b></div>
+      </aside>
+    </section>
+
+    <section class="home-section">
+      <div class="home-section-head nx-reveal">
+        <div><div class="nx-kicker">EXPLORAR</div><h2>Escolha o que precisa agora.</h2></div>
+        <p>Uma navegação clara para o ecossistema inteiro.</p>
+      </div>
+
+      <div class="home-grid">
+        <a class="home-card nx-spotlight nx-reveal" href="/blog/">
+          <div class="home-card-icon">▤</div>
+          <h3>Blog</h3>
+          <p>Artigos, lançamentos, guias, atualizações e conteúdo editorial do Nexauren.</p>
+          <span class="home-card-link">Entrar no Blog <span>→</span></span>
+        </a>
+
+        <a class="home-card nx-spotlight nx-reveal" href="/tool/">
+          <div class="home-card-icon">✦</div>
+          <h3>Ferramentas</h3>
+          <p>Utilitários rápidos para escrever, organizar, calcular e resolver tarefas no navegador.</p>
+          <span class="home-card-link">Ver ferramentas <span>→</span></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="home-strip">
+      <div class="home-stat nx-reveal"><strong>Rápido</strong><span>Páginas leves e responsivas, desenhadas para telemóvel e computador.</span></div>
+      <div class="home-stat nx-reveal"><strong>Organizado</strong><span>Uma identidade visual única para navegar entre as áreas públicas.</span></div>
+      <div class="home-stat nx-reveal"><strong>Em evolução</strong><span>Novas ferramentas e experiências podem entrar sem mudar a estrutura principal.</span></div>
+    </section>
+
+    <section class="home-cta nx-reveal">
+      <h2>Continue dentro do Nexauren.</h2>
+      <p>Entre no Blog para acompanhar novidades ou abra as Ferramentas para resolver uma tarefa agora.</p>
+      <a class="button secondary" href="/account">Abrir Conta Nexauren <span>→</span></a>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap nx-footer-grid">
+    <div>
+      <div style="font-weight:950;font-size:16px">Nexauren Story</div>
+      <p class="nx-footer-copy">Conteúdo, ferramentas e novas experiências num único ecossistema público.</p>
+    </div>
+    <div>
+      <div class="nx-footer-title">Explorar</div>
+      <a class="nx-footer-link" href="/blog/">Blog</a>
+      <a class="nx-footer-link" href="/tool/">Ferramentas</a>
+      <a class="nx-footer-link" href="/account">Conta</a>
+    </div>
+    <div>
+      <div class="nx-footer-title">Legal</div>
+      <a class="nx-footer-link" href="/legal/privacidade/">Privacidade</a>
+      <a class="nx-footer-link" href="/legal/termos/">Termos</a>
+      <a class="nx-footer-link" href="/legal/cookies/">Cookies</a>
+    </div>
+  </div>
+  <div class="nx-footer-bottom">
+    <div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span>Uma experiência Nexauren.</span></div>
   </div>
 </footer>
 
 <script>
 (() => {
-  const menu=document.querySelector(".menu-toggle"), panel=document.querySelector("[data-mobile-menu]");
-  menu?.addEventListener("click",() => {
-    const open=panel.classList.toggle("open");
-    menu.setAttribute("aria-expanded",String(open));
-  });
-  panel?.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>panel.classList.remove("open")));
   document.getElementById("year").textContent=new Date().getFullYear();
 })();
 </script>
-<!-- Nexauren Story — Google tag (public pages only) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5QFVE1W7D7"></script>
-<script>
-window.dataLayer=window.dataLayer||[];
-function gtag(){dataLayer.push(arguments);}
-gtag("js",new Date());
-gtag("config","G-5QFVE1W7D7",{send_page_view:false});
-</script>
+<script src="/assets/site.js?v=20260922-1" defer></script>
 </body>
 </html>
