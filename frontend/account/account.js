@@ -16,7 +16,7 @@ import {
   linkWithCredential,
   signOut,
   syncWithWorker
-} from "/account/account-client.js?v=20260922-2";
+} from "/account/account-client.js?v=20260922-3";
 import { initBilling } from "./billing.js?v=20260922-3";
 
 const root = document.querySelector("[data-account-app]");
