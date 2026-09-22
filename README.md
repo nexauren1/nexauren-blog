@@ -65,16 +65,23 @@ Admin:
 
 ## Platform foundation
 
-### Public accounts
+### Public Nexauren accounts
 
-The public account system is intentionally separate from editorial/admin users. Its API is:
+Public accounts use **Firebase Authentication** and are intentionally separate from editorial/admin users.
 
-- `/api/account/register`
-- `/api/account/login`
-- `/api/account/logout`
-- `/api/account/me`
+Firebase handles:
+- email/password registration and login
+- Google sign-in
+- email verification
+- password recovery
+- password changes
+- account/browser authentication state
 
-Run `database/platform-upgrade.sql` once on the existing D1 database before enabling public account registration. Fresh installations already get the account tables from `schema.sql`.
+The public account UI lives at `/account` and uses the Firebase web configuration in `frontend/account/firebase-config.js`.
+
+The Worker does not authenticate public accounts with the editorial `users` table. Requests to the old `/api/account/*` D1 session endpoints are disabled so there is a single public identity system.
+
+In the Firebase console, add `nexaurenstory.com` to Authentication → Settings → Authorized domains.
 
 ### Nexauren Tool
 
