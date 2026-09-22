@@ -41,7 +41,7 @@ function md(s){
   return out;
 }
 
-async function apiasync function api(path,opt){const o=Object.assign({credentials:"same-origin"},opt||{});o.headers=Object.assign({"content-type":"application/json"},o.headers||{});const r=await fetch(path,o),d=await r.json().catch(()=>({ok:false,error:"Resposta inválida do servidor."}));if(!r.ok){const e=new Error(d.error||"Pedido não concluído.");e.code=d.code;throw e;}return d;}
+async function api(path,opt){const o=Object.assign({credentials:"same-origin"},opt||{});o.headers=Object.assign({"content-type":"application/json"},o.headers||{});const r=await fetch(path,o),d=await r.json().catch(()=>({ok:false,error:"Resposta inválida do servidor."}));if(!r.ok){const e=new Error(d.error||"Pedido não concluído.");e.code=d.code;throw e;}return d;}
 function langQuery(base){return base+(base.includes("?")?"&":"?")+"lang="+encodeURIComponent(lang||"pt")}
 function hrefFor(path){const u=new URL(path,location.origin);if(lang==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");return u.pathname+(u.search||"")}
 function setMeta(attr,key,value){let m=document.head.querySelector("meta["+attr+"=\""+key+"\"]");if(!m){m=document.createElement("meta");m.setAttribute(attr,key);document.head.appendChild(m)}m.setAttribute("content",value||"")}
