@@ -91,7 +91,7 @@
 
   function updateYears(){const year=String(new Date().getFullYear());$$("[id='year']").forEach(el=>{el.textContent=year;});}
 
-  function exposeApi(){window.NexaurenUI=Object.freeze({config,initReveal,initMenus,initSpotlight,initScrollProgress,initTopButton,setActiveNavigation,refresh(){setActiveNavigation();initReveal();}});}
+  function exposeApi(){window.NexaurenUI=Object.freeze({config,initReveal,initMenus,initSpotlight,initScrollProgress,initTopButton,initHeaderMotion,initCursorGlow,initButtonFeedback,initPageTransition,setActiveNavigation,refresh(){setActiveNavigation();initReveal();initSpotlight();}});}
 
   function initHeaderMotion(){
     const headers=$("header");
