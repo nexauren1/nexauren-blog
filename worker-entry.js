@@ -656,7 +656,7 @@ const PAYPAL_PRODUCT_KEY = "paypal_pro_product_id";
 const PAYPAL_PLAN_KEY = "paypal_pro_monthly_plan_id";
 
 function paypalBase(env){
-  return String(env.PAYPAL_ENV||"live").toLowerCase()==="sandbox"
+  return String(env.PAYPAL_ENV||"sandbox").toLowerCase()==="sandbox"
     ? "https://api-m.sandbox.paypal.com"
     : "https://api-m.paypal.com";
 }
