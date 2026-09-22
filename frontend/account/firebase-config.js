@@ -4,7 +4,7 @@
 
 export const firebaseConfig = {
   apiKey: "AIzaSyDM0CvTck9g6GW7pDmWKN0__J9TmpE7ku8",
-  authDomain: "nexauren-story.firebaseapp.com",
+  authDomain: "nexaurenstory.com",
   projectId: "nexauren-story",
   storageBucket: "nexauren-story.firebasestorage.app",
   messagingSenderId: "1062438516387",
