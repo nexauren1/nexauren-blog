@@ -651,6 +651,133 @@ async function adminStats(env,request){
   };
 }
 
+
+const PAYPAL_PRODUCT_KEY = "paypal_pro_product_id";
+const PAYPAL_PLAN_KEY = "paypal_pro_monthly_plan_id";
+
+function paypalBase(env){
+  return String(env.PAYPAL_ENV||"live").toLowerCase()==="sandbox"
+    ? "https://api-m.sandbox.paypal.com"
+    : "https://api-m.paypal.com";
+}
+async function paypalAccessToken(env){
+  const id=String(env.PAYPAL_CLIENT_ID||"").trim();
+  const secret=String(env.PAYPAL_CLIENT_SECRET||"").trim();
+  if(!id||!secret)throw Object.assign(new Error("PayPal não está configurado no servidor."),{code:"PAYPAL_NOT_CONFIGURED"});
+  const authHeader=btoa(id+":"+secret);
+  const response=await fetch(paypalBase(env)+"/v1/oauth2/token",{
+    method:"POST",
+    headers:{
+      "Authorization":"Basic "+authHeader,
+      "Content-Type":"application/x-www-form-urlencoded",
+      "Accept":"application/json"
+    },
+    body:"grant_type=client_credentials"
+  });
+  const data=await response.json().catch(()=>null);
+  if(!response.ok||!data?.access_token)throw Object.assign(new Error(data?.error_description||"Não foi possível autenticar no PayPal."),{code:"PAYPAL_AUTH_ERROR"});
+  return data.access_token;
+}
+async function paypalRequest(env,path,options={}){
+  const token=await paypalAccessToken(env);
+  const headers=new Headers(options.headers||{});
+  headers.set("Authorization","Bearer "+token);
+  headers.set("Accept","application/json");
+  if(options.body&&!headers.has("Content-Type"))headers.set("Content-Type","application/json");
+  const response=await fetch(paypalBase(env)+path,{...options,headers});
+  const data=await response.json().catch(()=>null);
+  if(!response.ok)throw Object.assign(new Error(data?.message||data?.details?.[0]?.description||"O PayPal recusou o pedido."),{code:"PAYPAL_API_ERROR",paypal:data,status:response.status});
+  return data;
+}
+async function billingConfigGet(env,key){
+  const row=await env.ACCOUNTS_DB.prepare("SELECT value FROM nexauren_billing_config WHERE key=? LIMIT 1").bind(key).first();
+  return row?.value||null;
+}
+async function billingConfigSet(env,key,value){
+  await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_billing_config (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at").bind(key,String(value),nowIso()).run();
+}
+async function paypalEnsureProPlan(env){
+  let planId=await billingConfigGet(env,PAYPAL_PLAN_KEY);
+  if(planId)return planId;
+  let productId=await billingConfigGet(env,PAYPAL_PRODUCT_KEY);
+  if(!productId){
+    const product=await paypalRequest(env,"/v1/catalogs/products",{
+      method:"POST",
+      headers:{"PayPal-Request-Id":"nexauren-pro-product-"+crypto.randomUUID()},
+      body:JSON.stringify({
+        name:"Nexauren Pro",
+        description:"Acesso Pro às ferramentas e recursos premium da Nexauren.",
+        type:"SERVICE",
+        category:"SOFTWARE",
+        home_url:"https://nexaurenstory.com/account"
+      })
+    });
+    productId=product?.id;
+    if(!productId)throw new Error("O PayPal não devolveu o ID do produto.");
+    await billingConfigSet(env,PAYPAL_PRODUCT_KEY,productId);
+  }
+  const plan=await paypalRequest(env,"/v1/billing/plans",{
+    method:"POST",
+    headers:{
+      "PayPal-Request-Id":"nexauren-pro-plan-"+crypto.randomUUID(),
+      "Prefer":"return=representation"
+    },
+    body:JSON.stringify({
+      product_id:productId,
+      name:"Nexauren Pro — $5/mês",
+      description:"Plano Pro mensal da Nexauren Story.",
+      billing_cycles:[{
+        frequency:{interval_unit:"MONTH",interval_count:1},
+        tenure_type:"REGULAR",
+        sequence:1,
+        total_cycles:0,
+        pricing_scheme:{fixed_price:{value:"5.00",currency_code:"USD"}}
+      }],
+      payment_preferences:{
+        auto_bill_outstanding:true,
+        payment_failure_threshold:1
+      }
+    })
+  });
+  planId=plan?.id;
+  if(!planId)throw new Error("O PayPal não devolveu o ID do plano.");
+  await billingConfigSet(env,PAYPAL_PLAN_KEY,planId);
+  return planId;
+}
+async function billingRow(env,accountId){
+  const row=await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_subscriptions WHERE account_id=? LIMIT 1").bind(accountId).first();
+  return row||null;
+}
+function billingPublic(row){
+  if(!row)return {plan:"free",status:"FREE",amount:"0.00",currency:"USD",cancel_at_period_end:false,current_period_end:null};
+  return {
+    plan:row.plan,
+    status:row.status,
+    amount:row.plan==="pro"?row.amount:"0.00",
+    currency:row.currency,
+    cancel_at_period_end:!!row.cancel_at_period_end,
+    current_period_end:row.current_period_end||null,
+    paypal_subscription_id:row.paypal_subscription_id||null
+  };
+}
+async function billingEnsureRow(env,accountId){
+  let row=await billingRow(env,accountId);
+  if(row)return row;
+  const ts=nowIso(),id=crypto.randomUUID();
+  await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_subscriptions (id,account_id,plan,status,created_at,updated_at) VALUES (?,?,?,?,?,?)").bind(id,accountId,"free","FREE",ts,ts).run();
+  return await billingRow(env,accountId);
+}
+async function billingSyncFromPaypal(env,row,remote){
+  if(!row||!remote)return row;
+  const active=["ACTIVE","APPROVED"].includes(remote.status);
+  const plan=active?"pro":"free";
+  const currentEnd=remote?.billing_info?.next_billing_time||null;
+  const cancelAt=remote.status==="ACTIVE"&&remote?.status_change_note==="Subscription cancelled"?1:0;
+  await env.ACCOUNTS_DB.prepare("UPDATE nexauren_subscriptions SET plan=?,status=?,paypal_plan_id=?,current_period_end=?,cancel_at_period_end=?,updated_at=? WHERE account_id=?")
+    .bind(plan,remote.status||"UNKNOWN",remote.plan_id||row.paypal_plan_id||null,currentEnd,cancelAt,nowIso(),row.account_id).run();
+  return await billingRow(env,row.account_id);
+}
+
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
   if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{provider:"firebase",ready:true}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
@@ -677,6 +804,98 @@ async function api(env,request,url,ctx){
       return fail(error?.message||"Não foi possível sincronizar a conta.",status,code);
     }
   }
+
+  if(p==="/api/account/billing"&&m==="GET"){
+    try{
+      const a=await firebaseAccountAuth(env,request,false);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      let row=await billingEnsureRow(env,a.account.id);
+      if(row.paypal_subscription_id&&["ACTIVE","APPROVED","SUSPENDED","CANCELLED","EXPIRED"].includes(row.status)){
+        try{
+          const remote=await paypalRequest(env,"/v1/billing/subscriptions/"+encodeURIComponent(row.paypal_subscription_id)+"?fields=plan", {method:"GET"});
+          if(remote?.plan_id===row.paypal_plan_id||!row.paypal_plan_id)row=await billingSyncFromPaypal(env,row,remote);
+        }catch{}
+      }
+      return json({ok:true,billing:billingPublic(row)});
+    }catch(error){
+      const code=error?.code||"BILLING_ERROR";
+      const status=code==="ACCOUNT_DB_NOT_READY"?503:500;
+      return fail(error?.message||"Não foi possível carregar a assinatura.",status,code);
+    }
+  }
+  if(p==="/api/account/paypal/create"&&m==="POST"){
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{
+      const a=await firebaseAccountAuth(env,request,true);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      let row=await billingEnsureRow(env,a.account.id);
+      if(row.plan==="pro"&&["ACTIVE","APPROVED"].includes(row.status))return fail("A sua conta já tem o plano Pro ativo.",409,"ALREADY_PRO");
+      const planId=await paypalEnsureProPlan(env);
+      const response=await paypalRequest(env,"/v1/billing/subscriptions",{
+        method:"POST",
+        headers:{"PayPal-Request-Id":"nexauren-sub-"+crypto.randomUUID()},
+        body:JSON.stringify({
+          plan_id:planId,
+          custom_id:a.account.id,
+          subscriber:{email_address:a.account.email},
+          application_context:{
+            brand_name:"Nexauren Story",
+            locale:"pt-PT",
+            shipping_preference:"NO_SHIPPING",
+            user_action:"SUBSCRIBE_NOW",
+            return_url:"https://nexaurenstory.com/account?paypal=success",
+            cancel_url:"https://nexaurenstory.com/account?paypal=cancel"
+          }
+        })
+      });
+      const approval=response?.links?.find(x=>x.rel==="approve")?.href;
+      if(!response?.id||!approval)throw new Error("O PayPal não devolveu o endereço de aprovação.");
+      await env.ACCOUNTS_DB.prepare("UPDATE nexauren_subscriptions SET plan='free',status=?,paypal_subscription_id=?,paypal_plan_id=?,amount='5.00',currency='USD',cancel_at_period_end=0,updated_at=? WHERE account_id=?")
+        .bind(response.status||"APPROVAL_PENDING",response.id,planId,nowIso(),a.account.id).run();
+      return json({ok:true,approval_url:approval,subscription_id:response.id});
+    }catch(error){
+      const code=error?.code||"PAYPAL_CREATE_ERROR";
+      const status=code==="ALREADY_PRO"?409:500;
+      return fail(error?.message||"Não foi possível iniciar o pagamento PayPal.",status,code);
+    }
+  }
+  if(p==="/api/account/paypal/confirm"&&m==="POST"){
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{
+      const a=await firebaseAccountAuth(env,request,true);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      const d=await bodyJson(request),subscriptionId=String(d?.subscription_id||"").trim();
+      if(!subscriptionId)return fail("Subscription ID em falta.",422,"SUBSCRIPTION_ID_REQUIRED");
+      const row=await billingRow(env,a.account.id);
+      if(!row||row.paypal_subscription_id!==subscriptionId)return fail("Assinatura não pertence a esta conta.",403,"SUBSCRIPTION_MISMATCH");
+      const remote=await paypalRequest(env,"/v1/billing/subscriptions/"+encodeURIComponent(subscriptionId)+"?fields=plan", {method:"GET"});
+      if(remote?.plan_id!==row.paypal_plan_id)return fail("O plano PayPal não corresponde ao plano Nexauren.",400,"PLAN_MISMATCH");
+      if(remote?.custom_id&&remote.custom_id!==a.account.id)return fail("A assinatura PayPal não corresponde à conta.",403,"SUBSCRIPTION_MISMATCH");
+      const updated=await billingSyncFromPaypal(env,row,remote);
+      return json({ok:true,billing:billingPublic(updated),paypal_status:remote.status});
+    }catch(error){
+      const code=error?.code||"PAYPAL_CONFIRM_ERROR";
+      return fail(error?.message||"Não foi possível confirmar a assinatura.",500,code);
+    }
+  }
+  if(p==="/api/account/paypal/cancel"&&m==="POST"){
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{
+      const a=await firebaseAccountAuth(env,request,true);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      const row=await billingRow(env,a.account.id);
+      if(!row?.paypal_subscription_id||row.plan!=="pro")return fail("Não existe uma assinatura Pro ativa.",409,"NO_ACTIVE_SUBSCRIPTION");
+      await paypalRequest(env,"/v1/billing/subscriptions/"+encodeURIComponent(row.paypal_subscription_id)+"/cancel",{
+        method:"POST",
+        body:JSON.stringify({reason:"Cancelamento solicitado pelo cliente Nexauren."})
+      });
+      await env.ACCOUNTS_DB.prepare("UPDATE nexauren_subscriptions SET plan='free',status='CANCELLED',cancel_at_period_end=0,updated_at=? WHERE account_id=?").bind(nowIso(),a.account.id).run();
+      return json({ok:true,billing:billingPublic(await billingRow(env,a.account.id))});
+    }catch(error){
+      return fail(error?.message||"Não foi possível cancelar a assinatura.",500,error?.code||"PAYPAL_CANCEL_ERROR");
+    }
+  }
+
   if(p.startsWith("/api/account/")) return fail("Endpoint de conta não disponível.",410,"ACCOUNT_ENDPOINT_DISABLED");
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
