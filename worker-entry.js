@@ -407,7 +407,7 @@ function decoratePublicHtmlResponse(request,response){
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   const url=new URL(request.url);
   const path=url.pathname;
-  if(path==="/blog"||path.startsWith("/blog/")||path==="/admin"||path.startsWith("/admin/"))return response;
+  const lowerPath=path.toLowerCase();if(lowerPath==="/blog"||lowerPath.startsWith("/blog/")||lowerPath==="/admin"||lowerPath.startsWith("/admin/"))return response;
   return response.text().then(html=>{
     html=html.replace(/<body(\s[^>]*)?>/i,(match,attrs="")=>{if(/\bclass\s*=/.test(attrs)){return match.replace(/class\s*=\s*(['"])(.*?)\1/i,(m,q,v)=>/\bnx-page\b/.test(v)?m:'class='+q+'nx-page '+v+q);}return '<body class="nx-page"'+attrs+'>';});
     const titleMatch=html.match(/<title>\s*([\s\S]*?)\s*<\/title>/i);
@@ -779,7 +779,8 @@ async function page(env,request,url){
   if(url.pathname==="/social-preview.png"||url.pathname==="/social-preview.svg"){const target=new URL(url.pathname==="/social-preview.png"?"/nexauren-story-social-preview.png":"/nexauren-story-social-preview.svg",request.url);return env.ASSETS.fetch(new Request(target,request));}
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/nexauren-story-favicon.svg","/nexauren-story-favicon.png","/nexauren-story-favicon.ico","/nexauren-story-apple-touch-icon.png","/favicon.png","/apple-touch-icon.png","/nexauren-story-social-preview.svg","/nexauren-story-social-preview.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
-  if(url.pathname==="/admin"||url.pathname.startsWith("/admin/")){
+  const adminPath=url.pathname.toLowerCase();
+   if(adminPath==="/admin"||adminPath.startsWith("/admin/")){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
   }
