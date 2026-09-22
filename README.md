@@ -56,7 +56,9 @@ npm run dev
 ## Routes
 
 Public:
-`/`, `/post/:slug`, category pages, `/search`, `/sitemap.xml`, `/rss.xml`.
+`/` (porta de entrada), `/blog/`, `/blog/post/:slug`, `/blog/:categoria`, `/blog/search`, `/sitemap.xml`, `/rss.xml`.
+
+URLs antigas do blog (`/post/:slug`, `/posts`, `/about`, `/search` e categorias) são redirecionadas para `/blog/...` para preservar acessos e referências existentes.
 
 Admin:
 `/admin`
