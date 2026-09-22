@@ -3,7 +3,7 @@
   "use strict";
   const config=Object.freeze({
     reducedMotion:window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    selectors:Object.freeze({menuButton:".menu-toggle,.tool-menu",menuPanel:"[data-mobile-menu],[data-mobile-nav],[data-tool-mobile]",reveal:".nx-reveal,[data-nx-reveal]",spotlight:".nx-spotlight,.tool-card"}),
+    selectors:Object.freeze({menuButton:"[data-nx-menu]",menuPanel:"[data-nx-panel]",reveal:".nx-reveal,[data-nx-reveal]",spotlight:".nx-spotlight,.tool-card"}),
     routes:Object.freeze({home:"/",blog:"/blog/",tools:"/tool/",account:"/account",legal:"/legal/privacidade/"})
   });
   const $=(s,scope=document)=>scope.querySelector(s);
@@ -29,6 +29,7 @@
   }
 
   function initMenus(){
+    // Existing public pages already own their mobile-menu click handlers; only opt-in pages use this shared handler.
     const pairs=[];
     $$(config.selectors.menuButton).forEach(button=>{
       const header=button.closest("header"),panel=header?$(config.selectors.menuPanel,header):$(config.selectors.menuPanel);
