@@ -25,6 +25,26 @@
     button?.setAttribute("aria-expanded","false");
   }
 
+  function ensureResponsiveNav(){
+    const header=document.querySelector("body>header");
+    if(!header||header.querySelector(".menu-toggle,.tool-menu,.nx-auto-menu"))return;
+    const nav=header.querySelector("nav");
+    if(!nav)return;
+    const button=document.createElement("button");
+    button.className="menu-toggle nx-auto-menu";
+    button.type="button";
+    button.setAttribute("aria-label","Abrir menu");
+    button.setAttribute("aria-expanded","false");
+    button.innerHTML="<span></span>";
+    const links=[...nav.querySelectorAll("a")].map(a=>({href:a.getAttribute("href"),text:(a.textContent||"").trim()})).filter(x=>x.href&&x.text);
+    if(!links.length)return;
+    const panel=document.createElement("div");
+    panel.className="mobile-menu nx-auto-mobile";
+    panel.innerHTML='<div style="width:min(1160px,calc(100% - 24px));margin:auto">'+[...links,{href:"/legal/privacidade/",text:"Privacidade"},{href:"/legal/termos/",text:"Termos"},{href:"/legal/cookies/",text:"Cookies"}].filter((x,i,a)=>a.findIndex(y=>y.href===x.href)===i).map(x=>'<a href="'+String(x.href).replaceAll('"',"&quot;")+'">'+String(x.text).replace(/[&<>]/g,"")+"</a>").join("")+"</div>";
+    header.querySelector(".nav")?.appendChild(button) || header.firstElementChild?.appendChild(button);
+    header.appendChild(panel);
+  }
+
   function setupMenus(){
     const pairs=[
       [".menu-toggle",".mobile-menu"],
@@ -149,6 +169,7 @@
     ensureAutoNavigation();
     ensureAutoFooter();
     ensureProgress();
+    ensureResponsiveNav();
     setupMenus();
     activeNav();
     reveal();
