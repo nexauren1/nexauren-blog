@@ -442,7 +442,8 @@ function wireRegister() {
 
 async function googleSignIn(button, errorTarget) {
   errorTarget.textContent = "";
-  setBusy(button, true, "A ligar…", "Continuar com Google");
+  const normalText = button?.id === "google-register" ? "Criar com Google" : "Continuar com Google";
+  setBusy(button, true, "A ligar…", normalText);
 
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
@@ -458,7 +459,7 @@ async function googleSignIn(button, errorTarget) {
       const credential = GoogleAuthProvider.credentialFromError(err);
       if (credential) pendingGoogleCredential = credential;
       const email = String(err?.customData?.email || "");
-      setBusy(button, false, "A ligar…", "Continuar com Google");
+      setBusy(button, false, "A ligar…", normalText);
       errorTarget.textContent = email
         ? "Já existe uma conta com " + email + ". Entre com email e palavra-passe para associar o Google."
         : "Já existe uma conta com este email. Entre com o método usado anteriormente para continuar.";
