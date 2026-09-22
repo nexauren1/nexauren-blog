@@ -316,3 +316,44 @@ body.nx-page{
   .category-card .tool-card p{font-size:10px;line-height:1.45}
   .category-card .tool-card small{padding-top:7px}
 }
+
+/* Atalhos para as páginas de seleção */
+.tool-featured-actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:11px;
+}
+.tool-featured-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:38px;
+  padding:0 14px;
+  border:1px solid #dce2eb;
+  border-radius:11px;
+  background:#fff;
+  color:#252d3d;
+  text-decoration:none;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.02em;
+  box-shadow:0 7px 18px rgba(14,20,36,.05);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;
+}
+.tool-featured-btn span{font-size:15px;color:#6b57f2}
+.tool-featured-btn-primary{
+  border-color:#6b57f2;
+  background:#11182a;
+  color:#fff;
+}
+.tool-featured-btn-primary span{color:#fff}
+.tool-featured-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 25px rgba(14,20,36,.1);
+}
+@media(max-width:640px){
+  .tool-featured-actions{gap:7px}
+  .tool-featured-btn{min-height:36px;padding:0 12px;font-size:9px}
+}
