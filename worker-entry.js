@@ -703,6 +703,55 @@ async function api(env,request,url,ctx){
   if(p==="/api/media"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const r=await env.DB.prepare("SELECT * FROM media ORDER BY created_at DESC LIMIT 100").all();return json({ok:true,media:r.results});}
   if(p==="/api/media"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
   const mm=p.match(/^\/api\/media\/([^/]+)$/);if(mm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=mm[1],row=await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first();if(!row)return fail("Mídia não encontrada.",404);if(env.IMAGEKIT_PRIVATE_KEY&&row.imagekit_file_id){const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");const ir=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(row.imagekit_file_id),{method:"DELETE",headers:{Authorization:authHeader,Accept:"application/json"}});if(!ir.ok&&ir.status!==404)return fail("O arquivo não pôde ser removido do ImageKit.",502,"IMAGEKIT_DELETE_FAILED");}await env.DB.prepare("UPDATE posts SET cover_media_id=NULL,social_image=? WHERE cover_media_id=?").bind(DEFAULT_SOCIAL_IMAGE,id).run();await env.DB.prepare("DELETE FROM media WHERE id=?").bind(id).run();await audit(env,g.auth.id,"media.deleted","media",id,{filename:row.filename});return json({ok:true});}
+
+  if(p==="/api/tool-registry"&&m==="GET"){
+    try{return json(await toolRegistryWithUsage(env,request));}catch(e){return fail("Não foi possível carregar o catálogo de ferramentas.",503,"TOOLS_UNAVAILABLE");}
+  }
+  if(p==="/api/tools/events"&&m==="POST"){
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{
+      const d=await bodyJson(request),toolId=slugify(d?.tool_id||""),registry=await loadToolRegistry(env,request),tool=registry.tools.find(t=>t.id===toolId&&t.status==="active");
+      if(!tool)return fail("Ferramenta não encontrada.",404,"TOOL_NOT_FOUND");
+      await ensureToolUsageTable(env);
+      const bucket=nowIso().slice(0,10),ip=request.headers.get("CF-Connecting-IP")||"",ua=(request.headers.get("User-Agent")||"").slice(0,180);
+      const visitorHash=await sha256(ip+"|"+ua);
+      await env.DB.prepare("INSERT OR IGNORE INTO tool_usage (tool_id,bucket,visitor_hash,created_at) VALUES (?,?,?,?)").bind(toolId,bucket,visitorHash,nowIso()).run();
+      return json({ok:true});
+    }catch(e){return json({ok:false},202);}
+  }
+  if(p==="/api/admin/tools"&&m==="GET"){
+    const g=await guard(env,request,true);if(g.error)return g.error;
+    return json({ok:true,registry:await toolRegistryWithUsage(env,request)});
+  }
+  if(p==="/api/admin/tools"&&m==="PUT"){
+    const g=await guard(env,request,true);if(g.error)return g.error;
+    return saveToolRegistry(env,g.auth,(await bodyJson(request))||{});
+  }
+  if(p==="/api/admin/users"&&m==="GET"){
+    const g=await guard(env,request,true);if(g.error)return g.error;
+    const data=await adminUsers(env);return json({ok:true,...data});
+  }
+  const aum=p.match(/^\/api\/admin\/users\/(admin|account)\/([^/]+)$/);
+  if(aum&&m==="PUT"){
+    const g=await guard(env,request,true);if(g.error)return g.error;
+    const d=await bodyJson(request)||{},status=["active","suspended"].includes(d.status)?d.status:null;
+    if(!status)return fail("Estado inválido.",422);
+    if(aum[1]==="admin"){
+      const row=await env.DB.prepare("SELECT id,role FROM users WHERE id=? LIMIT 1").bind(aum[2]).first();
+      if(!row)return fail("Administrador não encontrado.",404);
+      if(row.role==="owner"&&g.auth.role!=="owner")return fail("A conta owner só pode ser alterada pelo owner.",403,"FORBIDDEN");
+      if(row.id===g.auth.id&&status==="suspended")return fail("Não pode suspender a própria sessão.",422);
+      await env.DB.prepare("UPDATE users SET status=?,updated_at=? WHERE id=?").bind(status,nowIso(),row.id).run();
+      await audit(env,g.auth.id,"admin.user_status_updated","user",row.id,{status});return json({ok:true});
+    }
+    try{
+      if(!env.ACCOUNTS_DB)return fail("Base de contas não configurada.",503,"ACCOUNTS_DB_UNAVAILABLE");
+      const row=await env.ACCOUNTS_DB.prepare("SELECT id FROM nexauren_accounts WHERE id=? LIMIT 1").bind(aum[2]).first();
+      if(!row)return fail("Utilizador não encontrado.",404);
+      await env.ACCOUNTS_DB.prepare("UPDATE nexauren_accounts SET status=?,updated_at=? WHERE id=?").bind(status,nowIso(),row.id).run();
+      await audit(env,g.auth.id,"account.user_status_updated","account",row.id,{status});return json({ok:true});
+    }catch(e){return fail("Não foi possível atualizar o utilizador.",503,"ACCOUNTS_DB_ERROR");}
+  }
   if(p==="/api/categories"&&m==="GET"){const r=await env.DB.prepare("SELECT c.*,(SELECT COUNT(*) FROM posts p WHERE p.category_id=c.id) post_count FROM categories c ORDER BY c.sort_order,c.name").all();return json({ok:true,categories:r.results});}
   if(p==="/api/categories"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;const d=await bodyJson(request),name=text(d?.name,100).trim(),slug=slugify(d?.slug||name);if(!name||!slug)return fail("Nome da categoria é obrigatório.",422);if(await env.DB.prepare("SELECT id FROM categories WHERE slug=?").bind(slug).first())return fail("Esse slug já existe.",409);const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO categories (id,name,slug,description,icon,parent_id,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,name,slug,text(d?.description,500),text(d?.icon,30),d?.parent_id||null,Number(d?.sort_order||0),nowIso(),nowIso()).run();await audit(env,g.auth.id,"category.created","category",id,{name});return json({ok:true,category:await env.DB.prepare("SELECT * FROM categories WHERE id=?").bind(id).first()},201);}
   const cm=p.match(/^\/api\/categories\/([^/]+)$/);if(cm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=cm[1],row=await env.DB.prepare("SELECT name FROM categories WHERE id=?").bind(id).first();if(!row)return fail("Categoria não encontrada.",404);const c=await env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE category_id=?").bind(id).first();if(Number(c?.n||0))return fail("A categoria ainda possui artigos.",409);await env.DB.prepare("DELETE FROM categories WHERE id=?").bind(id).run();await audit(env,g.auth.id,"category.deleted","category",id,{name:row.name});return json({ok:true});}
@@ -710,7 +759,7 @@ async function api(env,request,url,ctx){
   if(p==="/api/settings"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const r=await env.DB.prepare("SELECT key,value,type FROM settings ORDER BY key").all(),s={};for(const x of r.results)s[x.key]=x.value;return json({ok:true,settings:s});}
   if(p==="/api/settings"&&m==="PUT"){const g=await guard(env,request,true);if(g.error)return g.error;const d=await bodyJson(request);for(const [key,value] of Object.entries(d||{}).slice(0,100)){if(!/^[a-z0-9_.-]{1,80}$/i.test(key))continue;await env.DB.prepare("INSERT INTO settings (key,value,type,updated_at) VALUES (?,?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,type=excluded.type,updated_at=excluded.updated_at").bind(key,String(value).slice(0,10000),typeof value==="number"?"number":"string",nowIso()).run();}await audit(env,g.auth.id,"settings.updated","settings",null,{keys:Object.keys(d||{})});return json({ok:true});}
   if(p==="/api/activity"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const r=await env.DB.prepare("SELECT a.*,u.display_name,u.email FROM audit_logs a LEFT JOIN users u ON u.id=a.user_id ORDER BY a.created_at DESC LIMIT 100").all();return json({ok:true,activity:r.results});}
-  if(p==="/api/stats"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const [a,b,c,d,e]=await Promise.all([env.DB.prepare("SELECT COUNT(*) n FROM posts").first(),env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='published'").first(),env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='draft'").first(),env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='scheduled'").first(),env.DB.prepare("SELECT COUNT(*) n FROM media").first()]);return json({ok:true,stats:{posts:Number(a?.n||0),published:Number(b?.n||0),drafts:Number(c?.n||0),scheduled:Number(d?.n||0),media:Number(e?.n||0)}});}
+  if(p==="/api/stats"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;return json({ok:true,stats:await adminStats(env,request)});}
   if(p==="/api/posts"&&m==="GET"){if(url.searchParams.get("all")==="1"){const g=await guard(env,request);if(g.error)return g.error;return postsAdmin(env,url)}return publicPosts(env,url);}
   if(p==="/api/posts"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;return createPost(env,g.auth,(await bodyJson(request))||{},ctx);}
   const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
