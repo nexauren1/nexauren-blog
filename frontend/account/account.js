@@ -97,7 +97,7 @@ function loginView(prefill = "", notice = "") {
     <form id="login-form" novalidate>
       <label>Email<input id="email" type="email" inputmode="email" autocomplete="email" value="${esc(prefill)}" required></label>
       <label>Palavra-passe<input id="password" type="password" autocomplete="current-password" required></label>
-      <button class="primary" type="submit">Entrar</button>
+      <button class="primary" id="email-login" type="submit">Entrar</button>
       <button class="google" id="google-login" type="button"><span class="google-g">G</span> Continuar com Google</button>
       <div class="form-links"><button type="button" class="link-button" data-forgot>Esqueci a minha palavra-passe</button></div>
       <div class="error" id="error" role="alert"></div>
