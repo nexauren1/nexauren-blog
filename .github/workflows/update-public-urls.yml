@@ -10,6 +10,10 @@ on:
     - cron: "17 3 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: nexauren-public-url-sync
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -28,7 +32,7 @@ jobs:
 
           ROOT = Path("frontend")
           EXCLUDED_PREFIXES = (
-              "/admin", "/account", "/api", "/assets",
+              "/admin", "/api", "/assets",
               "/admin-assets", "/data", "/blog",
               "/tool/frontend/templates/"
           )
@@ -57,10 +61,10 @@ jobs:
 
           for index_file in ROOT.rglob("index.html"):
               path = public_path(index_file)
-              if is_excluded(path):
+              if not is_excluded(path):
+                  public_urls.add(path)
+              if any(path == prefix.rstrip("/") or path.startswith(prefix.rstrip("/") + "/") for prefix in ("/admin", "/blog", "/tool/frontend/templates/")):
                   continue
-
-              public_urls.add(path)
               html = index_file.read_text(encoding="utf-8")
               original = html
 
