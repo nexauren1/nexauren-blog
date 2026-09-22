@@ -17,6 +17,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
+  linkWithCredential,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -89,5 +90,6 @@ export {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
+  linkWithCredential,
   signOut
 };
