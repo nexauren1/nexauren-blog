@@ -805,7 +805,54 @@ async function billingSyncFromPaypal(env,row,remote){
   return await billingRow(env,row.account_id);
 }
 
+async function ensureToolUnlockSchema(env){
+  await env.ACCOUNTS_DB.prepare(`CREATE TABLE IF NOT EXISTS nexauren_tool_unlocks (id TEXT PRIMARY KEY,account_id TEXT NOT NULL REFERENCES nexauren_accounts(id) ON DELETE CASCADE,tool_id TEXT NOT NULL,paypal_order_id TEXT UNIQUE NOT NULL,status TEXT NOT NULL DEFAULT 'COMPLETED',amount TEXT NOT NULL DEFAULT '0.50',currency TEXT NOT NULL DEFAULT 'USD',created_at TEXT NOT NULL,updated_at TEXT NOT NULL)`).run();
+  await env.ACCOUNTS_DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_nexauren_tool_unlock_account_tool ON nexauren_tool_unlocks(account_id,tool_id)`).run();
+}
+async function toolUnlockExists(env,accountId,toolId){
+  return await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_tool_unlocks WHERE account_id=? AND tool_id=? AND status='COMPLETED' LIMIT 1").bind(accountId,toolId).first();
+}
+async function toolUnlockCreateOrder(env,account,toolId){
+  const order=await paypalRequest(env,"/v2/checkout/orders",{
+    method:"POST",headers:{"PayPal-Request-Id":"nexauren-tool-"+toolId+"-"+crypto.randomUUID()},
+    body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:toolId,custom_id:account.id,description:"Nexauren — acesso à ferramenta "+toolId,amount:{currency_code:"USD",value:"0.50"}}],application_context:{brand_name:"Nexauren Story",user_action:"PAY_NOW",return_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=success",cancel_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=cancel"}})
+  });
+  const approve=Array.isArray(order?.links)?order.links.find(x=>x.rel==="approve")?.href:null;
+  if(!order?.id||!approve)throw new Error("O PayPal não devolveu o link de pagamento.");
+  return {id:order.id,approve_url:approve};
+}
+async function toolUnlockCapture(env,account,toolId,orderId){
+  const existing=await toolUnlockExists(env,account.id,toolId);if(existing)return existing;
+  const order=await paypalRequest(env,"/v2/checkout/orders/"+encodeURIComponent(orderId),{method:"GET"});
+  const unit=order?.purchase_units?.[0],custom=String(unit?.custom_id||"");
+  if(custom!==account.id||String(unit?.reference_id||"")!==toolId)throw Object.assign(new Error("Este pagamento não corresponde à sua conta ou ferramenta."),{code:"PAYMENT_MISMATCH"});
+  if(order.status!=="APPROVED"&&order.status!=="COMPLETED")throw Object.assign(new Error("O pagamento ainda não está aprovado."),{code:"PAYMENT_NOT_APPROVED"});
+  let captured=order;if(order.status==="APPROVED")captured=await paypalRequest(env,"/v2/checkout/orders/"+encodeURIComponent(orderId)+"/capture",{method:"POST",headers:{"PayPal-Request-Id":"capture-"+orderId}});
+  const capture=captured?.purchase_units?.[0]?.payments?.captures?.[0];
+  if(captured.status!=="COMPLETED"||!capture||capture.status!=="COMPLETED")throw Object.assign(new Error("O pagamento não foi concluído."),{code:"PAYMENT_NOT_COMPLETED"});
+  if(String(capture?.amount?.value||"")!=="0.50"||String(capture?.amount?.currency_code||"")!=="USD")throw Object.assign(new Error("Valor do pagamento inválido."),{code:"PAYMENT_AMOUNT_INVALID"});
+  const ts=nowIso(),id=crypto.randomUUID();
+  try{await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_tool_unlocks (id,account_id,tool_id,paypal_order_id,status,amount,currency,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,account.id,toolId,orderId,"COMPLETED","0.50","USD",ts,ts).run();}catch(e){const again=await toolUnlockExists(env,account.id,toolId);if(again)return again;throw e;}
+  return await toolUnlockExists(env,account.id,toolId);
+}
+
 async function api(env,request,url,ctx){
+  if(p==="/api/tool/unlock"&&m==="GET"){
+    await ensureToolUnlockSchema(env);
+    try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const toolId=text(url.searchParams.get("tool_id")||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");return json({ok:true,unlocked:!!(await toolUnlockExists(env,a.account.id,toolId))});}
+    catch(error){return fail(error?.message||"Não foi possível verificar o acesso.",500,error?.code||"TOOL_UNLOCK_ERROR");}
+  }
+  if(p==="/api/tool/unlock/create"&&m==="POST"){
+    await ensureToolUnlockSchema(env);if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=text(body?.tool_id||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");if(await toolUnlockExists(env,a.account.id,toolId))return json({ok:true,unlocked:true});const order=await toolUnlockCreateOrder(env,a.account,toolId);return json({ok:true,unlocked:false,order_id:order.id,approve_url:order.approve_url});}
+    catch(error){return fail(error?.message||"Não foi possível criar o pagamento.",500,error?.code||"PAYMENT_CREATE_ERROR");}
+  }
+  if(p==="/api/tool/unlock/capture"&&m==="POST"){
+    await ensureToolUnlockSchema(env);if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=text(body?.tool_id||"",120),orderId=text(body?.order_id||"",180);if(!toolId||!orderId)return fail("Pagamento incompleto.",400,"PAYMENT_REQUIRED");const row=await toolUnlockCapture(env,a.account,toolId,orderId);return json({ok:true,unlocked:!!row,tool_id:toolId});}
+    catch(error){return fail(error?.message||"Não foi possível confirmar o pagamento.",500,error?.code||"PAYMENT_CAPTURE_ERROR");}
+  }
+
   const p=url.pathname,m=request.method;
   if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{provider:"firebase",ready:true}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(p==="/api/account/me"&&m==="GET"){
