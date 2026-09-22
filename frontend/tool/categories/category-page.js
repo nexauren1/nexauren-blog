@@ -8,7 +8,7 @@
     if(value==="Aa"||value==="text") return '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 17 4-10h2l4 10M8 13.5h6M16 17l1.8-4.5L20 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     return '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.9 2.9M15.5 15.5l2.9 2.9M18.4 5.6l-2.9 2.9M8.5 15.5l-2.9 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>';
   };
-  const card=t=>'<a class="tool-card nx-spotlight nx-reveal" href="'+esc(t.path)+'">'+
+  const card=t=>'<a class="tool-card cat-'+esc(t.category||slug)+' nx-spotlight nx-reveal" data-category="'+esc(t.category||slug)+'" href="'+esc(t.path)+'">'+
     '<span class="tool-card-icon">'+iconSvg(t.icon)+'</span><span class="tool-arrow">→</span>'+
     '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
     '<small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small></a>';
