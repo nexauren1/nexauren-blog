@@ -135,3 +135,7 @@ Antes de usar a nova versão, execute `database/editorial-upgrade.sql` no D1 exi
 `frontend/assets/ads.js` é carregado apenas quando um artigo é renderizado. O site usa somente o Monetag In-Page Push (zona `11183778`); Vignette e Direct Link não são usados. Páginas de categoria, pesquisa e início não carregam Monetag.
 
 As verificações automáticas estão em `.github/workflows/validate-post-ads.yml` e `.github/workflows/seo-sitemap.yml`. O segundo workflow verifica a implementação e, diariamente, confere o sitemap, robots.txt e as URLs públicas.
+
+## Nexauren Accounts D1
+
+The public Nexauren account system is isolated from the blog database. The blog uses the `DB` binding; public Firebase-backed accounts use the separate `ACCOUNTS_DB` binding. Create a separate Cloudflare D1 database named `nexauren-accounts`, replace `REPLACE_WITH_ACCOUNTS_D1_ID` in `wrangler.json` with its database ID, and apply `database/accounts-upgrade.sql` to that database. Never apply the account migration to the blog D1.
