@@ -417,7 +417,7 @@ function decoratePublicHtmlResponse(request,response){
     const canonical=existingCanonical||new URL(path||"/",url.origin).href;
     const robots=(html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']*)["'][^>]*>/i)||[])[1]||"index,follow,max-image-preview:large";
     const tags=[
-      ['theme',/ <meta[^>]+name=["']theme-color["']/i, '<meta name="theme-color" content="#0b1020">'],
+      ['theme',/<meta[^>]+name=["']theme-color["']/i, '<meta name="theme-color" content="#0b1020">'],
       ['icon',/<link[^>]+rel=["']icon["']/i,'<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5"><link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5">'],
       ['apple',/<link[^>]+rel=["']apple-touch-icon["']/i,'<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">'],
       ['manifest',/<link[^>]+rel=["']manifest["']/i,'<link rel="manifest" href="/manifest.json">'],
