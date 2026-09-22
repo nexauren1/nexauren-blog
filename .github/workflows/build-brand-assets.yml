@@ -29,9 +29,12 @@ jobs:
           set -e
           sudo apt-get update
           sudo apt-get install -y imagemagick
-          convert -background none frontend/favicon.svg -resize 512x512 frontend/favicon.png
-          convert -background none frontend/favicon.svg -resize 180x180 frontend/apple-touch-icon.png
-          convert -background none frontend/nexauren-story-favicon.svg -resize 512x512 frontend/nexauren-story-favicon.png
+          rm -f frontend/nexauren-story-favicon.png frontend/nexauren-story-favicon.ico frontend/nexauren-story-apple-touch-icon.png
+          convert -background none frontend/nexauren-story-favicon.svg -resize 512x512 PNG32:frontend/nexauren-story-favicon.png
+          convert -background none frontend/nexauren-story-favicon.svg -resize 180x180 PNG32:frontend/nexauren-story-apple-touch-icon.png
+          convert -background none frontend/nexauren-story-favicon.svg -define icon:auto-resize=64,48,32,16 frontend/nexauren-story-favicon.ico
+          cp frontend/nexauren-story-favicon.png frontend/favicon.png
+          cp frontend/nexauren-story-apple-touch-icon.png frontend/apple-touch-icon.png
           convert -background none frontend/social-preview.svg -quality 100 frontend/social-preview.png
           convert -background none frontend/nexauren-story-social-preview.svg -quality 100 frontend/nexauren-story-social-preview.png
           convert -background none frontend/social-preview.svg -quality 88 frontend/og-image.jpg
@@ -39,7 +42,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/favicon.png frontend/apple-touch-icon.png frontend/nexauren-story-favicon.png frontend/social-preview.png frontend/nexauren-story-social-preview.png frontend/og-image.jpg
+          git add -f frontend/favicon.png frontend/apple-touch-icon.png frontend/nexauren-story-favicon.png frontend/nexauren-story-favicon.ico frontend/nexauren-story-apple-touch-icon.png frontend/social-preview.png frontend/nexauren-story-social-preview.png frontend/og-image.jpg
           if git diff --cached --quiet; then
             echo "Brand assets are already current."
           else
@@ -53,7 +56,7 @@ jobs:
               fi
               echo "Push race detected; retrying ($attempt/5)..."
               git reset --hard origin/main
-              git add frontend/favicon.png frontend/apple-touch-icon.png frontend/nexauren-story-favicon.png frontend/social-preview.png frontend/nexauren-story-social-preview.png frontend/og-image.jpg
+              git add -f frontend/favicon.png frontend/apple-touch-icon.png frontend/nexauren-story-favicon.png frontend/nexauren-story-favicon.ico frontend/nexauren-story-apple-touch-icon.png frontend/social-preview.png frontend/nexauren-story-social-preview.png frontend/og-image.jpg
               git commit -m "Generate brand preview assets" || true
             done
             echo "Unable to push generated brand assets after retries."
