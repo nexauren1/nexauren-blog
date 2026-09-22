@@ -399,24 +399,92 @@ async function uploadAuth(env,request){
   return json({ok:true,token,expire,signature,publicKey:env.IMAGEKIT_PUBLIC_KEY,urlEndpoint:env.IMAGEKIT_URL_ENDPOINT||""});
 }
 
+function addHeadTag(html, test, tag){
+  return test.test(html) ? html : html.replace(/<\/head>/i, tag+"\n</head>");
+}
+function decoratePublicHtmlResponse(request,response){
+  const type=response.headers.get("content-type")||"";
+  if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
+  const url=new URL(request.url);
+  const path=url.pathname;
+  if(path==="/blog"||path.startsWith("/blog/"))return response;
+  return response.text().then(html=>{
+    const titleMatch=html.match(/<title>\s*([\s\S]*?)\s*<\/title>/i);
+    const descMatch=html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i);
+    const title=(titleMatch?.[1]||"Nexauren Story").replace(/<[^>]*>/g,"").trim().slice(0,180)||"Nexauren Story";
+    const desc=(descMatch?.[1]||"Nexauren Story — conteúdo, ferramentas e experiências do ecossistema Nexauren.").trim().slice(0,300);
+    const existingCanonical=(html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["'][^>]*>/i)||[])[1];
+    const canonical=existingCanonical||new URL(path||"/",url.origin).href;
+    const robots=(html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']*)["'][^>]*>/i)||[])[1]||"index,follow,max-image-preview:large";
+    const tags=[
+      ['theme',/ <meta[^>]+name=["']theme-color["']/i, '<meta name="theme-color" content="#0b1020">'],
+      ['icon',/<link[^>]+rel=["']icon["']/i,'<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5"><link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5">'],
+      ['apple',/<link[^>]+rel=["']apple-touch-icon["']/i,'<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">'],
+      ['manifest',/<link[^>]+rel=["']manifest["']/i,'<link rel="manifest" href="/manifest.json">'],
+      ['style',/<link[^>]+href=["']\/assets\/site\.css/i,'<link rel="stylesheet" href="/assets/site.css?v=20260922-1">'],
+      ['ogsite',/<meta[^>]+property=["']og:site_name["']/i,'<meta property="og:site_name" content="Nexauren Story">'],
+      ['ogtitle',/<meta[^>]+property=["']og:title["']/i,'<meta property="og:title" content="'+esc(title)+'">'],
+      ['ogdesc',/<meta[^>]+property=["']og:description["']/i,'<meta property="og:description" content="'+esc(desc)+'">'],
+      ['ogtype',/<meta[^>]+property=["']og:type["']/i,'<meta property="og:type" content="website">'],
+      ['ogurl',/<meta[^>]+property=["']og:url["']/i,'<meta property="og:url" content="'+esc(canonical)+'">'],
+      ['ogimage',/<meta[^>]+property=["']og:image["']/i,'<meta property="og:image" content="'+DEFAULT_SOCIAL_IMAGE+'">'],
+      ['ogsecure',/<meta[^>]+property=["']og:image:secure_url["']/i,'<meta property="og:image:secure_url" content="'+DEFAULT_SOCIAL_IMAGE+'">'],
+      ['ogw',/<meta[^>]+property=["']og:image:width["']/i,'<meta property="og:image:width" content="1200">'],
+      ['ogh',/<meta[^>]+property=["']og:image:height["']/i,'<meta property="og:image:height" content="630">'],
+      ['ogmime',/<meta[^>]+property=["']og:image:type["']/i,'<meta property="og:image:type" content="image/png">'],
+      ['ogalt',/<meta[^>]+property=["']og:image:alt["']/i,'<meta property="og:image:alt" content="'+esc(title)+'">'],
+      ['oglocale',/<meta[^>]+property=["']og:locale["']/i,'<meta property="og:locale" content="pt_PT">'],
+      ['twcard',/<meta[^>]+name=["']twitter:card["']/i,'<meta name="twitter:card" content="summary_large_image">'],
+      ['twtitle',/<meta[^>]+name=["']twitter:title["']/i,'<meta name="twitter:title" content="'+esc(title)+'">'],
+      ['twdesc',/<meta[^>]+name=["']twitter:description["']/i,'<meta name="twitter:description" content="'+esc(desc)+'">'],
+      ['twimage',/<meta[^>]+name=["']twitter:image["']/i,'<meta name="twitter:image" content="'+DEFAULT_SOCIAL_IMAGE+'">'],
+      ['twalt',/<meta[^>]+name=["']twitter:image:alt["']/i,'<meta name="twitter:image:alt" content="'+esc(title)+'">'],
+      ['robots',/<meta[^>]+name=["']robots["']/i,'<meta name="robots" content="'+esc(robots)+'">'],
+      ['canonical',/<link[^>]+rel=["']canonical["']/i,'<link rel="canonical" href="'+esc(canonical)+'">']
+    ];
+    let out=html;
+    for(const [,probe,tag] of tags)out=addHeadTag(out,probe,tag);
+    if(!/<meta[^>]+name=["']description["']/i.test(out))out=addHeadTag(out,/__never_description__/,'<meta name="description" content="'+esc(desc)+'">');
+    if(!/<script[^>]+src=["']\/assets\/site\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/site.js?v=20260922-1" defer></script>\n</body>');
+    if(!/<script[^>]+id=["']nexauren-public-structured-data["']/i.test(out)){
+      const structured={ "@context":"https://schema.org", "@type":"WebPage", "name":title, "url":canonical, "description":desc, "isPartOf":{"@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/"} };
+      out=addHeadTag(out,/__never_structured__/,'<script id="nexauren-public-structured-data" type="application/ld+json">'+safeJsonLd(structured)+'</script>');
+    }
+    if(/<body\b/i.test(out)&&!/class=["'][^"']*\bnx-page\b/i.test(out))out=out.replace(/<body\b([^>]*)>/i,(m,a)=>a?'<body class="nx-page"'+a+'>':'<body class="nx-page">');
+    const headers=new Headers(response.headers);
+    headers.delete("content-length");
+    return new Response(out,{status:response.status,statusText:response.statusText,headers});
+  });
+}
+
 async function sitemapPages(env){
   const maxRow=await env.DB.prepare("SELECT MAX(updated_at) lastmod FROM posts WHERE status='published' AND published_at IS NOT NULL").first();
   const catRows=await env.DB.prepare("SELECT c.slug,MAX(p.updated_at) lastmod FROM categories c LEFT JOIN posts p ON p.category_id=c.id AND p.status='published' AND p.published_at IS NOT NULL GROUP BY c.id,c.slug ORDER BY c.sort_order,c.name").all();
-  const pages=[];
+  const pages=[],seen=new Set();
+  const add=(raw,lastmod=null)=>{
+    if(typeof raw!=="string")return;
+    let path=raw.trim();
+    if(!path||!path.startsWith("/")||path.startsWith("//"))return;
+    if(path==="/."||path==="/./")path="/";
+    if(path.includes("?")||path.includes("#"))return;
+    path=path.replace(/\/{2,}/g,"/");
+    if(path!=="/")path=path.replace(/\/+$/,"")||"/";
+    if(/^\/(admin|account|api|assets|admin-assets|data)(\/|$)/.test(path))return;
+    if(path.startsWith("/tool/frontend/templates/"))return;
+    if(seen.has(path))return;
+    seen.add(path);pages.push({path,lastmod});
+  };
   try{
     const r=await env.ASSETS.fetch(new Request("https://nexaurenstory.com/data/public-urls.json"));
     if(r.ok){
       const manifest=await r.json();
-      for(const path of (Array.isArray(manifest.urls)?manifest.urls:[])){
-        if(typeof path==="string"&&!path.startsWith("/admin")&&!path.startsWith("/account")&&!path.startsWith("/api"))pages.push({path,lastmod:null});
-      }
+      for(const path of (Array.isArray(manifest.urls)?manifest.urls:[]))add(path,null);
     }
   }catch{}
-  const known=["/","/blog/","/blog/posts","/blog/about"];
-  for(const path of known)if(!pages.some(x=>x.path===path))pages.push({path,lastmod:maxRow?.lastmod});
-  for(const c of (catRows.results||[]))if(!pages.some(x=>x.path==="/blog/"+c.slug))pages.push({path:"/blog/"+c.slug,lastmod:c.lastmod||null});
+  for(const path of ["/","/blog/","/blog/posts","/blog/about"])add(path,maxRow?.lastmod||null);
+  for(const c of (catRows.results||[]))add("/blog/"+c.slug,c.lastmod||null);
   const out=pages.map(x=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com"+x.path)+"</loc>"];if(x.lastmod)lines.push("    <lastmod>"+xml(x.lastmod)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
-  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
+  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}});
 }
 async function sitemapPosts(env){
   const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' AND published_at IS NOT NULL ORDER BY published_at DESC LIMIT 50000").all();
@@ -428,7 +496,7 @@ async function sitemapIndex(){
   return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function robots(request){
-  return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}});
+  return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 
 function seoHead(html,o){
@@ -547,9 +615,10 @@ async function page(env,request,url){
   if(url.pathname==="/robots.txt")return robots(request);
   if(url.pathname==="/rss.xml")return rss(env,request);
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/nexauren-story-favicon.svg","/nexauren-story-favicon.png","/nexauren-story-favicon.ico","/nexauren-story-apple-touch-icon.png","/favicon.png","/apple-touch-icon.png","/social-preview.svg","/social-preview.png","/nexauren-story-social-preview.svg","/nexauren-story-social-preview.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
+  if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
   if(url.pathname==="/admin"||url.pathname.startsWith("/admin/")){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
-    const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
+    const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
   }
   if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname==="/tool/"||url.pathname.startsWith("/tool/")){
     if(url.pathname.startsWith("/legal/")){
@@ -561,8 +630,8 @@ async function page(env,request,url){
       const r=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));
       const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
     }
-    if(url.pathname==="/" )return env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
-    if(url.pathname==="/tool"||url.pathname==="/tool/")return env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url)));
+    if(url.pathname==="/" )return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/index.html",request.url))));
+    if(url.pathname==="/tool"||url.pathname==="/tool/")return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url))));
     let r=await env.ASSETS.fetch(request);
     if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
     return r;
