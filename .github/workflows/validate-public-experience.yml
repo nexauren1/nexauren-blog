@@ -1,0 +1,101 @@
+name: Validate public experience
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "frontend/blog/**"
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "frontend/blog/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate public JavaScript
+        run: |
+          set -euo pipefail
+          node --check worker-entry.js
+          node --check frontend/assets/public-ui.js
+          node --check frontend/tool/categories/category.js
+          node --check frontend/tool/categories/category-page.js
+          node --check frontend/tool/frontend/tool.js
+
+      - name: Validate public pages, assets and registry
+        shell: python
+        run: |
+          import json, re
+          from pathlib import Path
+
+          root=Path("frontend")
+          worker=Path("worker-entry.js").read_text(encoding="utf-8")
+          excluded_prefixes=(
+              "/admin","/account","/api","/assets","/admin-assets","/data",
+              "/blog","/tool/frontend/templates/"
+          )
+
+          def public_path(index_file: Path):
+              rel=index_file.parent.relative_to(root).as_posix()
+              return "/" if rel=="." else "/"+rel.rstrip("/")+"/"
+
+          def is_excluded(url):
+              return any(url.rstrip("/")==p or url.startswith(p.rstrip("/")+"/") for p in excluded_prefixes)
+
+          pages={}
+          for index_file in root.rglob("index.html"):
+              path=public_path(index_file)
+              if not is_excluded(path):
+                  pages[path]=index_file
+
+          manifest=json.loads(Path("frontend/data/public-urls.json").read_text(encoding="utf-8"))
+          urls=manifest.get("urls",[])
+          assert urls==sorted(set(urls)), "Manifest URLs must be unique and sorted."
+          for url in urls:
+              assert isinstance(url,str) and url.startswith("/") and "?" not in url and "#" not in url
+              assert not is_excluded(url), f"Private/internal URL in manifest: {url}"
+              assert url in pages, f"Manifest URL has no public index.html: {url}"
+
+          registry=json.loads(Path("frontend/tool/data/data.json").read_text(encoding="utf-8"))
+          category_ids={c["id"] for c in registry.get("categories",[])}
+          for c in registry.get("categories",[]):
+              p=c.get("path","")
+              assert p in pages, f"Tool category missing index.html: {p}"
+              assert c.get("id") in category_ids
+          for t in registry.get("tools",[]):
+              assert t.get("category") in category_ids, f"Unknown tool category: {t.get('id')}"
+              p=t.get("path","")
+              assert p in pages, f"Registered tool missing index.html: {p}"
+
+          required_markers=[
+              "public-ui.css",
+              "public-ui.js",
+              'property=["\']og:image',
+          ]
+          for marker in required_markers[:2]:
+              assert marker in worker, f"Worker public decoration missing: {marker}"
+          assert "og:image" in worker and "twitter:image" in worker, "Worker social preview injection missing."
+          assert "rel" in worker and "nexauren-story-favicon.svg" in worker, "Worker favicon injection missing."
+
+          public_bad=[]
+          for path,file in pages.items():
+              html=file.read_text(encoding="utf-8")
+              for pattern,label in [
+                  (r"<title>\s*[^<]+</title>","title"),
+                  (r'name=["\']description["\']',"description"),
+                  (r'rel=["\']canonical["\']',"canonical"),
+              ]:
+                  if not re.search(pattern,html,re.I):
+                      public_bad.append((path,label))
+              if re.search(r"firebase|cloudflare",html,re.I):
+                  public_bad.append((path,"external infrastructure reference"))
+          assert not public_bad, "Public page validation failed: "+repr(public_bad[:50])
+
+          print(f"Validated {len(pages)} public static pages, {len(urls)} sitemap manifest URLs and {len(registry.get('tools',[]))} registered tools.")
