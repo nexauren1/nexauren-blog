@@ -92,6 +92,61 @@
   function updateYears(){const year=String(new Date().getFullYear());$$("[id='year']").forEach(el=>{el.textContent=year;});}
 
   function exposeApi(){window.NexaurenUI=Object.freeze({config,initReveal,initMenus,initSpotlight,initScrollProgress,initTopButton,setActiveNavigation,refresh(){setActiveNavigation();initReveal();}});}
-  function init(){if(!document.body)return;document.body.classList.add("nx-ready");ensureLegalNavigation();setActiveNavigation();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();updateYears();exposeApi();}
+
+  function initHeaderMotion(){
+    const headers=$("header");
+    if(!headers.length)return;
+    const update=()=>headers.forEach(header=>header.classList.toggle("nx-scrolled",window.scrollY>10));
+    update();window.addEventListener("scroll",update,{passive:true});
+  }
+
+  function initCursorGlow(){
+    if(config.reducedMotion||window.matchMedia("(pointer:coarse)").matches)return;
+    let glow=$(".nx-cursor-glow");
+    if(!glow){glow=document.createElement("div");glow.className="nx-cursor-glow";glow.setAttribute("aria-hidden","true");document.body.appendChild(glow);}
+    let raf=0,x=0,y=0;
+    const move=e=>{x=e.clientX;y=e.clientY;if(raf)return;raf=requestAnimationFrame(()=>{glow.style.transform="translate3d("+x+"px,"+y+"px,0) translate(-50%,-50%)";raf=0;});};
+    window.addEventListener("pointermove",move,{passive:true});
+    document.body.classList.add("nx-pointer-ready");
+  }
+
+  function initButtonFeedback(){
+    if(config.reducedMotion)return;
+    document.addEventListener("pointerdown",event=>{
+      const target=event.target.closest("button,.button,.primary,.secondary,.google,.logout,.nx-action");
+      if(!target||target.disabled||target.dataset.nxRipple)return;
+      const rect=target.getBoundingClientRect(),ripple=document.createElement("i");
+      target.dataset.nxRipple="1";
+      ripple.setAttribute("aria-hidden","true");
+      ripple.style.cssText="position:absolute;width:12px;height:12px;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.42);left:"+(event.clientX-rect.left-6)+"px;top:"+(event.clientY-rect.top-6)+"px;transform:scale(1);opacity:.75;transition:transform .5s ease,opacity .5s ease";
+      target.appendChild(ripple);
+      requestAnimationFrame(()=>{ripple.style.transform="scale(20)";ripple.style.opacity="0";});
+      setTimeout(()=>{ripple.remove();delete target.dataset.nxRipple;},520);
+    });
+  }
+
+  function initPageTransition(){
+    if(config.reducedMotion)return;
+    document.addEventListener("click",event=>{
+      const link=event.target.closest("a[href]");
+      if(!link||link.target==="_blank"||link.hasAttribute("download")||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      const href=link.getAttribute("href")||"";
+      if(!href||href.startsWith("#")||href.startsWith("mailto:")||href.startsWith("tel:"))return;
+      let target;try{target=new URL(href,location.href);}catch{return}
+      if(target.origin!==location.origin||target.pathname.startsWith("/blog"))return;
+      if(target.href===location.href)return;
+      document.body.classList.add("nx-leaving");
+      window.setTimeout(()=>document.body.classList.remove("nx-leaving"),420);
+    },{capture:true});
+  }
+
+  function initKeyboardNavigation(){
+    document.addEventListener("keydown",event=>{
+      if(event.key!=="Enter"||event.altKey||event.ctrlKey||event.metaKey)return;
+      const target=event.target;
+      if(target instanceof HTMLAnchorElement && target.href)target.click();
+    });
+  }
+\n  function init(){if(!document.body)return;document.body.classList.add("nx-ready");ensureLegalNavigation();setActiveNavigation();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();updateYears();exposeApi();}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
