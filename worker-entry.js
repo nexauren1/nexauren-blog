@@ -135,13 +135,24 @@ async function ensureNexaurenAccount(env, claims, markLogin = false) {
     throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/accounts-upgrade.sql no D1 de contas Nexauren."), { code: "ACCOUNT_DB_NOT_READY" });
   }
   if (!profile) {
+    // A conta pode ter sido criada anteriormente por outro fluxo com o mesmo email.
+    // Nesse caso, associa-a ao UID Firebase atual em vez de provocar UNIQUE(email).
+    const existingByEmail = email
+      ? await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_accounts WHERE email=? LIMIT 1").bind(email).first()
+      : null;
+    if (existingByEmail) {
+      await env.ACCOUNTS_DB.prepare(
+        "UPDATE nexauren_accounts SET firebase_uid=?,display_name=?,photo_url=?,status='active',email_verified=?,last_login_at=?,last_seen_at=?,updated_at=? WHERE id=?"
+      ).bind(uid, displayName, photoUrl, claims.email_verified ? 1 : 0, markLogin ? ts : existingByEmail.last_login_at, ts, ts, existingByEmail.id).run();
+      return { id: existingByEmail.id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: "active", email_verified: !!claims.email_verified, created: false };
+    }
     const id = crypto.randomUUID();
     await env.ACCOUNTS_DB.prepare(
       "INSERT INTO nexauren_accounts (id,firebase_uid,email,display_name,photo_url,status,email_verified,last_login_at,last_seen_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
     ).bind(id, uid, email, displayName, photoUrl, "active", claims.email_verified ? 1 : 0, markLogin ? ts : null, ts, ts, ts).run();
     await env.ACCOUNTS_DB.prepare(
       "INSERT INTO nexauren_account_preferences (account_id,language,theme,timezone,marketing_emails,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
-    ).bind(id, "pt", "system", "Africa/Maputo", 0, ts, ts).run();
+    ).bind(id, "pt", "system", "Africa/Maputo", 0, ts, ts, ts).run();
     return { id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: "active", email_verified: !!claims.email_verified, created: true };
   }
   if (profile.status !== "active") {
