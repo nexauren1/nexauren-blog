@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-22T20:39:33.789Z",
+    "updatedAt": "2026-09-22T23:00:00.000Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -59,6 +59,28 @@
       "popular": true,
       "access": "public",
       "sortOrder": 10
+    },
+    {
+      "id": "gerador-de-orcamentos",
+      "name": "Gerador de Orçamentos Pro",
+      "description": "Crie orçamentos profissionais com itens, impostos, desconto, validade e impressão pronta para PDF.",
+      "category": "produtividade",
+      "icon": "▣",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/produtividade/gerador-de-orcamentos/",
+      "tags": [
+        "orçamento",
+        "negócios",
+        "PDF",
+        "profissional"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "paid",
+      "price": "0.50",
+      "currency": "USD",
+      "sortOrder": 5
     }
   ]
 }
