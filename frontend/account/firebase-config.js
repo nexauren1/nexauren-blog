@@ -1,6 +1,5 @@
-// Firebase configuration for Nexauren Story public accounts.
-// These values identify the Firebase web app and are safe to ship in browser code.
-// Never put Firebase service-account credentials or private keys in this file.
+// Configuração segura de autenticação web para as contas Nexauren.
+// Estes valores identificam a aplicação pública e não contêm credenciais privadas.
 
 export const firebaseConfig = {
   apiKey: "AIzaSyDM0CvTck9g6GW7pDmWKN0__J9TmpE7ku8",
