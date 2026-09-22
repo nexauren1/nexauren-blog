@@ -1,0 +1,2 @@
+/* CSS exclusivo da ferramenta. O frontend partilhado fica em /tool/frontend/tool.css. */
+#tool-app{padding:20px 0 80px}.tool-surface{background:#fff;border:1px solid #e2e7ed;border-radius:20px;padding:24px}
