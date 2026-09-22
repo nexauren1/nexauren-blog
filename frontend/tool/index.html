@@ -1,11 +1,86 @@
 <!doctype html>
-<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101318"><meta name="description" content="Ferramentas online do Nexauren Story, organizadas por categorias.">
-<meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="https://nexaurenstory.com/tool/">
-<title>Ferramentas — Nexauren Story</title><link rel="stylesheet" href="/tool/frontend/tool.css"></head>
-<body><header class="tool-header"><div class="tool-wrap tool-nav"><a class="tool-brand" href="/"><span class="tool-mark">N</span><span>Nexauren <b>Story</b></span></a><nav class="tool-links"><a href="/blog/">Histórias</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Legal</a></nav></div></header>
-<main class="tool-wrap"><section class="tool-hero"><div class="tool-eyebrow">NEXAUREN TOOLS</div><h1>Ferramentas que<br>resolvem tarefas.</h1><p class="tool-lead">Utilitários rápidos, simples e gratuitos para escrever, calcular, organizar e criar. Abra uma ferramenta e comece sem complicação.</p><div class="tool-stats"><span><b data-tool-count>0</b> ferramentas</span><span>⚡ rápidas</span><span>▣ sem instalação</span></div>
-<div class="tool-toolbar"><input class="tool-search" data-tool-search type="search" placeholder="Pesquisar categorias…"></div></section>
-<section class="tool-section"><div class="section-head"><div><div class="tool-eyebrow">EXPLORAR</div><h2>Categorias</h2></div><span class="tool-badge">Sempre a crescer</span></div><div class="tool-grid" data-category-grid><div class="tool-empty">A carregar categorias…</div></div><div data-tool-empty hidden></div></section></main>
-<footer class="tool-footer"><div class="tool-wrap tool-footer-row"><span>© <span id="year"></span> Nexauren Story</span><div><a href="/">Início</a> · <a href="/blog/">Histórias</a></div></div></footer>
-<script src="/tool/categories/category.js"></script><script src="/tool/frontend/tool.js"></script><script>document.getElementById("year").textContent=new Date().getFullYear()</script></body></html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f9fc">
+<meta name="description" content="Ferramentas online do Nexauren Story, organizadas por categorias.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexaurenstory.com/tool/">
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
+<title>Ferramentas — Nexauren Story</title>
+<link rel="stylesheet" href="/tool/frontend/tool.css">
+</head>
+<body>
+<header class="tool-header">
+  <div class="tool-wrap tool-nav">
+    <a class="tool-brand" href="/" aria-label="Nexauren Story">
+      <img src="/nexauren-story-favicon.svg?v=20260922-4" alt="" width="42" height="42">
+      <span class="tool-brand-text"><strong>Nexauren</strong><span>Story</span></span>
+    </a>
+    <nav class="tool-links" aria-label="Navegação principal">
+      <a href="/blog/">Histórias</a>
+      <a href="/tool/" aria-current="page">Ferramentas</a>
+      <a href="/account">Conta</a>
+    </nav>
+    <button class="tool-menu" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="tool-mobile" data-tool-mobile>
+    <div class="tool-wrap">
+      <a href="/blog/">Histórias</a>
+      <a href="/tool/">Ferramentas</a>
+      <a href="/account">Conta</a>
+      <a href="/legal/privacidade/">Privacidade</a>
+      <a href="/legal/termos/">Termos</a>
+    </div>
+  </div>
+</header>
+
+<main class="tool-wrap">
+  <section class="tool-hero">
+    <div>
+      <div class="tool-eyebrow">NEXAUREN TOOLS</div>
+      <h1>Ferramentas que acompanham o seu trabalho.</h1>
+      <p class="tool-lead">Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer.</p>
+      <div class="tool-toolbar">
+        <input class="tool-search" data-tool-search type="search" inputmode="search" autocomplete="off" placeholder="Pesquisar uma categoria…">
+      </div>
+    </div>
+    <aside class="tool-overview">
+      <div class="tool-overview-title">Catálogo Nexauren</div>
+      <div class="tool-overview-main"><strong data-tool-count>0</strong><span>ferramentas<br>disponíveis</span></div>
+      <div class="tool-overview-line"></div>
+      <div class="tool-overview-note">Sem instalação. Abra, use e volte quando precisar.</div>
+    </aside>
+  </section>
+
+  <section class="tool-section" aria-labelledby="categories-title">
+    <div class="section-head">
+      <div><div class="tool-eyebrow">EXPLORAR</div><h2 id="categories-title">Categorias</h2></div>
+      <span class="tool-badge">Sempre a crescer</span>
+    </div>
+    <div class="tool-grid" data-category-grid>
+      <div class="tool-empty">A carregar categorias…</div>
+    </div>
+  </section>
+</main>
+
+<footer class="tool-footer">
+  <div class="tool-wrap tool-footer-row">
+    <span>© <span id="year"></span> Nexauren Story</span>
+    <span><a href="/">Início</a> · <a href="/blog/">Histórias</a> · <a href="/account">Conta</a> · <a href="/legal/privacidade/">Privacidade</a></span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const menu=document.querySelector(".tool-menu"),panel=document.querySelector("[data-tool-mobile]");
+  menu?.addEventListener("click",()=>{const open=panel.classList.toggle("open");menu.setAttribute("aria-expanded",String(open));});
+  panel?.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>panel.classList.remove("open")));
+  document.getElementById("year").textContent=new Date().getFullYear();
+})();
+</script>
+<script src="/tool/categories/category.js"></script>
+<script src="/tool/frontend/tool.js"></script>
+</body>
+</html>
