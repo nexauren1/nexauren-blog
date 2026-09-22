@@ -37,7 +37,9 @@
   function queryText(v){return String(v||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"");}
   function renderList(target,list,empty){
     if(!target)return;
-    target.innerHTML=list.length?list.map(t=>toolCard(t,true)).join(""):empty;
+    if(!list.length){target.innerHTML=empty;return;}
+    const cards=list.map(t=>toolCard(t,true)).join("");
+    target.innerHTML='<div class="tool-marquee" aria-label="Ferramentas em destaque"><div class="tool-marquee-track">'+cards+cards+'</div></div>';
     window.NexaurenUI?.refresh?.();
   }
 
