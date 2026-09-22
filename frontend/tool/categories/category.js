@@ -1,5 +1,5 @@
 (() => {
-  const DATA_URL="/api/tool-registry";const FALLBACK_DATA_URL="/tool/data/data.json";
+  const DATA_URL="/api/tool-registry";const FALLBACK_DATA_URL="/tool/data/data.json?v=20260923-1";
   let registryPromise=null;
   function normalize(raw){
     const categories=Array.isArray(raw?.categories)?raw.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)):[],
