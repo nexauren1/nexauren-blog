@@ -50,7 +50,8 @@ function friendlyError(error) {
     "auth/operation-not-allowed": "Este método de acesso não está disponível neste momento.",
     "auth/unauthorized-domain": "O acesso com Google ainda não está disponível neste domínio.",
     "auth/web-storage-unsupported": "O armazenamento do navegador não está disponível. Abra o Nexauren Story num navegador normal, não numa janela privada bloqueada.",
-    "auth/internal-error": "Não foi possível concluir a operação. Tente novamente."
+    "auth/internal-error": "Não foi possível concluir o acesso. Tente novamente.",
+    "auth/operation-not-supported-in-this-environment": "Este navegador não conseguiu abrir a janela de acesso. Vamos tentar uma alternativa."
   };
   return messages[code] || "Não foi possível concluir a operação. Tente novamente.";
 }
@@ -98,7 +99,7 @@ function loginView(prefill = "", notice = "") {
       <label>Email<input id="email" type="email" inputmode="email" autocomplete="email" value="${esc(prefill)}" required></label>
       <label>Palavra-passe<input id="password" type="password" autocomplete="current-password" required></label>
       <button class="primary" id="email-login" type="submit">Entrar</button>
-      <button class="google" id="google-login" type="button"><span class="google-g">G</span> Continuar com Google</button>
+      <button class="google" id="google-login" type="button"><svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.35 12.27c0-.71-.06-1.4-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.44h3.14c1.84-1.69 2.91-4.18 2.91-7.21Z"/><path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.36l-3.14-2.44c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.3v2.52A9.74 9.74 0 0 0 12 21.75Z"/><path fill="#FBBC05" d="M6.54 13.84A5.86 5.86 0 0 1 6.22 12c0-.64.11-1.26.32-1.84V7.64H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.36l3.24-2.52Z"/><path fill="#EA4335" d="M12 6.13c1.43 0 2.71.49 3.72 1.46l2.79-2.79C16.84 3.17 14.63 2.25 12 2.25a9.74 9.74 0 0 0-8.7 5.39l3.24 2.52C7.31 7.85 9.46 6.13 12 6.13Z"/></svg> Continuar com Google</button>
       <div class="form-links"><button type="button" class="link-button" data-forgot>Esqueci a minha palavra-passe</button></div>
       <div class="error" id="error" role="alert"></div>
     </form>
@@ -121,7 +122,7 @@ function registerView() {
       <div class="password-rules" id="password-rules">Use 12+ caracteres, incluindo maiúscula, minúscula, número e símbolo.</div>
       <label>Confirmar palavra-passe<input id="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
       <button class="primary" type="submit">Criar conta</button>
-      <button class="google" id="google-register" type="button"><span class="google-g">G</span> Criar com Google</button>
+      <button class="google" id="google-register" type="button"><svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.35 12.27c0-.71-.06-1.4-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.44h3.14c1.84-1.69 2.91-4.18 2.91-7.21Z"/><path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.36l-3.14-2.44c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.3v2.52A9.74 9.74 0 0 0 12 21.75Z"/><path fill="#FBBC05" d="M6.54 13.84A5.86 5.86 0 0 1 6.22 12c0-.64.11-1.26.32-1.84V7.64H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.36l3.24-2.52Z"/><path fill="#EA4335" d="M12 6.13c1.43 0 2.71.49 3.72 1.46l2.79-2.79C16.84 3.17 14.63 2.25 12 2.25a9.74 9.74 0 0 0-8.7 5.39l3.24 2.52C7.31 7.85 9.46 6.13 12 6.13Z"/></svg> Criar com Google</button>
       <div class="error" id="error" role="alert"></div>
       <p class="hint">Vamos enviar uma mensagem para confirmar o seu email. A conta fica disponível no ecossistema Nexauren.</p>
     </form>
@@ -475,7 +476,7 @@ async function googleSignIn(button, errorTarget) {
       return;
     }
 
-    if (code === "auth/popup-blocked") {
+    if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
       try {
         await signInWithRedirect(auth, provider);
         return;
@@ -486,7 +487,7 @@ async function googleSignIn(button, errorTarget) {
       errorTarget.textContent = friendlyError(err);
     }
 
-    setBusy(button, false, "A ligar…", "Continuar com Google");
+    setBusy(button, false, "A ligar…", normalText);
   }
 }
 
