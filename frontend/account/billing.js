@@ -1,4 +1,4 @@
-import { workerFetch } from "./account-client.js";
+import { workerFetch } from "./account-client.js?v=20260922-2";
 
 const esc = (value) => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
@@ -64,7 +64,7 @@ async function initBilling(root){
     const result=await workerFetch("/api/account/billing");
     host.innerHTML=billingMarkup(result.billing,notice);
   }catch(error){
-    host.innerHTML=billingMarkup({plan:"free",status:"FREE"},"Não foi possível carregar o estado da assinatura. Tente novamente.");
+    host.innerHTML=billingMarkup({plan:"free",status:"FREE"},"Erro ao carregar assinatura: " + (error?.message || "erro desconhecido") + (error?.code ? " [" + error.code + "]" : ""));
     if(paypal)history.replaceState({},document.title,"/account");
   }
   const upgrade=host.querySelector("[data-billing-upgrade]");
