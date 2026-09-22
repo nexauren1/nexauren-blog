@@ -1,4 +1,4 @@
-import { workerFetch } from "./account-client.js?v=20260922-2";
+import { workerFetch } from "./account-client.js?v=20260922-3";
 
 const esc = (value) => String(value ?? "")
   .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
