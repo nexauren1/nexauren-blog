@@ -21,3 +21,43 @@ form{display:grid;gap:12px}label{display:grid;gap:7px;font-size:11px;font-weight
 .account-footer{padding:27px 0 33px}.account-footer-row{display:flex;justify-content:space-between;gap:16px;color:#7a8496;font-size:10px}.account-footer a{text-decoration:none;color:inherit}.account-footer a:hover{color:var(--accent)}
 @media(max-width:960px){.nav nav{display:none}.menu-toggle{display:flex;width:44px;height:44px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);align-items:center;justify-content:center}.menu-toggle span,.menu-toggle span:before,.menu-toggle span:after{display:block;width:18px;height:2px;border-radius:2px;background:currentColor;content:"";position:relative}.menu-toggle span:before{position:absolute;top:-6px}.menu-toggle span:after{position:absolute;top:6px}}
 @media(max-width:720px){.account-wrap{width:min(100% - 24px,1040px)}.account-hero{padding:50px 0 18px}.account-hero p{font-size:14px}.account-card{padding:22px;margin-bottom:54px;border-radius:19px}.shortcut-grid{grid-template-columns:1fr}.section-title{display:block}.section-title span{display:block;margin-top:4px}.account-footer-row{flex-direction:column}}
+
+
+/* Billing — Free / Pro */
+.account-billing{overflow:hidden}
+.billing-panel{display:grid;gap:18px}
+.billing-kicker{font-size:10px;letter-spacing:.16em;font-weight:900;color:#6b57f2}
+.billing-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end}
+.billing-head h3{margin:0;font-size:27px;letter-spacing:-.04em}
+.billing-head p{margin:6px 0 0;color:#70798a;font-size:13px}
+.billing-status{padding:7px 10px;border:1px solid #dde3ec;border-radius:999px;background:#fff;font-size:10px;font-weight:900;white-space:nowrap}
+.billing-notice{padding:12px 14px;border-radius:12px;background:#eefbf7;border:1px solid #ccefe5;color:#176c5f;font-size:12px;font-weight:700}
+.billing-notice.error{background:#fff1f1;border-color:#f0d0d0;color:#9b3535}
+.billing-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.billing-plan{position:relative;padding:20px;border:1px solid #dfe4ec;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(14,20,36,.05)}
+.billing-plan.current{border-color:#c9c1ff;box-shadow:0 14px 35px rgba(107,87,242,.10)}
+.billing-plan.pro{background:linear-gradient(145deg,#11182a,#202a43);border-color:#2d3854;color:#fff}
+.billing-plan-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900}
+.billing-plan-top b{font-size:8px;letter-spacing:.08em;padding:5px 7px;border-radius:999px;background:#eeeaff;color:#6552dd}
+.billing-plan.pro .billing-plan-top b{background:rgba(255,255,255,.12);color:#bdb5ff}
+.billing-plan>strong{display:block;margin-top:16px;font-size:42px;letter-spacing:-.07em}
+.billing-plan>strong small{font-size:12px;letter-spacing:0;color:inherit}
+.billing-plan>small{color:#8b94a4;font-size:10px}
+.billing-plan p{min-height:35px;margin:9px 0;color:#aeb7c7;font-size:11px;line-height:1.5}
+.billing-plan ul{margin:16px 0;padding:0;list-style:none;display:grid;gap:8px;color:#6f7889;font-size:10px;line-height:1.4}
+.billing-plan.pro ul{color:#c5ccda}
+.billing-plan li:before{content:"✓";margin-right:7px;color:#6957ef;font-weight:900}
+.billing-plan.pro li:before{color:#64dbc9}
+.billing-btn{width:100%;height:42px;border:0;border-radius:11px;background:#6b57f2;color:#fff;font:inherit;font-size:11px;font-weight:900;cursor:pointer;box-shadow:0 10px 22px rgba(107,87,242,.22)}
+.billing-btn:hover{transform:translateY(-1px)}
+.billing-btn.muted{background:#eef1f5;color:#697386;box-shadow:none}
+.billing-btn.danger{background:#fff;color:#a33b43;box-shadow:none}
+.billing-btn:disabled{opacity:.65;cursor:wait;transform:none}
+.billing-meta{font-size:10px;color:#7d8797}
+.billing-loading{padding:18px;border-radius:12px;background:#f5f7fa;color:#778194;font-size:12px}
+@media(max-width:680px){
+  .billing-head{align-items:flex-start;flex-direction:column;gap:9px}
+  .billing-head h3{font-size:23px}
+  .billing-plans{grid-template-columns:1fr}
+  .billing-plan{padding:17px}
+}
