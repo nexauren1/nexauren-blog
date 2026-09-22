@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<link rel="stylesheet" href="/assets/site.css?v=20260922-2">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f9fc">
+<meta name="description" content="Planos Nexauren — Free e Pro.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://nexaurenstory.com/account/upgrade/">
+<title>Upgrade — Nexauren Story</title>
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
+<link rel="stylesheet" href="/account/account.css?v=20260922-3">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260922-4">
+</head>
+<body class="nx-page">
+<header class="account-header">
+  <div class="account-wrap nav">
+    <a class="brand" href="/" aria-label="Nexauren Story"><img class="mark" src="/nexauren-story-favicon.svg?v=20260922-4" alt="" width="42" height="42"><span class="brand-text"><strong>Nexauren</strong><span>Story</span></span></a>
+    <nav aria-label="Navegação principal"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Legal</a></nav>
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="mobile-nav" data-mobile-nav><div class="account-wrap"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a></div></div>
+</header>
+<main class="account-wrap upgrade-page">
+  <section class="account-hero"><div class="eyebrow">NEXAUREN PLANS</div><h1>Escolha o seu plano.</h1><p>Comece grátis ou desbloqueie os recursos Pro por $5/mês.</p></section>
+  <section class="upgrade-card" data-account-app>
+    <a class="upgrade-back" href="/account">← Voltar à conta</a>
+    <div data-billing><div class="account-loading">A carregar os planos…</div></div>
+    <p class="upgrade-note">Pagamento recorrente seguro via PayPal. Pode cancelar a assinatura a qualquer momento.</p>
+  </section>
+</main>
+<footer class="account-footer"><div class="account-wrap account-footer-row"><span>© <span id="year"></span> Nexauren Story</span><span><a href="/legal/privacidade/">Privacidade</a> · <a href="/legal/termos/">Termos</a> · <a href="/legal/cookies/">Cookies</a></span></div></footer>
+<script type="module">
+import { auth, onAuthStateChanged } from "/account/account-client.js?v=20260922-3";
+import { initBilling } from "/account/billing.js?v=20260922-4";
+const root=document.querySelector("[data-account-app]");
+onAuthStateChanged(auth,user=>{ if(!user){ location.href="/account"; return; } initBilling(root); });
+</script>
+<script src="/assets/public-ui.js?v=20260922-4" defer></script>
+</body>
+</html>
