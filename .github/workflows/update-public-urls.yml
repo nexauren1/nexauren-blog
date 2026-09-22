@@ -1,0 +1,56 @@
+name: Update public URL manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/update-public-urls.yml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  urls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build public URL manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p frontend/data
+          python3 <<'PY'
+          import json, os
+          root="frontend"
+          excluded={"/admin","/account","/api","/assets","/admin-assets","/data"}
+          urls=set(["/"])
+          for base, dirs, files in os.walk(root):
+              rel="/"+os.path.relpath(base, root).replace(os.sep,"/")
+              dirs[:] = [d for d in dirs if not (rel+"/"+d).startswith(tuple(excluded))]
+              if any(f=="index.html" for f in files):
+                  if rel in ("//","."): path="/"
+                  else: path=rel.rstrip("/")+"/"
+                  if not any(path==x or path.startswith(x+"/") for x in excluded):
+                      urls.add(path)
+          urls=sorted(urls)
+          with open("frontend/data/public-urls.json","w",encoding="utf-8") as f:
+              json.dump({"version":1,"generatedAt":__import__("datetime").datetime.utcnow().isoformat()+"Z","urls":urls},f,ensure_ascii=False,indent=2)
+              f.write("\n")
+          print("Public URLs:", len(urls))
+          for u in urls: print(u)
+          PY
+      - name: Commit URL manifest
+        run: |
+          git config user.name "nexauren-sitemap-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add frontend/data/public-urls.json
+          if git diff --cached --quiet; then
+            echo "No URL changes."
+          else
+            git commit -m "chore: update public URL manifest"
+            git push
+          fi
