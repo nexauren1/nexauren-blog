@@ -22,7 +22,7 @@
     '<h2>'+esc(c.name)+'</h2><p>'+esc(c.description||"")+'</p>'+
     '<small>'+Number(c.count||0)+' ferramenta(s) nesta categoria</small></a>';
 
-  const toolCard=t=>'<a class="tool-card nx-spotlight nx-reveal" href="'+esc(t.path)+'">'+
+  const toolCard=t=>'<a class="tool-card cat-'+esc(t.category)+' nx-spotlight nx-reveal" data-category="'+esc(t.category)+'" href="'+esc(t.path)+'">'+
     '<span class="tool-card-icon">'+iconSvg(t.category)+'</span><span class="tool-arrow">→</span>'+
     '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
     '<small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small></a>';
