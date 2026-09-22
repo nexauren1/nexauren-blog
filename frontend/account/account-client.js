@@ -79,8 +79,10 @@ export async function workerFetch(path, options = {}) {
   }
 
   if (!response.ok) {
-    const error = new Error(data.error || "Pedido não concluído.");
+    const detail = data?.details ? " — " + data.details : "";
+    const error = new Error((data.error || "Pedido não concluído.") + detail);
     error.code = data.code;
+    error.details = data.details || null;
     throw error;
   }
   return data;
