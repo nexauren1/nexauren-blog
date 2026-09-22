@@ -1,0 +1,2 @@
+const root=document.getElementById("tool-app");
+root.innerHTML='<div class="tool-surface"><strong>Template Nexauren Tool</strong><p>Substitua este conteúdo pelo HTML/JS da ferramenta. Mantenha o CSS específico em style.css e o catálogo em /tool/data/data.json.</p></div>';
