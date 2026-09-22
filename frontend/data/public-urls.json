@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-22T21:27:12.778923Z",
+  "generatedAt": "2026-09-22T21:58:02.713625Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -10,6 +10,7 @@
     "/tool/categories/imagem/",
     "/tool/categories/produtividade/",
     "/tool/categories/produtividade/contador-de-palavras/",
+    "/tool/categories/produtividade/gerador-de-orcamentos/",
     "/tool/categories/tecnologia/",
     "/tool/categories/texto/",
     "/tool/destaques/",
