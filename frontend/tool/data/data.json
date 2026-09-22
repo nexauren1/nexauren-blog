@@ -1,9 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-22T17:46:13.745Z",
+    "updatedAt": "2026-09-22T20:39:33.789Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -54,7 +54,11 @@
         "texto",
         "contagem",
         "produtividade"
-      ]
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 10
     }
   ]
 }
