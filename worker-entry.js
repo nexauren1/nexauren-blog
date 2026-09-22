@@ -422,7 +422,7 @@ function decoratePublicHtmlResponse(request,response){
       ['apple',/<link[^>]+rel=["']apple-touch-icon["']/i,'<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">'],
       ['manifest',/<link[^>]+rel=["']manifest["']/i,'<link rel="manifest" href="/manifest.json">'],
       ['style',/<link[^>]+href=["']\/assets\/site\.css/i,'<link rel="stylesheet" href="/assets/site.css?v=20260922-1">'],
-      ['publicstyle',/<link[^>]+href=["']\/assets\/public-ui\.css/i,'<link rel="stylesheet" href="/assets/public-ui.css?v=20260922-1">'],
+      ['publicstyle',/<link[^>]+href=["']\/assets\/public-ui\.css/i,'<link rel="stylesheet" href="/assets/public-ui.css?v=20260922-2">'],
       ['ogsite',/<meta[^>]+property=["']og:site_name["']/i,'<meta property="og:site_name" content="Nexauren Story">'],
       ['ogtitle',/<meta[^>]+property=["']og:title["']/i,'<meta property="og:title" content="'+esc(title)+'">'],
       ['ogdesc',/<meta[^>]+property=["']og:description["']/i,'<meta property="og:description" content="'+esc(desc)+'">'],
@@ -447,7 +447,7 @@ function decoratePublicHtmlResponse(request,response){
     for(const [,probe,tag] of tags)out=addHeadTag(out,probe,tag);
     if(!/<meta[^>]+name=["']description["']/i.test(out))out=addHeadTag(out,/__never_description__/,'<meta name="description" content="'+esc(desc)+'">');
     if(!/<script[^>]+src=["']\/assets\/site\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/site.js?v=20260922-1" defer></script>\n</body>');
-    if(!/<script[^>]+src=["']\/assets\/public-ui\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/public-ui.js?v=20260922-1" defer></script>\n</body>');
+    if(!/<script[^>]+src=["']\/assets\/public-ui\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/public-ui.js?v=20260922-2" defer></script>\n</body>');
     if(!/<script[^>]+id=["']nexauren-public-structured-data["']/i.test(out)){
       const structured={ "@context":"https://schema.org", "@type":"WebPage", "name":title, "url":canonical, "description":desc, "isPartOf":{"@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/"} };
       out=addHeadTag(out,/__never_structured__/,'<script id="nexauren-public-structured-data" type="application/ld+json">'+safeJsonLd(structured)+'</script>');
@@ -616,7 +616,7 @@ async function page(env,request,url){
   if(url.pathname==="/sitemap-posts.xml")return sitemapPosts(env);
   if(url.pathname==="/robots.txt")return robots(request);
   if(url.pathname==="/rss.xml")return rss(env,request);
-  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/nexauren-story-favicon.svg","/nexauren-story-favicon.png","/nexauren-story-favicon.ico","/nexauren-story-apple-touch-icon.png","/favicon.png","/apple-touch-icon.png","/social-preview.svg","/social-preview.png","/nexauren-story-social-preview.svg","/nexauren-story-social-preview.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
+  if(url.pathname==="/social-preview.png"||url.pathname==="/social-preview.svg"){const target=new URL(url.pathname==="/social-preview.png"?"/nexauren-story-social-preview.png":"/nexauren-story-social-preview.svg",request.url);return env.ASSETS.fetch(new Request(target,request));}\n  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/favicon.svg","/nexauren-story-favicon.svg","/nexauren-story-favicon.png","/nexauren-story-favicon.ico","/nexauren-story-apple-touch-icon.png","/favicon.png","/apple-touch-icon.png","/nexauren-story-social-preview.svg","/nexauren-story-social-preview.png","/og-image.jpg","/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
   if(url.pathname==="/admin"||url.pathname.startsWith("/admin/")){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
