@@ -601,17 +601,19 @@ async function loadToolRegistry(env,request){
   let dbRegistry=null;
   try{
     const row=await env.DB.prepare("SELECT value FROM settings WHERE key='tool_registry' LIMIT 1").first();
-    if(row?.value){
-      const parsed=normalizeToolRegistry(JSON.parse(String(row.value)));
-      if(parsed.tools.length||parsed.categories.length) dbRegistry=parsed;
-    }
+    if(row?.value) dbRegistry=normalizeToolRegistry(JSON.parse(String(row.value)));
   }catch{}
-  if(dbRegistry)return dbRegistry;
+  let assetRegistry=null;
   try{
     const r=await env.ASSETS.fetch(new Request(new URL("/tool/data/data.json",request.url)));
-    if(r.ok)return normalizeToolRegistry(await r.json());
+    if(r.ok) assetRegistry=normalizeToolRegistry(await r.json());
   }catch{}
-  return normalizeToolRegistry({categories:[],tools:[]});
+  // O catálogo em ficheiro é a fonte base. Um registro D1 vazio ou incompleto
+  // não pode fazer a página pública aparecer como "0 ferramentas".
+  if(!dbRegistry)return assetRegistry||normalizeToolRegistry({categories:[],tools:[]});
+  if(!dbRegistry.tools.length && assetRegistry?.tools?.length)return assetRegistry;
+  if(!dbRegistry.categories.length && assetRegistry?.categories?.length)return {...dbRegistry,categories:assetRegistry.categories};
+  return dbRegistry;
 }
 async function ensureToolUsageTable(env){
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS tool_usage (tool_id TEXT NOT NULL,bucket TEXT NOT NULL,visitor_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tool_id,bucket,visitor_hash))").run();
