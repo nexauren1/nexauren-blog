@@ -17,8 +17,6 @@ import {
   signOut,
   syncWithWorker
 } from "/account/account-client.js?v=20260922-3";
-import { initBilling } from "./billing.js?v=20260922-3";
-
 const root = document.querySelector("[data-account-app]");
 const $ = (selector, scope = document) => scope.querySelector(selector);
 let redirectError = null;
@@ -213,19 +211,6 @@ function userView(user, syncMessage = "") {
       ${syncMessage ? messageBox("success", syncMessage) : ""}
       ${verificationPanel(user)}
 
-      <section class="account-section account-billing" data-billing>
-        <div class="account-loading">A carregar os planos…</div>
-      </section>
-
-      <section class="account-section account-shortcuts">
-        <div class="section-title"><strong>Acesso rápido</strong><span>Continue a utilizar o ecossistema Nexauren.</span></div>
-        <div class="shortcut-grid">
-          <a href="/tool/">Ferramentas <span>→</span></a>
-          <a href="/blog/">Histórias <span>→</span></a>
-          <a href="/legal/privacidade/">Privacidade <span>→</span></a>
-        </div>
-      </section>
-
       <section class="account-section">
         <div class="section-title"><strong>Perfil</strong><span>Informações básicas da conta</span></div>
         <form id="profile-form" class="mini-form" novalidate>
@@ -314,8 +299,6 @@ function userView(user, syncMessage = "") {
       }
     };
   }
-
-  initBilling(root);
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
