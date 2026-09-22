@@ -62,7 +62,7 @@
       <h1>Ferramentas que acompanham o seu trabalho.</h1>
       <p class="tool-lead">Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer.</p>
       <div class="tool-toolbar">
-        <input class="tool-search" data-tool-search type="search" inputmode="search" autocomplete="off" placeholder="Pesquisar uma categoria…">
+        <input class="tool-search" data-tool-search type="search" inputmode="search" autocomplete="off" placeholder="Pesquisar ferramentas ou categorias…">
       </div>
     </div>
     <aside class="tool-overview">
@@ -71,6 +71,14 @@
       <div class="tool-overview-line"></div>
       <div class="tool-overview-note">Sem instalação. Abra, use e volte quando precisar.</div>
     </aside>
+  </section>
+
+  <section class="tool-live-results" data-tool-live-results hidden aria-labelledby="tool-results-title">
+    <div class="tool-results-head">
+      <h2 id="tool-results-title">Resultados</h2>
+      <span data-tool-result-count></span>
+    </div>
+    <div class="tool-grid" data-tool-results></div>
   </section>
 
   <section class="tool-section" aria-labelledby="categories-title">
