@@ -209,6 +209,15 @@ function userView(user, syncMessage = "") {
       ${syncMessage ? messageBox("success", syncMessage) : ""}
       ${verificationPanel(user)}
 
+      <section class="account-section account-shortcuts">
+        <div class="section-title"><strong>Acesso rápido</strong><span>Continue a utilizar o ecossistema Nexauren.</span></div>
+        <div class="shortcut-grid">
+          <a href="/tool/">Ferramentas <span>→</span></a>
+          <a href="/blog/">Histórias <span>→</span></a>
+          <a href="/legal/privacidade/">Privacidade <span>→</span></a>
+        </div>
+      </section>
+
       <section class="account-section">
         <div class="section-title"><strong>Perfil</strong><span>Informações básicas da conta</span></div>
         <form id="profile-form" class="mini-form" novalidate>
