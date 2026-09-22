@@ -10,6 +10,8 @@ on:
       - "frontend/tool/**"
       - "frontend/account/**"
       - "frontend/assets/public-ui.*"
+      - "frontend/admin/**"
+      - "frontend/admin-assets/**"
       - "frontend/data/public-urls.json"
       - "schema.sql"
       - "database/accounts-upgrade.sql"
@@ -44,6 +46,7 @@ jobs:
           node --check frontend/account/account.js
           node --check frontend/account/account-client.js
           node --check frontend/assets/public-ui.js
+          node --check frontend/admin-assets/admin.js
       - name: Validate tool registry
         run: |
           node <<'NODE'
@@ -103,8 +106,8 @@ jobs:
           grep -q 'nexauren-story-social-preview.png' worker-entry.js
           grep -q 'social-preview.png' worker-entry.js
           grep -q 'nexauren-story-favicon.svg' worker-entry.js
-          grep -q 'public-ui.css?v=20260922-4' worker-entry.js
-          grep -q 'public-ui.js?v=20260922-4' worker-entry.js
+          grep -Eq 'public-ui\\.css\\?v=[0-9-]+' worker-entry.js
+          grep -Eq 'public-ui\\.js\\?v=[0-9-]+' worker-entry.js
           grep -q '@view-transition' frontend/assets/public-ui.css
           grep -q 'IntersectionObserver' frontend/assets/public-ui.js
           node <<'NODE'
@@ -142,4 +145,7 @@ jobs:
           test -f frontend/blog/index.html
           test -f frontend/tool/index.html
           test -f frontend/account/index.html
+          test -f frontend/admin/index.html
+          grep -q "/api/admin/tools" frontend/admin-assets/admin.js
+          grep -q "data-view=\"users\"" frontend/admin/index.html
           echo "Platform route checks passed."
