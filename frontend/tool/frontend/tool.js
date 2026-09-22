@@ -1,5 +1,5 @@
 (() => {
-  const grid=document.querySelector("[data-category-grid]"),search=document.querySelector("[data-tool-search]"),empty=document.querySelector("[data-tool-empty]");
+  const grid=document.querySelector("[data-category-grid]"),search=document.querySelector("[data-tool-search]"),empty=document.querySelector("[data-tool-empty]"),countEl=document.querySelector("[data-tool-count]");
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const card=c=>'<a class="tool-card" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'"><span class="tool-card-icon">'+esc(c.icon||"✦")+'</span><h2>'+esc(c.name)+'</h2><p>'+esc(c.description||"")+'</p><small class="tool-category-count">'+Number(c.count||0)+' ferramenta(s)</small><span class="tool-arrow">→</span></a>';
   let categories=[];
