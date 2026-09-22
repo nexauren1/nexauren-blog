@@ -156,8 +156,44 @@ async function firebaseAccountAuth(env, request, markLogin = false) {
     return { claims, account: await ensureNexaurenAccount(env, claims, markLogin) };
   } catch (error) {
     if (error?.code === "ACCOUNT_DB_NOT_READY" || error?.code === "ACCOUNT_SUSPENDED") throw error;
-    throw Object.assign(new Error("Sessão Firebase inválida ou expirada."), { code: "FIREBASE_TOKEN_INVALID" });
+    throw Object.assign(new Error("Sessão inválida ou expirada."), { code: "FIREBASE_TOKEN_INVALID" });
   }
+}
+
+const FIREBASE_AUTH_ORIGIN = "https://nexauren-story.firebaseapp.com";
+
+function rewriteAuthResponseHeaders(headers) {
+  const out = new Headers(headers);
+  const location = out.get("location");
+  if (location) {
+    out.set("location", location.replaceAll(FIREBASE_AUTH_ORIGIN, "https://nexaurenstory.com"));
+  }
+  return out;
+}
+
+async function firebaseAuthProxy(request) {
+  const incoming = new URL(request.url);
+  const upstream = new URL(incoming.pathname + incoming.search, FIREBASE_AUTH_ORIGIN);
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+  headers.delete("origin");
+  headers.delete("referer");
+
+  const init = {
+    method: request.method,
+    headers,
+    redirect: "manual"
+  };
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    init.body = request.body;
+  }
+
+  const response = await fetch(new Request(upstream, init));
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: rewriteAuthResponseHeaders(response.headers)
+  });
 }
 
 function sameOrigin(request){const o=request.headers.get("Origin");if(!o)return true;try{return o===new URL(request.url).origin;}catch{return false;}}
@@ -493,6 +529,7 @@ async function api(env,request,url,ctx){
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
 async function page(env,request,url){
+  if(url.pathname.startsWith("/__/auth/"))return firebaseAuthProxy(request);
   if(url.pathname==="/sitemap.xml")return sitemapIndex();
   if(url.pathname==="/sitemap-pages.xml")return sitemapPages(env);
   if(url.pathname==="/sitemap-posts.xml")return sitemapPosts(env);
