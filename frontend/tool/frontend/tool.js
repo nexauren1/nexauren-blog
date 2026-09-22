@@ -34,6 +34,29 @@
 
   let categories=[],tools=[];
 
+  async function directRegistry(){
+    const response=await fetch("/tool/data/data.json?v=20260923-1",{cache:"no-store"});
+    if(!response.ok)throw new Error("Não foi possível ler o catálogo de ferramentas.");
+    const raw=await response.json();
+    return {
+      version:raw?.version||1,
+      site:raw?.site||"Nexauren Story",
+      basePath:raw?.basePath||"/tool/",
+      categories:Array.isArray(raw?.categories)?raw.categories:[],
+      tools:Array.isArray(raw?.tools)?raw.tools:[]
+    };
+  }
+
+  async function getRegistry(){
+    try{
+      if(window.NexaurenToolRegistry?.loadRegistry){
+        const registry=await getRegistry();
+        if(registry?.tools?.length && registry?.categories?.length)return registry;
+      }
+    }catch{}
+    return directRegistry();
+  }
+
   function queryText(v){return String(v||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"");}
   function renderList(target,list,empty,label="Ferramentas"){
     if(!target)return;
