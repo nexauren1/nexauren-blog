@@ -10,7 +10,7 @@
 <link rel="canonical" href="https://nexaurenstory.com/tool/">
 <link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
 <title>Ferramentas — Nexauren Story</title>
-<link rel="stylesheet" href="/tool/frontend/tool.css?v=20260922-5">
+<link rel="stylesheet" href="/tool/frontend/tool.css?v=20260922-6">
 <link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">
 <link rel="manifest" href="/manifest.json">
 <meta property="og:site_name" content="Nexauren Story">
@@ -29,7 +29,7 @@
 <meta name="twitter:description" content="Ferramentas online do Nexauren Story, organizadas por categorias.">
 <meta name="twitter:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
 <meta name="twitter:image:alt" content="Nexauren Story">
-<link rel="stylesheet" href="/assets/public-ui.css?v=20260922-7">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260922-8">
 </head>
 <body class="nx-page">
 <header class="tool-header">
@@ -74,6 +74,16 @@
     </aside>
   </section>
 
+  <section class="tool-curated tool-featured" data-tool-featured hidden aria-labelledby="featured-tools-title">
+    <div class="section-head"><div><div class="tool-eyebrow">SELEÇÃO NEXAUREN</div><h2 id="featured-tools-title">Destaques</h2></div><span class="tool-badge">Escolhidos pela equipa</span></div>
+    <div class="tool-grid" data-tool-featured-grid></div>
+  </section>
+
+  <section class="tool-curated tool-popular" data-tool-popular hidden aria-labelledby="popular-tools-title">
+    <div class="section-head"><div><div class="tool-eyebrow">MAIS USADOS</div><h2 id="popular-tools-title">Populares</h2></div><span class="tool-badge">Em alta</span></div>
+    <div class="tool-grid" data-tool-popular-grid></div>
+  </section>
+
   <section class="tool-live-results" data-tool-live-results hidden aria-labelledby="tool-results-title">
     <div class="tool-results-head">
       <h2 id="tool-results-title">Resultados</h2>
@@ -102,6 +112,6 @@
 
 <script src="/tool/categories/category.js"></script>
 <script src="/tool/frontend/tool.js"></script>
-<script src="/assets/public-ui.js?v=20260922-5" defer></script>
+<script src="/assets/public-ui.js?v=20260922-6" defer></script>
 </body>
 </html>
