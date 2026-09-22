@@ -8,7 +8,6 @@
   "background_color":"#101318",
   "theme_color":"#101318",
   "icons":[
-    {"src":"/nexauren-story-favicon.png?v=20260922-2","sizes":"512x512","type":"image/png","purpose":"any maskable"},
-    {"src":"/nexauren-story-favicon.svg?v=20260922-2","sizes":"512x512","type":"image/svg+xml","purpose":"any"}
+    {"src":"/nexauren-story-favicon.svg?v=20260922-4","sizes":"512x512","type":"image/svg+xml","purpose":"any"}
   ]
 }
