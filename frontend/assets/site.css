@@ -1,0 +1,171 @@
+/* Nexauren public UI system — shared by non-blog pages */
+:root{
+  --nx-bg:#f6f7fb;
+  --nx-surface:#ffffff;
+  --nx-surface-2:#f0f2f7;
+  --nx-ink:#0b1020;
+  --nx-muted:#667085;
+  --nx-line:#e4e7ec;
+  --nx-accent:#6d5dfc;
+  --nx-accent-2:#12b8a6;
+  --nx-blue:#2f80ed;
+  --nx-dark:#0b1020;
+  --nx-radius:22px;
+  --nx-shadow:0 22px 70px rgba(11,16,32,.09);
+  --nx-shadow-hover:0 30px 90px rgba(11,16,32,.14);
+  --nx-max:1160px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--nx-bg)}
+body{
+  margin:0;color:var(--nx-ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  background:
+    radial-gradient(900px 500px at -10% -10%,rgba(109,93,252,.12),transparent 62%),
+    radial-gradient(800px 500px at 110% 5%,rgba(18,184,166,.10),transparent 60%),
+    var(--nx-bg);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.32;
+  background-image:linear-gradient(rgba(11,16,32,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(11,16,32,.025) 1px,transparent 1px);
+  background-size:36px 36px;
+  mask-image:linear-gradient(to bottom,black,transparent 72%);
+}
+::selection{background:rgba(109,93,252,.18);color:var(--nx-ink)}
+a{color:inherit}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+a,button,.door,.tool-card,.mini-card,.tool-overview,.account-card,article,.panel-card,.nx-action{transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease,background-color .24s ease,color .24s ease,opacity .24s ease}
+:focus-visible{outline:3px solid rgba(109,93,252,.30);outline-offset:3px}
+
+body>header,.site-header,.tool-header,.account-header,.legal-header{
+  position:sticky;top:0;z-index:100;
+  border-bottom:1px solid rgba(228,231,236,.76);
+  background:rgba(255,255,255,.76);
+  backdrop-filter:blur(24px) saturate(145%);
+  -webkit-backdrop-filter:blur(24px) saturate(145%);
+}
+.nav,.tool-nav,.account-header .nav,.legal-header .nav{
+  min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px;
+}
+.site-header .wrap,.tool-header .tool-wrap,.account-header .account-wrap,.legal-header .legal-wrap{max-width:var(--nx-max)}
+.brand,.tool-brand,.account-header .brand,.legal-header .brand{
+  display:inline-flex;align-items:center;gap:11px;text-decoration:none;font-weight:950;letter-spacing:-.045em;
+}
+.brand-logo,.tool-brand img,.account-header .mark,.legal-header .brand-logo,.brand-mark{
+  width:42px;height:42px;display:block;border-radius:13px;box-shadow:0 10px 28px rgba(109,93,252,.18);
+}
+.brand-copy,.tool-brand-text,.brand-text{
+  display:flex;align-items:baseline;gap:5px;font-size:16px;
+}
+.brand-copy strong,.tool-brand-text strong,.brand-text strong{font-weight:950}
+.brand-copy span,.tool-brand-text span,.brand-text span{color:#7a8496;font-weight:760}
+
+.nav-links,.tool-links,.account-header nav,.legal-header nav,.nav-links{
+  display:flex;align-items:center;gap:4px;
+}
+.nav-links a,.tool-links a,.account-header nav a,.legal-header nav a{
+  display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:11px;
+  color:#4f5b6d;text-decoration:none;font-size:12px;font-weight:850;
+}
+.nav-links a:hover,.tool-links a:hover,.account-header nav a:hover,.legal-header nav a:hover{
+  background:rgba(11,16,32,.055);color:var(--nx-ink);transform:translateY(-1px);
+}
+.nav-links a[aria-current="page"],.tool-links a[aria-current="page"],.account-header nav a[aria-current="page"],.legal-header nav a[aria-current="page"]{
+  background:var(--nx-dark);color:#fff;box-shadow:0 8px 18px rgba(11,16,32,.13);
+}
+.nav-cta{background:linear-gradient(135deg,var(--nx-accent),#4b7cff)!important;color:#fff!important;box-shadow:0 10px 26px rgba(109,93,252,.24)}
+.menu-toggle,.tool-menu{
+  display:none;width:44px;height:44px;border:1px solid var(--nx-line);border-radius:13px;background:rgba(255,255,255,.86);color:var(--nx-ink);
+  align-items:center;justify-content:center;
+}
+.menu-toggle span,.tool-menu span,.menu-toggle span:before,.tool-menu span:before,.menu-toggle span:after,.tool-menu span:after{
+  display:block;width:18px;height:2px;border-radius:2px;background:currentColor;content:"";position:relative;
+}
+.menu-toggle span:before,.tool-menu span:before{position:absolute;top:-6px}
+.menu-toggle span:after,.tool-menu span:after{position:absolute;top:6px}
+.mobile-menu,.mobile-nav,.tool-mobile{
+  display:none;border-top:1px solid var(--nx-line);padding:8px 0 14px;background:rgba(255,255,255,.96);
+}
+.mobile-menu.open,.mobile-nav.open,.tool-mobile.open{display:block}
+.mobile-menu a,.mobile-nav a,.tool-mobile a{
+  display:block;padding:13px 5px;color:#4f5b6d;text-decoration:none;font-size:13px;font-weight:850;
+}
+.mobile-menu a+a,.mobile-nav a+a,.tool-mobile a+a{border-top:1px solid #eef0f4}
+
+main{position:relative}
+.nx-progress{position:fixed;left:0;top:0;height:3px;width:0;z-index:999;pointer-events:none;background:linear-gradient(90deg,var(--nx-accent),#4b7cff,var(--nx-accent-2));box-shadow:0 0 18px rgba(109,93,252,.55)}
+.nx-reveal{opacity:0;transform:translateY(18px);filter:blur(2px)}
+.nx-reveal.is-visible{opacity:1;transform:none;filter:none}
+.nx-stagger:nth-child(2){transition-delay:.05s}.nx-stagger:nth-child(3){transition-delay:.10s}.nx-stagger:nth-child(4){transition-delay:.15s}.nx-stagger:nth-child(5){transition-delay:.20s}
+.nx-spotlight{
+  position:relative;overflow:hidden;isolation:isolate;
+}
+.nx-spotlight:after{
+  content:"";position:absolute;inset:-1px;z-index:-1;opacity:0;pointer-events:none;
+  background:radial-gradient(240px circle at var(--nx-px,50%) var(--nx-py,50%),rgba(109,93,252,.12),transparent 60%);
+  transition:opacity .25s ease;
+}
+.nx-spotlight:hover:after{opacity:1}
+.nx-kicker{
+  display:inline-flex;align-items:center;gap:9px;color:var(--nx-accent);font-size:10px;font-weight:950;letter-spacing:.18em;text-transform:uppercase;
+}
+.nx-kicker:before{content:"";width:28px;height:2px;border-radius:999px;background:linear-gradient(90deg,var(--nx-accent),var(--nx-accent-2))}
+.nx-gradient-text{background:linear-gradient(110deg,var(--nx-accent),#2f80ed 52%,var(--nx-accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.nx-action,.button,.primary,.secondary,.google,.logout,.actions button{
+  position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 16px;border-radius:13px;
+  font-size:12px;font-weight:900;text-decoration:none;
+}
+.nx-action:after,.button:after,.primary:after,.secondary:after,.google:after,.logout:after,.actions button:after{
+  content:"";position:absolute;inset:0;transform:translateX(-110%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.30),transparent);transition:transform .6s ease;
+}
+.nx-action:hover:after,.button:hover:after,.primary:hover:after,.secondary:hover:after,.google:hover:after,.logout:hover:after,.actions button:hover:after{transform:translateX(110%)}
+.button.primary,.primary{background:linear-gradient(135deg,var(--nx-dark),#222b46);border-color:var(--nx-dark);box-shadow:0 12px 28px rgba(11,16,32,.16)}
+.button.primary:hover,.primary:hover{transform:translateY(-2px);box-shadow:0 17px 34px rgba(11,16,32,.20);background:linear-gradient(135deg,var(--nx-accent),#4b7cff)}
+.button.secondary,.secondary,.google,.logout,.actions button{background:rgba(255,255,255,.9);border:1px solid var(--nx-line);color:var(--nx-ink)}
+.button.secondary:hover,.secondary:hover,.google:hover,.logout:hover,.actions button:hover{transform:translateY(-2px);border-color:#c8ced9;box-shadow:0 13px 30px rgba(11,16,32,.08)}
+
+.site-footer,.tool-footer,.account-footer,.legal-footer,.page-footer{
+  border-top:1px solid var(--nx-line);background:rgba(255,255,255,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.site-footer a,.tool-footer a,.account-footer a,.legal-footer a,.page-footer a{color:inherit}
+.nx-footer-grid{display:grid;grid-template-columns:1.3fr .8fr .8fr;gap:34px;padding:44px 0}
+.nx-footer-title{font-size:10px;font-weight:950;letter-spacing:.13em;text-transform:uppercase;color:#98a2b3;margin-bottom:10px}
+.nx-footer-copy{max-width:360px;margin:10px 0 0;color:var(--nx-muted);font-size:11px;line-height:1.7}
+.nx-footer-link{display:block;width:max-content;margin:8px 0;color:#4f5b6d;font-size:11px;font-weight:780;text-decoration:none}
+.nx-footer-link:hover{color:var(--nx-accent);transform:translateX(2px)}
+.nx-footer-bottom{border-top:1px solid #eef0f4;padding:15px 0 19px;color:#98a2b3;font-size:10px}
+.nx-footer-bottom>div{display:flex;justify-content:space-between;gap:16px}
+
+.door:hover,.tool-card:hover,.mini-card:hover,.tool-overview:hover,.account-card:hover,article:hover{transform:translateY(-5px);box-shadow:var(--nx-shadow-hover)}
+.door,.tool-card,.mini-card,.account-card,article,.tool-overview{
+  box-shadow:var(--nx-shadow);
+}
+.tool-card,.door,.mini-card{border-color:rgba(228,231,236,.92)!important;background:rgba(255,255,255,.90)!important}
+.tool-card:before,.door:after{transition:opacity .25s ease}
+.tool-card:before{background:linear-gradient(90deg,var(--nx-accent),#4b7cff,var(--nx-accent-2))!important}
+.tool-card:hover:before{opacity:1!important}
+
+.nx-toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);opacity:0;z-index:1000;
+  padding:11px 14px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(11,16,32,.94);color:#fff;
+  box-shadow:0 16px 40px rgba(11,16,32,.22);font-size:11px;font-weight:800;pointer-events:none;
+}
+.nx-toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:960px){
+  .nav-links,.tool-links,.account-header nav,.legal-header nav{display:none}
+  .menu-toggle,.tool-menu{display:flex}
+}
+@media(max-width:720px){
+  .nav,.tool-nav,.account-header .nav,.legal-header .nav{min-height:68px}
+  .nx-footer-grid{grid-template-columns:1fr 1fr;gap:24px 18px;padding:34px 0}
+  .nx-footer-grid>div:first-child{grid-column:1/-1}
+  .nx-footer-bottom>div{flex-direction:column;gap:5px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .nx-reveal{opacity:1;transform:none;filter:none}
+}
