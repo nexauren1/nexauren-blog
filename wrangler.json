@@ -13,6 +13,7 @@
     "run_worker_first": [
       "/api/*",
       "/admin",
+      "/account/*",
       "/blog/*",
       "/tool/*",
       "/post/*",
