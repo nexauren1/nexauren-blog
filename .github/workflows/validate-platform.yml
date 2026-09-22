@@ -63,9 +63,12 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -q 'Firebase Authentication' frontend/account/index.html
-      ! grep -qi 'Cloudflare' frontend/account/index.html
-      ! grep -qi 'administração editorial' frontend/account/index.html
+          ! grep -qi 'Cloudflare' frontend/account/index.html
+          ! grep -qi 'administração editorial' frontend/account/index.html
           grep -q 'firebaseConfig' frontend/account/firebase-config.js
+          grep -q 'authDomain: "nexaurenstory.com"' frontend/account/firebase-config.js
+          grep -q '"/__/auth/*"' wrangler.json
+          grep -q 'firebaseAuthProxy' worker-entry.js
           grep -q 'initializeAuth' frontend/account/account-client.js
           grep -q 'browserPopupRedirectResolver' frontend/account/account-client.js
           grep -q 'createUserWithEmailAndPassword' frontend/account/account.js
