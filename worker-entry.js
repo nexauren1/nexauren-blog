@@ -542,6 +542,115 @@ async function rss(env,request){
   const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
   return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Stories, releases, guides and updates from Nexauren.</description>'+items+"</channel></rss>",{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=1800"}});
 }
+
+function normalizeToolRegistry(raw){
+  const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
+    id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
+    name:text(c?.name||"Categoria",100).trim(),
+    description:text(c?.description||"",500).trim(),
+    icon:text(c?.icon||"✦",20).trim(),
+    sortOrder:Number.isFinite(Number(c?.sortOrder))?Number(c.sortOrder):(i+1)*10,
+    path:text(c?.path||"",500).trim()||("/tool/categories/"+slugify(c?.id||c?.name||("categoria-"+(i+1)))+"/")
+  })).filter(c=>c.id&&c.name):[];
+  const categoryIds=new Set(categories.map(c=>c.id));
+  const tools=Array.isArray(raw?.tools)?raw.tools.map((t,i)=>{
+    const id=slugify(t?.id||t?.name||("ferramenta-"+(i+1)));
+    const category=categoryIds.has(t?.category)?t.category:(categories[0]?.id||"");
+    return {
+      id,name:text(t?.name||"Ferramenta",140).trim(),
+      description:text(t?.description||"",600).trim(),
+      category,
+      icon:text(t?.icon||"✦",20).trim(),
+      version:text(t?.version||"1.0.0",30).trim(),
+      status:["active","disabled","draft"].includes(t?.status)?t.status:"active",
+      access:["public","account","premium"].includes(t?.access)?t.access:"public",
+      path:text(t?.path||"",700).trim(),
+      tags:Array.isArray(t?.tags)?t.tags.map(x=>text(x,50).trim()).filter(Boolean).slice(0,12):[],
+      featured:!!t?.featured,
+      popular:!!t?.popular,
+      sortOrder:Number.isFinite(Number(t?.sortOrder))?Number(t.sortOrder):(i+1)*10
+    };
+  }).filter(t=>t.id&&t.name&&t.path):[];
+  return {version:Number(raw?.version||1)||1,site:"Nexauren Story",basePath:"/tool/",registry:{updatedAt:nowIso(),source:"nexauren-admin"},categories,tools};
+}
+async function loadToolRegistry(env,request){
+  try{
+    const row=await env.DB.prepare("SELECT value FROM settings WHERE key='tool_registry' LIMIT 1").first();
+    if(row?.value)return normalizeToolRegistry(JSON.parse(String(row.value)));
+  }catch{}
+  try{
+    const r=await env.ASSETS.fetch(new Request(new URL("/tool/data/data.json",request.url)));
+    if(r.ok)return normalizeToolRegistry(await r.json());
+  }catch{}
+  return normalizeToolRegistry({categories:[],tools:[]});
+}
+async function ensureToolUsageTable(env){
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS tool_usage (tool_id TEXT NOT NULL,bucket TEXT NOT NULL,visitor_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tool_id,bucket,visitor_hash))").run();
+}
+async function toolRegistryWithUsage(env,request){
+  const registry=await loadToolRegistry(env,request);
+  try{
+    await ensureToolUsageTable(env);
+    const usage=await env.DB.prepare("SELECT tool_id,COUNT(*) count FROM tool_usage WHERE bucket>=? GROUP BY tool_id").bind(new Date(Date.now()-30*86400000).toISOString().slice(0,10)).all();
+    const counts=new Map((usage.results||[]).map(x=>[x.tool_id,Number(x.count||0)]));
+    registry.tools=registry.tools.map(t=>({...t,usageCount:counts.get(t.id)||0}));
+  }catch{}
+  return registry;
+}
+async function saveToolRegistry(env,actor,raw){
+  const registry=normalizeToolRegistry(raw),seen=new Set();
+  for(const t of registry.tools){
+    if(seen.has(t.id))return fail("Existem IDs de ferramentas duplicados.",422,"TOOL_REGISTRY_INVALID");
+    seen.add(t.id);
+    try{new URL(t.path,"https://nexaurenstory.com");}catch{return fail("URL inválida na ferramenta "+t.name+".",422,"TOOL_PATH_INVALID");}
+  }
+  registry.registry.updatedAt=nowIso();
+  const serialized=JSON.stringify(registry);
+  if(serialized.length>450000)return fail("O catálogo de ferramentas é demasiado grande.",413,"TOOL_REGISTRY_TOO_LARGE");
+  await env.DB.prepare("INSERT INTO settings (key,value,type,updated_at) VALUES ('tool_registry',?,'json',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,type='json',updated_at=excluded.updated_at").bind(serialized,nowIso()).run();
+  await audit(env,actor.id,"tools.registry_updated","tools",null,{tools:registry.tools.length,categories:registry.categories.length});
+  return json({ok:true,registry});
+}
+async function adminUsers(env){
+  const admins=await env.DB.prepare("SELECT id,email,display_name,role,status,email_verified,last_login_at,created_at,updated_at FROM users ORDER BY CASE role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END,display_name").all();
+  let accounts=[];
+  try{
+    if(env.ACCOUNTS_DB){
+      const r=await env.ACCOUNTS_DB.prepare("SELECT id,email,display_name,status,email_verified,last_login_at,last_seen_at,created_at,updated_at FROM nexauren_accounts ORDER BY created_at DESC LIMIT 1000").all();
+      accounts=r.results||[];
+    }
+  }catch{}
+  return {admins:admins.results||[],accounts};
+}
+async function adminStats(env,request){
+  try{await ensureToolUsageTable(env)}catch{}
+  const [posts,published,drafts,scheduled,media,categories,tags,adminUsers,activeSessions,registry,toolViews]=await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) n FROM posts").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='published'").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='draft'").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='scheduled'").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM media").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM categories").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM tags").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM users").first(),
+    env.DB.prepare("SELECT COUNT(*) n FROM sessions WHERE expires_at>?").bind(nowIso()).first(),
+    loadToolRegistry(env,request),
+    env.DB.prepare("SELECT COUNT(*) n FROM tool_usage WHERE bucket>=?").bind(new Date(Date.now()-30*86400000).toISOString().slice(0,10)).first()
+  ]);
+  let publicUsers=0;
+  try{publicUsers=Number((await env.ACCOUNTS_DB.prepare("SELECT COUNT(*) n FROM nexauren_accounts").first())?.n||0)}catch{}
+  return {
+    posts:Number(posts?.n||0),published:Number(published?.n||0),drafts:Number(drafts?.n||0),scheduled:Number(scheduled?.n||0),
+    media:Number(media?.n||0),categories:Number(categories?.n||0),tags:Number(tags?.n||0),adminUsers:Number(adminUsers?.n||0),
+    publicUsers,activeSessions:Number(activeSessions?.n||0),tools:Array.isArray(registry?.tools)?registry.tools.length:0,
+    featuredTools:Array.isArray(registry?.tools)?registry.tools.filter(t=>t.featured).length:0,
+    popularTools:Array.isArray(registry?.tools)?registry.tools.filter(t=>t.popular).length:0,
+    featuredPosts:Number((await env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE featured=1 AND status='published'").first())?.n||0),
+    toolViews30d:Number(toolViews?.n||0),
+    topTools:(await toolRegistryWithUsage(env,request)).tools.sort((a,b)=>(b.usageCount||0)-(a.usageCount||0)).slice(0,8)
+  };
+}
+
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
   if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{provider:"firebase",ready:true}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
