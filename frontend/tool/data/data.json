@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "site": "Nexauren Story",
+  "basePath": "/tool/",
+  "registry": {
+    "updatedAt": "2026-09-22T00:00:00.000Z",
+    "source": "data/data.json"
+  },
+  "categories": [
+    {"id":"produtividade","name":"Produtividade","description":"Organização, cálculo e tarefas do dia a dia.","icon":"◷","sortOrder":10,"path":"/tool/categories/produtividade/"},
+    {"id":"texto","name":"Texto","description":"Ferramentas para escrever, transformar e trabalhar com texto.","icon":"Aa","sortOrder":20,"path":"/tool/categories/texto/"},
+    {"id":"imagem","name":"Imagem","description":"Ferramentas para imagens, formatos e conteúdos visuais.","icon":"▧","sortOrder":30,"path":"/tool/categories/imagem/"},
+    {"id":"tecnologia","name":"Tecnologia","description":"Ferramentas para desenvolvimento e tarefas técnicas.","icon":"⌘","sortOrder":40,"path":"/tool/categories/tecnologia/"}
+  ],
+  "tools": []
+}

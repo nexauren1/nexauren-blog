@@ -1,0 +1,78 @@
+name: Validate Nexauren platform
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker-entry.js"
+      - "frontend/index.html"
+      - "frontend/blog/**"
+      - "frontend/tool/**"
+      - "frontend/account/**"
+      - "schema.sql"
+      - "database/platform-upgrade.sql"
+      - "wrangler.json"
+      - ".github/workflows/validate-platform.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "worker-entry.js"
+      - "frontend/index.html"
+      - "frontend/blog/**"
+      - "frontend/tool/**"
+      - "frontend/account/**"
+      - "schema.sql"
+      - "database/platform-upgrade.sql"
+      - "wrangler.json"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript
+        run: |
+          set -euo pipefail
+          node --check worker-entry.js
+          node --check frontend/assets/app.js
+          node --check frontend/tool/categories/category.js
+          node --check frontend/tool/categories/category-page.js
+          node --check frontend/tool/frontend/tool.js
+          node --check frontend/account/account.js
+      - name: Validate tool registry
+        run: |
+          node <<'NODE'
+          const fs=require("fs");
+          const p="frontend/tool/data/data.json";
+          const d=JSON.parse(fs.readFileSync(p,"utf8"));
+          if(!Array.isArray(d.categories)||!Array.isArray(d.tools)) throw new Error("Registry must contain categories and tools arrays.");
+          const cats=new Set(d.categories.map(x=>x.id));
+          if(cats.size!==d.categories.length) throw new Error("Duplicate category id.");
+          const tools=new Set();
+          for(const t of d.tools){
+            if(!t.id||tools.has(t.id)) throw new Error("Duplicate or missing tool id: "+t.id);
+            tools.add(t.id);
+            if(!cats.has(t.category)) throw new Error("Tool references unknown category: "+t.id);
+            if(!/^\/tool\/categories\/[^/]+\/[^/]+\/$/.test(t.path)) throw new Error("Invalid tool path: "+t.id);
+          }
+          console.log("Tool registry OK: "+d.categories.length+" categories, "+d.tools.length+" tools.");
+          NODE
+      - name: Validate account isolation
+        run: |
+          grep -q 'account_profiles' schema.sql
+          grep -q 'account_sessions' schema.sql
+          grep -q 'ACCOUNT_COOKIE' worker-entry.js
+          grep -q '/api/account/register' worker-entry.js
+          grep -q 'role.*owner.*admin.*editor.*author' schema.sql
+          ! grep -q 'INSERT INTO users.*register' worker-entry.js
+          echo "Account isolation checks passed."
+      - name: Validate platform routes
+        run: |
+          grep -q '"/account/*"' wrangler.json
+          grep -q '"/blog/*"' wrangler.json
+          grep -q '"/tool/*"' wrangler.json
+          test -f frontend/blog/index.html
+          test -f frontend/tool/index.html
+          test -f frontend/account/index.html
+          echo "Platform route checks passed."

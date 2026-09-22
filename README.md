@@ -56,10 +56,41 @@ npm run dev
 ## Routes
 
 Public:
-`/`, `/post/:slug`, category pages, `/search`, `/sitemap.xml`, `/rss.xml`.
+`/` (porta de entrada), `/blog/`, `/blog/post/:slug`, `/blog/:categoria`, `/blog/search`, `/sitemap.xml`, `/rss.xml`.
+
+URLs antigas do blog (`/post/:slug`, `/posts`, `/about`, `/search` e categorias) são redirecionadas para `/blog/...` para preservar acessos e referências existentes.
 
 Admin:
 `/admin`
+
+## Platform foundation
+
+### Public accounts
+
+The public account system is intentionally separate from editorial/admin users. Its API is:
+
+- `/api/account/register`
+- `/api/account/login`
+- `/api/account/logout`
+- `/api/account/me`
+
+Run `database/platform-upgrade.sql` once on the existing D1 database before enabling public account registration. Fresh installations already get the account tables from `schema.sql`.
+
+### Nexauren Tool
+
+The tools area lives under `/tool/`. The official registry is `frontend/tool/data/data.json`, and category pages read that registry through `frontend/tool/categories/category.js`.
+
+Every future tool must be isolated in:
+
+```text
+frontend/tool/categories/<category>/<tool-id>/
+├── index.html
+├── style.css
+├── script.js
+└── assets/
+```
+
+The shared Tool shell must not contain individual tool logic. The `access` registry field is reserved for future public/account/premium gating.
 
 ## Admin capabilities
 

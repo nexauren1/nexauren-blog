@@ -1,4 +1,5 @@
 const app=document.getElementById("app"),nav=document.getElementById("main-nav"),searchPanel=document.getElementById("search-panel"),searchForm=document.getElementById("search-form"),searchInput=document.getElementById("search-input");
+const BLOG_BASE="/blog";
 const FALLBACK_CATS=[
   ["breaking-news","Breaking News","⚡","Notícias de última hora e acontecimentos recentes."],
   ["tecnologia","Tecnologia","💻","Tecnologia, inovação, software e dispositivos."],
@@ -43,7 +44,7 @@ function md(s){
 
 async function api(path,opt){const o=Object.assign({credentials:"same-origin"},opt||{});o.headers=Object.assign({"content-type":"application/json"},o.headers||{});const r=await fetch(path,o),d=await r.json().catch(()=>({ok:false,error:"Resposta inválida do servidor."}));if(!r.ok){const e=new Error(d.error||"Pedido não concluído.");e.code=d.code;throw e;}return d;}
 function langQuery(base){return base+(base.includes("?")?"&":"?")+"lang="+encodeURIComponent(lang||"pt")}
-function hrefFor(path){const u=new URL(path,location.origin);if(lang==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");return u.pathname+(u.search||"")}
+function hrefFor(path){const u0=new URL(path,location.origin),p=u0.pathname;const target=p.startsWith(BLOG_BASE)?p:(p==="/"?(BLOG_BASE+"/"):(BLOG_BASE+p));const u=new URL(target+(u0.search||""),location.origin);if(lang==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");return u.pathname+(u.search||"")}
 function setMeta(attr,key,value){let m=document.head.querySelector("meta["+attr+"=\""+key+"\"]");if(!m){m=document.createElement("meta");m.setAttribute(attr,key);document.head.appendChild(m)}m.setAttribute("content",value||"")}
 function setLink(rel,hrefLang,href){let l=document.head.querySelector('link[rel="'+rel+'"][hreflang="'+hrefLang+'"]');if(!l){l=document.createElement("link");l.rel=rel;l.hreflang=hrefLang;document.head.appendChild(l)}l.href=href}
 function setCanonical(href){let l=document.head.querySelector('link[rel="canonical"]');if(!l){l=document.createElement("link");l.rel="canonical";document.head.appendChild(l)}l.href=href}
@@ -140,7 +141,7 @@ async function loadCategories(){
 }
 function setup(){
   setLanguage(lang||"pt",false);
-  nav.innerHTML='<a href="'+hrefFor("/")+'" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="'+hrefFor("/"+c[0])+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("");
+  nav.innerHTML='<a href="'+hrefFor("/")+'" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="'+hrefFor("/"+c[0])+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("")+'<a href="/tool/">Ferramentas</a><a href="/account">Conta</a>';
   let mobile=document.querySelector(".mobile-nav");
   if(!mobile){mobile=document.createElement("div");mobile.className="mobile-nav";document.querySelector(".site-header").appendChild(mobile);}
   mobile.innerHTML=nav.innerHTML+'<button class="mobile-lang" id="mobile-language">'+(lang==="en"?"PT":"EN")+"</button>";
@@ -159,7 +160,7 @@ function setup(){
   searchForm.onsubmit=e=>{e.preventDefault();const q=searchInput.value.trim();if(q)location.href=hrefFor("/search?q="+encodeURIComponent(q));};
   document.getElementById("menu-toggle").onclick=()=>document.querySelector(".mobile-nav")?.classList.toggle("open");
   document.getElementById("year").textContent=new Date().getFullYear();
-  const p=location.pathname.split("/")[1]||"home";document.querySelectorAll("[data-n]").forEach(a=>a.classList.toggle("active",a.dataset.n===p));
+  const rawPath=location.pathname;const blogPath=rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"?"/":(rawPath.startsWith(BLOG_BASE+"/")?rawPath.slice(BLOG_BASE.length):rawPath);const p=blogPath==="/"?"home":blogPath.split("/")[1]||"home";document.querySelectorAll("[data-n]").forEach(a=>a.classList.toggle("active",a.dataset.n===p));
   if(!localStorage.getItem("ns_lang")&&!urlLanguage)setTimeout(openLanguage,120);
 }
 
@@ -234,7 +235,8 @@ function about(){app.innerHTML='<section class="listing-head"><div class="eyebro
 async function route(){
   await loadCategories();
   setup();
-  const p=location.pathname;
+  const rawPath=location.pathname;
+  const p=rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"?"/":(rawPath.startsWith(BLOG_BASE+"/")?rawPath.slice(BLOG_BASE.length):rawPath);
   let result;
   if(p.startsWith("/post/"))result=await post(decodeURIComponent(p.slice(6)));
   else{

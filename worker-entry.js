@@ -1,6 +1,8 @@
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/social-preview.png?v=20260922-1";
+const ACCOUNT_COOKIE = "ns_account";
+const ACCOUNT_SESSION_SECONDS = 60 * 60 * 24 * 30;
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
@@ -16,6 +18,7 @@ function text(v,max=1000000){return String(v??"").slice(0,max);}
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 function xml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");}
 function publicUrl(path,language="pt"){const u=new URL(path,"https://nexaurenstory.com");if(language==="en")u.searchParams.set("lang","en");return u.href;}
+function blogPublicPath(path){const p=String(path||"/");return p==="/"?"/blog/":"/blog"+(p.startsWith("/")?p:"/"+p)}
 function safeJsonLd(v){return JSON.stringify(v).replace(/</g,"\\u003c");}
 function stripMarkdown(v){return String(v??"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/\[[^\]]+\]\([^)]*\)/g," ").replace(/[#>*_\x60~]/g," ").replace(/\s+/g," ").trim();}
 function seoDesc(excerpt,content){const s=stripMarkdown(excerpt)||stripMarkdown(content);return s.slice(0,160)+(s.length>160?"…":"");}
@@ -62,6 +65,27 @@ async function auth(env,request){
     .bind(await sha256(raw),nowIso()).first();
   if(!row)return null;await env.DB.prepare("UPDATE sessions SET last_seen_at=? WHERE id=?").bind(nowIso(),row.session_id).run();return row;
 }
+async function createAccountSession(env,accountId,request){
+  const token=crypto.randomUUID()+"."+crypto.randomUUID(),hash=await sha256(token),ts=nowIso(),exp=new Date(Date.now()+ACCOUNT_SESSION_SECONDS*1000).toISOString();
+  await env.DB.prepare("INSERT INTO account_sessions (id,account_id,token_hash,expires_at,created_at,last_seen_at,ip_hash,user_agent) VALUES (?,?,?,?,?,?,?,?)")
+    .bind(crypto.randomUUID(),accountId,hash,exp,ts,ts,await sha256(request.headers.get("CF-Connecting-IP")||""),(request.headers.get("User-Agent")||"").slice(0,500)).run();
+  return {token};
+}
+async function accountAuth(env,request){
+  const raw=getCookie(request,ACCOUNT_COOKIE);if(!raw)return null;
+  const row=await env.DB.prepare("SELECT a.id,a.email,a.display_name,a.status,a.email_verified,s.id session_id FROM account_sessions s JOIN account_profiles a ON a.id=s.account_id WHERE s.token_hash=? AND s.expires_at>? AND a.status='active' LIMIT 1")
+    .bind(await sha256(raw),nowIso()).first();
+  if(!row)return null;
+  await env.DB.prepare("UPDATE account_sessions SET last_seen_at=? WHERE id=?").bind(nowIso(),row.session_id).run();
+  return row;
+}
+async function accountSchemaReady(env){
+  try{
+    const r=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('account_profiles','account_sessions','account_login_attempts')").all();
+    return new Set((r.results||[]).map(x=>x.name)).size===3;
+  }catch{return false;}
+}
+
 function sameOrigin(request){const o=request.headers.get("Origin");if(!o)return true;try{return o===new URL(request.url).origin;}catch{return false;}}
 async function guard(env,request,owner=false){
   if(!sameOrigin(request))return {error:fail("Origem não autorizada.",403,"ORIGIN")};
@@ -70,7 +94,7 @@ async function guard(env,request,owner=false){
 }
 async function bodyJson(request){try{return await request.json();}catch{return null;}}
 async function publishDue(env){const t=nowIso();await env.DB.prepare("UPDATE posts SET status='published',published_at=COALESCE(published_at,scheduled_at,?),updated_at=? WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?").bind(t,t,t).run();}
-async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}
+async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();if(await accountSchemaReady(env)){await env.DB.prepare("DELETE FROM account_sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM account_login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}}
 async function dbCheck(env){
   const required={
     users:["id","email","password_hash","display_name","role","status","email_verified","last_login_at","created_at","updated_at"],
@@ -268,14 +292,14 @@ async function uploadAuth(env,request){
 async function sitemapPages(env){
   const maxRow=await env.DB.prepare("SELECT MAX(updated_at) lastmod FROM posts WHERE status='published' AND published_at IS NOT NULL").first();
   const catRows=await env.DB.prepare("SELECT c.slug,MAX(p.updated_at) lastmod FROM categories c LEFT JOIN posts p ON p.category_id=c.id AND p.status='published' AND p.published_at IS NOT NULL GROUP BY c.id,c.slug ORDER BY c.sort_order,c.name").all();
-  const pages=[{path:"/",lastmod:maxRow?.lastmod},{path:"/posts",lastmod:maxRow?.lastmod},{path:"/about",lastmod:null}];
-  for(const c of (catRows.results||[]))pages.push({path:"/"+c.slug,lastmod:c.lastmod||null});
+  const pages=[{path:"/",lastmod:maxRow?.lastmod},{path:"/blog/",lastmod:maxRow?.lastmod},{path:"/blog/posts",lastmod:maxRow?.lastmod},{path:"/blog/about",lastmod:null}];
+  for(const c of (catRows.results||[]))pages.push({path:"/blog/"+c.slug,lastmod:c.lastmod||null});
   const out=pages.map(x=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com"+x.path)+"</loc>"];if(x.lastmod)lines.push("    <lastmod>"+xml(x.lastmod)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function sitemapPosts(env){
   const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' AND published_at IS NOT NULL ORDER BY published_at DESC LIMIT 50000").all();
-  const out=(rows.results||[]).map(p=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com/post/"+encodeURIComponent(p.slug))+"</loc>"];if(p.updated_at)lines.push("    <lastmod>"+xml(p.updated_at)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
+  const out=(rows.results||[]).map(p=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com/blog/post/"+encodeURIComponent(p.slug))+"</loc>"];if(p.updated_at)lines.push("    <lastmod>"+xml(p.updated_at)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function sitemapIndex(){
@@ -322,12 +346,56 @@ async function rss(env,request){
   const base=new URL(request.url).origin;
   if(!(await dbReady(env))) return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Base de dados ainda não inicializada.</description></channel></rss>',{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=300"}});
   const rows=await env.DB.prepare("SELECT title,slug,excerpt,published_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 30").all();
-  const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
+  const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
   return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Stories, releases, guides and updates from Nexauren.</description>'+items+"</channel></rss>",{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=1800"}});
 }
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
-  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.7.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{ready:await accountSchemaReady(env)}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/account/me"&&m==="GET"){
+    if(!(await accountSchemaReady(env)))return fail("As tabelas de contas ainda não foram instaladas. Execute database/platform-upgrade.sql.",503,"ACCOUNT_SCHEMA_NOT_READY");
+    const a=await accountAuth(env,request);return json({ok:true,authenticated:!!a,account:a?{id:a.id,email:a.email,display_name:a.display_name,email_verified:!!a.email_verified}:null});
+  }
+  if(p==="/api/account/register"&&m==="POST"){
+    if(!(await accountSchemaReady(env)))return fail("As tabelas de contas ainda não foram instaladas. Execute database/platform-upgrade.sql.",503,"ACCOUNT_SCHEMA_NOT_READY");
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403);
+    const d=await bodyJson(request),email=normalizeEmail(d?.email),name=text(d?.display_name,80).trim(),pw=String(d?.password||"");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)return fail("Introduza um email válido.",422);
+    if(name.length<2)return fail("O nome precisa de pelo menos 2 caracteres.",422);
+    if(pw.length<8||pw.length>128)return fail("A palavra-passe precisa ter entre 8 e 128 caracteres.",422);
+    const ipId="register|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
+    const recent=await env.DB.prepare("SELECT COUNT(*) n FROM account_login_attempts WHERE identifier=? AND success=0 AND created_at>=?").bind(ipId,new Date(Date.now()-3600000).toISOString()).first();
+    if(Number(recent?.n||0)>=5)return fail("Muitas tentativas de cadastro. Tente novamente mais tarde.",429,"RATE_LIMIT");
+    if(await env.DB.prepare("SELECT id FROM account_profiles WHERE email=? LIMIT 1").bind(email).first())return fail("Já existe uma conta com este email.",409,"EMAIL_EXISTS");
+    try{
+      const id=crypto.randomUUID(),ts=nowIso(),hash=await hashPassword(pw);
+      await env.DB.prepare("INSERT INTO account_profiles (id,email,password_hash,display_name,status,email_verified,last_login_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,email,hash,name,"active",0,ts,ts,ts).run();
+      await env.DB.prepare("INSERT INTO account_login_attempts (id,identifier,success,created_at) VALUES (?,?,?,?)").bind(crypto.randomUUID(),ipId,1,ts).run();
+      const session=await createAccountSession(env,id,request);
+      return json({ok:true,account:{id,email,display_name:name,email_verified:false}},201,{"set-cookie":cookie(ACCOUNT_COOKIE,session.token,{maxAge:ACCOUNT_SESSION_SECONDS})});
+    }catch(e){console.error("account.register",e);return fail("Não foi possível criar a conta.",500,"ACCOUNT_DB_ERROR");}
+  }
+  if(p==="/api/account/login"&&m==="POST"){
+    if(!(await accountSchemaReady(env)))return fail("As tabelas de contas ainda não foram instaladas. Execute database/platform-upgrade.sql.",503,"ACCOUNT_SCHEMA_NOT_READY");
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403);
+    const d=await bodyJson(request),email=normalizeEmail(d?.email),pw=String(d?.password||"");if(!email||!pw)return fail("Email e palavra-passe são obrigatórios.",422);
+    const identifier=email+"|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
+    const recent=await env.DB.prepare("SELECT COUNT(*) n FROM account_login_attempts WHERE identifier=? AND success=0 AND created_at>=?").bind(identifier,new Date(Date.now()-900000).toISOString()).first();
+    if(Number(recent?.n||0)>=8)return fail("Muitas tentativas. Tente novamente mais tarde.",429,"RATE_LIMIT");
+    const a=await env.DB.prepare("SELECT * FROM account_profiles WHERE email=? LIMIT 1").bind(email).first();
+    const ok=a&&a.status==="active"&&await verifyPassword(pw,a.password_hash);
+    await env.DB.prepare("INSERT INTO account_login_attempts (id,identifier,success,created_at) VALUES (?,?,?,?)").bind(crypto.randomUUID(),identifier,ok?1:0,nowIso()).run();
+    if(!ok)return fail("Email ou palavra-passe inválidos.",401,"INVALID_CREDENTIALS");
+    const ts=nowIso();await env.DB.prepare("UPDATE account_profiles SET last_login_at=?,updated_at=? WHERE id=?").bind(ts,ts,a.id).run();
+    await env.DB.prepare("DELETE FROM account_sessions WHERE account_id=?").bind(a.id).run();
+    const session=await createAccountSession(env,a.id,request);
+    return json({ok:true,account:{id:a.id,email:a.email,display_name:a.display_name,email_verified:!!a.email_verified}},200,{"set-cookie":cookie(ACCOUNT_COOKIE,session.token,{maxAge:ACCOUNT_SESSION_SECONDS})});
+  }
+  if(p==="/api/account/logout"&&m==="POST"){
+    const raw=getCookie(request,ACCOUNT_COOKIE);if(raw)await env.DB.prepare("DELETE FROM account_sessions WHERE token_hash=?").bind(await sha256(raw)).run();
+    return json({ok:true},200,{"set-cookie":cookie(ACCOUNT_COOKIE,"",{maxAge:0})});
+  }
+
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
@@ -381,10 +449,44 @@ async function page(env,request,url){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
   }
-  const asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+  if(url.pathname==="/"||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname==="/tool/"||url.pathname.startsWith("/tool/")){
+    if(url.pathname==="/account"||url.pathname==="/account/"){
+      const r=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));
+      const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
+    }
+    if(url.pathname==="/" )return env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+    if(url.pathname==="/tool"||url.pathname==="/tool/")return env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url)));
+    let r=await env.ASSETS.fetch(request);
+    if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
+    return r;
+  }
+  const isBlog=url.pathname==="/blog"||url.pathname.startsWith("/blog/");
+  if(!isBlog){
+    const legacyExact=["/posts","/about","/search"];
+    if(legacyExact.includes(url.pathname)||url.pathname.startsWith("/post/")){
+      const target=new URL(blogPublicPath(url.pathname),request.url);
+      target.search=url.search;
+      return Response.redirect(target,301);
+    }
+    if(/^\/[^/]+$/.test(url.pathname)&&url.pathname!=="/"){
+      try{
+        if(await dbReady(env)){
+          const legacyCategory=await env.DB.prepare("SELECT slug FROM categories WHERE slug=? LIMIT 1").bind(url.pathname.slice(1)).first();
+          if(legacyCategory){
+            const target=new URL(blogPublicPath(url.pathname),request.url);
+            target.search=url.search;
+            return Response.redirect(target,301);
+          }
+        }
+      }catch{}
+    }
+    return env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+  }
+  const asset=await env.ASSETS.fetch(new Request(new URL("/blog/index.html",request.url)));
   if(!asset.ok)return asset;
   let h=await asset.text();
-  const path=url.pathname;
+  const path=url.pathname==="/blog"||url.pathname==="/blog/"?"/":url.pathname.slice("/blog".length)||"/";
+  const publicPath=blogPublicPath(path);
   const cookieLang=getCookie(request,"ns_lang")||"pt";
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
   const image="https://nexaurenstory.com/social-preview.png?v=20260922-1";
@@ -392,7 +494,7 @@ async function page(env,request,url){
   let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
   let type="website",articleMeta="";
   let structured={"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://nexaurenstory.com/#website","url":"https://nexaurenstory.com/","name":"Nexauren Story","inLanguage":lang},{"@type":"Organization","@id":"https://nexaurenstory.com/#organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/nexauren-story-favicon.svg?v=20260922-1"}}]};
-  const canonical=publicUrl(path,lang),ptUrl=publicUrl(path,"pt"),enUrl=publicUrl(path,"en");
+  const canonical=publicUrl(publicPath,lang),ptUrl=publicUrl(publicPath,"pt"),enUrl=publicUrl(publicPath,"en");
   if(path.match(/^\/post\/[^/]+$/)){
     if(!(await dbReady(env)))return asset;
     const slug=decodeURIComponent(path.slice(6));
