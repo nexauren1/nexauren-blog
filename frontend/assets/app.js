@@ -23,19 +23,25 @@ function typeLabel(v){const m=lang==="en"?{article:"Article",news:"News",guide:"
 function catLabel(slug,name){const en={news:"News","breaking-news":"Breaking News",tecnologia:"Technology",entretenimento:"Entertainment",nexauren:"Nexauren",eventos:"Events",ferramentas:"Tools",apps:"Apps",products:"Products",guides:"Guides",tutorials:"Tutorials",releases:"Releases",updates:"Updates"};const pt={news:"Notícias","breaking-news":"Notícias de última hora",tecnologia:"Tecnologia",entretenimento:"Entretenimento",nexauren:"Nexauren",eventos:"Eventos",ferramentas:"Ferramentas",apps:"Aplicativos",products:"Produtos",guides:"Guias",tutorials:"Tutoriais",releases:"Lançamentos",updates:"Atualizações"};return (lang==="en"?en:pt)[slug]||name||""}
 function excerpt(p){if(p.excerpt)return p.excerpt;const s=String(p.content||"").replace(/[#_*\x60>\[\]()!]/g," ").replace(/\s+/g," ").trim();return s?(s.slice(0,180)+(s.length>180?"…":"")):"";}
 function md(s){
-  let x=esc(s||""),blocks=[];
-  x=x.replace(/\x60\x60\x60([\s\S]*?)\x60\x60\x60/g,(m,c)=>{const i=blocks.length;blocks.push("<pre><code>"+c.trim()+"</code></pre>");return "§B"+i+"§";});
-  x=x.replace(/^\s*###\s+(.+)$/gm,"<h3>$1</h3>").replace(/^\s*##\s+(.+)$/gm,"<h2>$1</h2>").replace(/^\s*#\s+(.+)$/gm,"<h2>$1</h2>").replace(/^\s*>\s?(.+)$/gm,"<blockquote>$1</blockquote>");
-  x=x.replace(/^\s*[-*]\s+(.+)$/gm,"<li>$1</li>").replace(/(<li>.*<\/li>\n?)+/g,m=>"<ul>"+m.replace(/\n/g,"")+"</ul>");
-  x=x.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*([^*\n]+)\*/g,"<em>$1</em>");
-  x=x.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,(m,l,h)=>{const v=url(h);return v?'<img loading="lazy" decoding="async" src="'+esc(v)+'" alt="'+esc(l||"")+'">':"";});
-  x=x.replace(/\x60([^\x60\n]+)\x60/g,"<code>$1</code>");
-  x=x.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,l,h)=>{const v=url(h);return v?'<a href="'+esc(v)+'" target="_blank" rel="noopener">'+l+"</a>":l;});
-  x=x.split(/\n{2,}/).map(c=>{c=c.trim();if(!c)return "";if(/^<(h2|h3|blockquote|ul|pre|img)/.test(c)||c.includes("§B"))return c;return "<p>"+c.replace(/\n/g,"<br>")+"</p>";}).join("");
-  return x.replace(/§B(\d+)§/g,(m,i)=>blocks[Number(i)]);
+  let lines=String(s||"").replace(/\r/g,"").split("\n"),out="",i=0;
+  const inline=s=>{let x=esc(s||"");x=x.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*([^*\n]+)\*/g,"<em>$1</em>");x=x.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,l,h)=>{const v=url(h);return v?'<a href="'+esc(v)+'" target="_blank" rel="noopener">'+l+"</a>":l;});return x;};
+  while(i<lines.length){
+    const line=lines[i].trim();
+    if(!line){i++;continue}
+    if(/^#\s+/.test(line)){out+="<h2>"+inline(line.replace(/^#\s+/,""))+"</h2>";i++;continue}
+    if(/^##\s+/.test(line)){out+="<h3>"+inline(line.replace(/^##\s+/,""))+"</h3>";i++;continue}
+    if(/^::\s*/.test(line)){out+="<p>"+inline(line.replace(/^::\s*/,""))+"</p>";i++;continue}
+    if(/^>\s?/.test(line)){out+="<blockquote>"+inline(line.replace(/^>\s?/,""))+"</blockquote>";i++;continue}
+    if(/^---+$/.test(line)){out+="<hr>";i++;continue}
+    if(/^@imagem\s+/i.test(line)){const parts=line.replace(/^@imagem\s+/i,"").split("|").map(x=>x.trim()),src=parts.shift()||"",alt=parts.shift()||"",cap=parts.join(" | "),v=url(src);if(v)out+='<figure class="article-figure"><img loading="lazy" decoding="async" src="'+esc(v)+'" alt="'+esc(alt)+'">'+(cap?'<figcaption>'+esc(cap)+"</figcaption>":"")+"</figure>";i++;continue}
+    if(/^-\s+/.test(line)){const items=[];while(i<lines.length&&/^\s*-\s+/.test(lines[i])){items.push("<li>"+inline(lines[i].replace(/^\s*-\s+/,""))+"</li>");i++}out+="<ul>"+items.join("")+"</ul>";continue}
+    if(/^\d+\.\s+/.test(line)){const items=[];while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){items.push("<li>"+inline(lines[i].replace(/^\s*\d+\.\s+/,""))+"</li>");i++}out+="<ol>"+items.join("")+"</ol>";continue}
+    const para=[];while(i<lines.length&&lines[i].trim()&&!/^#\s+|^##\s+|^::\s*|^>\s?|^---+$|^@imagem\s+|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){para.push(lines[i].trim());i++}out+="<p>"+inline(para.join("\n")).replace(/\n/g,"<br>")+"</p>";
+  }
+  return out;
 }
 
-async function api(path,opt){const o=Object.assign({credentials:"same-origin"},opt||{});o.headers=Object.assign({"content-type":"application/json"},o.headers||{});const r=await fetch(path,o),d=await r.json().catch(()=>({ok:false,error:"Resposta inválida do servidor."}));if(!r.ok){const e=new Error(d.error||"Pedido não concluído.");e.code=d.code;throw e;}return d;}
+async function apiasync function api(path,opt){const o=Object.assign({credentials:"same-origin"},opt||{});o.headers=Object.assign({"content-type":"application/json"},o.headers||{});const r=await fetch(path,o),d=await r.json().catch(()=>({ok:false,error:"Resposta inválida do servidor."}));if(!r.ok){const e=new Error(d.error||"Pedido não concluído.");e.code=d.code;throw e;}return d;}
 function langQuery(base){return base+(base.includes("?")?"&":"?")+"lang="+encodeURIComponent(lang||"pt")}
 function hrefFor(path){const u=new URL(path,location.origin);if(lang==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");return u.pathname+(u.search||"")}
 function setMeta(attr,key,value){let m=document.head.querySelector("meta["+attr+"=\""+key+"\"]");if(!m){m=document.createElement("meta");m.setAttribute(attr,key);document.head.appendChild(m)}m.setAttribute("content",value||"")}
