@@ -25,6 +25,7 @@ form{display:grid;gap:12px}label{display:grid;gap:7px;font-size:11px;font-weight
 
 /* Billing — Free / Pro */
 .account-billing{overflow:hidden}
+.upgrade-page{padding-bottom:60px}.upgrade-card{width:min(860px,100%);margin:18px auto 70px;padding:34px;border:1px solid rgba(228,231,236,.95);border-radius:24px;background:rgba(255,255,255,.94);box-shadow:var(--shadow)}.upgrade-back{display:inline-flex;align-items:center;gap:7px;margin-bottom:18px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:850}.upgrade-back:hover{color:var(--accent)}.upgrade-card .billing-panel{gap:20px}.upgrade-card .billing-head{align-items:flex-start}.upgrade-card .billing-head h2{margin:0;font-size:clamp(32px,5vw,48px);line-height:1;letter-spacing:-.06em}.upgrade-card .billing-head p{max-width:620px;font-size:14px;line-height:1.6}.upgrade-card .billing-plans{grid-template-columns:repeat(2,minmax(0,1fr))}.upgrade-card .billing-plan{padding:24px}.upgrade-card .billing-btn{height:48px}.upgrade-card .billing-loading{text-align:center;padding:45px}.upgrade-note{margin:0;color:var(--muted);font-size:10px;line-height:1.6;text-align:center}@media(max-width:680px){.upgrade-card{padding:22px;border-radius:19px}.upgrade-card .billing-plans{grid-template-columns:1fr}.upgrade-card .billing-plan{padding:19px}}
 .billing-panel{display:grid;gap:18px}
 .billing-kicker{font-size:10px;letter-spacing:.16em;font-weight:900;color:#6b57f2}
 .billing-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end}
