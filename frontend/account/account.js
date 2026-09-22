@@ -1,9 +1,27 @@
-const FIREBASE_SDK_VERSION = "12.19.0";
-const FIREBASE_APP_URL = "https://www.gstatic.com/firebasejs/" + FIREBASE_SDK_VERSION + "/firebase-app.js";
-const FIREBASE_AUTH_URL = "https://www.gstatic.com/firebasejs/" + FIREBASE_SDK_VERSION + "/firebase-auth.js";
+import {
+  auth,
+  onAuthStateChanged,
+  getRedirectResult,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signInWithRedirect,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  updateProfile,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  signOut,
+  syncWithWorker
+} from "/account/account-client.js";
 
 const root = document.querySelector("[data-account-app]");
 const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+const $ = (selector, scope = document) => scope.querySelector(selector);
+let redirectError = null;
+let syncing = false;
 
 const esc = (value) => String(value ?? "")
   .replaceAll("&", "&amp;")
@@ -11,11 +29,6 @@ const esc = (value) => String(value ?? "")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;");
-
-const $ = (selector, scope = document) => scope.querySelector(selector);
-
-let firebaseAuth;
-let authApi;
 
 function friendlyError(error) {
   const code = String(error?.code || "");
@@ -28,13 +41,15 @@ function friendlyError(error) {
     "auth/invalid-email": "Introduza um email válido.",
     "auth/too-many-requests": "Foram detetadas muitas tentativas. Tente novamente mais tarde.",
     "auth/network-request-failed": "Não foi possível contactar o serviço. Verifique a ligação à internet.",
-    "auth/popup-blocked": "O navegador bloqueou a janela do Google. Vamos tentar pelo redirecionamento.",
-    "auth/popup-closed-by-user": "A janela de autenticação foi fechada.",
+    "auth/popup-blocked": "O navegador bloqueou a janela do Google. Tente novamente ou permita pop-ups para este site.",
+    "auth/popup-closed-by-user": "A janela de autenticação do Google foi fechada.",
     "auth/cancelled-popup-request": "A autenticação foi cancelada.",
-    "auth/account-exists-with-different-credential": "Já existe uma conta Nexauren com este email. Entre com o método usado anteriormente.",
+    "auth/account-exists-with-different-credential": "Já existe uma conta Nexauren com este email. Entre primeiro com o método usado anteriormente.",
     "auth/requires-recent-login": "Por segurança, volte a entrar e tente novamente.",
     "auth/operation-not-allowed": "Este método de autenticação ainda não está ativado no Firebase.",
-    "auth/unauthorized-domain": "Este domínio ainda não foi autorizado no Firebase Authentication."
+    "auth/unauthorized-domain": "O domínio nexaurenstory.com não está autorizado no Firebase Authentication. Adicione-o em Authentication → Settings → Authorized domains.",
+    "auth/web-storage-unsupported": "O armazenamento do navegador não está disponível. Abra o Nexauren Story num navegador normal, não numa janela privada bloqueada.",
+    "auth/internal-error": "O Firebase encontrou um erro interno. Tente novamente."
   };
   return messages[code] || "Não foi possível concluir a operação. Tente novamente.";
 }
@@ -93,14 +108,13 @@ function loginView(prefill = "", notice = "") {
   wireLogin();
 }
 
-function registerView(notice = "") {
+function registerView() {
   root.innerHTML = tabs("register") + `
     <div class="auth-heading">
       <div class="eyebrow">CRIAR CONTA</div>
       <h2>Crie o seu acesso Nexauren.</h2>
-      <p>Uma identidade para usar ferramentas, preferências e recursos personalizados no futuro.</p>
+      <p>Uma identidade para usar ferramentas, preferências e recursos personalizados.</p>
     </div>
-    ${notice ? messageBox("success", notice) : ""}
     <form id="register-form" novalidate>
       <label>Nome<input id="name" type="text" autocomplete="name" maxlength="80" required></label>
       <label>Email<input id="email" type="email" inputmode="email" autocomplete="email" required></label>
@@ -110,7 +124,7 @@ function registerView(notice = "") {
       <button class="primary" type="submit">Criar conta</button>
       <button class="google" id="google-register" type="button"><span class="google-g">G</span> Criar com Google</button>
       <div class="error" id="error" role="alert"></div>
-      <p class="hint">Depois do cadastro, enviaremos uma mensagem para confirmar o seu email.</p>
+      <p class="hint">Vamos enviar uma mensagem para confirmar o seu email. A conta fica disponível no ecossistema Nexauren.</p>
     </form>
   `;
   wireTabs();
@@ -129,7 +143,7 @@ function forgotView(prefill = "") {
       <label>Email<input id="email" type="email" inputmode="email" autocomplete="email" value="${esc(prefill)}" required></label>
       <button class="primary" type="submit">Enviar recuperação</button>
       <div class="error" id="error" role="alert"></div>
-      <div class="hint-box">Por segurança, a mensagem apresentada não confirma se existe uma conta com o email indicado.</div>
+      <div class="hint-box">Por segurança, esta página não confirma se o email está registado.</div>
     </form>
   `;
   $("[data-back-login]").onclick = () => loginView(prefill);
@@ -143,7 +157,7 @@ function forgotView(prefill = "") {
       return;
     }
     try {
-      await authApi.sendPasswordResetEmail(firebaseAuth, email, {
+      await sendPasswordResetEmail(auth, email, {
         url: "https://nexaurenstory.com/account",
         handleCodeInApp: false
       });
@@ -179,10 +193,9 @@ function verificationPanel(user) {
   `;
 }
 
-function userView(user) {
+function userView(user, syncMessage = "") {
   const provider = providerLabel(user);
   const hasPasswordProvider = (user.providerData || []).some((p) => p.providerId === "password");
-
   root.innerHTML = `
     <div class="account-user">
       <div class="eyebrow">CONTA ATIVA</div>
@@ -195,6 +208,7 @@ function userView(user) {
         </div>
       </div>
 
+      ${syncMessage ? messageBox("success", syncMessage) : ""}
       ${verificationPanel(user)}
 
       <section class="account-section">
@@ -223,19 +237,14 @@ function userView(user) {
         <p class="hint">Esta conta usa o Google para autenticação. A palavra-passe é gerida diretamente pela sua conta Google.</p>
       </section>`}
 
-      <div class="account-actions">
-        <button class="logout" id="logout">Terminar sessão</button>
-      </div>
+      <div class="account-actions"><button class="logout" id="logout">Terminar sessão</button></div>
       <p class="hint">Esta conta pertence ao ecossistema Nexauren. A administração editorial do blog continua separada.</p>
     </div>
   `;
 
   $("#logout").onclick = async () => {
-    try {
-      await authApi.signOut(firebaseAuth);
-    } catch (err) {
-      alert(friendlyError(err));
-    }
+    try { await signOut(auth); }
+    catch (err) { alert(friendlyError(err)); }
   };
 
   $("#profile-form").addEventListener("submit", async (event) => {
@@ -250,12 +259,11 @@ function userView(user) {
       return;
     }
     try {
-      await authApi.updateProfile(firebaseAuth.currentUser, { displayName });
+      await updateProfile(auth.currentUser, { displayName });
+      await syncWithWorker(auth.currentUser);
       feedback.className = "inline-feedback success-text";
       feedback.textContent = "Nome atualizado.";
-      setTimeout(() => {
-        if (firebaseAuth.currentUser) userView(firebaseAuth.currentUser);
-      }, 500);
+      setTimeout(() => auth.currentUser && userView(auth.currentUser), 400);
     } catch (err) {
       feedback.className = "inline-feedback error-text";
       feedback.textContent = friendlyError(err);
@@ -268,7 +276,7 @@ function userView(user) {
       const feedback = $("#verification-feedback");
       feedback.textContent = "";
       try {
-        await authApi.sendEmailVerification(firebaseAuth.currentUser);
+        await sendEmailVerification(auth.currentUser);
         feedback.className = "inline-feedback success-text";
         feedback.textContent = "Email de verificação reenviado.";
       } catch (err) {
@@ -284,8 +292,8 @@ function userView(user) {
       const feedback = $("#verification-feedback");
       feedback.textContent = "";
       try {
-        await firebaseAuth.currentUser.reload();
-        userView(firebaseAuth.currentUser);
+        await auth.currentUser.reload();
+        userView(auth.currentUser);
       } catch (err) {
         feedback.className = "inline-feedback error-text";
         feedback.textContent = friendlyError(err);
@@ -295,17 +303,23 @@ function userView(user) {
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
+    const newPasswordInput = $("#new-password");
+    newPasswordInput.addEventListener("input", () => {
+      const missing = passwordPolicy(newPasswordInput.value);
+      const rules = $("#change-password-rules");
+      rules.textContent = missing.length ? "Falta: " + missing.join(", ") + "." : "✓ Palavra-passe forte.";
+      rules.className = "password-rules " + (missing.length ? "" : "valid");
+    });
+
     passwordForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const feedback = $("#password-feedback");
       feedback.className = "inline-feedback";
       feedback.textContent = "";
-
       const currentPassword = $("#current-password").value;
-      const newPassword = $("#new-password").value;
+      const newPassword = newPasswordInput.value;
       const confirm = $("#new-password-confirm").value;
       const missing = passwordPolicy(newPassword);
-
       if (missing.length) {
         feedback.className = "inline-feedback error-text";
         feedback.textContent = "Falta: " + missing.join(", ") + ".";
@@ -316,11 +330,10 @@ function userView(user) {
         feedback.textContent = "As palavras-passe não coincidem.";
         return;
       }
-
       try {
-        const credential = authApi.EmailAuthProvider.credential(firebaseAuth.currentUser.email, currentPassword);
-        await authApi.reauthenticateWithCredential(firebaseAuth.currentUser, credential);
-        await authApi.updatePassword(firebaseAuth.currentUser, newPassword);
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        await updatePassword(auth.currentUser, newPassword);
         feedback.className = "inline-feedback success-text";
         feedback.textContent = "Palavra-passe atualizada com sucesso.";
         passwordForm.reset();
@@ -334,10 +347,7 @@ function userView(user) {
 
 function wireTabs() {
   root.querySelectorAll("[data-tab]").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (button.dataset.tab === "login") loginView();
-      else registerView();
-    });
+    button.addEventListener("click", () => button.dataset.tab === "login" ? loginView() : registerView());
   });
   const forgot = $("[data-forgot]");
   if (forgot) forgot.onclick = () => forgotView($("#email")?.value || "");
@@ -355,7 +365,7 @@ function wireLogin() {
       return;
     }
     try {
-      await authApi.signInWithEmailAndPassword(firebaseAuth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
       error.textContent = friendlyError(err);
     }
@@ -380,13 +390,8 @@ function wireRegister() {
     const pass = $("#password").value;
     const confirm = $("#confirm").value;
     const missing = passwordPolicy(pass);
-
     if (name.length < 2) {
       error.textContent = "O nome precisa de pelo menos 2 caracteres.";
-      return;
-    }
-    if (!email) {
-      error.textContent = "Introduza um email válido.";
       return;
     }
     if (missing.length) {
@@ -397,37 +402,32 @@ function wireRegister() {
       error.textContent = "As palavras-passe não coincidem.";
       return;
     }
-
     try {
-      const credential = await authApi.createUserWithEmailAndPassword(firebaseAuth, email, pass);
-      await authApi.updateProfile(credential.user, { displayName: name });
-      try {
-        await authApi.sendEmailVerification(credential.user);
-      } catch (verificationError) {
-        console.warn("Nexauren email verification", verificationError);
-      }
+      const credential = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(credential.user, { displayName: name });
+      try { await sendEmailVerification(credential.user); } catch (err) { console.warn("Nexauren verification", err); }
     } catch (err) {
       error.textContent = friendlyError(err);
     }
   });
-
   $("#google-register").onclick = () => googleSignIn($("#error"));
 }
 
 async function googleSignIn(errorTarget) {
-  errorTarget.textContent = "";
-  const provider = new authApi.GoogleAuthProvider();
+  errorTarget.textContent = "A ligar ao Google…";
+  const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
+
   try {
     if (isMobile) {
-      await authApi.signInWithRedirect(firebaseAuth, provider);
+      await signInWithRedirect(auth, provider);
       return;
     }
-    await authApi.signInWithPopup(firebaseAuth, provider);
+    await signInWithPopup(auth, provider);
   } catch (err) {
     if (String(err?.code || "") === "auth/popup-blocked") {
       try {
-        await authApi.signInWithRedirect(firebaseAuth, provider);
+        await signInWithRedirect(auth, provider);
         return;
       } catch (redirectError) {
         errorTarget.textContent = friendlyError(redirectError);
@@ -438,34 +438,49 @@ async function googleSignIn(errorTarget) {
   }
 }
 
-async function loadFirebase() {
-  const [{ initializeApp }, auth] = await Promise.all([
-    import(FIREBASE_APP_URL),
-    import(FIREBASE_AUTH_URL)
-  ]);
-  const { firebaseConfig } = await import("/account/firebase-config.js");
+async function renderFirebaseError(error) {
+  root.innerHTML = `
+    <div class="success-large">
+      <div class="error" role="alert">${esc(friendlyError(error))}</div>
+      <button type="button" class="primary" id="reload-account">Tentar novamente</button>
+    </div>
+  `;
+  $("#reload-account").onclick = () => location.reload();
+}
 
-  const app = initializeApp(firebaseConfig);
-  authApi = auth;
-  firebaseAuth = auth.getAuth(app);
-  firebaseAuth.languageCode = "pt-BR";
-
-  await auth.setPersistence(firebaseAuth, auth.browserLocalPersistence);
+async function init() {
+  root.innerHTML = '<div class="account-loading">A carregar o Firebase Authentication…</div>';
 
   try {
-    await auth.getRedirectResult(firebaseAuth);
+    await getRedirectResult(auth);
   } catch (err) {
-    console.warn("Nexauren Google redirect", err);
+    redirectError = err;
+    console.error("Nexauren Firebase redirect", err);
   }
 
-  auth.onAuthStateChanged(firebaseAuth, (user) => {
-    if (user) userView(user);
-    else loginView();
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      loginView("", redirectError ? friendlyError(redirectError) : "");
+      redirectError = null;
+      return;
+    }
+
+    let syncMessage = "";
+    if (!syncing) {
+      syncing = true;
+      try {
+        const result = await syncWithWorker(user);
+        if (result?.created) syncMessage = "Conta Nexauren criada e sincronizada.";
+      } catch (err) {
+        console.error("Nexauren account sync", err);
+        syncMessage = "Conta autenticada. A sincronização do perfil será concluída quando o banco da plataforma estiver disponível.";
+      } finally {
+        syncing = false;
+      }
+    }
+
+    userView(user, syncMessage);
   });
 }
 
-root.innerHTML = '<div class="account-loading">A carregar o Firebase Authentication…</div>';
-loadFirebase().catch((err) => {
-  console.error(err);
-  root.innerHTML = '<div class="error">Não foi possível carregar a autenticação Nexauren. Verifique a configuração do Firebase e tente novamente.</div>';
-});
+init().catch((err) => renderFirebaseError(err));

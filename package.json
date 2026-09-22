@@ -9,7 +9,8 @@
     "check": "wrangler deploy --dry-run"
   },
   "dependencies": {
-    "wrangler": "4.135.0"
+    "wrangler": "4.135.0",
+    "jose": "6.2.12"
   },
   "engines": {
     "node": ">=20"

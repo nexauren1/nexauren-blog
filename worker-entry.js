@@ -1,8 +1,7 @@
+import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/social-preview.png?v=20260922-1";
-const ACCOUNT_COOKIE = "ns_account";
-const ACCOUNT_SESSION_SECONDS = 60 * 60 * 24 * 30;
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
@@ -65,25 +64,100 @@ async function auth(env,request){
     .bind(await sha256(raw),nowIso()).first();
   if(!row)return null;await env.DB.prepare("UPDATE sessions SET last_seen_at=? WHERE id=?").bind(nowIso(),row.session_id).run();return row;
 }
-async function createAccountSession(env,accountId,request){
-  const token=crypto.randomUUID()+"."+crypto.randomUUID(),hash=await sha256(token),ts=nowIso(),exp=new Date(Date.now()+ACCOUNT_SESSION_SECONDS*1000).toISOString();
-  await env.DB.prepare("INSERT INTO account_sessions (id,account_id,token_hash,expires_at,created_at,last_seen_at,ip_hash,user_agent) VALUES (?,?,?,?,?,?,?,?)")
-    .bind(crypto.randomUUID(),accountId,hash,exp,ts,ts,await sha256(request.headers.get("CF-Connecting-IP")||""),(request.headers.get("User-Agent")||"").slice(0,500)).run();
-  return {token};
+const FIREBASE_PROJECT_ID = "nexauren-story";
+const FIREBASE_ISSUER = "https://securetoken.google.com/" + FIREBASE_PROJECT_ID;
+const FIREBASE_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
+let firebaseCertCache = { expiresAt: 0, keys: null };
+
+function cacheMaxAge(cacheControl) {
+  const match = String(cacheControl || "").match(/max-age=(\d+)/i);
+  return match ? Number(match[1]) : 3600;
 }
-async function accountAuth(env,request){
-  const raw=getCookie(request,ACCOUNT_COOKIE);if(!raw)return null;
-  const row=await env.DB.prepare("SELECT a.id,a.email,a.display_name,a.status,a.email_verified,s.id session_id FROM account_sessions s JOIN account_profiles a ON a.id=s.account_id WHERE s.token_hash=? AND s.expires_at>? AND a.status='active' LIMIT 1")
-    .bind(await sha256(raw),nowIso()).first();
-  if(!row)return null;
-  await env.DB.prepare("UPDATE account_sessions SET last_seen_at=? WHERE id=?").bind(nowIso(),row.session_id).run();
-  return row;
+async function firebaseCertificates() {
+  if (firebaseCertCache.keys && Date.now() < firebaseCertCache.expiresAt) return firebaseCertCache.keys;
+  const response = await fetch(FIREBASE_CERT_URL);
+  if (!response.ok) throw new Error("Firebase public keys unavailable");
+  const keys = await response.json();
+  const maxAge = cacheMaxAge(response.headers.get("cache-control"));
+  firebaseCertCache = { keys, expiresAt: Date.now() + Math.max(60, maxAge - 30) * 1000 };
+  return keys;
 }
-async function accountSchemaReady(env){
-  try{
-    const r=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('account_profiles','account_sessions','account_login_attempts')").all();
-    return new Set((r.results||[]).map(x=>x.name)).size===3;
-  }catch{return false;}
+async function firebaseVerificationKey(header) {
+  if (!header?.kid || header.alg !== "RS256") throw new Error("Unsupported Firebase token");
+  let certs = await firebaseCertificates();
+  let cert = certs[header.kid];
+  if (!cert) {
+    firebaseCertCache = { expiresAt: 0, keys: null };
+    certs = await firebaseCertificates();
+    cert = certs[header.kid];
+  }
+  if (!cert) throw new Error("Unknown Firebase signing key");
+  return importX509(cert, "RS256");
+}
+async function verifyFirebaseIdToken(token) {
+  const now = Math.floor(Date.now() / 1000);
+  const result = await jwtVerify(String(token || ""), firebaseVerificationKey, {
+    algorithms: ["RS256"],
+    audience: FIREBASE_PROJECT_ID,
+    issuer: FIREBASE_ISSUER,
+    clockTolerance: 300
+  });
+  const payload = result.payload;
+  if (typeof payload.sub !== "string" || payload.sub.length < 1 || payload.sub.length > 128) throw new Error("Invalid Firebase subject");
+  if (typeof payload.exp !== "number" || payload.exp <= now - 300) throw new Error("Expired Firebase token");
+  if (typeof payload.iat !== "number" || payload.iat > now + 300) throw new Error("Future Firebase token");
+  if (typeof payload.auth_time !== "number" || payload.auth_time > now + 300) throw new Error("Invalid Firebase auth time");
+  return payload;
+}
+function bearerToken(request) {
+  const value = request.headers.get("Authorization") || "";
+  const match = value.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : null;
+}
+function accountDisplayName(claims) {
+  const fallback = String(claims.email || "Nexauren User").split("@")[0];
+  return text(claims.name || fallback || "Nexauren User", 80).trim().slice(0, 80) || "Nexauren User";
+}
+async function ensureNexaurenAccount(env, claims, markLogin = false) {
+  const uid = String(claims.sub);
+  const email = normalizeEmail(claims.email || "");
+  const displayName = accountDisplayName(claims);
+  const photoUrl = text(claims.picture || "", 1000);
+  const ts = nowIso();
+  let profile;
+  try {
+    profile = await env.DB.prepare("SELECT * FROM nexauren_accounts WHERE firebase_uid=? LIMIT 1").bind(uid).first();
+  } catch {
+    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/platform-upgrade.sql no D1."), { code: "ACCOUNT_DB_NOT_READY" });
+  }
+  if (!profile) {
+    const id = crypto.randomUUID();
+    await env.DB.prepare(
+      "INSERT INTO nexauren_accounts (id,firebase_uid,email,display_name,photo_url,status,email_verified,last_login_at,last_seen_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+    ).bind(id, uid, email, displayName, photoUrl, "active", claims.email_verified ? 1 : 0, markLogin ? ts : null, ts, ts, ts).run();
+    await env.DB.prepare(
+      "INSERT INTO nexauren_account_preferences (account_id,language,theme,timezone,marketing_emails,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
+    ).bind(id, "pt", "system", "Africa/Maputo", 0, ts, ts).run();
+    return { id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: "active", email_verified: !!claims.email_verified, created: true };
+  }
+  if (profile.status !== "active") {
+    throw Object.assign(new Error("A sua conta Nexauren está suspensa."), { code: "ACCOUNT_SUSPENDED" });
+  }
+  await env.DB.prepare(
+    "UPDATE nexauren_accounts SET email=?,display_name=?,photo_url=?,email_verified=?,last_login_at=CASE WHEN ?=1 THEN ? ELSE last_login_at END,last_seen_at=?,updated_at=? WHERE id=?"
+  ).bind(email, displayName, photoUrl, claims.email_verified ? 1 : 0, markLogin ? 1 : 0, ts, ts, ts, profile.id).run();
+  return { id: profile.id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: profile.status, email_verified: !!claims.email_verified, created: false };
+}
+async function firebaseAccountAuth(env, request, markLogin = false) {
+  const token = bearerToken(request);
+  if (!token) return null;
+  try {
+    const claims = await verifyFirebaseIdToken(token);
+    return { claims, account: await ensureNexaurenAccount(env, claims, markLogin) };
+  } catch (error) {
+    if (error?.code === "ACCOUNT_DB_NOT_READY" || error?.code === "ACCOUNT_SUSPENDED") throw error;
+    throw Object.assign(new Error("Sessão Firebase inválida ou expirada."), { code: "FIREBASE_TOKEN_INVALID" });
+  }
 }
 
 function sameOrigin(request){const o=request.headers.get("Origin");if(!o)return true;try{return o===new URL(request.url).origin;}catch{return false;}}
@@ -94,7 +168,7 @@ async function guard(env,request,owner=false){
 }
 async function bodyJson(request){try{return await request.json();}catch{return null;}}
 async function publishDue(env){const t=nowIso();await env.DB.prepare("UPDATE posts SET status='published',published_at=COALESCE(published_at,scheduled_at,?),updated_at=? WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?").bind(t,t,t).run();}
-async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();if(await accountSchemaReady(env)){await env.DB.prepare("DELETE FROM account_sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM account_login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}}
+async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}
 async function dbCheck(env){
   const required={
     users:["id","email","password_hash","display_name","role","status","email_verified","last_login_at","created_at","updated_at"],
@@ -352,7 +426,30 @@ async function rss(env,request){
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
   if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{provider:"firebase",ready:true}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
-  if(p.startsWith("/api/account/")) return fail("A autenticação pública Nexauren usa Firebase Authentication.",410,"ACCOUNT_FIREBASE_ONLY");
+  if(p==="/api/account/me"&&m==="GET"){
+    try{
+      const a=await firebaseAccountAuth(env,request,false);
+      if(!a)return json({ok:true,authenticated:false,provider:"firebase"});
+      return json({ok:true,authenticated:true,provider:"firebase",account:a.account});
+    }catch(error){
+      const code=error?.code||"ACCOUNT_AUTH_ERROR";
+      const status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);
+      return fail(error?.message||"Não foi possível validar a conta.",status,code);
+    }
+  }
+  if(p==="/api/account/sync"&&m==="POST"){
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{
+      const a=await firebaseAccountAuth(env,request,true);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      return json({ok:true,provider:"firebase",account:a.account});
+    }catch(error){
+      const code=error?.code||"ACCOUNT_SYNC_ERROR";
+      const status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);
+      return fail(error?.message||"Não foi possível sincronizar a conta.",status,code);
+    }
+  }
+  if(p.startsWith("/api/account/")) return fail("Endpoint de conta não disponível.",410,"ACCOUNT_ENDPOINT_DISABLED");
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){

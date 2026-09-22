@@ -79,7 +79,13 @@ Firebase handles:
 
 The public account UI lives at `/account` and uses the Firebase web configuration in `frontend/account/firebase-config.js`.
 
-The Worker does not authenticate public accounts with the editorial `users` table. Requests to the old `/api/account/*` D1 session endpoints are disabled so there is a single public identity system.
+The Worker does not authenticate public accounts with the editorial `users` table. Firebase ID tokens are sent over HTTPS and verified on the Worker before the Firebase UID is accepted. The verified UID is stored in `nexauren_accounts`; application preferences live in `nexauren_account_preferences`.
+
+The public account API is:
+- `/api/account/me`
+- `/api/account/sync`
+
+The account profile stores no password and no Firebase browser session. Passwords, providers and authentication state remain in Firebase Authentication.
 
 In the Firebase console, add `nexaurenstory.com` to Authentication → Settings → Authorized domains.
 
