@@ -103,8 +103,8 @@ jobs:
           grep -q 'nexauren-story-social-preview.png' worker-entry.js
           grep -q 'social-preview.png' worker-entry.js
           grep -q 'nexauren-story-favicon.svg' worker-entry.js
-          grep -q 'public-ui.css?v=20260922-2' worker-entry.js
-          grep -q 'public-ui.js?v=20260922-2' worker-entry.js
+          grep -q 'public-ui.css?v=20260922-4' worker-entry.js
+          grep -q 'public-ui.js?v=20260922-4' worker-entry.js
           grep -q '@view-transition' frontend/assets/public-ui.css
           grep -q 'IntersectionObserver' frontend/assets/public-ui.js
           node <<'NODE'
