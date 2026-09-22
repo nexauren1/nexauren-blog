@@ -70,6 +70,13 @@ function messageBox(type, message, id = "message") {
   return '<div class="' + type + '" id="' + id + '" role="status">' + esc(message) + "</div>";
 }
 
+function setBusy(button, busy, busyText, normalText) {
+  if (!button) return;
+  button.disabled = busy;
+  button.setAttribute("aria-busy", String(busy));
+  button.textContent = busy ? busyText : normalText;
+}
+
 function tabs(active) {
   return `
     <div class="account-tabs" role="tablist" aria-label="Autenticação Nexauren">
