@@ -141,7 +141,7 @@ async function loadCategories(){
 }
 function setup(){
   setLanguage(lang||"pt",false);
-  nav.innerHTML='<a href="'+hrefFor("/")+'" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="'+hrefFor("/"+c[0])+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("")+'<a href="/tool/">Ferramentas</a><a href="/account">Conta</a>';
+  nav.innerHTML='<a href="'+hrefFor("/")+'" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="'+hrefFor("/"+c[0])+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("")+'<a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Legal</a>';
   let mobile=document.querySelector(".mobile-nav");
   if(!mobile){mobile=document.createElement("div");mobile.className="mobile-nav";document.querySelector(".site-header").appendChild(mobile);}
   mobile.innerHTML=nav.innerHTML+'<button class="mobile-lang" id="mobile-language">'+(lang==="en"?"PT":"EN")+"</button>";
@@ -155,7 +155,7 @@ function setup(){
   const submit=document.getElementById("search-submit");if(submit)submit.textContent=t("search");
   const fd=document.getElementById("footer-description"),fe=document.getElementById("footer-explore"),fr=document.getElementById("footer-resources");
   if(fd)fd.textContent=t("footer");if(fe)fe.textContent=lang==="en"?"Explore":"Explorar";if(fr)fr.textContent=t("resources");
-  const fc=document.getElementById("footer-cats");if(fc)fc.innerHTML=cats.slice(0,6).map(x=>'<a href="'+hrefFor("/"+x[0])+'">'+esc(catLabel(x[0],x[1]))+"</a>").join("");
+  const fc=document.getElementById("footer-cats");if(fc)fc.innerHTML=cats.slice(0,6).map(x=>'<a href="'+hrefFor("/"+x[0])+'">'+esc(catLabel(x[0],x[1]))+"</a>").join("")+'<a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a><a href="/legal/cookies/">Cookies</a>';
   document.getElementById("search-toggle").onclick=()=>{searchPanel.classList.toggle("open");if(searchPanel.classList.contains("open"))searchInput.focus();};
   searchForm.onsubmit=e=>{e.preventDefault();const q=searchInput.value.trim();if(q)location.href=hrefFor("/search?q="+encodeURIComponent(q));};
   document.getElementById("menu-toggle").onclick=()=>document.querySelector(".mobile-nav")?.classList.toggle("open");
