@@ -9,7 +9,11 @@ function json(data, status = 200, headers = {}) {
     headers: { "content-type":"application/json; charset=utf-8", "cache-control":"no-store", ...headers }
   });
 }
-function fail(message,status=400,code="BAD_REQUEST"){return json({ok:false,error:message,code},status);}
+function fail(message,status=400,code="BAD_REQUEST",details=null){
+  const payload={ok:false,error:message,code};
+  if(details)payload.details=String(details).slice(0,300);
+  return json(payload,status);
+}
 function nowIso(){return new Date().toISOString();}
 function normalizeEmail(email){return String(email||"").trim().toLowerCase();}
 function slugify(value){return String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/['’"]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").replace(/-{2,}/g,"-").slice(0,180);}
@@ -156,7 +160,14 @@ async function firebaseAccountAuth(env, request, markLogin = false) {
     return { claims, account: await ensureNexaurenAccount(env, claims, markLogin) };
   } catch (error) {
     if (error?.code === "ACCOUNT_DB_NOT_READY" || error?.code === "ACCOUNT_SUSPENDED") throw error;
-    throw Object.assign(new Error("Sessão inválida ou expirada."), { code: "FIREBASE_TOKEN_INVALID" });
+    const reasonCode=String(error?.code||error?.name||"FIREBASE_VERIFY_ERROR");
+    const reason=String(error?.message||"Falha ao validar o token Firebase").replace(/[\r\n]+/g," ").slice(0,240);
+    console.error("Firebase token verification failed", {code:reasonCode,message:reason});
+    throw Object.assign(new Error("Sessão inválida ou expirada."), {
+      code: "FIREBASE_TOKEN_INVALID",
+      reason_code: reasonCode,
+      reason
+    });
   }
 }
 
@@ -794,7 +805,7 @@ async function api(env,request,url,ctx){
     }catch(error){
       const code=error?.code||"ACCOUNT_AUTH_ERROR";
       const status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);
-      return fail(error?.message||"Não foi possível validar a conta.",status,code);
+      return fail(error?.message||"Não foi possível validar a conta.",status,code,error?.reason||error?.message);
     }
   }
   if(p==="/api/account/sync"&&m==="POST"){
@@ -806,7 +817,7 @@ async function api(env,request,url,ctx){
     }catch(error){
       const code=error?.code||"ACCOUNT_SYNC_ERROR";
       const status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);
-      return fail(error?.message||"Não foi possível sincronizar a conta.",status,code);
+      return fail(error?.message||"Não foi possível sincronizar a conta.",status,code,error?.reason||error?.message);
     }
   }
 
@@ -826,7 +837,7 @@ async function api(env,request,url,ctx){
     }catch(error){
       const code=error?.code||"BILLING_ERROR";
       const status=code==="ACCOUNT_DB_NOT_READY"?503:500;
-      return fail(error?.message||"Não foi possível carregar a assinatura.",status,code);
+      return fail(error?.message||"Não foi possível carregar a assinatura.",status,code,error?.reason||error?.message);
     }
   }
   if(p==="/api/account/paypal/create"&&m==="POST"){
