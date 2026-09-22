@@ -13,15 +13,16 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
+  linkWithCredential,
   signOut,
   syncWithWorker
 } from "/account/account-client.js";
 
 const root = document.querySelector("[data-account-app]");
-const isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
 const $ = (selector, scope = document) => scope.querySelector(selector);
 let redirectError = null;
 let syncing = false;
+let pendingGoogleCredential = null;
 
 const esc = (value) => String(value ?? "")
   .replaceAll("&", "&amp;")
@@ -46,10 +47,10 @@ function friendlyError(error) {
     "auth/cancelled-popup-request": "A autenticação foi cancelada.",
     "auth/account-exists-with-different-credential": "Já existe uma conta Nexauren com este email. Entre primeiro com o método usado anteriormente.",
     "auth/requires-recent-login": "Por segurança, volte a entrar e tente novamente.",
-    "auth/operation-not-allowed": "Este método de autenticação ainda não está ativado no Firebase.",
-    "auth/unauthorized-domain": "O domínio nexaurenstory.com não está autorizado no Firebase Authentication. Adicione-o em Authentication → Settings → Authorized domains.",
+    "auth/operation-not-allowed": "Este método de acesso não está disponível neste momento.",
+    "auth/unauthorized-domain": "O acesso com Google ainda não está disponível neste domínio.",
     "auth/web-storage-unsupported": "O armazenamento do navegador não está disponível. Abra o Nexauren Story num navegador normal, não numa janela privada bloqueada.",
-    "auth/internal-error": "O Firebase encontrou um erro interno. Tente novamente."
+    "auth/internal-error": "Não foi possível concluir a operação. Tente novamente."
   };
   return messages[code] || "Não foi possível concluir a operação. Tente novamente.";
 }
@@ -63,14 +64,6 @@ function passwordPolicy(password) {
     [/[^A-Za-z0-9]/.test(password), "um símbolo"]
   ];
   return checks.filter(([, ok]) => !ok).map(([, label]) => label);
-}
-
-function providerLabel(user) {
-  const ids = (user?.providerData || []).map((p) => p.providerId);
-  if (ids.includes("google.com") && ids.includes("password")) return "Google + email";
-  if (ids.includes("google.com")) return "Google";
-  if (ids.includes("password")) return "Email e palavra-passe";
-  return "Firebase Authentication";
 }
 
 function messageBox(type, message, id = "message") {
@@ -101,7 +94,6 @@ function loginView(prefill = "", notice = "") {
       <button class="google" id="google-login" type="button"><span class="google-g">G</span> Continuar com Google</button>
       <div class="form-links"><button type="button" class="link-button" data-forgot>Esqueci a minha palavra-passe</button></div>
       <div class="error" id="error" role="alert"></div>
-      <p class="hint">A autenticação desta página é exclusiva da conta Nexauren e não dá acesso à administração editorial.</p>
     </form>
   `;
   wireTabs();
@@ -194,7 +186,6 @@ function verificationPanel(user) {
 }
 
 function userView(user, syncMessage = "") {
-  const provider = providerLabel(user);
   const hasPasswordProvider = (user.providerData || []).some((p) => p.providerId === "password");
   root.innerHTML = `
     <div class="account-user">
@@ -204,7 +195,7 @@ function userView(user, syncMessage = "") {
         <div class="identity">
           <div class="user-name">${esc(user.displayName || "Utilizador Nexauren")}</div>
           <div class="user-email">${esc(user.email || "")}</div>
-          <span class="provider-badge">${esc(provider)}</span>
+          
         </div>
       </div>
 
@@ -232,13 +223,12 @@ function userView(user, syncMessage = "") {
           <div class="inline-feedback" id="password-feedback"></div>
         </form>
       </section>` : `
-      <section class="account-section">
+      <section class="account-section google-managed-password">
         <div class="section-title"><strong>Palavra-passe</strong><span>Gerida pelo Google</span></div>
         <p class="hint">Esta conta usa o Google para autenticação. A palavra-passe é gerida diretamente pela sua conta Google.</p>
       </section>`}
 
       <div class="account-actions"><button class="logout" id="logout">Terminar sessão</button></div>
-      <p class="hint">Esta conta pertence ao ecossistema Nexauren. A administração editorial do blog continua separada.</p>
     </div>
   `;
 
@@ -303,6 +293,22 @@ function userView(user, syncMessage = "") {
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
+    const passwordSection = passwordForm.closest(".account-section");
+    const sectionTitle = passwordSection?.querySelector(".section-title");
+    if (passwordSection && sectionTitle) {
+      passwordForm.hidden = true;
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "section-toggle";
+      toggle.textContent = "Alterar palavra-passe";
+      toggle.setAttribute("aria-expanded", "false");
+      sectionTitle.appendChild(toggle);
+      toggle.onclick = () => {
+        const open = !passwordForm.hidden;
+        passwordForm.hidden = open;
+        toggle.setAttribute("aria-expanded", String(!open));
+      };
+    }
     const newPasswordInput = $("#new-password");
     newPasswordInput.addEventListener("input", () => {
       const missing = passwordPolicy(newPasswordInput.value);
@@ -364,13 +370,27 @@ function wireLogin() {
       error.textContent = "Email e palavra-passe são obrigatórios.";
       return;
     }
+    const button = $("#email-login");
+    setBusy(button, true, "A entrar…", "Entrar");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      if (pendingGoogleCredential) {
+        const pending = pendingGoogleCredential;
+        pendingGoogleCredential = null;
+        try {
+          await linkWithCredential(result.user, pending);
+        } catch (linkError) {
+          if (String(linkError?.code || "") !== "auth/provider-already-linked") {
+            console.warn("Nexauren Google link", linkError);
+          }
+        }
+      }
     } catch (err) {
+      setBusy(button, false, "A entrar…", "Entrar");
       error.textContent = friendlyError(err);
     }
   });
-  $("#google-login").onclick = () => googleSignIn($("#error"));
+  $("#google-login").onclick = () => googleSignIn($("#google-login"), $("#error"));
 }
 
 function wireRegister() {
@@ -410,35 +430,50 @@ function wireRegister() {
       error.textContent = friendlyError(err);
     }
   });
-  $("#google-register").onclick = () => googleSignIn($("#error"));
+  $("#google-register").onclick = () => googleSignIn($("#google-register"), $("#error"));
 }
 
-async function googleSignIn(errorTarget) {
-  errorTarget.textContent = "A ligar ao Google…";
+async function googleSignIn(button, errorTarget) {
+  errorTarget.textContent = "";
+  setBusy(button, true, "A ligar…", "Continuar com Google");
+
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
   try {
-    if (isMobile) {
-      await signInWithRedirect(auth, provider);
-      return;
-    }
+    // Popup first: it avoids the cross-origin redirect/storage issues that can
+    // affect mobile browsers. Redirect remains a fallback when a popup is blocked.
     await signInWithPopup(auth, provider);
   } catch (err) {
-    if (String(err?.code || "") === "auth/popup-blocked") {
+    const code = String(err?.code || "");
+
+    if (code === "auth/account-exists-with-different-credential") {
+      const credential = GoogleAuthProvider.credentialFromError(err);
+      if (credential) pendingGoogleCredential = credential;
+      const email = String(err?.customData?.email || "");
+      setBusy(button, false, "A ligar…", "Continuar com Google");
+      errorTarget.textContent = email
+        ? "Já existe uma conta com " + email + ". Entre com email e palavra-passe para associar o Google."
+        : "Já existe uma conta com este email. Entre com o método usado anteriormente para continuar.";
+      return;
+    }
+
+    if (code === "auth/popup-blocked") {
       try {
         await signInWithRedirect(auth, provider);
         return;
       } catch (redirectError) {
         errorTarget.textContent = friendlyError(redirectError);
-        return;
       }
+    } else {
+      errorTarget.textContent = friendlyError(err);
     }
-    errorTarget.textContent = friendlyError(err);
+
+    setBusy(button, false, "A ligar…", "Continuar com Google");
   }
 }
 
-async function renderFirebaseError(error) {
+function renderAccountError(error) {
   root.innerHTML = `
     <div class="success-large">
       <div class="error" role="alert">${esc(friendlyError(error))}</div>
@@ -449,13 +484,13 @@ async function renderFirebaseError(error) {
 }
 
 async function init() {
-  root.innerHTML = '<div class="account-loading">A carregar o Firebase Authentication…</div>';
+  root.innerHTML = '<div class="account-loading">A carregar…</div>';
 
   try {
     await getRedirectResult(auth);
   } catch (err) {
     redirectError = err;
-    console.error("Nexauren Firebase redirect", err);
+    console.error("Nexauren auth redirect", err);
   }
 
   onAuthStateChanged(auth, async (user) => {
@@ -470,10 +505,10 @@ async function init() {
       syncing = true;
       try {
         const result = await syncWithWorker(user);
-        if (result?.created) syncMessage = "Conta Nexauren criada e sincronizada.";
+        if (result?.created) syncMessage = "Conta criada com sucesso.";
       } catch (err) {
         console.error("Nexauren account sync", err);
-        syncMessage = "Conta autenticada. A sincronização do perfil será concluída quando o banco da plataforma estiver disponível.";
+        syncMessage = "A sua conta está ativa. Algumas informações serão sincronizadas automaticamente.";
       } finally {
         syncing = false;
       }
@@ -483,4 +518,4 @@ async function init() {
   });
 }
 
-init().catch((err) => renderFirebaseError(err));
+init().catch((err) => renderAccountError(err));

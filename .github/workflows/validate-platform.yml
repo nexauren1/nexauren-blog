@@ -62,7 +62,9 @@ jobs:
       - name: Validate account isolation and Firebase wiring
         run: |
           set -euo pipefail
-          grep -q 'Firebase Authentication' frontend/account/index.html
+          ! grep -q 'Firebase Authentication' frontend/account/index.html
+      ! grep -qi 'Cloudflare' frontend/account/index.html
+      ! grep -qi 'administração editorial' frontend/account/index.html
           grep -q 'firebaseConfig' frontend/account/firebase-config.js
           grep -q 'initializeAuth' frontend/account/account-client.js
           grep -q 'browserPopupRedirectResolver' frontend/account/account-client.js
