@@ -53,6 +53,7 @@
   }
 
   function initReveal(){
+    if(!config.reducedMotion)document.documentElement.classList.add("nx-motion");
     const autoCandidates=$("main > section,main > article,main .legal-article");
     autoCandidates.forEach(node=>{if(!node.classList.contains("nx-reveal"))node.classList.add("nx-reveal");});
     const nodes=$(config.selectors.reveal);if(!nodes.length)return;
