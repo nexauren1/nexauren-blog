@@ -56,16 +56,16 @@ async function initBilling(root){
       notice=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.plan==="pro"
         ?"Assinatura Pro ativada com sucesso."
         :"O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo.";
-      history.replaceState({},document.title,"/account");
+      history.replaceState({},document.title,"/account/upgrade/");
     }else if(paypal==="cancel"){
       notice="O processo PayPal foi cancelado. A sua conta continua no plano Free.";
-      history.replaceState({},document.title,"/account");
+      history.replaceState({},document.title,"/account/upgrade/");
     }
     const result=await workerFetch("/api/account/billing");
     host.innerHTML=billingMarkup(result.billing,notice);
   }catch(error){
     host.innerHTML=billingMarkup({plan:"free",status:"FREE"},"Erro ao carregar assinatura: " + (error?.message || "erro desconhecido") + (error?.code ? " [" + error.code + "]" : ""));
-    if(paypal)history.replaceState({},document.title,"/account");
+    if(paypal)history.replaceState({},document.title,"/account/upgrade/");
   }
   const upgrade=host.querySelector("[data-billing-upgrade]");
   if(upgrade)upgrade.onclick=async()=>{
