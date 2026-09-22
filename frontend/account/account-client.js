@@ -31,23 +31,35 @@ auth.languageCode = "pt-BR";
 
 export async function syncWithWorker(user) {
   if (!user) return null;
-  const idToken = await user.getIdToken();
-  const response = await fetch("/api/account/sync", {
-    method: "POST",
-    credentials: "same-origin",
-    headers: {
-      "Authorization": "Bearer " + idToken,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      display_name: user.displayName || "",
-      photo_url: user.photoURL || ""
-    })
-  });
-  const data = await response.json().catch(() => ({ ok: false, error: "Resposta inválida do servidor." }));
+
+  const request = async (forceRefresh = false) => {
+    const idToken = await user.getIdToken(forceRefresh);
+    const response = await fetch("/api/account/sync", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Authorization": "Bearer " + idToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        display_name: user.displayName || "",
+        photo_url: user.photoURL || ""
+      })
+    });
+    const data = await response.json().catch(() => ({ ok: false, error: "Resposta inválida do servidor." }));
+    return { response, data };
+  };
+
+  let { response, data } = await request(false);
+  if (!response.ok && (response.status === 401 || data?.code === "FIREBASE_TOKEN_INVALID")) {
+    ({ response, data } = await request(true));
+  }
+
   if (!response.ok) {
-    const error = new Error(data.error || "Não foi possível sincronizar a conta.");
+    const detail = data?.details ? " — " + data.details : "";
+    const error = new Error((data.error || "Não foi possível sincronizar a conta.") + detail);
     error.code = data.code;
+    error.details = data.details || null;
     throw error;
   }
   return data;
