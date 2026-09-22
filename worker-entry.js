@@ -15,7 +15,7 @@ function slugify(value){return String(value||"").normalize("NFKD").replace(/[\u0
 function text(v,max=1000000){return String(v??"").slice(0,max);}
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 function xml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");}
-function publicUrl(path,language="pt"){const u=new URL(path,"https://nexaurenstory.com");if(language==="en")u.searchParams.set("lang","en");return u.href;}
+function publicUrl(path,language="pt"){const u=new URL(path,"https://nexaurenstory.com");if(language==="en")u.searchParams.set("lang","en");return u.href;}\nfunction blogPublicPath(path){const p=String(path||"/");return p==="/"?"/blog/":"/blog"+(p.startsWith("/")?p:"/"+p)}
 function safeJsonLd(v){return JSON.stringify(v).replace(/</g,"\\u003c");}
 function stripMarkdown(v){return String(v??"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/\[[^\]]+\]\([^)]*\)/g," ").replace(/[#>*_\x60~]/g," ").replace(/\s+/g," ").trim();}
 function seoDesc(excerpt,content){const s=stripMarkdown(excerpt)||stripMarkdown(content);return s.slice(0,160)+(s.length>160?"…":"");}
@@ -268,14 +268,14 @@ async function uploadAuth(env,request){
 async function sitemapPages(env){
   const maxRow=await env.DB.prepare("SELECT MAX(updated_at) lastmod FROM posts WHERE status='published' AND published_at IS NOT NULL").first();
   const catRows=await env.DB.prepare("SELECT c.slug,MAX(p.updated_at) lastmod FROM categories c LEFT JOIN posts p ON p.category_id=c.id AND p.status='published' AND p.published_at IS NOT NULL GROUP BY c.id,c.slug ORDER BY c.sort_order,c.name").all();
-  const pages=[{path:"/",lastmod:maxRow?.lastmod},{path:"/posts",lastmod:maxRow?.lastmod},{path:"/about",lastmod:null}];
-  for(const c of (catRows.results||[]))pages.push({path:"/"+c.slug,lastmod:c.lastmod||null});
+  const pages=[{path:"/",lastmod:maxRow?.lastmod},{path:"/blog/",lastmod:maxRow?.lastmod},{path:"/blog/posts",lastmod:maxRow?.lastmod},{path:"/blog/about",lastmod:null}];
+  for(const c of (catRows.results||[]))pages.push({path:"/blog/"+c.slug,lastmod:c.lastmod||null});
   const out=pages.map(x=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com"+x.path)+"</loc>"];if(x.lastmod)lines.push("    <lastmod>"+xml(x.lastmod)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function sitemapPosts(env){
   const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' AND published_at IS NOT NULL ORDER BY published_at DESC LIMIT 50000").all();
-  const out=(rows.results||[]).map(p=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com/post/"+encodeURIComponent(p.slug))+"</loc>"];if(p.updated_at)lines.push("    <lastmod>"+xml(p.updated_at)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
+  const out=(rows.results||[]).map(p=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com/blog/post/"+encodeURIComponent(p.slug))+"</loc>"];if(p.updated_at)lines.push("    <lastmod>"+xml(p.updated_at)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
 async function sitemapIndex(){
@@ -322,7 +322,7 @@ async function rss(env,request){
   const base=new URL(request.url).origin;
   if(!(await dbReady(env))) return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Base de dados ainda não inicializada.</description></channel></rss>',{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=300"}});
   const rows=await env.DB.prepare("SELECT title,slug,excerpt,published_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 30").all();
-  const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
+  const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
   return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Stories, releases, guides and updates from Nexauren.</description>'+items+"</channel></rss>",{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=1800"}});
 }
 async function api(env,request,url,ctx){
@@ -381,10 +381,37 @@ async function page(env,request,url){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
   }
-  const asset=await env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+  if(url.pathname==="/"||url.pathname==="/tool"||url.pathname.startsWith("/tool/")){
+    const target=url.pathname==="/" ? "/index.html" : "/tool/index.html";
+    return env.ASSETS.fetch(new Request(new URL(target,request.url)));
+  }
+  const isBlog=url.pathname==="/blog"||url.pathname.startsWith("/blog/");
+  if(!isBlog){
+    const legacyExact=["/posts","/about","/search"];
+    if(legacyExact.includes(url.pathname)||url.pathname.startsWith("/post/")){
+      const target=new URL(blogPublicPath(url.pathname),request.url);
+      target.search=url.search;
+      return Response.redirect(target,301);
+    }
+    if(/^\/[^/]+$/.test(url.pathname)&&url.pathname!=="/"){
+      try{
+        if(await dbReady(env)){
+          const legacyCategory=await env.DB.prepare("SELECT slug FROM categories WHERE slug=? LIMIT 1").bind(url.pathname.slice(1)).first();
+          if(legacyCategory){
+            const target=new URL(blogPublicPath(url.pathname),request.url);
+            target.search=url.search;
+            return Response.redirect(target,301);
+          }
+        }
+      }catch{}
+    }
+    return env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+  }
+  const asset=await env.ASSETS.fetch(new Request(new URL("/blog/index.html",request.url)));
   if(!asset.ok)return asset;
   let h=await asset.text();
-  const path=url.pathname;
+  const path=url.pathname==="/blog"||url.pathname==="/blog/"?"/":url.pathname.slice("/blog".length)||"/";
+  const publicPath=blogPublicPath(path);
   const cookieLang=getCookie(request,"ns_lang")||"pt";
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
   const image="https://nexaurenstory.com/social-preview.png?v=20260922-1";
@@ -392,7 +419,7 @@ async function page(env,request,url){
   let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
   let type="website",articleMeta="";
   let structured={"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://nexaurenstory.com/#website","url":"https://nexaurenstory.com/","name":"Nexauren Story","inLanguage":lang},{"@type":"Organization","@id":"https://nexaurenstory.com/#organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/nexauren-story-favicon.svg?v=20260922-1"}}]};
-  const canonical=publicUrl(path,lang),ptUrl=publicUrl(path,"pt"),enUrl=publicUrl(path,"en");
+  const canonical=publicUrl(publicPath,lang),ptUrl=publicUrl(publicPath,"pt"),enUrl=publicUrl(publicPath,"en");
   if(path.match(/^\/post\/[^/]+$/)){
     if(!(await dbReady(env)))return asset;
     const slug=decodeURIComponent(path.slice(6));
