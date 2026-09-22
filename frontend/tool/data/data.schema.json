@@ -1,0 +1,35 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Nexauren Tool Registry",
+  "type":"object",
+  "required":["version","site","basePath","categories","tools"],
+  "properties":{
+    "version":{"type":"integer","minimum":1},
+    "site":{"type":"string","minLength":1},
+    "basePath":{"type":"string","pattern":"^/tool/?$"},
+    "categories":{
+      "type":"array","items":{"type":"object","required":["id","name","description","icon","sortOrder","path"],"properties":{
+        "id":{"type":"string","pattern":"^[a-z0-9-]+$"},
+        "name":{"type":"string","minLength":1},
+        "description":{"type":"string"},
+        "icon":{"type":"string"},
+        "sortOrder":{"type":"integer"},
+        "path":{"type":"string","pattern":"^/tool/categories/[a-z0-9-]+/$"}
+      },"additionalProperties":true}
+    },
+    "tools":{
+      "type":"array","items":{"type":"object","required":["id","name","category","description","path","version","status","tags"],"properties":{
+        "id":{"type":"string","pattern":"^[a-z0-9-]+$"},
+        "name":{"type":"string","minLength":1},
+        "category":{"type":"string","pattern":"^[a-z0-9-]+$"},
+        "description":{"type":"string"},
+        "path":{"type":"string","pattern":"^/tool/categories/[a-z0-9-]+/[a-z0-9-]+/$"},
+        "version":{"type":"string","minLength":1},
+        "status":{"enum":["active","draft","disabled"]},
+        "access":{"enum":["public","account","premium"]},
+        "tags":{"type":"array","items":{"type":"string"}}
+      },"additionalProperties":true}
+    }
+  },
+  "additionalProperties":true
+}
