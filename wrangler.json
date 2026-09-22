@@ -13,6 +13,8 @@
     "run_worker_first": [
       "/api/*",
       "/admin",
+      "/blog/*",
+      "/tool/*",
       "/post/*",
       "/sitemap.xml",
       "/sitemap-pages.xml",
