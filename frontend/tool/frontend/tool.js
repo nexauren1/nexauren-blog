@@ -17,7 +17,7 @@
     return '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.9 2.9M15.5 15.5l2.9 2.9M18.4 5.6l-2.9 2.9M8.5 15.5l-2.9 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>';
   };
 
-  const categoryCard=c=>'<a class="tool-card nx-spotlight nx-reveal" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'">'+
+  const categoryCard=c=>'<a class="tool-card cat-'+esc(c.id)+' nx-spotlight nx-reveal" data-category="'+esc(c.id)+'" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'">'+
     '<span class="tool-card-icon">'+iconSvg(c.id)+'</span><span class="tool-arrow">→</span>'+
     '<h2>'+esc(c.name)+'</h2><p>'+esc(c.description||"")+'</p>'+
     '<small>'+Number(c.count||0)+' ferramenta(s) nesta categoria</small></a>';
