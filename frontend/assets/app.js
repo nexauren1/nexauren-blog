@@ -141,7 +141,7 @@ async function loadCategories(){
 }
 function setup(){
   setLanguage(lang||"pt",false);
-  nav.innerHTML='<a href="'+hrefFor("/")+'" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="'+hrefFor("/"+c[0])+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("");
+  nav.innerHTML='<a href="'+hrefFor("/")+'" data-n="home">'+t("home")+"</a>"+cats.map(c=>'<a href="'+hrefFor("/"+c[0])+'" data-n="'+c[0]+'">'+esc(catLabel(c[0],c[1]))+"</a>").join("")+'<a href="/tool/">Ferramentas</a><a href="/account">Conta</a>';
   let mobile=document.querySelector(".mobile-nav");
   if(!mobile){mobile=document.createElement("div");mobile.className="mobile-nav";document.querySelector(".site-header").appendChild(mobile);}
   mobile.innerHTML=nav.innerHTML+'<button class="mobile-lang" id="mobile-language">'+(lang==="en"?"PT":"EN")+"</button>";
