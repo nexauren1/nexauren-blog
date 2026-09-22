@@ -407,7 +407,7 @@ function decoratePublicHtmlResponse(request,response){
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   const url=new URL(request.url);
   const path=url.pathname;
-  if(path==="/blog"||path.startsWith("/blog/"))return response;
+  if(path==="/blog"||path.startsWith("/blog/")||path==="/admin"||path.startsWith("/admin/"))return response;
   return response.text().then(html=>{
     const titleMatch=html.match(/<title>\s*([\s\S]*?)\s*<\/title>/i);
     const descMatch=html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i);
