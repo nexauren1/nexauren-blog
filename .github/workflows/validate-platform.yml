@@ -74,7 +74,7 @@ jobs:
           grep -q 'createUserWithEmailAndPassword' frontend/account/account.js
           grep -q 'signInWithEmailAndPassword' frontend/account/account.js
           grep -q 'signInWithPopup' frontend/account/account.js
-          grep -q 'signInWithRedirect' frontend/account/account.js
+          ! grep -q 'await signInWithRedirect' frontend/account/account.js
           grep -q 'sendPasswordResetEmail' frontend/account/account.js
           grep -q 'sendEmailVerification' frontend/account/account.js
           grep -q 'updatePassword' frontend/account/account.js
