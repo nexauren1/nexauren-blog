@@ -17,7 +17,7 @@ import {
   signOut,
   syncWithWorker
 } from "/account/account-client.js?v=20260922-2";
-import { initBilling } from "./billing.js";
+import { initBilling } from "./billing.js?v=20260922-3";
 
 const root = document.querySelector("[data-account-app]");
 const $ = (selector, scope = document) => scope.querySelector(selector);
