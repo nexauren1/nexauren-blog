@@ -165,3 +165,66 @@ html:not(.nx-motion) .nx-page [data-nx-reveal]{opacity:1;transform:none;filter:n
 @media(prefers-reduced-motion:reduce){
   .nx-navigation-loader-gear{animation:none}
 }
+
+/* Nexauren Public Experience v4 — mobile-first conflict shield. */
+.nx-page .nx-reveal{transition:opacity .42s cubic-bezier(.2,.7,.2,1),transform .42s cubic-bezier(.2,.7,.2,1),filter .42s ease}
+@media(max-width:760px),(pointer:coarse){
+  .nx-page{font-size:16px}
+  .nx-page main{width:100%;max-width:100%;overflow:visible}
+  .nx-page .nx-reveal,
+  .nx-page .nx-reveal.nx-visible,
+  .nx-page [data-nx-reveal]{opacity:1!important;transform:none!important;filter:none!important}
+  .nx-page .home-hero{display:block!important;min-height:0!important;padding:34px 0 28px!important}
+  .nx-page .home-hero h1{font-size:clamp(40px,11.2vw,54px)!important;line-height:.96!important;max-width:100%!important}
+  .nx-page .home-hero p{font-size:15px!important;line-height:1.62!important}
+  .nx-page .home-actions{gap:9px;margin-top:22px}
+  .nx-page .home-actions .button{width:100%;min-height:48px}
+  .nx-page .home-proof{gap:7px}
+  .nx-page .home-proof span{font-size:9px}
+  .nx-page .home-orbit{margin-top:22px!important;min-height:305px!important;height:305px!important}
+  .nx-page .home-section{padding:26px 0 18px!important}
+  .nx-page .home-section-head h2{font-size:29px!important}
+  .nx-page .home-grid{grid-template-columns:1fr!important;gap:10px!important}
+  .nx-page .home-card{min-height:0!important;padding:21px!important}
+  .nx-page .home-card h3{font-size:23px!important;margin-top:18px}
+  .nx-page .home-strip{grid-template-columns:1fr!important;padding:12px 0 42px!important}
+  .nx-page .home-cta{margin:4px 0 42px!important;padding:25px 20px!important}
+  .nx-page .home-cta h2{font-size:27px!important}
+
+  .nx-page .tool-wrap{width:min(100% - 28px,1160px)!important}
+  .nx-page .tool-nav{min-height:64px!important}
+  .nx-page .tool-hero{display:block!important;min-height:0!important;height:auto!important;padding:34px 0 24px!important}
+  .nx-page .tool-hero h1{font-size:clamp(40px,11.5vw,54px)!important;line-height:.98!important;margin:12px 0 14px!important;max-width:100%!important}
+  .nx-page .tool-lead{font-size:15px!important;line-height:1.62!important}
+  .nx-page .tool-toolbar{margin-top:20px!important}
+  .nx-page .tool-search{width:100%!important;height:52px!important;font-size:16px!important}
+  .nx-page .tool-overview{margin-top:18px!important;min-height:0!important;padding:20px!important}
+  .nx-page .tool-overview-main strong{font-size:46px!important}
+  .nx-page .tool-section{padding:18px 0 54px!important}
+  .nx-page .section-head{margin-bottom:12px!important}
+  .nx-page .section-head h2{font-size:29px!important}
+  .nx-page .tool-grid{grid-template-columns:1fr!important;gap:10px!important}
+  .nx-page .tool-card{min-height:0!important;padding:19px!important}
+  .nx-page .tool-card h2{font-size:20px!important}
+  .nx-page .tool-category-head{padding:34px 0 18px!important}
+  .nx-page .tool-category-head h1{font-size:clamp(40px,11.5vw,54px)!important;line-height:.98!important}
+  .nx-page .tool-results{padding-bottom:54px!important}
+
+  .nx-page .account-wrap,.nx-page .legal-wrap{width:min(100% - 28px,1040px)!important}
+  .nx-page .account-hero{padding:36px 0 16px!important}
+  .nx-page .account-hero h1{font-size:clamp(40px,11.5vw,56px)!important;line-height:.98!important;max-width:100%!important}
+  .nx-page .account-hero p{font-size:15px!important;line-height:1.62!important}
+  .nx-page .account-card{width:100%!important;margin:14px 0 46px!important;padding:20px!important;border-radius:18px!important}
+  .nx-page .legal-wrap main{width:min(100% - 28px,940px)!important}
+  .nx-page .legal-article{padding:24px 18px!important}
+  .nx-page .legal-wrap h1{font-size:clamp(40px,11.5vw,56px)!important;line-height:.98!important}
+
+  .nx-page .mobile-menu,.nx-page .mobile-nav,.nx-page .tool-mobile{
+    max-height:calc(100svh - 66px);overflow:auto;-webkit-overflow-scrolling:touch;
+    box-shadow:0 18px 42px rgba(11,16,32,.10)!important;
+  }
+}
+@media(max-width:420px){
+  .nx-page .home-hero h1,.nx-page .tool-hero h1,.nx-page .tool-category-head h1,.nx-page .account-hero h1,.nx-page .legal-wrap h1{font-size:39px!important}
+  .nx-page .home-node{font-size:8px!important}
+}
