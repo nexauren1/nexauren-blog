@@ -128,7 +128,7 @@ async function ensureNexaurenAccount(env, claims, markLogin = false) {
   try {
     profile = await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_accounts WHERE firebase_uid=? LIMIT 1").bind(uid).first();
   } catch {
-    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/platform-upgrade.sql no D1."), { code: "ACCOUNT_DB_NOT_READY" });
+    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/accounts-upgrade.sql no D1 de contas Nexauren."), { code: "ACCOUNT_DB_NOT_READY" });
   }
   if (!profile) {
     const id = crypto.randomUUID();
