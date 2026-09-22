@@ -9,6 +9,8 @@ on:
       - "frontend/blog/**"
       - "frontend/tool/**"
       - "frontend/account/**"
+      - "frontend/assets/public-ui.*"
+      - "frontend/data/public-urls.json"
       - "schema.sql"
       - "database/accounts-upgrade.sql"
       - "wrangler.json"
@@ -41,6 +43,7 @@ jobs:
           node --check frontend/tool/frontend/tool.js
           node --check frontend/account/account.js
           node --check frontend/account/account-client.js
+          node --check frontend/assets/public-ui.js
       - name: Validate tool registry
         run: |
           node <<'NODE'
@@ -90,6 +93,47 @@ jobs:
           ! grep -q 'INSERT INTO account_profiles' worker-entry.js
           ! grep -q 'INSERT INTO users.*register' worker-entry.js
           echo "Firebase account isolation checks passed."
+      - name: Validate public experience and SEO safeguards
+        run: |
+          set -euo pipefail
+          test -f frontend/assets/public-ui.css
+          test -f frontend/assets/public-ui.js
+          grep -q 'decoratePublicHtmlResponse' worker-entry.js
+          grep -q 'DEFAULT_SOCIAL_IMAGE' worker-entry.js
+          grep -q 'nexauren-story-social-preview.png' worker-entry.js
+          grep -q 'social-preview.png' worker-entry.js
+          grep -q 'nexauren-story-favicon.svg' worker-entry.js
+          grep -q 'public-ui.css?v=20260922-2' worker-entry.js
+          grep -q 'public-ui.js?v=20260922-2' worker-entry.js
+          grep -q '@view-transition' frontend/assets/public-ui.css
+          grep -q 'IntersectionObserver' frontend/assets/public-ui.js
+          node <<'NODE'
+          const fs=require("fs"),path=require("path");
+          const root="frontend";
+          const excluded=/^(admin|blog)(\/|$)/;
+          const forbidden=/^(\/admin|\/account|\/api|\/assets|\/admin-assets|\/data)(\/|$)/;
+          function walk(dir,out=[]){
+            for(const name of fs.readdirSync(dir,{withFileTypes:true})){
+              const p=path.join(dir,name.name);
+              if(name.isDirectory()) walk(p,out);
+              else if(name.name==="index.html") out.push(p);
+            }
+            return out;
+          }
+          const pages=walk(root).filter(p=>!p.startsWith("frontend/blog/")&&!p.startsWith("frontend/admin/")&&!p.includes("/tool/frontend/templates/"));
+          const manifest=JSON.parse(fs.readFileSync("frontend/data/public-urls.json","utf8"));
+          const urls=new Set(manifest.urls||[]);
+          for(const file of pages){
+            const rel=path.posix.normalize(file.replace(/^frontend[\\/]/,""));
+            const dir=path.posix.dirname(rel);
+            const url=dir==="."?"/":"/"+dir.replace(/\\/g,"/")+"/";
+            if(!urls.has(url) && url!=="/account/") throw new Error("Public page missing from URL manifest: "+url);
+            const html=fs.readFileSync(file,"utf8");
+            if(!/<meta[^>]+property=["']og:image["']/i.test(html) && !/decoratePublicHtmlResponse/.test(fs.readFileSync("worker-entry.js","utf8"))) throw new Error("No social preview protection for "+file);
+          }
+          for(const u of urls) if(forbidden.test(u)) throw new Error("Private URL leaked into public manifest: "+u);
+          console.log("Public experience checks OK:",pages.length,"static public pages,",urls.size,"manifest URLs.");
+          NODE
       - name: Validate platform routes
         run: |
           grep -Fq '"/account/*"' wrangler.json
