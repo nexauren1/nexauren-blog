@@ -34,7 +34,7 @@ function previewMd(v){
   }
   return out;
 }
-function editorToolbarfunction editorToolbar(id){
+function editorToolbar(id){
   return '<div class="editor-toolbar" role="toolbar" aria-label="Formatação do conteúdo">'+
     '<button type="button" data-format="h2">Título</button>'+
     '<button type="button" data-format="h3">Subtítulo</button>'+
