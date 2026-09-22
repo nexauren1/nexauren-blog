@@ -29,27 +29,35 @@
   }
 
   function initMenus(){
-    // Existing public pages already own their mobile-menu click handlers; only opt-in pages use this shared handler.
-    const pairs=[];
-    $$(config.selectors.menuButton).forEach(button=>{
-      const header=button.closest("header"),panel=header?$(config.selectors.menuPanel,header):$(config.selectors.menuPanel);
-      if(!panel)return;pairs.push({button,panel});
-      const sync=open=>{button.setAttribute("aria-expanded",String(open));button.setAttribute("aria-label",open?"Fechar menu":"Abrir menu");panel.classList.toggle("open",open);document.body.classList.toggle("nx-menu-open",open);};
+    const pairs=[
+      ...$$(config.selectors.menuButton).map(button=>({button,panel:button.closest("header")?.querySelector(config.selectors.menuPanel)})),
+      ...$$(".menu-toggle").map(button=>({button,panel:button.closest("header")?.querySelector(".mobile-menu,.mobile-nav,.tool-mobile")})),
+      ...$$(".tool-menu").map(button=>({button,panel:button.closest("header")?.querySelector(".tool-mobile")}))
+    ].filter(x=>x.button&&x.panel&&x.button.dataset.nxMenuBound!=="1");
+    if(!pairs.length)return;
+    pairs.forEach(({button,panel})=>{
+      button.dataset.nxMenuBound="1";
+      const sync=open=>{
+        button.setAttribute("aria-expanded",String(open));
+        button.setAttribute("aria-label",open?"Fechar menu":"Abrir menu");
+        panel.classList.toggle("open",open);
+        document.body.classList.toggle("nx-menu-open",open);
+      };
       button.addEventListener("click",()=>sync(!panel.classList.contains("open")));
       $$("a",panel).forEach(a=>a.addEventListener("click",()=>sync(false)));
+      sync(panel.classList.contains("open"));
     });
-    document.addEventListener("keydown",event=>{
-      if(event.key!=="Escape")return;
-      pairs.forEach(({button,panel})=>{if(panel.classList.contains("open")){button.setAttribute("aria-expanded","false");button.setAttribute("aria-label","Abrir menu");panel.classList.remove("open");}});
-      document.body.classList.remove("nx-menu-open");
-    });
-    document.addEventListener("click",event=>{
-      pairs.forEach(({button,panel})=>{
-        if(!panel.classList.contains("open")||panel.contains(event.target)||button.contains(event.target))return;
-        button.setAttribute("aria-expanded","false");button.setAttribute("aria-label","Abrir menu");panel.classList.remove("open");
+    if(!document.body.dataset.nxMenuGlobal){
+      document.body.dataset.nxMenuGlobal="1";
+      document.addEventListener("keydown",event=>{
+        if(event.key!=="Escape")return;
+        $$(".nx-menu-open").forEach(()=>document.body.classList.remove("nx-menu-open"));
+        $$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").forEach(panel=>{
+          panel.classList.remove("open");
+          panel.closest("header")?.querySelector(".menu-toggle,.tool-menu,[data-nx-menu]")?.setAttribute("aria-expanded","false");
+        });
       });
-      if(!pairs.some(x=>x.panel.classList.contains("open")))document.body.classList.remove("nx-menu-open");
-    });
+    }
   }
 
   function initReveal(){
@@ -138,10 +146,10 @@
     }
     let hideTimer=0;
     const show=()=>{clearTimeout(hideTimer);loader.classList.add("is-active");};
-    const hide=(delay=90)=>{clearTimeout(hideTimer);hideTimer=window.setTimeout(()=>loader.classList.remove("is-active"),delay);};
+    const hide=(delay=70)=>{clearTimeout(hideTimer);hideTimer=window.setTimeout(()=>loader.classList.remove("is-active"),delay);};
     window.NexaurenNavigation=Object.freeze({show,hide});
     show();
-    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>hide(180),{once:true});else hide(180);
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>hide(120),{once:true});else hide(120);
     window.addEventListener("pageshow",()=>hide(80),{passive:true});
     window.addEventListener("popstate",()=>show(),{passive:true});
     document.addEventListener("click",event=>{
