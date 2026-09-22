@@ -1,4 +1,4 @@
-name: Update public URL manifest
+name: Update public URLs and SEO metadata
 
 on:
   push:
@@ -18,39 +18,144 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build public URL manifest
+
+      - name: Build public URL manifest and normalize public page metadata
+        shell: python
+        run: |
+          import json, os, re
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          ROOT = Path("frontend")
+          EXCLUDED_PREFIXES = (
+              "/admin", "/account", "/api", "/assets",
+              "/admin-assets", "/data", "/blog",
+              "/tool/frontend/templates/"
+          )
+          SITE = "https://nexaurenstory.com"
+          SOCIAL = SITE + "/social-preview.png?v=20260922-1"
+          ICON = "/nexauren-story-favicon.svg?v=20260922-5"
+          ICON_PNG = "/nexauren-story-favicon.png?v=20260922-5"
+          APPLE = "/nexauren-story-apple-touch-icon.png?v=20260922-5"
+
+          def public_path(index_file: Path) -> str:
+              rel = index_file.parent.relative_to(ROOT).as_posix()
+              return "/" if rel == "." else "/" + rel.rstrip("/") + "/"
+
+          def is_excluded(path: str) -> bool:
+              if path in ("/.", "/./"):
+                  return True
+              normalized = path.rstrip("/") + "/" if path != "/" else "/"
+              return any(normalized.startswith(prefix.rstrip("/") + "/") for prefix in EXCLUDED_PREFIXES)
+
+          def attr(html: str, pattern: str) -> str:
+              m = re.search(pattern, html, flags=re.I)
+              return m.group(1).strip() if m else ""
+
+          public_urls = {"/"}
+          changed = []
+
+          for index_file in ROOT.rglob("index.html"):
+              path = public_path(index_file)
+              if is_excluded(path):
+                  continue
+
+              public_urls.add(path)
+              html = index_file.read_text(encoding="utf-8")
+              original = html
+
+              title = attr(html, r'<title[^>]*>([sS]*?)</title>') or "Nexauren Story"
+              title = re.sub(r"<[^>]+>", "", title).strip()[:180] or "Nexauren Story"
+              description = attr(html, r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']*)["\']') or (
+                  "Nexauren Story — conteúdo, ferramentas e experiências do ecossistema Nexauren."
+              )
+              description = description.strip()[:300]
+              canonical = attr(html, r'<link[^>]+rel=["\']canonical["\'][^>]+href=["\']([^"\']*)["\']') or (SITE + path)
+              robots = attr(html, r'<meta[^>]+name=["\']robots["\'][^>]+content=["\']([^"\']*)["\']') or "index,follow,max-image-preview:large"
+
+              tags = [
+                  ('theme', r'<meta[^>]+name=["\']theme-color["\']', '<meta name="theme-color" content="#0b1020">'),
+                  ('icon', r'<link[^>]+rel=["\']icon["\']', f'<link rel="icon" type="image/svg+xml" href="{ICON}"><link rel="icon" type="image/png" sizes="32x32" href="{ICON_PNG}">'),
+                  ('apple', r'<link[^>]+rel=["\']apple-touch-icon["\']', f'<link rel="apple-touch-icon" href="{APPLE}">'),
+                  ('manifest', r'<link[^>]+rel=["\']manifest["\']', '<link rel="manifest" href="/manifest.json">'),
+                  ('ogsite', r'<meta[^>]+property=["\']og:site_name["\']', '<meta property="og:site_name" content="Nexauren Story">'),
+                  ('ogtitle', r'<meta[^>]+property=["\']og:title["\']', f'<meta property="og:title" content="{title.replace(chr(34),"&quot;")}">'),
+                  ('ogdesc', r'<meta[^>]+property=["\']og:description["\']', f'<meta property="og:description" content="{description.replace(chr(34),"&quot;")}">'),
+                  ('ogtype', r'<meta[^>]+property=["\']og:type["\']', '<meta property="og:type" content="website">'),
+                  ('ogurl', r'<meta[^>]+property=["\']og:url["\']', f'<meta property="og:url" content="{canonical.replace(chr(34),"&quot;")}">'),
+                  ('ogimage', r'<meta[^>]+property=["\']og:image["\']', f'<meta property="og:image" content="{SOCIAL}">'),
+                  ('ogwidth', r'<meta[^>]+property=["\']og:image:width["\']', '<meta property="og:image:width" content="1200">'),
+                  ('ogheight', r'<meta[^>]+property=["\']og:image:height["\']', '<meta property="og:image:height" content="630">'),
+                  ('ogmime', r'<meta[^>]+property=["\']og:image:type["\']', '<meta property="og:image:type" content="image/png">'),
+                  ('ogalt', r'<meta[^>]+property=["\']og:image:alt["\']', f'<meta property="og:image:alt" content="{title.replace(chr(34),"&quot;")}">'),
+                  ('locale', r'<meta[^>]+property=["\']og:locale["\']', '<meta property="og:locale" content="pt_PT">'),
+                  ('twcard', r'<meta[^>]+name=["\']twitter:card["\']', '<meta name="twitter:card" content="summary_large_image">'),
+                  ('twtitle', r'<meta[^>]+name=["\']twitter:title["\']', f'<meta name="twitter:title" content="{title.replace(chr(34),"&quot;")}">'),
+                  ('twdesc', r'<meta[^>]+name=["\']twitter:description["\']', f'<meta name="twitter:description" content="{description.replace(chr(34),"&quot;")}">'),
+                  ('twimage', r'<meta[^>]+name=["\']twitter:image["\']', f'<meta name="twitter:image" content="{SOCIAL}">'),
+                  ('twalt', r'<meta[^>]+name=["\']twitter:image:alt["\']', f'<meta name="twitter:image:alt" content="{title.replace(chr(34),"&quot;")}">'),
+              ]
+              for _, probe, tag in tags:
+                  if not re.search(probe, html, flags=re.I):
+                      html = re.sub(r"</head>", tag + "\n</head>", html, count=1, flags=re.I)
+
+              if not re.search(r'<meta[^>]+name=["\']description["\']', html, flags=re.I):
+                  html = re.sub(r"</head>", f'<meta name="description" content="{description.replace(chr(34),"&quot;")}">\n</head>', html, count=1, flags=re.I)
+              if not re.search(r'<meta[^>]+name=["\']robots["\']', html, flags=re.I):
+                  html = re.sub(r"</head>", f'<meta name="robots" content="{robots.replace(chr(34),"&quot;")}">\n</head>', html, count=1, flags=re.I)
+              if not re.search(r'<link[^>]+rel=["\']canonical["\']', html, flags=re.I):
+                  html = re.sub(r"</head>", f'<link rel="canonical" href="{canonical.replace(chr(34),"&quot;")}">\n</head>', html, count=1, flags=re.I)
+
+              if html != original:
+                  index_file.write_text(html, encoding="utf-8")
+                  changed.append(str(index_file))
+
+          manifest = {
+              "version": 2,
+              "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+              "urls": sorted(public_urls),
+          }
+          Path("frontend/data").mkdir(parents=True, exist_ok=True)
+          Path("frontend/data/public-urls.json").write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8"
+          )
+
+          print(f"Public URLs: {len(public_urls)}")
+          print("\n".join(sorted(public_urls)))
+          print("Metadata normalized:", len(changed), "pages")
+          print("\n".join(changed))
+
+      - name: Validate manifest safety
+        shell: python
+        run: |
+          import json, re
+          data=json.load(open("frontend/data/public-urls.json",encoding="utf-8"))
+          urls=data.get("urls",[])
+          bad=[]
+          for u in urls:
+              if not isinstance(u,str) or not u.startswith("/") or "?" in u or "#" in u or u in ("/./","/."):
+                  bad.append(u)
+              if re.match(r"^/(admin|account|api|assets|admin-assets|data)(/|$)",u):
+                  bad.append(u)
+              if u.startswith("/tool/frontend/templates/"):
+                  bad.append(u)
+          if len(urls) != len(set(urls)):
+              raise SystemExit("Duplicate URLs in manifest")
+          if bad:
+              raise SystemExit("Unsafe URLs in manifest: "+repr(bad))
+          print("Manifest OK:", len(urls), "public URLs.")
+
+      - name: Commit generated changes
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p frontend/data
-          python3 <<'PY'
-          import json, os
-          root="frontend"
-          excluded={"/admin","/account","/api","/assets","/admin-assets","/data"}
-          urls=set(["/"])
-          for base, dirs, files in os.walk(root):
-              rel="/"+os.path.relpath(base, root).replace(os.sep,"/")
-              dirs[:] = [d for d in dirs if not (rel+"/"+d).startswith(tuple(excluded))]
-              if any(f=="index.html" for f in files):
-                  if rel in ("//","."): path="/"
-                  else: path=rel.rstrip("/")+"/"
-                  if not any(path==x or path.startswith(x+"/") for x in excluded):
-                      urls.add(path)
-          urls=sorted(urls)
-          with open("frontend/data/public-urls.json","w",encoding="utf-8") as f:
-              json.dump({"version":1,"generatedAt":__import__("datetime").datetime.utcnow().isoformat()+"Z","urls":urls},f,ensure_ascii=False,indent=2)
-              f.write("\n")
-          print("Public URLs:", len(urls))
-          for u in urls: print(u)
-          PY
-      - name: Commit URL manifest
-        run: |
           git config user.name "nexauren-sitemap-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add frontend/data/public-urls.json
+          git add -A frontend/data/public-urls.json frontend/**/index.html
           if git diff --cached --quiet; then
-            echo "No URL changes."
+            echo "No generated changes."
           else
-            git commit -m "chore: update public URL manifest"
+            git commit -m "chore: sync public URLs and SEO metadata"
             git push
           fi
