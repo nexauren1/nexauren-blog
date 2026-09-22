@@ -112,7 +112,11 @@ function setLanguage(next,persist=true){
 function openLanguage(){
   let box=document.getElementById("language-choice");if(!box){box=document.createElement("div");box.id="language-choice";box.className="language-overlay";box.innerHTML='<div class="language-card" role="dialog" aria-modal="true"><div class="language-mark">N</div><div class="eyebrow">Nexauren Story</div><h2>'+t("languageTitle")+'</h2><p>'+t("languageText")+'</p><div class="language-options"><button data-lang="pt">'+t("continuePt")+'</button><button data-lang="en">'+t("continueEn")+'</button></div></div>';document.body.appendChild(box);box.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{setLanguage(b.dataset.lang);box.remove();route();});}else{box.querySelector(".language-card").innerHTML='<div class="language-mark">N</div><div class="eyebrow">Nexauren Story</div><h2>'+t("languageTitle")+'</h2><p>'+t("languageText")+'</p><div class="language-options"><button data-lang="pt">'+t("continuePt")+'</button><button data-lang="en">'+t("continueEn")+'</button></div>';box.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{setLanguage(b.dataset.lang);box.remove();route();});}
 }
-function card(p){
+function trackPageView(){
+  if(typeof window.gtag!=="function")return;
+  window.gtag("event","page_view",{page_title:document.title,page_location:location.href,page_path:location.pathname+location.search});
+}
+\nfunction card(p){
   const link=hrefFor("/post/"+encodeURIComponent(p.slug));
   const media=p.cover_url?'<img loading="lazy" decoding="async" src="'+esc(p.cover_url)+'" alt="'+esc(p.title)+'"'+(p.cover_width?' width="'+esc(p.cover_width)+'"':'')+(p.cover_height?' height="'+esc(p.cover_height)+'"':'')+'>':'<span class="card-placeholder">N</span>';
   return '<article class="card"><a href="'+link+'"><div class="card-media">'+media+'</div><div class="card-body"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span></div><h3>'+esc(p.title)+'</h3><p>'+esc(excerpt(p))+'</p><span class="read-more">'+t("read")+'</span></div></a></article>';
@@ -225,14 +229,20 @@ async function route(){
   await loadCategories();
   setup();
   const p=location.pathname;
-  if(p.startsWith("/post/"))return post(decodeURIComponent(p.slice(6)));
-  updatePageSeo(p);
-  if(p.startsWith("/search"))return search(new URLSearchParams(location.search).get("q")||"");
-  if(p==="/about")return about();
-  if(p==="/posts")return allPosts();
-  if(p==="/")return home();
-  const c=cats.find(x=>x[0]===p.slice(1));
-  if(c)return listing(c[0],c[1]);
-  return home();
+  let result;
+  if(p.startsWith("/post/"))result=await post(decodeURIComponent(p.slice(6)));
+  else{
+    updatePageSeo(p);
+    if(p.startsWith("/search"))result=await search(new URLSearchParams(location.search).get("q")||"");
+    else if(p==="/about")result=about();
+    else if(p==="/posts")result=allPosts();
+    else if(p==="/")result=home();
+    else{
+      const c=cats.find(x=>x[0]===p.slice(1));
+      result=c?listing(c[0],c[1]):home();
+    }
+  }
+  trackPageView();
+  return result;
 }
 route().catch(e=>{console.error(e);const ready=e.code==="DB_NOT_READY";app.innerHTML='<div class="empty"><h2>'+ (ready?t("dbTitle"):(lang==="en"?"Unable to load this page":"Não foi possível carregar esta página")) +'</h2><p>'+esc(ready?t("dbText"):(e.message||"Tente novamente."))+'</p></div>';});
