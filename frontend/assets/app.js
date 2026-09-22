@@ -116,7 +116,7 @@ function trackPageView(){
   if(typeof window.gtag!=="function")return;
   window.gtag("event","page_view",{page_title:document.title,page_location:location.href,page_path:location.pathname+location.search});
 }
-\nfunction card(p){
+function card(p){
   const link=hrefFor("/post/"+encodeURIComponent(p.slug));
   const media=p.cover_url?'<img loading="lazy" decoding="async" src="'+esc(p.cover_url)+'" alt="'+esc(p.title)+'"'+(p.cover_width?' width="'+esc(p.cover_width)+'"':'')+(p.cover_height?' height="'+esc(p.cover_height)+'"':'')+'>':'<span class="card-placeholder">N</span>';
   return '<article class="card"><a href="'+link+'"><div class="card-media">'+media+'</div><div class="card-body"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span></div><h3>'+esc(p.title)+'</h3><p>'+esc(excerpt(p))+'</p><span class="read-more">'+t("read")+'</span></div></a></article>';
