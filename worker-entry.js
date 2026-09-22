@@ -624,17 +624,17 @@ async function page(env,request,url){
     if(url.pathname.startsWith("/legal/")){
       let r=await env.ASSETS.fetch(request);
       if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
-      if(r.ok)return r;
+      if(r.ok)return decoratePublicHtmlResponse(request,r);
     }
     if(url.pathname==="/account"||url.pathname==="/account/"){
       const r=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));
-      const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
+      const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
     }
     if(url.pathname==="/" )return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/index.html",request.url))));
     if(url.pathname==="/tool"||url.pathname==="/tool/")return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url))));
     let r=await env.ASSETS.fetch(request);
     if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
-    return r;
+    return decoratePublicHtmlResponse(request,r);
   }
   const isBlog=url.pathname==="/blog"||url.pathname.startsWith("/blog/");
   if(!isBlog){
