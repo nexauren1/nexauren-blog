@@ -263,3 +263,10 @@ img{max-width:100%;display:block}
   .share-button{flex:1 1 auto}
   .related-section .grid{grid-template-columns:1fr}
 }
+
+/* Nexauren Story markup language */
+.article-content figure{margin:30px 0 34px;padding:0}
+.article-content figure img{width:100%;max-width:100%;margin:0;border-radius:18px}
+.article-content figcaption{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5;text-align:center}
+.article-content ol{padding-left:28px}
+.article-content li{margin:5px 0}
