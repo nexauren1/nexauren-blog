@@ -36,7 +36,7 @@ jobs:
             const all=[];
             for(const u of children){const r=await get(u);if(r.status!==200)throw new Error('Child sitemap status='+r.status+': '+u);if(!/<urlset[\s>]/.test(r.body))throw new Error('Child sitemap is not a urlset: '+u);all.push(...locs(r.body));}
             const seen=new Set();
-            for(const u of all){const x=new URL(u);if(x.origin!=='https://nexaurenstory.com')throw new Error('Non-canonical host: '+u);if(/^\/(admin|api(?:\/|$)|search)/.test(x.pathname))throw new Error('Private/search URL: '+u);if(x.search)throw new Error('Query-string URL: '+u);if(seen.has(u))throw new Error('Duplicate URL: '+u);seen.add(u);}
+            for(const u of all){const x=new URL(u);if(x.origin!=='https://nexaurenstory.com')throw new Error('Non-canonical host: '+u);if(/^\/(admin|api(?:\/|$)|blog\/search|search)/.test(x.pathname))throw new Error('Private/search URL: '+u);if(x.search)throw new Error('Query-string URL: '+u);if(seen.has(u))throw new Error('Duplicate URL: '+u);seen.add(u);}
             console.log(`Verified ${all.length} public canonical sitemap URLs across ${children.length} child sitemaps.`);
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
