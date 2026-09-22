@@ -40,6 +40,7 @@ jobs:
           node --check frontend/tool/categories/category-page.js
           node --check frontend/tool/frontend/tool.js
           node --check frontend/account/account.js
+          node --check frontend/account/account-client.js
       - name: Validate tool registry
         run: |
           node <<'NODE'
@@ -63,6 +64,8 @@ jobs:
           set -euo pipefail
           grep -q 'Firebase Authentication' frontend/account/index.html
           grep -q 'firebaseConfig' frontend/account/firebase-config.js
+          grep -q 'initializeAuth' frontend/account/account-client.js
+          grep -q 'browserPopupRedirectResolver' frontend/account/account-client.js
           grep -q 'createUserWithEmailAndPassword' frontend/account/account.js
           grep -q 'signInWithEmailAndPassword' frontend/account/account.js
           grep -q 'signInWithPopup' frontend/account/account.js
@@ -71,7 +74,10 @@ jobs:
           grep -q 'sendEmailVerification' frontend/account/account.js
           grep -q 'updatePassword' frontend/account/account.js
           grep -q 'account Firebase' frontend/account/account.css || true
-          grep -q 'ACCOUNT_FIREBASE_ONLY' worker-entry.js
+          grep -q 'jwtVerify' worker-entry.js
+          grep -q 'FIREBASE_PROJECT_ID = "nexauren-story"' worker-entry.js
+          grep -q 'nexauren_accounts' worker-entry.js
+          grep -q 'nexauren_account_preferences' worker-entry.js
           ! grep -q 'INSERT INTO account_profiles' worker-entry.js
           ! grep -q 'INSERT INTO users.*register' worker-entry.js
           echo "Firebase account isolation checks passed."
