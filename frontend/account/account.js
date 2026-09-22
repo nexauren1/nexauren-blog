@@ -16,7 +16,7 @@ import {
   linkWithCredential,
   signOut,
   syncWithWorker
-} from "/account/account-client.js";
+} from "/account/account-client.js?v=20260922-2";
 import { initBilling } from "./billing.js";
 
 const root = document.querySelector("[data-account-app]");
@@ -530,7 +530,7 @@ async function init() {
         if (result?.created) syncMessage = "Conta criada com sucesso.";
       } catch (err) {
         console.error("Nexauren account sync", err);
-        syncMessage = "A sua conta está ativa. Algumas informações serão sincronizadas automaticamente.";
+        syncMessage = "Sincronização: " + (err?.message || "erro desconhecido") + (err?.code ? " [" + err.code + "]" : "");
       } finally {
         syncing = false;
       }
