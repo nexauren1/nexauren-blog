@@ -1,0 +1,80 @@
+name: Apply Google Analytics
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: google-analytics-main
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply Google tag to public page shell
+        env:
+          GA_MEASUREMENT_ID: G-5QFVE1W7D7
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+
+          path = Path("frontend/index.html")
+          html = path.read_text(encoding="utf-8")
+          marker = "<!-- Nexauren Story — Google tag (public pages only) -->"
+          ga_id = os.environ["GA_MEASUREMENT_ID"]
+
+          block = f'''{marker}
+          <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
+          <script>
+          window.dataLayer=window.dataLayer||[];
+          function gtag(){{dataLayer.push(arguments);}}
+          gtag("js",new Date());
+          gtag("config","{ga_id}",{{send_page_view:false}});
+          </script>'''
+
+          if marker not in html:
+              if "</head>" not in html:
+                  raise SystemExit("frontend/index.html não contém </head>.")
+              html = html.replace("</head>", block + "</head>", 1)
+              path.write_text(html, encoding="utf-8")
+              print("Google tag aplicado ao shell público.")
+          else:
+              print("Google tag já está aplicado.")
+          PY
+
+      - name: Validate public/private separation
+        run: |
+          set -e
+          grep -F 'G-5QFVE1W7D7' frontend/index.html
+          grep -F 'Nexauren Story — Google tag (public pages only)' frontend/index.html
+          if grep -Fq 'G-5QFVE1W7D7' frontend/admin/index.html; then
+            echo "ERRO: a etiqueta Google não pode ser instalada na área privada /admin."
+            exit 1
+          fi
+          if grep -Fq 'Google tag (public pages only)' frontend/admin/index.html; then
+            echo "ERRO: marcador da etiqueta encontrado na área privada /admin."
+            exit 1
+          fi
+          echo "OK: Google Analytics no shell público e ausente do admin."
+
+      - name: Commit enforced changes
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- frontend/index.html; then
+            echo "Nenhuma alteração necessária."
+          else
+            git add frontend/index.html
+            git commit -m "Ensure Google Analytics tag on public pages [skip ci]"
+            git push
+          fi
