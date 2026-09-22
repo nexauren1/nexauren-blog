@@ -50,7 +50,7 @@ function friendlyError(error) {
     "auth/operation-not-allowed": "Este método de acesso não está disponível neste momento.",
     "auth/unauthorized-domain": "O acesso com Google ainda não está disponível neste domínio.",
     "auth/web-storage-unsupported": "O armazenamento do navegador não está disponível. Abra o Nexauren Story num navegador normal, não numa janela privada bloqueada.",
-    "auth/internal-error": "O Firebase encontrou um erro interno. Tente novamente."
+    "auth/internal-error": "Não foi possível concluir a operação. Tente novamente."
   };
   return messages[code] || "Não foi possível concluir a operação. Tente novamente.";
 }
@@ -64,14 +64,6 @@ function passwordPolicy(password) {
     [/[^A-Za-z0-9]/.test(password), "um símbolo"]
   ];
   return checks.filter(([, ok]) => !ok).map(([, label]) => label);
-}
-
-function providerLabel(user) {
-  const ids = (user?.providerData || []).map((p) => p.providerId);
-  if (ids.includes("google.com") && ids.includes("password")) return "Google + email";
-  if (ids.includes("google.com")) return "Google";
-  if (ids.includes("password")) return "Email e palavra-passe";
-  return "Firebase Authentication";
 }
 
 function messageBox(type, message, id = "message") {
@@ -102,7 +94,6 @@ function loginView(prefill = "", notice = "") {
       <button class="google" id="google-login" type="button"><span class="google-g">G</span> Continuar com Google</button>
       <div class="form-links"><button type="button" class="link-button" data-forgot>Esqueci a minha palavra-passe</button></div>
       <div class="error" id="error" role="alert"></div>
-      <p class="hint">A autenticação desta página é exclusiva da conta Nexauren e não dá acesso à administração editorial.</p>
     </form>
   `;
   wireTabs();
@@ -238,7 +229,6 @@ function userView(user, syncMessage = "") {
       </section>`}
 
       <div class="account-actions"><button class="logout" id="logout">Terminar sessão</button></div>
-      <p class="hint">Esta conta pertence ao ecossistema Nexauren. A administração editorial do blog continua separada.</p>
     </div>
   `;
 
@@ -303,6 +293,22 @@ function userView(user, syncMessage = "") {
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
+    const passwordSection = passwordForm.closest(".account-section");
+    const sectionTitle = passwordSection?.querySelector(".section-title");
+    if (passwordSection && sectionTitle) {
+      passwordForm.hidden = true;
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "section-toggle";
+      toggle.textContent = "Alterar palavra-passe";
+      toggle.setAttribute("aria-expanded", "false");
+      sectionTitle.appendChild(toggle);
+      toggle.onclick = () => {
+        const open = !passwordForm.hidden;
+        passwordForm.hidden = open;
+        toggle.setAttribute("aria-expanded", String(!open));
+      };
+    }
     const newPasswordInput = $("#new-password");
     newPasswordInput.addEventListener("input", () => {
       const missing = passwordPolicy(newPasswordInput.value);
@@ -364,13 +370,27 @@ function wireLogin() {
       error.textContent = "Email e palavra-passe são obrigatórios.";
       return;
     }
+    const button = $("#email-login");
+    setBusy(button, true, "A entrar…", "Entrar");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      if (pendingGoogleCredential) {
+        const pending = pendingGoogleCredential;
+        pendingGoogleCredential = null;
+        try {
+          await linkWithCredential(result.user, pending);
+        } catch (linkError) {
+          if (String(linkError?.code || "") !== "auth/provider-already-linked") {
+            console.warn("Nexauren Google link", linkError);
+          }
+        }
+      }
     } catch (err) {
+      setBusy(button, false, "A entrar…", "Entrar");
       error.textContent = friendlyError(err);
     }
   });
-  $("#google-login").onclick = () => googleSignIn($("#error"));
+  $("#google-login").onclick = () => googleSignIn($("#google-login"), $("#error"));
 }
 
 function wireRegister() {
@@ -410,7 +430,7 @@ function wireRegister() {
       error.textContent = friendlyError(err);
     }
   });
-  $("#google-register").onclick = () => googleSignIn($("#error"));
+  $("#google-register").onclick = () => googleSignIn($("#google-register"), $("#error"));
 }
 
 async function googleSignIn(button, errorTarget) {
@@ -470,7 +490,7 @@ async function init() {
     await getRedirectResult(auth);
   } catch (err) {
     redirectError = err;
-    console.error("Nexauren Firebase redirect", err);
+    console.error("Nexauren auth redirect", err);
   }
 
   onAuthStateChanged(auth, async (user) => {
@@ -485,10 +505,10 @@ async function init() {
       syncing = true;
       try {
         const result = await syncWithWorker(user);
-        if (result?.created) syncMessage = "Conta Nexauren criada e sincronizada.";
+        if (result?.created) syncMessage = "Conta criada com sucesso.";
       } catch (err) {
         console.error("Nexauren account sync", err);
-        syncMessage = "Conta autenticada. A sincronização do perfil será concluída quando o banco da plataforma estiver disponível.";
+        syncMessage = "A sua conta está ativa. Algumas informações serão sincronizadas automaticamente.";
       } finally {
         syncing = false;
       }
