@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-22T21:26:41.015908Z",
+  "generatedAt": "2026-09-22T21:27:12.778923Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -12,6 +12,7 @@
     "/tool/categories/produtividade/contador-de-palavras/",
     "/tool/categories/tecnologia/",
     "/tool/categories/texto/",
-    "/tool/destaques/"
+    "/tool/destaques/",
+    "/tool/populares/"
   ]
 }
