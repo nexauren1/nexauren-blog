@@ -546,3 +546,22 @@ body.nx-page .legal-header .nav{
     padding-right:12px!important;
   }
 }
+
+
+/* Tools experience v2 final overrides */
+.nx-page .tool-header{width:100%;min-width:0;box-shadow:0 12px 45px rgba(16,21,37,.045)}
+.nx-page .tool-wrap{max-width:1160px}
+.nx-page .tool-links a{text-decoration:none}
+.nx-page .tool-card{border-radius:24px!important;background:linear-gradient(180deg,#fff 0%,#fcfdff 100%)!important;box-shadow:0 16px 40px rgba(16,21,37,.055)!important}
+.nx-page .tool-card:before{opacity:1!important;height:4px!important}
+.nx-page .tool-card:hover{transform:translateY(-7px)!important;box-shadow:0 26px 68px rgba(16,21,37,.12)!important}
+.nx-page .tool-card .tool-arrow{right:auto;top:auto}
+.nx-page .tool-card-top .tool-arrow{position:static}
+.nx-page .tool-card-badge{font-size:9px;letter-spacing:.04em}
+.nx-page .tool-featured,.nx-page .tool-popular{position:relative}
+.nx-page .tool-featured:before,.nx-page .tool-popular:before{content:"";position:absolute;inset:0 -28px;border-radius:30px;background:linear-gradient(135deg,rgba(118,87,255,.035),rgba(20,184,166,.025),transparent 62%);pointer-events:none}
+@media(max-width:760px){
+  .nx-page .tool-header,.nx-page .tool-header .tool-wrap,.nx-page .tool-header .tool-nav{width:100%!important;max-width:none!important}
+  .nx-page .tool-main,.nx-page main.tool-wrap{width:100%!important;max-width:100%!important}
+  .nx-page .tool-card{width:100%!important;max-width:100%!important}
+}
