@@ -69,9 +69,9 @@ jobs:
           echo "Account isolation checks passed."
       - name: Validate platform routes
         run: |
-          grep -q '"/account/*"' wrangler.json
-          grep -q '"/blog/*"' wrangler.json
-          grep -q '"/tool/*"' wrangler.json
+          grep -Fq '"/account/*"' wrangler.json
+          grep -Fq '"/blog/*"' wrangler.json
+          grep -Fq '"/tool/*"' wrangler.json
           test -f frontend/blog/index.html
           test -f frontend/tool/index.html
           test -f frontend/account/index.html
