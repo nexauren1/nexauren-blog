@@ -402,8 +402,19 @@ async function uploadAuth(env,request){
 async function sitemapPages(env){
   const maxRow=await env.DB.prepare("SELECT MAX(updated_at) lastmod FROM posts WHERE status='published' AND published_at IS NOT NULL").first();
   const catRows=await env.DB.prepare("SELECT c.slug,MAX(p.updated_at) lastmod FROM categories c LEFT JOIN posts p ON p.category_id=c.id AND p.status='published' AND p.published_at IS NOT NULL GROUP BY c.id,c.slug ORDER BY c.sort_order,c.name").all();
-  const pages=[{path:"/",lastmod:maxRow?.lastmod},{path:"/blog/",lastmod:maxRow?.lastmod},{path:"/blog/posts",lastmod:maxRow?.lastmod},{path:"/blog/about",lastmod:null}];
-  for(const c of (catRows.results||[]))pages.push({path:"/blog/"+c.slug,lastmod:c.lastmod||null});
+  const pages=[];
+  try{
+    const r=await env.ASSETS.fetch(new Request("https://nexaurenstory.com/data/public-urls.json"));
+    if(r.ok){
+      const manifest=await r.json();
+      for(const path of (Array.isArray(manifest.urls)?manifest.urls:[])){
+        if(typeof path==="string"&&!path.startsWith("/admin")&&!path.startsWith("/account")&&!path.startsWith("/api"))pages.push({path,lastmod:null});
+      }
+    }
+  }catch{}
+  const known=["/","/blog/","/blog/posts","/blog/about"];
+  for(const path of known)if(!pages.some(x=>x.path===path))pages.push({path,lastmod:maxRow?.lastmod});
+  for(const c of (catRows.results||[]))if(!pages.some(x=>x.path==="/blog/"+c.slug))pages.push({path:"/blog/"+c.slug,lastmod:c.lastmod||null});
   const out=pages.map(x=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com"+x.path)+"</loc>"];if(x.lastmod)lines.push("    <lastmod>"+xml(x.lastmod)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
 }
@@ -540,7 +551,12 @@ async function page(env,request,url){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
   }
-  if(url.pathname==="/"||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname==="/tool/"||url.pathname.startsWith("/tool/")){
+  if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname==="/tool/"||url.pathname.startsWith("/tool/")){
+    if(url.pathname.startsWith("/legal/")){
+      let r=await env.ASSETS.fetch(request);
+      if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
+      if(r.ok)return r;
+    }
     if(url.pathname==="/account"||url.pathname==="/account/"){
       const r=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));
       const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");return new Response(r.body,{status:r.status,headers:h});
