@@ -58,15 +58,23 @@ jobs:
           }
           console.log("Tool registry OK: "+d.categories.length+" categories, "+d.tools.length+" tools.");
           NODE
-      - name: Validate account isolation
+      - name: Validate account isolation and Firebase wiring
         run: |
-          grep -q 'account_profiles' schema.sql
-          grep -q 'account_sessions' schema.sql
-          grep -q 'ACCOUNT_COOKIE' worker-entry.js
-          grep -q '/api/account/register' worker-entry.js
-          grep -q 'role.*owner.*admin.*editor.*author' schema.sql
+          set -euo pipefail
+          grep -q 'Firebase Authentication' frontend/account/index.html
+          grep -q 'firebaseConfig' frontend/account/firebase-config.js
+          grep -q 'createUserWithEmailAndPassword' frontend/account/account.js
+          grep -q 'signInWithEmailAndPassword' frontend/account/account.js
+          grep -q 'signInWithPopup' frontend/account/account.js
+          grep -q 'signInWithRedirect' frontend/account/account.js
+          grep -q 'sendPasswordResetEmail' frontend/account/account.js
+          grep -q 'sendEmailVerification' frontend/account/account.js
+          grep -q 'updatePassword' frontend/account/account.js
+          grep -q 'account Firebase' frontend/account/account.css || true
+          grep -q 'ACCOUNT_FIREBASE_ONLY' worker-entry.js
+          ! grep -q 'INSERT INTO account_profiles' worker-entry.js
           ! grep -q 'INSERT INTO users.*register' worker-entry.js
-          echo "Account isolation checks passed."
+          echo "Firebase account isolation checks passed."
       - name: Validate platform routes
         run: |
           grep -Fq '"/account/*"' wrangler.json

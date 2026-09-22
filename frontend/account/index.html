@@ -1,9 +1,43 @@
 <!doctype html>
-<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101318"><meta name="description" content="Conta Nexauren Story para guardar preferências e preparar recursos conectados."><meta name="robots" content="noindex,nofollow">
-<link rel="canonical" href="https://nexaurenstory.com/account"><title>Conta — Nexauren Story</title><link rel="stylesheet" href="/account/account.css"></head>
-<body><header class="account-header"><div class="account-wrap nav"><a class="brand" href="/"><span class="mark">N</span><span>Nexauren <b>Story</b></span></a><nav><a href="/blog/">Histórias</a><a href="/tool/">Ferramentas</a></nav></div></header>
-<main class="account-wrap"><section class="account-hero"><div class="eyebrow">NEXAUREN ACCOUNT</div><h1>Uma conta para o ecossistema.</h1><p>Entre ou crie a sua conta. Esta camada é separada da administração editorial e fica preparada para futuras ferramentas com recursos personalizados.</p></section>
-<section class="account-card" data-account-app><div class="account-loading">A carregar…</div></section></main>
-<footer class="account-footer"><div class="account-wrap">© <span id="year"></span> Nexauren Story</div></footer>
-<script src="/account/account.js" defer></script><script>document.getElementById("year").textContent=new Date().getFullYear()</script></body></html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101318">
+<meta name="description" content="Nexauren Account: conta para o ecossistema de ferramentas da Nexauren.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://nexaurenstory.com/account">
+<title>Nexauren Account — Nexauren Story</title>
+<link rel="stylesheet" href="/account/account.css">
+</head>
+<body>
+<header class="account-header">
+  <div class="account-wrap nav">
+    <a class="brand" href="/"><span class="mark">N</span><span>Nexauren <b>Story</b></span></a>
+    <nav>
+      <a href="/blog/">Histórias</a>
+      <a href="/tool/">Ferramentas</a>
+    </nav>
+  </div>
+</header>
+
+<main class="account-wrap">
+  <section class="account-hero">
+    <div class="eyebrow">NEXAUREN ACCOUNT</div>
+    <h1>Uma conta para o ecossistema.</h1>
+    <p>Entre ou crie a sua conta Nexauren. A autenticação é feita pelo Firebase Authentication e permanece separada da administração editorial do Nexauren Story.</p>
+  </section>
+
+  <section class="account-card" data-account-app>
+    <div class="account-loading">A carregar a sua conta…</div>
+  </section>
+</main>
+
+<footer class="account-footer">
+  <div class="account-wrap">© <span id="year"></span> Nexauren Story</div>
+</footer>
+
+<script type="module" src="/account/account.js"></script>
+<script>document.getElementById("year").textContent=new Date().getFullYear()</script>
+</body>
+</html>
