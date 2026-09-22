@@ -479,12 +479,7 @@ async function googleSignIn(button, errorTarget) {
     }
 
     if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
-      try {
-        await signInWithRedirect(auth, provider);
-        return;
-      } catch (redirectError) {
-        errorTarget.textContent = friendlyError(redirectError);
-      }
+      errorTarget.textContent = "O Google não conseguiu abrir a janela de acesso. Toque novamente para tentar.";
     } else {
       errorTarget.textContent = friendlyError(err);
     }
