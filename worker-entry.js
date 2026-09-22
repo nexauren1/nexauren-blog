@@ -782,7 +782,7 @@ async function page(env,request,url){
   const adminPath=url.pathname.toLowerCase();
    if(adminPath==="/admin"||adminPath.startsWith("/admin/")){
     const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
-    const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
+    const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");h.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
   }
   if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname==="/tool/"||url.pathname.startsWith("/tool/")){
     if(url.pathname.startsWith("/legal/")){
