@@ -689,6 +689,11 @@ async function paypalRequest(env,path,options={}){
   if(!response.ok)throw Object.assign(new Error(data?.message||data?.details?.[0]?.description||"O PayPal recusou o pedido."),{code:"PAYPAL_API_ERROR",paypal:data,status:response.status});
   return data;
 }
+async function ensureBillingSchema(env){
+  await env.ACCOUNTS_DB.prepare(`CREATE TABLE IF NOT EXISTS nexauren_billing_config (key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at TEXT NOT NULL)`).run();
+  await env.ACCOUNTS_DB.prepare(`CREATE TABLE IF NOT EXISTS nexauren_subscriptions (id TEXT PRIMARY KEY,account_id TEXT NOT NULL UNIQUE REFERENCES nexauren_accounts(id) ON DELETE CASCADE,plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','pro')),status TEXT NOT NULL DEFAULT 'FREE',paypal_subscription_id TEXT UNIQUE,paypal_plan_id TEXT,amount TEXT NOT NULL DEFAULT '5.00',currency TEXT NOT NULL DEFAULT 'USD',current_period_end TEXT,cancel_at_period_end INTEGER NOT NULL DEFAULT 0 CHECK (cancel_at_period_end IN (0,1)),created_at TEXT NOT NULL,updated_at TEXT NOT NULL)`).run();
+  await env.ACCOUNTS_DB.prepare(`CREATE INDEX IF NOT EXISTS idx_nexauren_subscriptions_paypal ON nexauren_subscriptions(paypal_subscription_id)`).run();
+}
 async function billingConfigGet(env,key){
   const row=await env.ACCOUNTS_DB.prepare("SELECT value FROM nexauren_billing_config WHERE key=? LIMIT 1").bind(key).first();
   return row?.value||null;
@@ -806,6 +811,7 @@ async function api(env,request,url,ctx){
   }
 
   if(p==="/api/account/billing"&&m==="GET"){
+    await ensureBillingSchema(env);
     try{
       const a=await firebaseAccountAuth(env,request,false);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
@@ -824,6 +830,7 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/account/paypal/create"&&m==="POST"){
+    await ensureBillingSchema(env);
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{
       const a=await firebaseAccountAuth(env,request,true);
@@ -860,6 +867,7 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/account/paypal/confirm"&&m==="POST"){
+    await ensureBillingSchema(env);
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{
       const a=await firebaseAccountAuth(env,request,true);
@@ -879,6 +887,7 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/account/paypal/cancel"&&m==="POST"){
+    await ensureBillingSchema(env);
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{
       const a=await firebaseAccountAuth(env,request,true);
