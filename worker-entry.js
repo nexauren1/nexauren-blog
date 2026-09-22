@@ -384,7 +384,7 @@ async function page(env,request,url){
   const path=url.pathname;
   const cookieLang=getCookie(request,"ns_lang")||"pt";
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
-  const image="https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-1";
+  const image="https://nexaurenstory.com/social-preview.png?v=20260922-1";
   let title=lang==="en"?"Nexauren Story — Official stories and updates":"Nexauren Story — Histórias e novidades oficiais";
   let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
   let type="website",articleMeta="";
