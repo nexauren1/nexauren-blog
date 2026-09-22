@@ -13,34 +13,34 @@ function statusLabel(b){
 }
 function billingMarkup(b,notice=""){
   const pro=b?.plan==="pro";
-  return \`
+  return `
     <section class="billing-panel">
       <div class="billing-kicker">NEXAUREN PLANS</div>
       <div class="billing-head">
         <div><h3>Escolha o seu plano</h3><p>Comece grátis ou desbloqueie os recursos Pro por $5/mês.</p></div>
-        <span class="billing-status">\${esc(statusLabel(b))}</span>
+        <span class="billing-status">${esc(statusLabel(b))}</span>
       </div>
-      \${notice?'<div class="billing-notice">'+esc(notice)+'</div>':""}
+      ${notice?'<div class="billing-notice">'+esc(notice)+'</div>':""}
       <div class="billing-plans">
-        <article class="billing-plan \${!pro?"current":""}">
-          <div class="billing-plan-top"><span>Free</span>\${!pro?"<b>ATUAL</b>":""}</div>
+        <article class="billing-plan ${!pro?"current":""}">
+          <div class="billing-plan-top"><span>Free</span>${!pro?"<b>ATUAL</b>":""}</div>
           <strong>$0</strong><small>para sempre</small>
           <ul><li>Acesso às ferramentas gratuitas</li><li>Conta Nexauren</li><li>Recursos essenciais</li></ul>
-          <button class="billing-btn muted" type="button" disabled>\${!pro?"Plano atual":"Free"}</button>
+          <button class="billing-btn muted" type="button" disabled>${!pro?"Plano atual":"Free"}</button>
         </article>
-        <article class="billing-plan pro \${pro?"current":""}">
+        <article class="billing-plan pro ${pro?"current":""}">
           <div class="billing-plan-top"><span>Pro</span><b>PAYPAL</b></div>
           <strong>$5<small>/mês</small></strong>
           <p>Mais recursos e funcionalidades Pro à medida que forem disponibilizados.</p>
           <ul><li>Recursos premium</li><li>Experiências Pro</li><li>Pagamento recorrente seguro via PayPal</li></ul>
-          \${pro
+          ${pro
             ? '<button class="billing-btn danger" data-billing-cancel type="button">Cancelar Pro</button>'
             : '<button class="billing-btn" data-billing-upgrade type="button">Assinar Pro por $5</button>'}
         </article>
       </div>
-      \${pro&&b.current_period_end?'<div class="billing-meta">Próxima cobrança: '+esc(new Date(b.current_period_end).toLocaleDateString("pt-PT"))+'</div>':""}
+      ${pro&&b.current_period_end?'<div class="billing-meta">Próxima cobrança: '+esc(new Date(b.current_period_end).toLocaleDateString("pt-PT"))+'</div>':""}
     </section>
-  \`;
+  `;
 }
 async function initBilling(root){
   const host=root.querySelector("[data-billing]");
