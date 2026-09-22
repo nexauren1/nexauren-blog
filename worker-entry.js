@@ -872,8 +872,8 @@ async function api(env,request,url,ctx){
             locale:"pt-PT",
             shipping_preference:"NO_SHIPPING",
             user_action:"SUBSCRIBE_NOW",
-            return_url:"https://nexaurenstory.com/account?paypal=success",
-            cancel_url:"https://nexaurenstory.com/account?paypal=cancel"
+            return_url:"https://nexaurenstory.com/account/upgrade/?paypal=success",
+            cancel_url:"https://nexaurenstory.com/account/upgrade/?paypal=cancel"
           }
         })
       });
