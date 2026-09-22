@@ -391,6 +391,19 @@ async function api(env,request,url,ctx){
     const session=await createAccountSession(env,a.id,request);
     return json({ok:true,account:{id:a.id,email:a.email,display_name:a.display_name,email_verified:!!a.email_verified}},200,{"set-cookie":cookie(ACCOUNT_COOKIE,session.token,{maxAge:ACCOUNT_SESSION_SECONDS})});
   }
+  if(p==="/api/account/password"&&m==="POST"){
+    if(!(await accountSchemaReady(env)))return fail("As tabelas de contas ainda não foram instaladas.",503,"ACCOUNT_SCHEMA_NOT_READY");
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    const a=await accountAuth(env,request);if(!a)return fail("Sessão expirada ou não autenticada.",401,"UNAUTHENTICATED");
+    const d=await bodyJson(request),current=String(d?.current_password||""),next=String(d?.new_password||"");
+    if(next.length<12||next.length>128)return fail("A nova palavra-passe precisa ter entre 12 e 128 caracteres.",422);
+    const row=await env.DB.prepare("SELECT password_hash FROM account_profiles WHERE id=? LIMIT 1").bind(a.id).first();
+    if(!row||!(await verifyPassword(current,row.password_hash)))return fail("A palavra-passe atual está incorreta.",401,"INVALID_PASSWORD");
+    const ts=nowIso(),hash=await hashPassword(next);
+    await env.DB.prepare("UPDATE account_profiles SET password_hash=?,updated_at=? WHERE id=?").bind(hash,ts,a.id).run();
+    await env.DB.prepare("DELETE FROM account_sessions WHERE account_id=? AND id<>?").bind(a.id,a.session_id).run();
+    return json({ok:true});
+  }
   if(p==="/api/account/logout"&&m==="POST"){
     const raw=getCookie(request,ACCOUNT_COOKIE);if(raw)await env.DB.prepare("DELETE FROM account_sessions WHERE token_hash=?").bind(await sha256(raw)).run();
     return json({ok:true},200,{"set-cookie":cookie(ACCOUNT_COOKIE,"",{maxAge:0})});
