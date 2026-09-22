@@ -1,3 +1,4 @@
+import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/social-preview.png?v=20260922-1";
@@ -68,21 +69,6 @@ const FIREBASE_ISSUER = "https://securetoken.google.com/" + FIREBASE_PROJECT_ID;
 const FIREBASE_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
 let firebaseCertCache = { expiresAt: 0, keys: null };
 
-function base64urlBytes(value) {
-  const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/") + "===".slice((String(value || "").length + 3) % 4);
-  const raw = atob(normalized);
-  return Uint8Array.from(raw, (char) => char.charCodeAt(0));
-}
-function base64urlJson(value) {
-  return JSON.parse(new TextDecoder().decode(base64urlBytes(value)));
-}
-function pemToArrayBuffer(pem) {
-  const base64 = String(pem || "").replace(/-----BEGIN CERTIFICATE-----/g, "").replace(/-----END CERTIFICATE-----/g, "").replace(/\s+/g, "");
-  const raw = atob(base64);
-  const bytes = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-  return bytes.buffer;
-}
 function cacheMaxAge(cacheControl) {
   const match = String(cacheControl || "").match(/max-age=(\d+)/i);
   return match ? Number(match[1]) : 3600;
@@ -96,47 +82,31 @@ async function firebaseCertificates() {
   firebaseCertCache = { keys, expiresAt: Date.now() + Math.max(60, maxAge - 30) * 1000 };
   return keys;
 }
-async function verifyFirebaseIdToken(token) {
-  const parts = String(token || "").split(".");
-  if (parts.length !== 3) throw new Error("Malformed Firebase token");
-  const header = base64urlJson(parts[0]);
-  const payload = base64urlJson(parts[1]);
-  if (header.alg !== "RS256" || !header.kid) throw new Error("Unsupported Firebase token");
-  const now = Math.floor(Date.now() / 1000);
-  const leeway = 300;
-  if (payload.aud !== FIREBASE_PROJECT_ID) throw new Error("Wrong Firebase audience");
-  if (payload.iss !== FIREBASE_ISSUER) throw new Error("Wrong Firebase issuer");
-  if (typeof payload.sub !== "string" || payload.sub.length < 1 || payload.sub.length > 128) throw new Error("Invalid Firebase subject");
-  if (Number(payload.exp) <= now - leeway) throw new Error("Expired Firebase token");
-  if (Number(payload.iat) > now + leeway) throw new Error("Future Firebase token");
-  if (Number(payload.auth_time) > now + leeway) throw new Error("Future Firebase auth time");
-
-  const certs = await firebaseCertificates();
-  const pem = certs[header.kid];
-  if (!pem) {
+async function firebaseVerificationKey(header) {
+  if (!header?.kid || header.alg !== "RS256") throw new Error("Unsupported Firebase token");
+  let certs = await firebaseCertificates();
+  let cert = certs[header.kid];
+  if (!cert) {
     firebaseCertCache = { expiresAt: 0, keys: null };
-    const refreshed = await firebaseCertificates();
-    if (!refreshed[header.kid]) throw new Error("Unknown Firebase key");
+    certs = await firebaseCertificates();
+    cert = certs[header.kid];
   }
-  const cert = (firebaseCertCache.keys || certs)[header.kid];
-  if (!cert) throw new Error("Unknown Firebase key");
-
-  const key = await crypto.subtle.importKey(
-    "spki",
-    pemToArrayBuffer(cert),
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-    false,
-    ["verify"]
-  );
-  const signingInput = new TextEncoder().encode(parts[0] + "." + parts[1]);
-  const signature = base64urlBytes(parts[2]);
-  const valid = await crypto.subtle.verify(
-    { name: "RSASSA-PKCS1-v1_5" },
-    key,
-    signature,
-    signingInput
-  );
-  if (!valid) throw new Error("Invalid Firebase token signature");
+  if (!cert) throw new Error("Unknown Firebase signing key");
+  return importX509(cert, "RS256");
+}
+async function verifyFirebaseIdToken(token) {
+  const now = Math.floor(Date.now() / 1000);
+  const result = await jwtVerify(String(token || ""), firebaseVerificationKey, {
+    algorithms: ["RS256"],
+    audience: FIREBASE_PROJECT_ID,
+    issuer: FIREBASE_ISSUER,
+    clockTolerance: 300
+  });
+  const payload = result.payload;
+  if (typeof payload.sub !== "string" || payload.sub.length < 1 || payload.sub.length > 128) throw new Error("Invalid Firebase subject");
+  if (typeof payload.exp !== "number" || payload.exp <= now - 300) throw new Error("Expired Firebase token");
+  if (typeof payload.iat !== "number" || payload.iat > now + 300) throw new Error("Future Firebase token");
+  if (typeof payload.auth_time !== "number" || payload.auth_time > now + 300) throw new Error("Invalid Firebase auth time");
   return payload;
 }
 function bearerToken(request) {
@@ -154,49 +124,41 @@ async function ensureNexaurenAccount(env, claims, markLogin = false) {
   const displayName = accountDisplayName(claims);
   const photoUrl = text(claims.picture || "", 1000);
   const ts = nowIso();
-
   let profile;
   try {
     profile = await env.DB.prepare("SELECT * FROM nexauren_accounts WHERE firebase_uid=? LIMIT 1").bind(uid).first();
-  } catch (error) {
-    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada."), { code: "ACCOUNT_DB_NOT_READY" });
+  } catch {
+    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/platform-upgrade.sql no D1."), { code: "ACCOUNT_DB_NOT_READY" });
   }
-
   if (!profile) {
     const id = crypto.randomUUID();
     await env.DB.prepare(
       "INSERT INTO nexauren_accounts (id,firebase_uid,email,display_name,photo_url,status,email_verified,last_login_at,last_seen_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
     ).bind(id, uid, email, displayName, photoUrl, "active", claims.email_verified ? 1 : 0, markLogin ? ts : null, ts, ts, ts).run();
-
     await env.DB.prepare(
       "INSERT INTO nexauren_account_preferences (account_id,language,theme,timezone,marketing_emails,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
     ).bind(id, "pt", "system", "Africa/Maputo", 0, ts, ts).run();
-
     return { id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: "active", email_verified: !!claims.email_verified, created: true };
   }
-
   if (profile.status !== "active") {
     throw Object.assign(new Error("A sua conta Nexauren está suspensa."), { code: "ACCOUNT_SUSPENDED" });
   }
-
   await env.DB.prepare(
     "UPDATE nexauren_accounts SET email=?,display_name=?,photo_url=?,email_verified=?,last_login_at=CASE WHEN ?=1 THEN ? ELSE last_login_at END,last_seen_at=?,updated_at=? WHERE id=?"
   ).bind(email, displayName, photoUrl, claims.email_verified ? 1 : 0, markLogin ? 1 : 0, ts, ts, ts, profile.id).run();
-
   return { id: profile.id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: profile.status, email_verified: !!claims.email_verified, created: false };
 }
 async function firebaseAccountAuth(env, request, markLogin = false) {
   const token = bearerToken(request);
   if (!token) return null;
-  let claims;
   try {
-    claims = await verifyFirebaseIdToken(token);
+    const claims = await verifyFirebaseIdToken(token);
+    return { claims, account: await ensureNexaurenAccount(env, claims, markLogin) };
   } catch (error) {
+    if (error?.code === "ACCOUNT_DB_NOT_READY" || error?.code === "ACCOUNT_SUSPENDED") throw error;
     throw Object.assign(new Error("Sessão Firebase inválida ou expirada."), { code: "FIREBASE_TOKEN_INVALID" });
   }
-  return { claims, account: await ensureNexaurenAccount(env, claims, markLogin) };
 }
-
 
 function sameOrigin(request){const o=request.headers.get("Origin");if(!o)return true;try{return o===new URL(request.url).origin;}catch{return false;}}
 async function guard(env,request,owner=false){
