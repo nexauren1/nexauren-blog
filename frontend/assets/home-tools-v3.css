@@ -324,6 +324,65 @@ body.tool-page.nx-page{
 }
 .nx-page .tool-card:hover{transform:translateY(-9px);box-shadow:0 30px 72px rgba(16,19,34,.13);border-color:#d2cde9}
 .nx-page .tool-card:hover .tool-arrow{background:#101322;color:#fff}
+/* Destaques + Populares: faixa contínua tipo ticker de notícias */
+.nx-page .tool-curated{
+  padding:26px 0 8px;
+  overflow:hidden;
+}
+.nx-page .tool-curated .section-head{
+  margin-bottom:14px;
+}
+.nx-page .tool-curated .section-head h2{
+  font-size:clamp(27px,3vw,38px);
+}
+.nx-page .tool-marquee{
+  width:100%;
+  overflow:hidden;
+  position:relative;
+  padding:8px 0 24px;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 3%,#000 97%,transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 3%,#000 97%,transparent 100%);
+}
+.nx-page .tool-marquee-track{
+  display:flex;
+  width:max-content;
+  gap:18px;
+  animation:nx-tools-ticker 42s linear infinite;
+  will-change:transform;
+}
+.nx-page .tool-marquee .tool-card{
+  flex:0 0 315px;
+  width:315px;
+  min-height:205px;
+  height:205px;
+  padding:20px;
+  border-radius:22px;
+}
+.nx-page .tool-marquee .tool-card h2{
+  font-size:20px;
+  margin-top:15px;
+}
+.nx-page .tool-marquee .tool-card p{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  margin:7px 0;
+}
+.nx-page .tool-marquee .tool-card small{
+  display:block;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.nx-page .tool-marquee .tool-card-icon{
+  width:48px;height:48px;border-radius:15px;
+}
+@keyframes nx-tools-ticker{
+  from{transform:translate3d(-50%,0,0)}
+  to{transform:translate3d(0,0,0)}
+}
+
 .nx-page .tool-card-badge.featured{background:#ece9ff;color:#6049dc}
 .nx-page .tool-card-badge.popular{background:#ddf8f3;color:#087d70}
 .nx-page .tool-category-head{
@@ -357,6 +416,8 @@ body.tool-page.nx-page{
  .nx-page .tool-hero h1{font-size:clamp(45px,12.5vw,64px)}
  .nx-page .tool-overview-main strong{font-size:62px}
  .nx-page .tool-card{min-height:225px;padding:21px;border-radius:22px}
+ .nx-page .tool-marquee .tool-card{flex-basis:260px;width:260px;height:195px;min-height:195px}
+ .nx-page .tool-marquee-track{gap:12px;animation-duration:34s}
 }
 @media(prefers-reduced-motion:reduce){
  .nx-page .home-art{transform:none}
