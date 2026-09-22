@@ -232,6 +232,8 @@ async function post(slug){
 }
 
 function about(){app.innerHTML='<section class="listing-head"><div class="eyebrow">'+t("about")+'</div><h1>Nexauren Story</h1><p>'+(lang==="en"?"A public home for Nexauren products, applications, ideas and milestones.":"Um espaço público para produtos, aplicações, ideias e marcos da Nexauren.")+'</p></section><section class="section"><div class="featured"><div class="featured-copy"><div class="pill">NEXAUREN</div><h2>'+(lang==="en"?"Build. Explain. Share the story.":"Construir. Explicar. Partilhar a história.")+'</h2><p>'+t("footer")+'</p></div><div class="hero-card"><div class="hero-orbit"><span>N</span></div><p style="color:var(--muted)">nexaurenstory.com</p></div></div></section>'}
+function notFound(){updateSeo({title:"404 — "+(lang==="en"?"Page not found":"Página não encontrada")+" · Nexauren Story",description:lang==="en"?"The page you requested could not be found.":"A página que procura não foi encontrada.",robots:"noindex,follow",url:location.href});app.innerHTML='<section class="blog-404"><div class="blog-404-card"><span class="blog-404-kicker">Nexauren Story</span><div class="blog-404-code">404</div><h1 class="blog-404-title">'+(lang==="en"?"This page went off the map.":"Esta página saiu do mapa.")+'</h1><p class="blog-404-copy">'+(lang==="en"?"The address may be wrong, the page may have moved, or it may no longer exist.":"O endereço pode estar incorreto, ter sido movido ou já não existir.")+'</p><div class="blog-404-actions"><a class="blog-404-primary" href="'+hrefFor("/")+'">'+(lang==="en"?"← Back home":"← Voltar ao início")+'</a><a class="blog-404-secondary" href="'+hrefFor("/posts")+'">'+(lang==="en"?"Explore stories →":"Explorar histórias →")+'</a><a class="blog-404-secondary" href="/tool/">Ferramentas</a></div></div></section>'}
+
 async function route(){
   await loadCategories();
   setup();
@@ -247,7 +249,7 @@ async function route(){
     else if(p==="/")result=home();
     else{
       const c=cats.find(x=>x[0]===p.slice(1));
-      result=c?listing(c[0],c[1]):home();
+      result=c?listing(c[0],c[1]):notFound();
     }
   }
   trackPageView();
