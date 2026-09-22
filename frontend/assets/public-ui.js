@@ -62,9 +62,9 @@
 
   function initReveal(){
     if(!config.reducedMotion)document.documentElement.classList.add("nx-motion");
-    const autoCandidates=$("main > section,main > article,main .legal-article");
+    const autoCandidates=$$("main > section,main > article,main .legal-article");
     autoCandidates.forEach(node=>{if(!node.classList.contains("nx-reveal"))node.classList.add("nx-reveal");});
-    const nodes=$(config.selectors.reveal);if(!nodes.length)return;
+    const nodes=$$(config.selectors.reveal);if(!nodes.length)return;
     if(config.reducedMotion||!("IntersectionObserver"in window)){nodes.forEach(n=>n.classList.add("nx-visible"));return;}
     const observer=new IntersectionObserver((entries,obs)=>entries.forEach(entry=>{if(!entry.isIntersecting)return;entry.target.classList.add("nx-visible");obs.unobserve(entry.target);}),{threshold:.12,rootMargin:"0px 0px -8% 0px"});
     nodes.forEach((node,index)=>{if(!node.dataset.nxRevealOrder)node.style.transitionDelay=Math.min(index*45,360)+"ms";observer.observe(node);});
@@ -103,7 +103,7 @@
   function exposeApi(){window.NexaurenUI=Object.freeze({config,initReveal,initMenus,initSpotlight,initScrollProgress,initTopButton,initHeaderMotion,initCursorGlow,initButtonFeedback,initPageTransition,setActiveNavigation,refresh(){setActiveNavigation();initReveal();initSpotlight();}});}
 
   function initHeaderMotion(){
-    const headers=$("header");
+    const headers=$$("header");
     if(!headers.length)return;
     const update=()=>headers.forEach(header=>header.classList.toggle("nx-scrolled",window.scrollY>10));
     update();window.addEventListener("scroll",update,{passive:true});
