@@ -56,18 +56,28 @@ export async function syncWithWorker(user) {
 export async function workerFetch(path, options = {}) {
   const user = auth.currentUser;
   if (!user) throw new Error("É necessário iniciar sessão.");
-  const idToken = await user.getIdToken();
-  const headers = new Headers(options.headers || {});
-  headers.set("Authorization", "Bearer " + idToken);
-  if (!headers.has("Content-Type") && options.body && typeof options.body === "string") {
-    headers.set("Content-Type", "application/json");
+
+  const request = async (forceRefresh = false) => {
+    const idToken = await user.getIdToken(forceRefresh);
+    const headers = new Headers(options.headers || {});
+    headers.set("Authorization", "Bearer " + idToken);
+    if (!headers.has("Content-Type") && options.body && typeof options.body === "string") {
+      headers.set("Content-Type", "application/json");
+    }
+    const response = await fetch(path, {
+      ...options,
+      credentials: "same-origin",
+      headers
+    });
+    const data = await response.json().catch(() => ({ ok: false, error: "Resposta inválida do servidor." }));
+    return { response, data };
+  };
+
+  let { response, data } = await request(false);
+  if (!response.ok && (response.status === 401 || data?.code === "FIREBASE_TOKEN_INVALID")) {
+    ({ response, data } = await request(true));
   }
-  const response = await fetch(path, {
-    ...options,
-    credentials: "same-origin",
-    headers
-  });
-  const data = await response.json().catch(() => ({ ok: false, error: "Resposta inválida do servidor." }));
+
   if (!response.ok) {
     const error = new Error(data.error || "Pedido não concluído.");
     error.code = data.code;
