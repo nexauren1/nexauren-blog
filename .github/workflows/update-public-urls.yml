@@ -32,7 +32,7 @@ jobs:
 
           ROOT = Path("frontend")
           EXCLUDED_PREFIXES = (
-              "/admin", "/api", "/assets",
+              "/admin", "/account", "/api", "/assets",
               "/admin-assets", "/data", "/blog",
               "/tool/frontend/templates/"
           )
@@ -68,7 +68,7 @@ jobs:
               html = index_file.read_text(encoding="utf-8")
               original = html
 
-              title = attr(html, r'<title[^>]*>([sS]*?)</title>') or "Nexauren Story"
+              title = attr(html, r'<title[^>]*>(.*?)</title>') or "Nexauren Story"
               title = re.sub(r"<[^>]+>", "", title).strip()[:180] or "Nexauren Story"
               description = attr(html, r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']*)["\']') or (
                   "Nexauren Story — conteúdo, ferramentas e experiências do ecossistema Nexauren."
