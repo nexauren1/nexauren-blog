@@ -10,7 +10,7 @@ on:
       - "frontend/tool/**"
       - "frontend/account/**"
       - "schema.sql"
-      - "database/platform-upgrade.sql"
+      - "database/accounts-upgrade.sql"
       - "wrangler.json"
       - ".github/workflows/validate-platform.yml"
   pull_request:
@@ -22,7 +22,7 @@ on:
       - "frontend/tool/**"
       - "frontend/account/**"
       - "schema.sql"
-      - "database/platform-upgrade.sql"
+      - "database/accounts-upgrade.sql"
       - "wrangler.json"
   workflow_dispatch:
 
@@ -78,6 +78,10 @@ jobs:
           grep -q 'FIREBASE_PROJECT_ID = "nexauren-story"' worker-entry.js
           grep -q 'nexauren_accounts' worker-entry.js
           grep -q 'nexauren_account_preferences' worker-entry.js
+          grep -q 'ACCOUNTS_DB' worker-entry.js
+          grep -q '"binding": "ACCOUNTS_DB"' wrangler.json
+          ! grep -q 'CREATE TABLE IF NOT EXISTS nexauren_accounts' schema.sql
+          test -f database/accounts-upgrade.sql
           ! grep -q 'INSERT INTO account_profiles' worker-entry.js
           ! grep -q 'INSERT INTO users.*register' worker-entry.js
           echo "Firebase account isolation checks passed."

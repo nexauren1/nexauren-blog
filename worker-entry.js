@@ -126,16 +126,16 @@ async function ensureNexaurenAccount(env, claims, markLogin = false) {
   const ts = nowIso();
   let profile;
   try {
-    profile = await env.DB.prepare("SELECT * FROM nexauren_accounts WHERE firebase_uid=? LIMIT 1").bind(uid).first();
+    profile = await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_accounts WHERE firebase_uid=? LIMIT 1").bind(uid).first();
   } catch {
-    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/platform-upgrade.sql no D1."), { code: "ACCOUNT_DB_NOT_READY" });
+    throw Object.assign(new Error("A tabela de contas Nexauren ainda não foi instalada. Execute database/accounts-upgrade.sql no D1 de contas Nexauren."), { code: "ACCOUNT_DB_NOT_READY" });
   }
   if (!profile) {
     const id = crypto.randomUUID();
-    await env.DB.prepare(
+    await env.ACCOUNTS_DB.prepare(
       "INSERT INTO nexauren_accounts (id,firebase_uid,email,display_name,photo_url,status,email_verified,last_login_at,last_seen_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
     ).bind(id, uid, email, displayName, photoUrl, "active", claims.email_verified ? 1 : 0, markLogin ? ts : null, ts, ts, ts).run();
-    await env.DB.prepare(
+    await env.ACCOUNTS_DB.prepare(
       "INSERT INTO nexauren_account_preferences (account_id,language,theme,timezone,marketing_emails,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
     ).bind(id, "pt", "system", "Africa/Maputo", 0, ts, ts).run();
     return { id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: "active", email_verified: !!claims.email_verified, created: true };
@@ -143,7 +143,7 @@ async function ensureNexaurenAccount(env, claims, markLogin = false) {
   if (profile.status !== "active") {
     throw Object.assign(new Error("A sua conta Nexauren está suspensa."), { code: "ACCOUNT_SUSPENDED" });
   }
-  await env.DB.prepare(
+  await env.ACCOUNTS_DB.prepare(
     "UPDATE nexauren_accounts SET email=?,display_name=?,photo_url=?,email_verified=?,last_login_at=CASE WHEN ?=1 THEN ? ELSE last_login_at END,last_seen_at=?,updated_at=? WHERE id=?"
   ).bind(email, displayName, photoUrl, claims.email_verified ? 1 : 0, markLogin ? 1 : 0, ts, ts, ts, profile.id).run();
   return { id: profile.id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: profile.status, email_verified: !!claims.email_verified, created: false };
