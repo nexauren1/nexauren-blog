@@ -7,4 +7,4 @@ async function api(path,options={}){const u=auth.currentUser;if(!u)throw Error("
 async function openApp(){gate.hidden=true;app.hidden=false;row();row();q("#date").value=new Date().toISOString().slice(0,10);calc()}
 async function start(){try{const r=await api("/api/tool/unlock?tool_id="+encodeURIComponent(TOOL_ID));if(r.unlocked){openApp();return}msg.textContent="Esta ferramenta está disponível apenas para contas com o plano Pro ativo."}catch(e){msg.textContent=e.message}}
 unlock.onclick=()=>{location.href="/account/upgrade/"};
-q("#add").onclick=row;q("#discount").oninput=calc;q("#tax").oninput=calc;q("#print").onclick=()=>window.print();q("#year").textContent=new Date().getFullYear();onAuthStateChanged(auth,user=>{if(user)start();else msg.textContent="Inicie sessão na Conta Nexauren para desbloquear por $0,50.";});
+q("#add").onclick=row;q("#discount").oninput=calc;q("#tax").oninput=calc;q("#print").onclick=()=>window.print();q("#year").textContent=new Date().getFullYear();onAuthStateChanged(auth,user=>{if(user)start();else msg.textContent="Inicie sessão na Conta Nexauren para verificar o acesso ao plano Pro.";});
