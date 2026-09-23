@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Formatador JS / Minifier · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="js-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header><div class="signal">NEXAUREN / SCRIPT LAB <span></span><span></span><span></span></div>
+<h1>JS Formatter / Minifier</h1>
+<p>Reorganize JavaScript, compacte o código e mantenha strings, comentários e blocos sensíveis intactos.</p></header>
+
+<section class="lab">
+<div class="toolbar">
+<button id="format" class="primary">Formatar</button><button id="minify">Compactar</button><button id="validate">Validar</button><button id="sample">Exemplo</button><button id="clear">Limpar</button><button id="copy">Copiar</button>
+</div>
+<div class="settings">
+<label>Indentação <select id="indent"><option value="2">2 espaços</option><option value="4">4 espaços</option><option value="1">1 espaço</option><option value="tab">Tab</option></select></label>
+<label class="toggle"><input id="comments" type="checkbox" checked> manter comentários</label>
+<div id="status">STANDBY</div>
+</div>
+<div class="code-grid">
+<section class="editor"><div class="titlebar"><i></i><i></i><i></i><span>input.js</span></div><textarea id="input" spellcheck="false" placeholder="const app=()=>{console.log('Nexauren')}"></textarea></section>
+<section class="editor output"><div class="titlebar"><i></i><i></i><i></i><span>output.js</span></div><textarea id="output" spellcheck="false" readonly></textarea></section>
+</div>
+<div class="telemetry"><span id="inCount">0 chars</span><span id="outCount">0 chars</span><span id="saved">0%</span></div>
+<p id="message" class="message">Aguardando código.</p>
+</section>
+<p id="access" class="access" hidden></p>
+<footer>NEXAUREN TOOLS · Script Lab · Processamento local</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const app=document.querySelector(".lab"),msg=document.querySelector("#access");
+onAuthStateChanged(auth,user=>{
+ const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
+ app.querySelectorAll("button,textarea,select,input").forEach(el=>el.disabled=locked);
+});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
