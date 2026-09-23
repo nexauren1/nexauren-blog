@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Formatador CSS / Minifier · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="css-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header class="hero">
+<div class="kicker">NEXAUREN / STYLE ENGINE</div>
+<div class="hero-row">
+<div>
+<h1>CSS Formatter / Minifier</h1>
+<p>Organize regras CSS, compacte a saída e visualize rapidamente o tamanho antes e depois.</p>
+</div>
+<div class="orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+</header>
+
+<section class="console">
+<div class="actions">
+<button id="format" class="primary">Formatar CSS</button>
+<button id="minify">Compactar</button>
+<button id="sample">Exemplo</button>
+<button id="clear">Limpar</button>
+<button id="copy">Copiar saída</button>
+</div>
+<div class="options">
+<label>Indentação
+<select id="indent"><option value="2">2 espaços</option><option value="4">4 espaços</option><option value="1">1 espaço</option><option value="tab">Tab</option></select>
+</label>
+<label class="toggle"><input id="keepComments" type="checkbox" checked> manter comentários</label>
+<span id="status">PRONTO</span>
+</div>
+
+<div class="panes">
+<section class="pane">
+<div class="pane-top"><span>01 / INPUT</span><span id="inCount">0 chars</span></div>
+<textarea id="input" spellcheck="false" placeholder=".card{display:grid;gap:12px;color:#fff}.card:hover{transform:translateY(-2px)}"></textarea>
+</section>
+<section class="pane pane-output">
+<div class="pane-top"><span>02 / OUTPUT</span><span id="outCount">0 chars</span></div>
+<textarea id="output" spellcheck="false" readonly></textarea>
+</section>
+</div>
+<div class="meter"><span id="meterFill"></span></div>
+<p id="message" class="message">Cole o CSS e escolha uma operação.</p>
+</section>
+
+<section class="stats">
+<div><strong id="ruleCount">0</strong><span>regras</span></div>
+<div><strong id="saved">0%</strong><span>redução</span></div>
+<div><strong id="declCount">0</strong><span>declarações</span></div>
+</section>
+
+<p id="access" class="access" hidden></p>
+<footer>NEXAUREN TOOLS · Style Engine · Processamento local</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const app=document.querySelector(".console"),msg=document.querySelector("#access");
+onAuthStateChanged(auth,user=>{
+ const locked=!user; document.body.classList.toggle("locked",locked);
+ msg.hidden=!locked; msg.textContent=locked?"Entre para usar esta ferramenta.":"";
+ app.querySelectorAll("button,textarea,select,input").forEach(el=>el.disabled=locked);
+});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
