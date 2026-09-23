@@ -196,48 +196,78 @@ function verificationPanel(user) {
 
 function userView(user, syncMessage = "") {
   const hasPasswordProvider = (user.providerData || []).some((p) => p.providerId === "password");
+  root.classList.add("account-dashboard-host");
   root.innerHTML = `
-    <div class="account-user">
-      <div class="eyebrow">CONTA ATIVA</div>
-      <div class="user-box">
-        <div class="avatar">${user.photoURL ? '<img src="' + esc(user.photoURL) + '" alt="" referrerpolicy="no-referrer">': esc((user.displayName || user.email || "N").slice(0, 1).toUpperCase())}</div>
-        <div class="identity">
-          <div class="user-name">${esc(user.displayName || "Utilizador Nexauren")}</div>
-          <div class="user-email">${esc(user.email || "")}</div>
-          <span class="status-pill">Conta ativa</span>
+    <div class="account-dashboard">
+      <div class="account-dashboard-head">
+        <div class="account-profile-panel">
+          <div class="avatar">${user.photoURL ? '<img src="' + esc(user.photoURL) + '" alt="" referrerpolicy="no-referrer">': esc((user.displayName || user.email || "N").slice(0, 1).toUpperCase())}</div>
+          <div class="identity">
+            <div class="account-kicker">CONTA ATIVA</div>
+            <div class="user-name">${esc(user.displayName || "Utilizador Nexauren")}</div>
+            <div class="user-email">${esc(user.email || "")}</div>
+            <span class="status-pill">Conta ativa</span>
+          </div>
         </div>
+        <a class="account-plan-card" href="/account/upgrade/" aria-label="Gerir plano e faturação">
+          <span class="plan-copy">
+            <span class="plan-label">PLANO & FATURAÇÃO</span>
+            <strong>Gerir o seu plano</strong>
+            <small>Consulte, assine ou cancele o Nexauren Pro.</small>
+          </span>
+          <span class="plan-arrow" aria-hidden="true">→</span>
+        </a>
       </div>
 
       ${syncMessage ? messageBox("success", syncMessage) : ""}
       ${verificationPanel(user)}
 
-      <section class="account-section">
-        <div class="section-title"><strong>Perfil</strong><span>Informações básicas da conta</span></div>
-        <form id="profile-form" class="mini-form" novalidate>
-          <label>Nome de apresentação<input id="display-name" type="text" maxlength="80" value="${esc(user.displayName || "")}" autocomplete="name" required></label>
-          <button class="secondary" type="submit">Guardar nome</button>
-          <div class="inline-feedback" id="profile-feedback"></div>
-        </form>
+      <div class="account-dashboard-grid">
+        <section class="account-panel">
+          <div class="section-title"><strong>Perfil</strong><span>Informações básicas</span></div>
+          <form id="profile-form" class="mini-form" novalidate>
+            <label>Nome de apresentação<input id="display-name" type="text" maxlength="80" value="${esc(user.displayName || "")}" autocomplete="name" required></label>
+            <button class="secondary" type="submit">Guardar alterações</button>
+            <div class="inline-feedback" id="profile-feedback" aria-live="polite"></div>
+          </form>
+        </section>
+
+        <section class="account-panel">
+          <div class="section-title">
+            <div><strong>Segurança</strong><span>Proteja o acesso à conta</span></div>
+            ${hasPasswordProvider ? '<button type="button" class="section-toggle" aria-expanded="false">Alterar palavra-passe</button>' : ""}
+          </div>
+          ${hasPasswordProvider ? `
+          <form id="password-form" class="mini-form password-form-shell" novalidate hidden>
+            <label>Palavra-passe atual<input id="current-password" type="password" autocomplete="current-password" required></label>
+            <label>Nova palavra-passe<input id="new-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+            <div class="password-rules" id="change-password-rules">12+ caracteres, maiúscula, minúscula, número e símbolo.</div>
+            <label>Confirmar nova palavra-passe<input id="new-password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+            <button class="secondary" type="submit">Atualizar palavra-passe</button>
+            <div class="inline-feedback" id="password-feedback" aria-live="polite"></div>
+          </form>
+          ` : `
+          <p class="hint">Esta conta usa o Google para autenticação. A palavra-passe é gerida diretamente pela sua conta Google.</p>
+          `}
+        </section>
+      </div>
+
+      <section class="account-panel account-shortcuts">
+        <div class="section-title"><strong>Acesso rápido</strong><span>Continue no ecossistema Nexauren</span></div>
+        <div class="shortcut-grid">
+          <a href="/tool/"><span>Ferramentas</span><span aria-hidden="true">→</span></a>
+          <a href="/account/upgrade/"><span>Plano Pro</span><span aria-hidden="true">→</span></a>
+          <a href="/legal/privacidade/"><span>Privacidade</span><span aria-hidden="true">→</span></a>
+        </div>
       </section>
 
-      ${hasPasswordProvider ? `
-      <section class="account-section">
-        <div class="section-title"><strong>Palavra-passe</strong><span>Proteja o acesso à conta</span></div>
-        <form id="password-form" class="mini-form" novalidate>
-          <label>Palavra-passe atual<input id="current-password" type="password" autocomplete="current-password" required></label>
-          <label>Nova palavra-passe<input id="new-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-          <div class="password-rules" id="change-password-rules">12+ caracteres, maiúscula, minúscula, número e símbolo.</div>
-          <label>Confirmar nova palavra-passe<input id="new-password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-          <button class="secondary" type="submit">Atualizar palavra-passe</button>
-          <div class="inline-feedback" id="password-feedback"></div>
-        </form>
-      </section>` : `
-      <section class="account-section google-managed-password">
-        <div class="section-title"><strong>Palavra-passe</strong><span>Gerida pelo Google</span></div>
-        <p class="hint">Esta conta usa o Google para autenticação. A palavra-passe é gerida diretamente pela sua conta Google.</p>
-      </section>`}
-
-      <div class="account-actions"><button class="logout" id="logout">Terminar sessão</button></div>
+      <div class="account-danger">
+        <div class="account-danger-copy">
+          <strong>Sessão atual</strong>
+          <span>Termine a sessão neste dispositivo quando concluir.</span>
+        </div>
+        <button class="logout" id="logout">Terminar sessão</button>
+      </div>
     </div>
   `;
 
@@ -302,20 +332,14 @@ function userView(user, syncMessage = "") {
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
-    const passwordSection = passwordForm.closest(".account-section");
-    const sectionTitle = passwordSection?.querySelector(".section-title");
-    if (passwordSection && sectionTitle) {
-      passwordForm.hidden = true;
-      const toggle = document.createElement("button");
-      toggle.type = "button";
-      toggle.className = "section-toggle";
-      toggle.textContent = "Alterar palavra-passe";
-      toggle.setAttribute("aria-expanded", "false");
-      sectionTitle.appendChild(toggle);
+    const sectionTitle = passwordForm.closest(".account-panel")?.querySelector(".section-title");
+    const toggle = sectionTitle?.querySelector(".section-toggle");
+    if (toggle) {
       toggle.onclick = () => {
         const open = !passwordForm.hidden;
         passwordForm.hidden = open;
         toggle.setAttribute("aria-expanded", String(!open));
+        toggle.textContent = open ? "Alterar palavra-passe" : "Fechar";
       };
     }
     const newPasswordInput = $("#new-password");
@@ -352,6 +376,9 @@ function userView(user, syncMessage = "") {
         feedback.className = "inline-feedback success-text";
         feedback.textContent = "Palavra-passe atualizada com sucesso.";
         passwordForm.reset();
+        passwordForm.hidden = true;
+        toggle?.setAttribute("aria-expanded", "false");
+        if (toggle) toggle.textContent = "Alterar palavra-passe";
       } catch (err) {
         feedback.className = "inline-feedback error-text";
         feedback.textContent = friendlyError(err);
