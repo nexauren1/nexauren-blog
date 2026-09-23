@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071018">
+<meta name="description" content="Leitor de QR Code Nexauren — leia QR Codes usando a câmara ou uma imagem, diretamente no navegador.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/tecnologia/leitor-de-qr-code/">
+<title>Leitor de QR Code — Nexauren Tools</title>
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./style.css?v=20260923-1">
+</head>
+<body class="nx-page qr-reader-page">
+<header class="reader-header">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Nexauren Story"><img class="brand-mark" src="/nexauren-story-favicon.svg?v=20260922-5" alt="" width="42" height="42"><span>Nexauren Story</span></a>
+    <nav class="nav-links" aria-label="Navegação"><a href="/tool/">Ferramentas</a><a href="/blog/">Blog</a><a href="/account">Conta</a></nav>
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="mobile-nav" data-mobile-nav><div class="wrap"><a href="/tool/">Ferramentas</a><a href="/blog/">Blog</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a></div></div>
+</header>
+<main class="wrap reader-main">
+  <div class="reader-breadcrumb"><a href="/tool/categories/tecnologia/">← Tecnologia</a><span>/</span><strong>Leitor de QR Code</strong></div>
+  <section class="reader-hero">
+    <div><div class="reader-eyebrow">NEXAUREN TOOL · TECNOLOGIA</div><h1>Leia um <span>QR Code.</span></h1><p>Use a câmara do telemóvel ou escolha uma imagem. A leitura acontece localmente no navegador.</p></div>
+    <div class="reader-signal"><i></i><span>SCANNER LOCAL</span></div>
+  </section>
+  <section class="reader-account-gate" id="account-gate" hidden>
+    <div class="reader-gate-icon">⌗</div><div class="reader-eyebrow">CONTA NEXAUREN</div><h2>Entre para usar esta ferramenta.</h2><p>As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados.</p><a class="primary" href="/account">Entrar ou criar conta</a>
+  </section>
+  <section class="reader-app" id="tool-app" hidden>
+    <div class="reader-layout">
+      <section class="reader-scanner panel">
+        <div class="panel-head"><div><span>01</span><strong>Scanner</strong></div><small>Enquadre o QR Code dentro da área.</small></div>
+        <div class="camera-stage" id="camera-stage">
+          <video id="camera" playsinline muted aria-label="Pré-visualização da câmara"></video>
+          <canvas id="scan-canvas" hidden></canvas>
+          <div class="scan-placeholder" id="scan-placeholder"><div class="scan-mark"><span></span></div><strong>Câmara pronta</strong><small>Toque em iniciar para começar a leitura.</small></div>
+          <div class="scan-frame" aria-hidden="true"><b></b><b></b><b></b><b></b><i></i></div>
+          <div class="scan-state" id="scan-state" aria-live="polite">A aguardar câmara…</div>
+        </div>
+        <div class="scanner-actions"><button id="start-camera" class="primary" type="button">Iniciar câmara</button><button id="stop-camera" class="secondary" type="button" disabled>Parar</button><label class="file-button secondary" for="image-input">Escolher imagem</label><input id="image-input" type="file" accept="image/*" hidden></div>
+        <p class="reader-status" id="status" aria-live="polite"></p>
+      </section>
+      <aside class="reader-result panel">
+        <div class="panel-head"><div><span>02</span><strong>Resultado</strong></div><small>Conteúdo detetado pelo scanner.</small></div>
+        <div class="result-empty" id="result-empty"><div>⌁</div><strong>Nenhum QR detetado</strong><span>O conteúdo lido aparecerá aqui.</span></div>
+        <div class="result-content" id="result-content" hidden>
+          <div class="result-badge" id="result-type">TEXTO</div><pre id="result-text"></pre>
+          <div class="result-actions"><button id="copy" class="primary" type="button">Copiar</button><button id="open" class="secondary" type="button" hidden>Abrir URL</button></div>
+        </div>
+      </aside>
+    </div>
+    <section class="reader-note"><strong>Privacidade local.</strong><span>A câmara e a imagem são processadas no seu navegador. O conteúdo do QR não é enviado para o servidor.</span></section>
+  </section>
+</main>
+<footer class="page-footer"><div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span><a href="/tool/categories/tecnologia/">Tecnologia</a> · <a href="/tool/">Ferramentas</a> · <a href="/account">Conta</a></span></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>if(!window.jsQR){document.write('<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"><\\/script>')}</script>
+<script type="module" src="./script.js?v=20260923-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
