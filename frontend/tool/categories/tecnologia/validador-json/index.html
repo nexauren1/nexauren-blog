@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Validador JSON · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="validator-app">
+  <a class="back-link" href="/tool/">← Ferramentas</a>
+
+  <header class="hero">
+    <div class="eyebrow">NEXAUREN / JSON INSPECTOR</div>
+    <div class="hero-row">
+      <div>
+        <h1>Validador JSON</h1>
+        <p>Cole o JSON, valide a estrutura e encontre rapidamente o ponto do erro.</p>
+      </div>
+      <div class="live-chip"><span></span> LOCAL</div>
+    </div>
+  </header>
+
+  <section class="workspace" aria-label="Validador JSON">
+    <div class="editor-panel">
+      <div class="panel-top">
+        <div><span class="step">01</span><strong>Entrada</strong></div>
+        <span id="counter">0 linhas · 0 caracteres</span>
+      </div>
+      <div class="editor">
+        <div id="gutter" class="gutter" aria-hidden="true">1</div>
+        <textarea id="input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder='{
+  "name": "Nexauren",
+  "active": true
+}'></textarea>
+      </div>
+      <div class="editor-footer">
+        <button id="validate" class="primary">Validar JSON</button>
+        <button id="sample" class="secondary">Inserir exemplo</button>
+        <button id="clear" class="secondary">Limpar</button>
+      </div>
+    </div>
+
+    <div class="diagnostic-panel">
+      <div class="panel-top">
+        <div><span class="step">02</span><strong>Diagnóstico</strong></div>
+        <span id="state-label">Aguardando validação</span>
+      </div>
+
+      <div id="diagnostic" class="diagnostic idle">
+        <div class="diagnostic-icon">⌁</div>
+        <div>
+          <h2>Pronto para analisar</h2>
+          <p>O resultado da validação aparecerá aqui.</p>
+        </div>
+      </div>
+
+      <div id="details" class="details" hidden>
+        <div class="status-card">
+          <div>
+            <span id="status-icon" class="status-icon">✓</span>
+            <div>
+              <small>STATUS</small>
+              <strong id="status-title">JSON válido</strong>
+            </div>
+          </div>
+          <div id="status-time" class="status-time"></div>
+        </div>
+
+        <div id="error-card" class="error-card" hidden>
+          <div class="error-title"><span>!</span><strong>Erro encontrado</strong></div>
+          <p id="error-message"></p>
+          <div class="location">
+            <span id="error-line">Linha —</span>
+            <span id="error-column">Coluna —</span>
+            <span id="error-position">Posição —</span>
+          </div>
+          <div id="context" class="context"></div>
+        </div>
+
+        <div class="stats" id="stats">
+          <div><span>Objetos</span><strong id="objects">0</strong></div>
+          <div><span>Arrays</span><strong id="arrays">0</strong></div>
+          <div><span>Chaves</span><strong id="keys">0</strong></div>
+          <div><span>Valores</span><strong id="values">0</strong></div>
+        </div>
+
+        <div class="actions">
+          <button id="copy" class="secondary">Copiar JSON</button>
+          <button id="format" class="secondary">Abrir no Formatador</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p id="access-message" class="access-message" hidden></p>
+  <footer>© 2026 Nexauren Story · Ferramentas · Conta</footer>
+</main>
+
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const input=document.querySelector("#input");
+const accessMessage=document.querySelector("#access-message");
+function applyAccess(user){
+  if(user){
+    document.body.classList.remove("locked");
+    accessMessage.hidden=true;
+    input.disabled=false;
+  }else{
+    document.body.classList.add("locked");
+    input.disabled=true;
+    accessMessage.hidden=false;
+    accessMessage.textContent="Entre para usar esta ferramenta.";
+  }
+}
+onAuthStateChanged(auth, applyAccess);
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
