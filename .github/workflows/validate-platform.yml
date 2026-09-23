@@ -113,7 +113,6 @@ jobs:
           node <<'NODE'
           const fs=require("fs"),path=require("path");
           const root="frontend";
-          const excluded=/^(admin|blog)(\/|$)/;
           const forbidden=/^(\/admin|\/account|\/api|\/assets|\/admin-assets|\/data)(\/|$)/;
           function walk(dir,out=[]){
             for(const name of fs.readdirSync(dir,{withFileTypes:true})){
@@ -123,14 +122,14 @@ jobs:
             }
             return out;
           }
-          const pages=walk(root).filter(p=>!p.startsWith("frontend/blog/")&&!p.startsWith("frontend/admin/")&&!p.includes("/tool/frontend/templates/"));
+          const pages=walk(root).filter(p=>!p.startsWith("frontend/blog/")&&!p.startsWith("frontend/admin/")&&!p.startsWith("frontend/account/")&&!p.includes("/tool/frontend/templates/"));
           const manifest=JSON.parse(fs.readFileSync("frontend/data/public-urls.json","utf8"));
           const urls=new Set(manifest.urls||[]);
           for(const file of pages){
             const rel=path.posix.normalize(file.replace(/^frontend[\\/]/,""));
             const dir=path.posix.dirname(rel);
             const url=dir==="."?"/":"/"+dir.replace(/\\/g,"/")+"/";
-            if(!urls.has(url) && url!=="/account/") throw new Error("Public page missing from URL manifest: "+url);
+            if(!urls.has(url)) throw new Error("Public page missing from URL manifest: "+url);
             const html=fs.readFileSync(file,"utf8");
             if(!/<meta[^>]+property=["']og:image["']/i.test(html) && !/decoratePublicHtmlResponse/.test(fs.readFileSync("worker-entry.js","utf8"))) throw new Error("No social preview protection for "+file);
           }
