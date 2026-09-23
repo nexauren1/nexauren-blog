@@ -400,7 +400,7 @@ async function postsAdmin(env,url){
   if(status){w.push("p.status=?");b.push(status)}if(type){w.push("p.type=?");b.push(type)}if(q){w.push("(p.title LIKE ? OR p.slug LIKE ? OR p.excerpt LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
   const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,m.url cover_url
     FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
-    WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
+    WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.max(1,Math.min(Number(url.searchParams.get("limit")||100),100)),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
   return json({ok:true,posts:(r.results||[]).map(x=>({...x,social_image:x.cover_url||DEFAULT_SOCIAL_IMAGE}))});
 }
 async function publicPosts(env,url){
@@ -409,7 +409,7 @@ async function publicPosts(env,url){
   const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,CASE WHEN NULLIF(m.url,'') IS NOT NULL THEN m.url ELSE 'https://nexaurenstory.com/social-preview.png?v=20260922-1' END social_image,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
     FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY p.featured DESC,p.published_at DESC LIMIT ? OFFSET ?`)
-    .bind(lang,...b,Math.min(Number(url.searchParams.get("limit")||24),60),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
+    .bind(lang,...b,Math.max(1,Math.min(Number(url.searchParams.get("limit")||24),60)),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
   return json({ok:true,language:lang,posts:r.results});
 }
 async function createPost(env,a,d,ctx){
@@ -608,8 +608,8 @@ function normalizeToolRegistry(raw){
       category,
       icon:text(t?.icon||"✦",20).trim(),
       version:text(t?.version||"1.0.0",30).trim(),
-      status:["active","disabled","draft"].includes(t?.status)?t.status:"active",
-      access:["public","account","premium","paid"].includes(t?.access)?t.access:"public",
+      status:["active","disabled","draft"].includes(t?.status)?t.status:null,
+      access:["public","account","premium","paid"].includes(t?.access)?t.access:null,
       price:t?.price!=null?text(t.price,20).trim():"",
       currency:text(t?.currency||"USD",8).trim().toUpperCase(),
       path:text(t?.path||"",700).trim(),
@@ -618,7 +618,7 @@ function normalizeToolRegistry(raw){
       popular:!!t?.popular,
       sortOrder:Number.isFinite(Number(t?.sortOrder))?Number(t.sortOrder):(i+1)*10
     };
-  }).filter(t=>t.id&&t.name&&t.path):[];
+  }).filter(t=>t.id&&t.name&&t.path&&t.status&&t.access):[];
   return {version:Number(raw?.version||1)||1,site:"Nexauren Story",basePath:"/tool/",registry:{updatedAt:nowIso(),source:"nexauren-admin"},categories,tools};
 }
 async function loadToolRegistry(env,request){
@@ -667,7 +667,10 @@ async function saveToolRegistry(env,actor,raw){
   for(const t of registry.tools){
     if(seen.has(t.id))return fail("Existem IDs de ferramentas duplicados.",422,"TOOL_REGISTRY_INVALID");
     seen.add(t.id);
-    try{new URL(t.path,"https://nexaurenstory.com");}catch{return fail("URL inválida na ferramenta "+t.name+".",422,"TOOL_PATH_INVALID");}
+    try{
+      const u=new URL(t.path,"https://nexaurenstory.com");
+      if(u.origin!=="https://nexaurenstory.com"||!u.pathname.startsWith("/tool/categories/")||u.search||u.hash)throw new Error("scope");
+    }catch{return fail("A ferramenta "+t.name+" precisa apontar para um caminho local /tool/categories/.",422,"TOOL_PATH_INVALID");}
   }
   registry.registry.updatedAt=nowIso();
   const serialized=JSON.stringify(registry);
@@ -839,10 +842,10 @@ async function billingEnsureRow(env,accountId){
 }
 async function billingSyncFromPaypal(env,row,remote){
   if(!row||!remote)return row;
-  const active=["ACTIVE","APPROVED"].includes(remote.status);
+  const active=remote.status==="ACTIVE";
   const plan=active?"pro":"free";
   const currentEnd=remote?.billing_info?.next_billing_time||null;
-  const cancelAt=remote.status==="ACTIVE"&&remote?.status_change_note==="Subscription cancelled"?1:0;
+  const cancelAt=!!remote?.billing_info?.next_billing_time&&remote?.status==="ACTIVE"&&!!remote?.status_change_note&&/cancel/i.test(String(remote.status_change_note))?1:0;
   await env.ACCOUNTS_DB.prepare("UPDATE nexauren_subscriptions SET plan=?,status=?,paypal_plan_id=?,current_period_end=?,cancel_at_period_end=?,updated_at=? WHERE account_id=?")
     .bind(plan,remote.status||"UNKNOWN",remote.plan_id||row.paypal_plan_id||null,currentEnd,cancelAt,nowIso(),row.account_id).run();
   return await billingRow(env,row.account_id);
@@ -855,16 +858,26 @@ async function ensureToolUnlockSchema(env){
 async function toolUnlockExists(env,accountId,toolId){
   return await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_tool_unlocks WHERE account_id=? AND tool_id=? AND status='COMPLETED' LIMIT 1").bind(accountId,toolId).first();
 }
-async function toolUnlockCreateOrder(env,account,toolId){
+async function paidToolForRequest(env,request,toolId){
+  const registry=await loadToolRegistry(env,request);
+  const tool=registry?.tools?.find(t=>t.id===toolId&&t.status==="active");
+  if(!tool)throw Object.assign(new Error("Ferramenta não encontrada."),{code:"TOOL_NOT_FOUND"});
+  if(tool.access!=="paid")throw Object.assign(new Error("Esta ferramenta não requer pagamento por desbloqueio."),{code:"TOOL_NOT_PAID"});
+  const value=Number(tool.price);
+  const currency=String(tool.currency||"").toUpperCase();
+  if(!Number.isFinite(value)||value<=0||value>1000||!/^USD$/.test(currency))throw Object.assign(new Error("Preço da ferramenta não está configurado corretamente."),{code:"TOOL_PRICE_INVALID"});
+  return {...tool,price:value.toFixed(2),currency};
+}
+async function toolUnlockCreateOrder(env,account,tool){
   const order=await paypalRequest(env,"/v2/checkout/orders",{
-    method:"POST",headers:{"PayPal-Request-Id":"nexauren-tool-"+toolId+"-"+crypto.randomUUID()},
-    body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:toolId,custom_id:account.id,description:"Nexauren - acesso à ferramenta "+toolId,amount:{currency_code:"USD",value:"0.50"}}],payment_source:{paypal:{experience_context:{brand_name:"Nexauren Story",user_action:"PAY_NOW",return_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=success",cancel_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=cancel"}}}})
+    method:"POST",headers:{"PayPal-Request-Id":"nexauren-tool-"+tool.id+"-"+crypto.randomUUID()},
+    body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:tool.id,custom_id:account.id,description:"Nexauren - acesso à ferramenta "+tool.id,amount:{currency_code:tool.currency,value:tool.price}}],payment_source:{paypal:{experience_context:{brand_name:"Nexauren Story",user_action:"PAY_NOW",return_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=success",cancel_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=cancel"}}}})
   });
   const approve=Array.isArray(order?.links)?(order.links.find(x=>x.rel==="payer-action")?.href||order.links.find(x=>x.rel==="approve")?.href):null;
   if(!order?.id||!approve)throw new Error("O PayPal não devolveu o link de pagamento.");
   return {id:order.id,approve_url:approve};
 }
-async function toolUnlockCapture(env,account,toolId,orderId){
+async function toolUnlockCapture(env,account,toolId,orderId,tool){
   const existing=await toolUnlockExists(env,account.id,toolId);if(existing)return existing;
   const order=await paypalRequest(env,"/v2/checkout/orders/"+encodeURIComponent(orderId),{method:"GET"});
   const unit=order?.purchase_units?.[0],custom=String(unit?.custom_id||"");
@@ -873,9 +886,9 @@ async function toolUnlockCapture(env,account,toolId,orderId){
   let captured=order;if(order.status==="APPROVED")captured=await paypalRequest(env,"/v2/checkout/orders/"+encodeURIComponent(orderId)+"/capture",{method:"POST",headers:{"PayPal-Request-Id":"capture-"+orderId}});
   const capture=captured?.purchase_units?.[0]?.payments?.captures?.[0];
   if(captured.status!=="COMPLETED"||!capture||capture.status!=="COMPLETED")throw Object.assign(new Error("O pagamento não foi concluído."),{code:"PAYMENT_NOT_COMPLETED"});
-  if(String(capture?.amount?.value||"")!=="0.50"||String(capture?.amount?.currency_code||"")!=="USD")throw Object.assign(new Error("Valor do pagamento inválido."),{code:"PAYMENT_AMOUNT_INVALID"});
+  if(String(capture?.amount?.value||"")!==tool.price||String(capture?.amount?.currency_code||"")!==tool.currency)throw Object.assign(new Error("Valor do pagamento inválido."),{code:"PAYMENT_AMOUNT_INVALID"});
   const ts=nowIso(),id=crypto.randomUUID();
-  try{await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_tool_unlocks (id,account_id,tool_id,paypal_order_id,status,amount,currency,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,account.id,toolId,orderId,"COMPLETED","0.50","USD",ts,ts).run();}catch(e){const again=await toolUnlockExists(env,account.id,toolId);if(again)return again;throw e;}
+  try{await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_tool_unlocks (id,account_id,tool_id,paypal_order_id,status,amount,currency,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,account.id,toolId,orderId,"COMPLETED",tool.price,tool.currency,ts,ts).run();}catch(e){const again=await toolUnlockExists(env,account.id,toolId);if(again)return again;throw e;}
   return await toolUnlockExists(env,account.id,toolId);
 }
 
@@ -888,12 +901,12 @@ async function api(env,request,url,ctx){
   }
   if(p==="/api/tool/unlock/create"&&m==="POST"){
     await ensureToolUnlockSchema(env);if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=text(body?.tool_id||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");if(await toolUnlockExists(env,a.account.id,toolId))return json({ok:true,unlocked:true});const order=await toolUnlockCreateOrder(env,a.account,toolId);return json({ok:true,unlocked:false,order_id:order.id,approve_url:order.approve_url});}
+    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=slugify(body?.tool_id||"");if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");const tool=await paidToolForRequest(env,request,toolId);if(await toolUnlockExists(env,a.account.id,toolId))return json({ok:true,unlocked:true});const order=await toolUnlockCreateOrder(env,a.account,tool);return json({ok:true,unlocked:false,order_id:order.id,approve_url:order.approve_url});}
     catch(error){return fail(error?.message||"Não foi possível criar o pagamento.",500,error?.code||"PAYMENT_CREATE_ERROR");}
   }
   if(p==="/api/tool/unlock/capture"&&m==="POST"){
     await ensureToolUnlockSchema(env);if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=text(body?.tool_id||"",120),orderId=text(body?.order_id||"",180);if(!toolId||!orderId)return fail("Pagamento incompleto.",400,"PAYMENT_REQUIRED");const row=await toolUnlockCapture(env,a.account,toolId,orderId);return json({ok:true,unlocked:!!row,tool_id:toolId});}
+    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=slugify(body?.tool_id||""),orderId=text(body?.order_id||"",180);if(!toolId||!orderId)return fail("Pagamento incompleto.",400,"PAYMENT_REQUIRED");const tool=await paidToolForRequest(env,request,toolId);const row=await toolUnlockCapture(env,a.account,toolId,orderId,tool);return json({ok:true,unlocked:!!row,tool_id:toolId});}
     catch(error){return fail(error?.message||"Não foi possível confirmar o pagamento.",500,error?.code||"PAYMENT_CAPTURE_ERROR");}
   }
 
@@ -948,7 +961,8 @@ async function api(env,request,url,ctx){
       const a=await firebaseAccountAuth(env,request,true);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
       let row=await billingEnsureRow(env,a.account.id);
-      if(row.plan==="pro"&&["ACTIVE","APPROVED"].includes(row.status))return fail("A sua conta já tem o plano Pro ativo.",409,"ALREADY_PRO");
+      if(row.plan==="pro"&&row.status==="ACTIVE")return fail("A sua conta já tem o plano Pro ativo.",409,"ALREADY_PRO");
+      if(row.status==="APPROVAL_PENDING")return fail("Já existe uma assinatura PayPal aguardando aprovação.",409,"SUBSCRIPTION_PENDING");
       const planId=await paypalEnsureProPlan(env);
       const response=await paypalRequest(env,"/v1/billing/subscriptions",{
         method:"POST",
