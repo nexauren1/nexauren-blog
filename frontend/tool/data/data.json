@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T16:40:53.504Z",
+    "updatedAt": "2026-09-23T16:48:14.914Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -550,6 +550,104 @@
       "popular": false,
       "access": "public",
       "sortOrder": 200
+    },
+    {
+      "id": "formatador-css-minifier",
+      "name": "Formatador CSS / Minifier",
+      "description": "Formate, compacte e organize CSS com indentação configurável e processamento local.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "{}",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/formatador-css-minifier/",
+      "tags": [
+        "CSS",
+        "formatter",
+        "minifier",
+        "formatar",
+        "compactar",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 210
+    },
+    {
+      "id": "formatador-js-minifier",
+      "name": "Formatador JS / Minifier",
+      "description": "Formate, compacte e valide JavaScript localmente com preservação de strings e comentários.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "JS",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/formatador-js-minifier/",
+      "tags": [
+        "JavaScript",
+        "JS",
+        "formatter",
+        "minifier",
+        "validação",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 220
+    },
+    {
+      "id": "diff-checker",
+      "name": "Diff Checker",
+      "description": "Compare dois textos linha a linha e identifique adições, remoções e conteúdo igual.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "±",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/diff-checker/",
+      "tags": [
+        "Diff",
+        "comparador",
+        "texto",
+        "diferenças",
+        "código",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 230
+    },
+    {
+      "id": "conversor-de-cores",
+      "name": "Conversor de Cores",
+      "description": "Converta cores entre HEX, RGB, HSL, HSV e CMYK com amostra visual e contraste.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "◈",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/conversor-de-cores/",
+      "tags": [
+        "cores",
+        "HEX",
+        "RGB",
+        "HSL",
+        "HSV",
+        "CMYK",
+        "CSS",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 240
     }
   ]
 }
