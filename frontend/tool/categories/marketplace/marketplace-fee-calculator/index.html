@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="Marketplace Fee Calculator: calcule taxas, custos, lucro e margem de uma venda online de forma rápida e precisa.">
+<title>Marketplace Fee Calculator — Calculadora de Taxas de Marketplace</title>
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/">
+<meta property="og:site_name" content="Nexauren Story">
+<meta property="og:title" content="Marketplace Fee Calculator — Calculadora de Taxas de Marketplace">
+<meta property="og:description" content="Calcule taxas de marketplace, custos, lucro e margem numa venda online.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/">
+<meta property="og:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Marketplace Fee Calculator — Nexauren Story">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Marketplace Fee Calculator">
+<meta name="twitter:description" content="Calcule taxas, custos, lucro e margem de uma venda online.">
+<meta name="twitter:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5">
+<link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5">
+<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="./style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Marketplace Fee Calculator","url":"https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/","applicationCategory":"BusinessApplication","operatingSystem":"Any","description":"Calculadora online de taxas, custos, lucro e margem para vendas em marketplaces.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+</head>
+<body>
+<main class="mfc-shell">
+  <nav class="mfc-topbar">
+    <a class="mfc-back" href="/tool/">← Ferramentas</a>
+    <div class="mfc-brand"><span class="mfc-brand-dot"></span><span>NEXAUREN TOOLS</span><span class="mfc-slash">/</span><span>MARKETPLACE</span></div>
+  </nav>
+
+  <header class="mfc-hero">
+    <div class="mfc-hero-copy">
+      <span class="mfc-kicker">MARKETPLACE · PROFIT ENGINE</span>
+      <h1>Marketplace Fee Calculator</h1>
+      <p>Calcule taxas, custos, lucro líquido e margem de uma venda online em segundos.</p>
+    </div>
+    <div class="mfc-hero-status">
+      <span class="mfc-pulse"></span>
+      PROCESSAMENTO LOCAL
+    </div>
+  </header>
+
+  <section class="mfc-grid">
+    <form class="mfc-panel mfc-inputs" id="calculator" autocomplete="off">
+      <div class="mfc-panel-head">
+        <div>
+          <span class="mfc-panel-eyebrow">01 · ENTRADA</span>
+          <h2>Dados da venda</h2>
+        </div>
+        <button type="button" class="mfc-reset" id="reset" title="Restaurar valores">↺ Restaurar</button>
+      </div>
+
+      <div class="mfc-fields">
+        <label class="mfc-field mfc-field-wide">
+          <span>Preço de venda</span>
+          <div class="mfc-control mfc-money"><span class="mfc-prefix" id="currencyPrefix">€</span><input id="salePrice" inputmode="decimal" type="number" min="0" step="0.01" value="100"></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Custo do produto</span>
+          <div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="productCost" inputmode="decimal" type="number" min="0" step="0.01" value="40"></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Custo de envio</span>
+          <div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="shippingCost" inputmode="decimal" type="number" min="0" step="0.01" value="6"></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Taxa do marketplace</span>
+          <div class="mfc-control mfc-percent"><input id="marketplaceFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="15"><span>%</span></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Taxa de pagamento</span>
+          <div class="mfc-control mfc-percent"><input id="paymentFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="3"><span>%</span></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Publicidade / anúncios</span>
+          <div class="mfc-control mfc-percent"><input id="adsFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="0"><span>%</span></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Outros custos</span>
+          <div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="otherCosts" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div>
+        </label>
+
+        <label class="mfc-field">
+          <span>Moeda</span>
+          <div class="mfc-control">
+            <select id="currency" aria-label="Moeda"><option value="EUR">EUR · €</option><option value="USD">USD · $</option><option value="GBP">GBP · £</option><option value="MZN">MZN · MT</option><option value="BRL">BRL · R$</option><option value="ZAR">ZAR · R</option></select>
+          </div>
+        </label>
+      </div>
+
+      <div class="mfc-tip">
+        <span class="mfc-tip-icon">i</span>
+        <p>As percentagens são editáveis. Isso permite adaptar o cálculo às taxas do marketplace, categoria, país e método de pagamento que estás a utilizar.</p>
+      </div>
+    </form>
+
+    <section class="mfc-panel mfc-results" aria-live="polite">
+      <div class="mfc-panel-head">
+        <div>
+          <span class="mfc-panel-eyebrow">02 · RESULTADO</span>
+          <h2>Economia da venda</h2>
+        </div>
+        <span class="mfc-live">LIVE</span>
+      </div>
+
+      <div class="mfc-profit-card">
+        <div>
+          <span class="mfc-profit-label">LUCRO LÍQUIDO ESTIMADO</span>
+          <strong id="netProfit">€ 38,00</strong>
+        </div>
+        <div class="mfc-margin-box">
+          <span>MARGEM</span>
+          <strong id="margin">38,00%</strong>
+        </div>
+      </div>
+
+      <div class="mfc-breakdown" id="breakdown"></div>
+
+      <div class="mfc-metrics">
+        <div class="mfc-metric"><span>Receita</span><strong id="revenue">€ 100,00</strong></div>
+        <div class="mfc-metric"><span>Total de custos</span><strong id="totalCosts">€ 62,00</strong></div>
+        <div class="mfc-metric"><span>Taxas totais</span><strong id="totalFees">€ 18,00</strong></div>
+        <div class="mfc-metric"><span>Retorno sobre custo</span><strong id="roi">61,29%</strong></div>
+      </div>
+
+      <div class="mfc-equation">
+        <span>PREÇO</span><b>−</b><span>CUSTO</span><b>−</b><span>TAXAS</span><b>=</b><strong>LUCRO</strong>
+      </div>
+    </section>
+  </section>
+
+  <section class="mfc-info-grid">
+    <article>
+      <span class="mfc-info-number">A</span>
+      <div><h3>O que a ferramenta calcula?</h3><p>Marketplace Fee Calculator estima quanto sobra de cada venda depois do custo do produto, envio, taxas percentuais e outros custos definidos por ti.</p></div>
+    </article>
+    <article>
+      <span class="mfc-info-number">B</span>
+      <div><h3>Como usar?</h3><p>Introduz o preço de venda, custos e percentagens. O resultado é atualizado instantaneamente enquanto alteras os valores.</p></div>
+    </article>
+    <article>
+      <span class="mfc-info-number">C</span>
+      <div><h3>O cálculo é local?</h3><p>Sim. Os valores são processados no navegador e não precisam de ser enviados para um servidor para gerar o resultado.</p></div>
+    </article>
+  </section>
+
+  <footer class="mfc-footer">
+    <span>NEXAUREN TOOLS · MARKETPLACE FEE CALCULATOR</span>
+    <a href="/tool/">Voltar ao catálogo</a>
+  </footer>
+</main>
+<script src="./script.js"></script>
+</body>
+</html>
