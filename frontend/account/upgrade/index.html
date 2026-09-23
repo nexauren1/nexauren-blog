@@ -17,10 +17,10 @@
 <header class="account-header">
   <div class="account-wrap nav">
     <a class="brand" href="/" aria-label="Nexauren Story"><img class="mark" src="/nexauren-story-favicon.svg?v=20260922-4" alt="" width="42" height="42"><span class="brand-text"><strong>Nexauren</strong><span>Story</span></span></a>
-    <nav aria-label="Navegação principal"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Legal</a></nav>
+    <nav aria-label="Navegação principal"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/account/upgrade/" aria-current="page">Planos</a><a href="/legal/privacidade/">Legal</a></nav>
     <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
   </div>
-  <div class="mobile-nav" data-mobile-nav><div class="account-wrap"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a></div></div>
+  <div class="mobile-nav" data-mobile-nav><div class="account-wrap"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/account/upgrade/" aria-current="page">Planos</a><a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a></div></div>
 </header>
 <main class="account-wrap upgrade-page">
   <section class="account-hero"><div class="eyebrow">NEXAUREN PLANS</div><h1>Escolha o seu plano.</h1><p>Comece grátis ou desbloqueie os recursos Pro por $5/mês.</p></section>
@@ -37,6 +37,6 @@ import { initBilling } from "/account/billing.js?v=20260922-4";
 const root=document.querySelector("[data-account-app]");
 onAuthStateChanged(auth,user=>{ if(!user){ location.href="/account"; return; } initBilling(root); });
 </script>
-<script src="/assets/public-ui.js?v=20260922-4" defer></script>
+<script src="/assets/public-ui.js?v=20260923-1" defer></script>
 </body>
 </html>
