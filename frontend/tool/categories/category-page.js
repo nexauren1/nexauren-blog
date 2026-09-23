@@ -133,6 +133,7 @@
     try{
       const result=await accessApi.verifyToolAccess(link.dataset.toolId);
       if(result.unlocked){location.href=link.dataset.toolPath;return}
+      if(result.error){showAccessMessage({title:"Não foi possível verificar o acesso",body:"Não conseguimos confirmar o estado do seu plano agora. Tente novamente.",actionLabel:"Tentar novamente",actionUrl:location.href});return}
       showAccessMessage({title:"Ferramenta exclusiva do Pro",body:"O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso.",actionLabel:"Ir para o plano Pro",actionUrl:accessApi.upgradeUrl()});
     }catch{}
   }
