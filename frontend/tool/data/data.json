@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T16:53:52.172Z",
+    "updatedAt": "2026-09-23T17:00:27.459Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -701,6 +701,55 @@
       "popular": false,
       "access": "public",
       "sortOrder": 260
+    },
+    {
+      "id": "gerador-de-api-key",
+      "name": "Gerador de API Key Pro",
+      "description": "Gere chaves de API aleatórias com formato, prefixo e comprimento configuráveis. Ferramenta exclusiva Pro.",
+      "category": "tecnologia",
+      "group": "seguranca",
+      "icon": "⌁",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-api-key/",
+      "tags": [
+        "API Key",
+        "API",
+        "chave",
+        "segurança",
+        "criptografia",
+        "Pro",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "premium",
+      "sortOrder": 270
+    },
+    {
+      "id": "gerador-de-secret",
+      "name": "Gerador de Secret Pro",
+      "description": "Gere secrets aleatórios criptograficamente fortes em Hex, Base64, Base64 URL-safe ou alfanumérico. Ferramenta exclusiva Pro.",
+      "category": "tecnologia",
+      "group": "seguranca",
+      "icon": "●",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-secret/",
+      "tags": [
+        "secret",
+        "segredo",
+        "segurança",
+        "criptografia",
+        "Base64",
+        "Hex",
+        "Pro",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "premium",
+      "sortOrder": 280
     }
   ]
 }
