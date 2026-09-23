@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T16:48:14.914Z",
+    "updatedAt": "2026-09-23T16:53:52.172Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -648,6 +648,59 @@
       "popular": false,
       "access": "public",
       "sortOrder": 240
+    },
+    {
+      "id": "gerador-de-paleta-de-cores",
+      "name": "Gerador de Cores / Paletas",
+      "description": "Gere paletas de cores harmoniosas a partir de uma cor-base e copie os tokens CSS para o seu projeto.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "◈",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-paleta-de-cores/",
+      "tags": [
+        "cores",
+        "paleta",
+        "color",
+        "design",
+        "CSS",
+        "HEX",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 250
+    },
+    {
+      "id": "conversor-de-dados-e-bytes",
+      "name": "Conversor de Dados / Bytes",
+      "description": "Converta valores entre bytes, unidades SI e unidades binárias IEC e veja o valor exato em bytes.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "⇄",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/conversor-de-dados-e-bytes/",
+      "tags": [
+        "bytes",
+        "dados",
+        "KB",
+        "MB",
+        "GB",
+        "KiB",
+        "MiB",
+        "GiB",
+        "conversor",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 260
     }
   ]
 }
