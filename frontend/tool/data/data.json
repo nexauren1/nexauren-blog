@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T16:27:38.979Z",
+    "updatedAt": "2026-09-23T16:29:35.250Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -453,6 +453,54 @@
       "popular": false,
       "access": "public",
       "sortOrder": 160
+    },
+    {
+      "id": "analisador-de-url",
+      "name": "Analisador de URL",
+      "description": "Analise uma URL por componentes, incluindo protocolo, domínio, porta, caminho, query e fragmento.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "⌁",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/analisador-de-url/",
+      "tags": [
+        "URL",
+        "analisador",
+        "query",
+        "domínio",
+        "web",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 170
+    },
+    {
+      "id": "encoder-decoder-url",
+      "name": "URL Encoder / Decoder",
+      "description": "Codifique e descodifique texto para utilização em URLs, parâmetros e queries com suporte UTF-8.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "↕",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/encoder-decoder-url/",
+      "tags": [
+        "URL",
+        "encode",
+        "decode",
+        "URI",
+        "UTF-8",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 180
     }
   ]
 }
