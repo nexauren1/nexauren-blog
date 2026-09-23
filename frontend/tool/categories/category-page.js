@@ -29,13 +29,25 @@
   };
 
   let state={tools:[],query:"",tag:"",access:"all",sort:"relevance"};
+  let isPro=false;
+  async function getProAccess(){
+    try{
+      const mod=await import("/account/account-client.js?v=20260923-tool-access");
+      if(!mod.auth?.currentUser)return false;
+      const data=await mod.workerFetch("/api/account/billing",{method:"GET"});
+      return String(data?.billing?.plan||"").toLowerCase()==="pro" && ["ACTIVE","APPROVED"].includes(String(data?.billing?.status||"").toUpperCase());
+    }catch{return false;}
+  }
 
-  const card=t=>'<a class="tool-card cat-'+esc(t.category||slug)+' nx-spotlight nx-reveal" data-category="'+esc(t.category||slug)+'" href="'+esc(t.path)+'">'+
-    '<span class="tool-card-icon">'+iconSvg(t.icon)+'</span><span class="tool-arrow">→</span>'+
-    '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
-    '<small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small>'+
-    (t.access==="premium"?'<b class="tool-search-premium">PRO</b>':'')+
-    '</a>';
+  const card=t=>{
+    const locked=t.access==="premium"&&!isPro;
+    return '<a class="tool-card cat-'+esc(t.category||slug)+' nx-spotlight nx-reveal'+(locked?" tool-card-locked":"")+'" data-category="'+esc(t.category||slug)+'" href="'+esc(locked?"/account/upgrade/":t.path)+'" aria-label="'+esc(t.name+(locked?" — requer Pro":""))+'">'+
+      '<span class="tool-card-icon">'+iconSvg(t.icon)+'</span><span class="tool-arrow">→</span>'+
+      '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
+      '<small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small>'+
+      (t.access==="premium"?'<b class="tool-search-premium">PRO</b><span class="tool-lock" aria-hidden="true">🔒</span>':"")+
+      '</a>';
+  };
 
   function updateUrl(){
     const p=new URLSearchParams();
@@ -123,6 +135,7 @@
   async function render(){
     try{
       const registry=await window.NexaurenToolRegistry.loadRegistry();
+      isPro=await getProAccess();
       const cat=window.NexaurenToolRegistry.getCategory(registry,slug);
       if(!cat){root.innerHTML='<section class="tool-results"><div class="tool-empty"><strong>Categoria não encontrada.</strong></div></section>';return;}
       document.title=cat.name+" — Ferramentas — Nexauren Story";
