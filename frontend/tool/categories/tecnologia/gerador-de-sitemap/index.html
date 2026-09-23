@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gerador de Sitemap · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
+<body><main class="sitemap-app"><a class="back" href="/tool/">← Ferramentas</a>
+<header><div class="eyebrow">NEXAUREN / SITE MAP STUDIO</div><div class="hero-row"><div><h1>Gerador de Sitemap</h1><p>Transforme uma lista de URLs em um sitemap.xml limpo, válido e pronto para publicar.</p></div><span class="pill">XML · LOCAL</span></div></header>
+<section class="studio"><aside class="config"><div class="section-head">01 · CONFIGURAÇÃO</div>
+<label>URL base<input id="base" type="url" placeholder="https://exemplo.com"></label>
+<div class="two"><label>Change frequency<select id="freq"><option>weekly</option><option>daily</option><option>monthly</option><option>yearly</option><option>always</option><option>hourly</option><option>never</option></select></label><label>Prioridade<select id="priority"><option>0.8</option><option>1.0</option><option>0.7</option><option>0.6</option><option>0.5</option><option>0.4</option><option>0.3</option></select></label></div>
+<label>Última atualização<input id="lastmod" type="date"></label>
+<label>URLs <span class="hint">uma por linha</span><textarea id="urls" spellcheck="false" placeholder="/&#10;/blog/&#10;/tool/&#10;/account"></textarea></label>
+<div class="buttons"><button id="generate" class="primary">Gerar sitemap</button><button id="sample" class="secondary">Exemplo</button><button id="clear" class="secondary">Limpar</button></div></aside>
+<section class="output"><div class="section-head output-head"><span>02 · SITEMAP.XML</span><span id="count">0 URLs</span></div><pre id="code">O sitemap aparecerá aqui.</pre><div class="actions"><button id="copy" class="primary">Copiar XML</button><button id="download" class="secondary">Baixar sitemap.xml</button></div><div id="message" class="message">Pronto para gerar.</div></section></section>
+<p id="access" class="access" hidden></p><footer>NEXAUREN TOOLS · Site Map Studio · Execução local</footer></main>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".studio"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=locked)});</script>
+<script src="./script.js"></script></body></html>
