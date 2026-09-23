@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T15:15:09.829095Z",
+  "generatedAt": "2026-09-23T15:23:49.685493Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -21,6 +21,7 @@
     "/tool/categories/tecnologia/gerador-de-uuid/",
     "/tool/categories/tecnologia/jwt-decoder/",
     "/tool/categories/tecnologia/leitor-de-qr-code/",
+    "/tool/categories/tecnologia/validador-json/",
     "/tool/categories/texto/",
     "/tool/destaques/",
     "/tool/populares/"
