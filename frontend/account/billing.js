@@ -5,14 +5,15 @@ const esc = (value) => String(value ?? "")
   .replaceAll('"',"&quot;").replaceAll("'","&#39;");
 
 function statusLabel(b){
-  if(b?.status==="ACTIVE"||b?.status==="APPROVED") return "Pro ativo";
+  if(b?.status==="ACTIVE") return "Pro ativo";
+  if(b?.status==="APPROVED") return "A aguardar ativação";
   if(b?.status==="APPROVAL_PENDING") return "A aguardar aprovação";
   if(b?.status==="SUSPENDED") return "Pagamento suspenso";
   if(b?.status==="CANCELLED") return "Cancelado";
   return "Free";
 }
 function billingMarkup(b,notice=""){
-  const pro=b?.plan==="pro";
+  const pro=b?.plan==="pro" && b?.status==="ACTIVE";
   return `
     <section class="billing-panel">
       <div class="billing-kicker">NEXAUREN PLANS</div>
@@ -53,7 +54,7 @@ async function initBilling(root){
     if(paypal==="success"&&subscriptionId){
       host.innerHTML='<div class="billing-loading">A confirmar a sua assinatura PayPal…</div>';
       const confirmed=await workerFetch("/api/account/paypal/confirm",{method:"POST",body:JSON.stringify({subscription_id:subscriptionId})});
-      notice=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.plan==="pro"
+      notice=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.status==="ACTIVE"
         ?"Assinatura Pro ativada com sucesso."
         :"O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo.";
       history.replaceState({},document.title,"/account/upgrade/");

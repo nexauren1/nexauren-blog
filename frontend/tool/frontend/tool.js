@@ -50,7 +50,7 @@
   async function getRegistry(){
     try{
       if(window.NexaurenToolRegistry?.loadRegistry){
-        const registry=await getRegistry();
+        const registry=await window.NexaurenToolRegistry.loadRegistry();
         const active=Array.isArray(registry?.tools)?registry.tools.filter(t=>t.status==="active"):[];
         if(active.length && registry?.categories?.length)return registry;
       }
@@ -102,7 +102,7 @@
   }
   async function render(){
     try{
-      const registry=await window.NexaurenToolRegistry.loadRegistry();
+      const registry=await getRegistry();
       tools=registry.tools.filter(t=>t.status==="active");
       categories=registry.categories.map(c=>({...c,count:registry.tools.filter(t=>t.status==="active"&&t.category===c.id).length}));
       if(countEl)countEl.textContent=tools.length;
