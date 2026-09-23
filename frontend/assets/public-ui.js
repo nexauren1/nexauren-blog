@@ -59,15 +59,30 @@
   }
 
   function initMenus(){
-    const rawPairs=[
-      ...$$(config.selectors.menuButton).map(button=>({button,panel:button.closest("header")?.querySelector(config.selectors.menuPanel)})),
-      ...$$(".menu-toggle").map(button=>({button,panel:button.closest("header")?.querySelector(".mobile-menu,.mobile-nav,.tool-mobile")})),
-      ...$$(".tool-menu").map(button=>({button,panel:button.closest("header")?.querySelector(".tool-mobile")}))
-    ];
-    const seen=new Set();
-    const pairs=rawPairs.filter(({button,panel})=>{
-      if(!button||!panel||seen.has(button)||button.dataset.nxMenuBound==="1")return false;
-      seen.add(button);return true;
+    const closeAll=except=>{
+      $$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").forEach(panel=>{
+        if(panel===except)return;
+        panel.classList.remove("open");
+        panel.style.display="";
+        panel.style.visibility="";
+        panel.style.opacity="";
+        panel.style.pointerEvents="";
+        const header=panel.__nxHeader||null;
+        header?.querySelector(".menu-toggle,.tool-menu,[data-nx-menu]")?.setAttribute("aria-expanded","false");
+      });
+      if(!$$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").length)document.body.classList.remove("nx-menu-open");
+      document.documentElement.style.removeProperty("overflow");
+      document.body.style.removeProperty("overflow");
+    };
+
+    const pairs=[];
+    $$("[data-nx-menu],.menu-toggle,.tool-menu").forEach(button=>{
+      const header=button.closest("header");
+      if(!header)return;
+      const panel=header.querySelector("[data-nx-panel],.mobile-menu,.mobile-nav,.tool-mobile");
+      if(!panel||pairs.some(item=>item.button===button))return;
+      panel.__nxHeader=header;
+      pairs.push({button,panel,header});
     });
     if(!pairs.length)return;
 
@@ -75,17 +90,14 @@
       button.dataset.nxMenuBound="1";
       panel.classList.add("nx-menu-layer");
 
-      const placePanel=()=>{
+      const place=()=>{
         if(window.innerWidth>=961)return;
-        const rect=button.closest("header")?.getBoundingClientRect();
-        const top=Math.max(0,Math.round(rect?.bottom||button.getBoundingClientRect().bottom));
-        panel.style.setProperty("--nx-menu-top",top+"px");
+        const rect=button.getBoundingClientRect();
+        panel.style.setProperty("--nx-menu-top",Math.max(0,Math.round(rect.bottom))+"px");
       };
-
-      if(panel.parentElement!==document.body)document.body.appendChild(panel);
-
       const sync=open=>{
-        if(open)placePanel();
+        closeAll(open?panel:null);
+        if(open)place();
         button.setAttribute("aria-expanded",String(open));
         button.setAttribute("aria-label",open?"Fechar menu":"Abrir menu");
         panel.classList.toggle("open",open);
@@ -94,55 +106,48 @@
         panel.style.opacity=open?"1":"";
         panel.style.pointerEvents=open?"auto":"";
         document.body.classList.toggle("nx-menu-open",open);
-        /* Never lock the document or html scroll when the mobile menu opens. */
         document.documentElement.style.removeProperty("overflow");
         document.body.style.removeProperty("overflow");
       };
-
-      const toggle=event=>{
-        event.preventDefault();
-        event.stopPropagation();
-        sync(!panel.classList.contains("open"));
-      };
-      button.addEventListener("click",toggle);
-
-      panel.addEventListener("click",event=>{
-        const link=event.target instanceof Element?event.target.closest("a"):null;
-        if(link)sync(false);
-      });
-
-      document.addEventListener("pointerdown",event=>{
-        if(!panel.classList.contains("open"))return;
-        const target=event.target;
-        if(button.contains(target)||panel.contains(target))return;
-        sync(false);
-      },{passive:true});
-
-      window.addEventListener("resize",()=>{
-        if(panel.classList.contains("open"))placePanel();
-        if(window.innerWidth>=961)sync(false);
-      },{passive:true});
-
+      button.__nxMenuToggle=()=>sync(!panel.classList.contains("open"));
+      button.__nxMenuPanel=panel;
+      if(panel.parentElement!==document.body)document.body.appendChild(panel);
       sync(false);
+      window.addEventListener("resize",()=>{if(panel.classList.contains("open"))place();if(window.innerWidth>=961)sync(false);},{passive:true});
     });
 
-    if(!document.body.dataset.nxMenuGlobal){
-      document.body.dataset.nxMenuGlobal="1";
-      document.addEventListener("keydown",event=>{
-        if(event.key!=="Escape")return;
-        $$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").forEach(panel=>{
-          panel.classList.remove("open");
-          panel.style.display="";
-          panel.style.visibility="";
-          panel.style.opacity="";
-          panel.style.pointerEvents="";
-          panel.closest("header")?.querySelector(".menu-toggle,.tool-menu,[data-nx-menu]")?.setAttribute("aria-expanded","false");
-        });
-        document.body.classList.remove("nx-menu-open");
-        document.documentElement.style.removeProperty("overflow");
-        document.body.style.removeProperty("overflow");
-      });
-    }
+    if(document.body.dataset.nxMenuGlobal)return;
+    document.body.dataset.nxMenuGlobal="1";
+
+    document.addEventListener("click",event=>{
+      const target=event.target instanceof Element?event.target:null;
+      if(!target)return;
+      const button=target.closest("[data-nx-menu],.menu-toggle,.tool-menu");
+      if(button?.__nxMenuToggle){
+        event.preventDefault();
+        event.stopPropagation();
+        button.__nxMenuToggle();
+        return;
+      }
+      const link=target.closest(".mobile-menu a,.mobile-nav a,.tool-mobile a");
+      if(link){ closeAll(null); return; }
+      const openPanel=$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open");
+      if(openPanel&&!openPanel.contains(target))closeAll(null);
+    },true);
+
+    document.addEventListener("pointerdown",event=>{
+      const target=event.target instanceof Element?event.target:null;
+      const openPanel=$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open");
+      if(!openPanel||!target)return;
+      const header=openPanel.__nxHeader;
+      if(header?.contains(target)||openPanel.contains(target))return;
+      closeAll(null);
+    },{passive:true});
+
+    document.addEventListener("keydown",event=>{
+      if(event.key!=="Escape")return;
+      closeAll(null);
+    });
   }
   function initReveal(){
     if(!config.reducedMotion)document.documentElement.classList.add("nx-motion");
