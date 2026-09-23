@@ -1,40 +1,57 @@
 (() => {
   const DATA_URL="/api/tool-registry";
-  const FALLBACK_DATA_URL="/tool/data/data.json?v=20260923-catalog";
-  const CACHE_KEY="nexauren-tool-registry-v2";
+  const FALLBACK_DATA_URL="/tool/data/data.json?v=20260923-1";
+  const CACHE_KEY="nexauren:tool-registry:v2";
   let registryPromise=null;
+
   function normalize(raw){
     const categories=Array.isArray(raw?.categories)?raw.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)):[];
     const tools=Array.isArray(raw?.tools)?raw.tools:[];
-    return {version:raw?.version||1,site:raw?.site||"Nexauren Story",basePath:raw?.basePath||"/tool/",categories,tools};
+    return {version:raw?.version||1,site:raw?.site||"Nexauren Story",basePath:raw?.basePath||"/tool/",registry:raw?.registry||null,categories,tools};
   }
-  function readCache(){try{const raw=localStorage.getItem(CACHE_KEY);return raw?normalize(JSON.parse(raw).data):null}catch{return null}}
-  function saveCache(registry){try{localStorage.setItem(CACHE_KEY,JSON.stringify({version:registry.version,updatedAt:Date.now(),data:registry}))}catch{}}
-  async function networkRegistry(){
+  function valid(raw){return !!raw&&Array.isArray(raw.categories)&&Array.isArray(raw.tools);}
+  function readCache(){
     try{
-      const r=await fetch(DATA_URL,{cache:"no-store"});
+      const saved=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
+      const registry=normalize(saved?.registry);
+      return valid(registry)?registry:null;
+    }catch{return null;}
+  }
+  function saveCache(registry){
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),registry}));}catch{}
+  }
+  async function refreshRegistry(){
+    try{
+      const r=await fetch(DATA_URL,{cache:"no-store",credentials:"same-origin"});
       if(!r.ok)throw new Error("API indisponível");
       const registry=normalize(await r.json());
       if(!registry.categories.length||!registry.tools.some(t=>t.status==="active"))throw new Error("Catálogo incompleto");
-      saveCache(registry); return registry;
-    }catch{
-      const r=await fetch(FALLBACK_DATA_URL,{cache:"no-store"});
-      if(!r.ok)throw new Error("Catálogo indisponível");
-      const registry=normalize(await r.json()); saveCache(registry); return registry;
+      saveCache(registry);
+      window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
+      return registry;
+    }catch(primary){
+      const r=await fetch(FALLBACK_DATA_URL,{cache:"force-cache",credentials:"same-origin"});
+      if(!r.ok)throw primary;
+      const registry=normalize(await r.json());
+      if(valid(registry))saveCache(registry);
+      window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
+      return registry;
     }
   }
   async function loadRegistry(){
-    if(registryPromise)return registryPromise;
-    const cached=readCache();
-    if(cached){
-      registryPromise=Promise.resolve(cached);
-      networkRegistry().then(fresh=>{registryPromise=Promise.resolve(fresh);window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:fresh}));}).catch(()=>{});
-      return cached;
+    if(!registryPromise){
+      const cached=readCache();
+      if(cached){
+        registryPromise=Promise.resolve(cached);
+        refreshRegistry().catch(()=>{});
+      }else{
+        registryPromise=refreshRegistry();
+      }
     }
-    registryPromise=networkRegistry();
     return registryPromise;
   }
+  function getCachedRegistry(){return readCache();}
   function getCategory(registry,slug){return registry.categories.find(c=>c.id===slug||c.slug===slug)||null}
   function getTools(registry,slug){return registry.tools.filter(t=>t.status!=="disabled"&&(!slug||t.category===slug))}
-  window.NexaurenToolRegistry={loadRegistry,getCategory,getTools,refreshRegistry:networkRegistry};
+  window.NexaurenToolRegistry={loadRegistry,refreshRegistry,getCachedRegistry,getCategory,getTools};
 })();
