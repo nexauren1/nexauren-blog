@@ -37,6 +37,6 @@ import { initBilling } from "/account/billing.js?v=20260922-4";
 const root=document.querySelector("[data-account-app]");
 onAuthStateChanged(auth,user=>{ if(!user){ location.href="/account"; return; } initBilling(root); });
 </script>
-<script src="/assets/public-ui.js?v=20260923-1" defer></script>
+<script src="/assets/public-ui.js?v=20260923-menu-fix" defer></script>
 </body>
 </html>

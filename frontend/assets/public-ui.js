@@ -28,52 +28,110 @@
     });
   }
 
+  function ensureResponsiveMenus(){
+    $$("header").forEach(header=>{
+      const nav=$("nav",header);
+      if(!nav||header.querySelector(".menu-toggle,.tool-menu,[data-nx-auto-menu]"))return;
+      const links=$$("a",nav).map(a=>({
+        href:a.getAttribute("href"),
+        text:(a.textContent||"").trim()
+      })).filter(item=>item.href&&item.text);
+      if(!links.length)return;
+
+      const isTool=header.classList.contains("tool-header");
+      const button=document.createElement("button");
+      button.className=isTool?"tool-menu":"menu-toggle";
+      button.type="button";
+      button.setAttribute("aria-label","Abrir menu");
+      button.setAttribute("aria-expanded","false");
+      button.dataset.nxAutoMenu="1";
+      button.innerHTML="<span></span>";
+
+      const panel=document.createElement("div");
+      panel.className=isTool?"tool-mobile":"mobile-menu";
+      panel.dataset.nxAutoPanel="1";
+      panel.innerHTML=links.map(item=>'<a href="'+String(item.href).replace(/"/g,"&quot;")+'">'+String(item.text).replace(/[&<>]/g,"")+"</a>").join("");
+
+      header.querySelector(".nav,.tool-nav")?.appendChild(button);
+      if(!button.isConnected)header.firstElementChild?.appendChild(button);
+      header.appendChild(panel);
+    });
+  }
+
   function initMenus(){
     const pairs=[
       ...$$(config.selectors.menuButton).map(button=>({button,panel:button.closest("header")?.querySelector(config.selectors.menuPanel)})),
       ...$$(".menu-toggle").map(button=>({button,panel:button.closest("header")?.querySelector(".mobile-menu,.mobile-nav,.tool-mobile")})),
       ...$$(".tool-menu").map(button=>({button,panel:button.closest("header")?.querySelector(".tool-mobile")}))
-    ].filter(x=>x.button&&x.panel&&x.button.dataset.nxMenuBound!=="1");
+    ].filter(({button,panel})=>button&&panel&&button.dataset.nxMenuBound!=="1");
     if(!pairs.length)return;
+
     pairs.forEach(({button,panel})=>{
       button.dataset.nxMenuBound="1";
-      let returnFocus=button;
       const sync=open=>{
         button.setAttribute("aria-expanded",String(open));
         button.setAttribute("aria-label",open?"Fechar menu":"Abrir menu");
         panel.classList.toggle("open",open);
+        panel.style.display=open?"block":"";
+        panel.style.visibility=open?"visible":"";
+        panel.style.opacity=open?"1":"";
+        panel.style.pointerEvents=open?"auto":"";
         document.body.classList.toggle("nx-menu-open",open);
-        document.documentElement.style.overflow=open?"hidden":"";
-        if(open){
-          returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:button;
-          const first=$("a,button,input",panel)[0];
-          first?.focus({preventScroll:true});
-        }else if(returnFocus?.focus){
-          returnFocus.focus({preventScroll:true});
-        }
+        if(open) document.documentElement.style.overflow="hidden";
+        else if(!$$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").length) document.documentElement.style.overflow="";
       };
-      button.addEventListener("click",()=>sync(!panel.classList.contains("open")));
-      $("a",panel).forEach(a=>a.addEventListener("click",()=>sync(false)));
-      document.addEventListener("pointerdown",event=>{
+
+      button.addEventListener("click",event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        sync(!panel.classList.contains("open"));
+      });
+
+      panel.addEventListener("click",event=>{
+        const link=event.target instanceof Element?event.target.closest("a"):null;
+        if(link)sync(false);
+      });
+
+      document.addEventListener("click",event=>{
         if(!panel.classList.contains("open"))return;
-        if(button.contains(event.target)||panel.contains(event.target))return;
+        const target=event.target;
+        if(button.contains(target)||panel.contains(target))return;
         sync(false);
       });
-      sync(panel.classList.contains("open"));
+
+      sync(false);
     });
+
     if(!document.body.dataset.nxMenuGlobal){
       document.body.dataset.nxMenuGlobal="1";
       document.addEventListener("keydown",event=>{
         if(event.key!=="Escape")return;
-        $$(".nx-menu-open").forEach(()=>document.body.classList.remove("nx-menu-open"));
         $$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").forEach(panel=>{
           panel.classList.remove("open");
+          panel.style.display="";
+          panel.style.visibility="";
+          panel.style.opacity="";
+          panel.style.pointerEvents="";
           panel.closest("header")?.querySelector(".menu-toggle,.tool-menu,[data-nx-menu]")?.setAttribute("aria-expanded","false");
         });
+        document.body.classList.remove("nx-menu-open");
+        document.documentElement.style.overflow="";
       });
+      window.addEventListener("resize",()=>{
+        if(window.innerWidth<961)return;
+        $$(".mobile-menu.open,.mobile-nav.open,.tool-mobile.open").forEach(panel=>{
+          panel.classList.remove("open");
+          panel.style.display="";
+          panel.style.visibility="";
+          panel.style.opacity="";
+          panel.style.pointerEvents="";
+          panel.closest("header")?.querySelector(".menu-toggle,.tool-menu,[data-nx-menu]")?.setAttribute("aria-expanded","false");
+        });
+        document.body.classList.remove("nx-menu-open");
+        document.documentElement.style.overflow="";
+      },{passive:true});
     }
   }
-
   function initReveal(){
     if(!config.reducedMotion)document.documentElement.classList.add("nx-motion");
     const autoCandidates=$$("main > section,main > article,main .legal-article");
@@ -201,6 +259,6 @@
     });
   }
 
-  function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");ensureLegalNavigation();setActiveNavigation();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
+  function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");ensureLegalNavigation();setActiveNavigation();ensureResponsiveMenus();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
