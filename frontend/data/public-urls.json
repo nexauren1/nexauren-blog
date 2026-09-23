@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T17:24:54.734986Z",
+  "generatedAt": "2026-09-23T17:25:27.564015Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -42,6 +42,7 @@
     "/tool/categories/tecnologia/leitor-de-qr-code/",
     "/tool/categories/tecnologia/qr-e-codigos/",
     "/tool/categories/tecnologia/testador-de-regex/",
+    "/tool/categories/tecnologia/texto-e-regex/",
     "/tool/categories/tecnologia/utilitarios-web/",
     "/tool/categories/tecnologia/validador-json/",
     "/tool/categories/texto/",
