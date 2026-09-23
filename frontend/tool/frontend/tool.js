@@ -65,7 +65,6 @@
     document.body.appendChild(el);
     const close=()=>el.remove();
     el.querySelectorAll("[data-tool-access-close]").forEach(b=>b.addEventListener("click",close));
-    el.querySelector("[data-tool-access-dialog-panel]")?.focus?.();
     const onKey=e=>{if(e.key==="Escape"){close();document.removeEventListener("keydown",onKey)}};
     document.addEventListener("keydown",onKey);
   }
@@ -92,6 +91,7 @@
     try{
       const result=await accessApi.verifyToolAccess(link.dataset.toolId);
       if(result.unlocked){location.href=link.dataset.toolPath;return}
+      if(result.error){renderAccessMessage({title:"Não foi possível verificar o acesso",body:"Não conseguimos confirmar o estado do seu plano agora. Tente novamente.",actionLabel:"Tentar novamente",actionUrl:location.href});return}
       renderAccessMessage({
         title:"Ferramenta exclusiva do Pro",
         body:"O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso.",
