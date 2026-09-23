@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerador de Hash | Nexauren</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="hash-page">
+<main>
+<section class="hero"><span>02 · CRYPTO TOOLS</span><h1>Gerador de Hash</h1><p>Crie resumos criptográficos localmente no navegador.</p></section>
+<section class="panel">
+<label>Texto</label>
+<textarea id="input" placeholder="Digite o conteúdo"></textarea>
+<label>Algoritmo</label>
+<select id="algorithm"><option value="SHA-256">SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="SHA-1">SHA-1 (legado)</option></select>
+<div class="actions"><button id="generate">Gerar Hash</button><button id="copy">Copiar</button><button id="clear">Limpar</button></div>
+<pre id="output">Nenhum hash gerado.</pre>
+</section>
+</main>
+<script type="module" src="script.js"></script>
+</body>
+</html>
