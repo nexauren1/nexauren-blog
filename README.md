@@ -30,11 +30,20 @@ IMAGEKIT_PUBLIC_KEY
 IMAGEKIT_PRIVATE_KEY
 IMAGEKIT_URL_ENDPOINT
 TRANSLATION_AI_MODEL
+PAYPAL_WEBHOOK_ID
 ```
 
 The first successful login using `ADMIN_EMAIL` + `ADMIN_PASSWORD` creates the first `owner` account in D1. Change that password later in Admin → Settings → Security.
 
 Never commit ImageKit private keys, admin credentials, or other secrets to GitHub or frontend code. Cloudflare Workers AI is accessed through the `AI` binding in `wrangler.json`.
+
+## PayPal webhooks
+
+Configure the PayPal webhook URL as:
+
+`https://nexaurenstory.com/api/paypal/webhook`
+
+The Worker verifies PayPal webhook signatures before updating subscription state. Store the PayPal webhook ID in the private Worker secret `PAYPAL_WEBHOOK_ID`.
 
 ## Deploy
 
