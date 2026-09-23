@@ -59,7 +59,7 @@ async function getPlanState(options={}){
     window.dispatchEvent(new CustomEvent("nexauren:tool-plan-updated",{detail:state}));
     return state;
   }catch{
-    return {authenticated:true,pro:false,status:"UNKNOWN",plan:"free"};
+    return {authenticated:true,pro:null,status:"UNKNOWN",plan:"free"};
   }
 }
 async function verifyToolAccess(toolId){
