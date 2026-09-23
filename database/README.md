@@ -1,35 +1,84 @@
-# Nexauren D1 schema
+# Nexauren D1 — instalação manual
 
-O Worker usa **dois bancos D1**:
+O Worker usa **dois bancos D1 independentes**:
 
-1. **Primary D1 (`DB`)** — conteúdo, sessão administrativa, auditoria, mídia, billing/unlocks e uso das ferramentas.
-2. **Accounts D1 (`ACCOUNTS_DB`)** — perfil/estado das contas autenticadas pelo Firebase.
+1. **Primary D1 (`DB`)** — conteúdo editorial, administração, sessões, auditoria, mídia, redirects, configurações e uso das ferramentas.
+2. **Accounts D1 (`ACCOUNTS_DB`)** — contas Firebase, preferências, assinaturas PayPal e desbloqueios de ferramentas.
 
-## Instalação nova
+## Instalação
 
-### 1. Primary D1
+### Primary D1
 
-Execute `database/primary-complete.sql` no banco ligado ao binding `DB`.
+No D1 ligado ao binding `DB`, execute **todo** o conteúdo de:
 
-### 2. Accounts D1
+`database/primary-complete.sql`
 
-Execute `database/accounts-complete.sql` no banco ligado ao binding `ACCOUNTS_DB`.
+### Accounts D1
 
-Depois valide:
+No D1 ligado ao binding `ACCOUNTS_DB`, execute **todo** o conteúdo de:
+
+`database/accounts-complete.sql`
+
+**Não misture os dois SQLs.** O SQL do Primary não deve ser executado no Accounts D1 e vice-versa.
+
+## Verificação manual
+
+Depois de executar cada SQL:
 
 ```sql
 PRAGMA foreign_keys;
 SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;
 ```
 
-## Migração de uma instalação existente
+No Primary D1, confirme especialmente:
 
-Os arquivos antigos `accounts-upgrade.sql`, `editorial-upgrade.sql`, `paypal-subscriptions.sql` e `tool-unlocks.sql` continuam no repositório para histórico/compatibilidade. Para uma instalação já em produção, **não execute `primary-complete.sql` cegamente** sobre dados existentes: compare o schema atual primeiro e aplique uma migração controlada para colunas ausentes.
+```sql
+SELECT name FROM sqlite_master
+WHERE type='table'
+AND name IN (
+  'users',
+  'sessions',
+  'audit_logs',
+  'categories',
+  'media',
+  'posts',
+  'post_translations',
+  'tags',
+  'post_tags',
+  'revisions',
+  'redirects',
+  'navigation',
+  'settings',
+  'tool_usage'
+ )
+ORDER BY name;
+```
 
-Em especial, `editorial-upgrade.sql` contém alterações de taxonomia e remoção de categorias legadas; faça backup/export antes de executá-lo.
+No Accounts D1:
 
-## Requisitos do Worker
+```sql
+SELECT name FROM sqlite_master
+WHERE type='table'
+AND name IN (
+  'nexauren_accounts',
+  'nexauren_account_preferences',
+  'nexauren_billing_config',
+  'nexauren_subscriptions',
+  'nexauren_tool_unlocks'
+ )
+ORDER BY name;
+```
 
-O binding `DB` deve apontar para o Primary D1 e `ACCOUNTS_DB` para o Accounts D1. O endpoint de webhook do PayPal também requer o secret `PAYPAL_WEBHOOK_ID`.
+## PayPal
 
-O schema SQL não contém segredos, credenciais Firebase, PayPal ou ImageKit.
+O Worker recebe webhooks em:
+
+`https://nexaurenstory.com/api/paypal/webhook`
+
+O secret privado `PAYPAL_WEBHOOK_ID` também precisa estar configurado no Worker.
+
+## Importante
+
+Os ficheiros SQL desta pasta são **schemas completos para instalação manual**. Não há instruções de migração de banco nesta documentação e o Worker não deve depender de migrações automáticas.
+
+O SQL não contém segredos, credenciais Firebase, PayPal ou ImageKit.
