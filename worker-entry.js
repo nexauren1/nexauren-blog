@@ -141,10 +141,13 @@ async function ensureNexaurenAccount(env, claims, markLogin = false) {
       ? await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_accounts WHERE email=? LIMIT 1").bind(email).first()
       : null;
     if (existingByEmail) {
-      await env.ACCOUNTS_DB.prepare(
-        "UPDATE nexauren_accounts SET firebase_uid=?,display_name=?,photo_url=?,status='active',email_verified=?,last_login_at=?,last_seen_at=?,updated_at=? WHERE id=?"
-      ).bind(uid, displayName, photoUrl, claims.email_verified ? 1 : 0, markLogin ? ts : existingByEmail.last_login_at, ts, ts, existingByEmail.id).run();
-      return { id: existingByEmail.id, firebase_uid: uid, email, display_name: displayName, photo_url: photoUrl, status: "active", email_verified: !!claims.email_verified, created: false };
+      if (existingByEmail.firebase_uid !== uid) {
+        throw Object.assign(new Error("Esta conta Nexauren já está associada a outra identidade Firebase."), { code: "ACCOUNT_IDENTITY_MISMATCH" });
+      }
+      if (existingByEmail.status !== "active") {
+        throw Object.assign(new Error("A sua conta Nexauren está suspensa."), { code: "ACCOUNT_SUSPENDED" });
+      }
+      throw Object.assign(new Error("A conta Nexauren existe, mas a identidade Firebase não pôde ser associada com segurança."), { code: "ACCOUNT_LINK_REQUIRED" });
     }
     const id = crypto.randomUUID();
     await env.ACCOUNTS_DB.prepare(
@@ -196,10 +199,19 @@ function rewriteAuthResponseHeaders(headers) {
 async function firebaseAuthProxy(request) {
   const incoming = new URL(request.url);
   const upstream = new URL(incoming.pathname + incoming.search, FIREBASE_AUTH_ORIGIN);
-  const headers = new Headers(request.headers);
-  headers.delete("host");
-  headers.delete("origin");
-  headers.delete("referer");
+  const headers = new Headers();
+  for (const name of ["accept","accept-language","cache-control","content-type","user-agent"]) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  headers.delete("authorization");
+  headers.delete("cookie");
+  headers.delete("cf-connecting-ip");
+  headers.delete("cf-ipcountry");
+  headers.delete("cf-ray");
+  headers.delete("x-forwarded-for");
+  headers.delete("x-forwarded-host");
+  headers.delete("x-forwarded-proto");
 
   const init = {
     method: request.method,
