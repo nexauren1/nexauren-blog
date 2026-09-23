@@ -1,7 +1,7 @@
 PRAGMA foreign_keys = ON;
 
 -- Nexauren primary D1 database.
--- Safe for a fresh database. All statements are idempotent where SQLite permits it.
+-- Safe for a fresh database. Accounts billing/unlocks live in ACCOUNTS_DB.
 
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role_status ON users(role,status);
 
@@ -175,56 +174,16 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS nexauren_tool_usage (
-  account_id TEXT NOT NULL,
+-- Exact schema used by ensureToolUsageTable() in worker-entry.js.
+CREATE TABLE IF NOT EXISTS tool_usage (
   tool_id TEXT NOT NULL,
-  usage_date TEXT NOT NULL,
-  usage_count INTEGER NOT NULL DEFAULT 0 CHECK (usage_count >= 0),
+  bucket TEXT NOT NULL,
+  visitor_hash TEXT NOT NULL,
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  PRIMARY KEY(account_id,tool_id,usage_date)
+  PRIMARY KEY(tool_id,bucket,visitor_hash)
 );
-CREATE INDEX IF NOT EXISTS idx_tool_usage_date ON nexauren_tool_usage(usage_date);
+CREATE INDEX IF NOT EXISTS idx_tool_usage_bucket ON tool_usage(bucket,tool_id);
 
-CREATE TABLE IF NOT EXISTS nexauren_billing_config (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS nexauren_subscriptions (
-  id TEXT PRIMARY KEY,
-  account_id TEXT NOT NULL UNIQUE,
-  plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','pro')),
-  status TEXT NOT NULL DEFAULT 'FREE',
-  paypal_subscription_id TEXT UNIQUE,
-  paypal_plan_id TEXT,
-  amount TEXT NOT NULL DEFAULT '5.00',
-  currency TEXT NOT NULL DEFAULT 'USD',
-  current_period_end TEXT,
-  cancel_at_period_end INTEGER NOT NULL DEFAULT 0 CHECK (cancel_at_period_end IN (0,1)),
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_nexauren_subscriptions_paypal ON nexauren_subscriptions(paypal_subscription_id);
-CREATE INDEX IF NOT EXISTS idx_nexauren_subscriptions_plan_status ON nexauren_subscriptions(plan,status);
-
-CREATE TABLE IF NOT EXISTS nexauren_tool_unlocks (
-  id TEXT PRIMARY KEY,
-  account_id TEXT NOT NULL,
-  tool_id TEXT NOT NULL,
-  paypal_order_id TEXT UNIQUE NOT NULL,
-  status TEXT NOT NULL DEFAULT 'COMPLETED',
-  amount TEXT NOT NULL DEFAULT '0.50',
-  currency TEXT NOT NULL DEFAULT 'USD',
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  UNIQUE(account_id,tool_id)
-);
-CREATE INDEX IF NOT EXISTS idx_nexauren_tool_unlock_paypal ON nexauren_tool_unlocks(paypal_order_id);
-CREATE INDEX IF NOT EXISTS idx_nexauren_tool_unlock_account ON nexauren_tool_unlocks(account_id,tool_id);
-
--- Baseline configuration.
 INSERT OR IGNORE INTO settings(key,value,updated_at) VALUES
 ('default_language','pt',strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 ('site_name','Nexauren',strftime('%Y-%m-%dT%H:%M:%fZ','now'));
