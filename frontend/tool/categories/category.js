@@ -7,7 +7,12 @@
     return {version:raw?.version||1,site:raw?.site||"Nexauren Story",basePath:raw?.basePath||"/tool/",categories,tools};
   }
   async function loadRegistry(){
-    if(!registryPromise) registryPromise=fetch(DATA_URL,{cache:"no-store"}).then(async r=>{if(!r.ok)throw new Error("API indisponível");return r.json()}).catch(()=>fetch(FALLBACK_DATA_URL,{cache:"no-store"})).then(normalize);
+    if(!registryPromise) registryPromise=fetch(DATA_URL,{cache:"no-store"}).then(async r=>{
+      if(!r.ok)throw new Error("API indisponível");
+      const registry=normalize(await r.json());
+      if(!registry.categories.length||!registry.tools.some(t=>t.status==="active"))throw new Error("Catálogo incompleto");
+      return registry;
+    }).catch(()=>fetch(FALLBACK_DATA_URL,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("Catálogo indisponível");return r.json()})).then(normalize);
     return registryPromise;
   }
   function getCategory(registry,slug){return registry.categories.find(c=>c.id===slug||c.slug===slug)||null}
