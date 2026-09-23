@@ -275,9 +275,6 @@ async function dbCheck(env){
       if(!existing.has(table)){missingTables.push(table);continue;}
       let info=await env.DB.prepare("PRAGMA table_info("+table+")").all();
       let have=new Set((info.results||[]).map(x=>x.name));
-      if(table==="posts"&&!have.has("social_image")){
-        try{await env.DB.prepare("ALTER TABLE posts ADD COLUMN social_image TEXT DEFAULT ''").run();info=await env.DB.prepare("PRAGMA table_info(posts)").all();have=new Set((info.results||[]).map(x=>x.name));}catch{}
-      }
       for(const col of cols)if(!have.has(col))missingColumns.push(table+"."+col);
     }
     return {ready:missingTables.length===0&&missingColumns.length===0,missingTables,missingColumns};
@@ -431,13 +428,29 @@ async function updatePost(env,a,id,d,ctx){
   let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:old.status;const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():old.published_at;
   if(status==="published"&&!published)published=nowIso();if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);
   if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
-  const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);const coverMediaId=d.cover_media_id||null;let socialImage=DEFAULT_SOCIAL_IMAGE;if(coverMediaId){const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();socialImage=text(cm?.url,2000).trim()||DEFAULT_SOCIAL_IMAGE;}
+  const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);if(old.slug!==slug){await env.DB.prepare("INSERT INTO redirects (id,source,destination,status_code,created_at) VALUES (?,?,?,?,?) ON CONFLICT(source) DO UPDATE SET destination=excluded.destination,status_code=excluded.status_code").bind(crypto.randomUUID(),"/blog/post/"+encodeURIComponent(old.slug),"/blog/post/"+encodeURIComponent(slug),301,ts).run();}
+  const coverMediaId=d.cover_media_id||null;let socialImage=DEFAULT_SOCIAL_IMAGE;if(coverMediaId){const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();socialImage=text(cm?.url,2000).trim()||DEFAULT_SOCIAL_IMAGE;}
   if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))await env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId).run();
   await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,social_image=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
     .bind(title,slug,excerpt,content,type,status,d.category_id||null,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id).run();
   await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));const max=await env.DB.prepare("SELECT COALESCE(MAX(revision_number),0) n FROM revisions WHERE post_id=?").bind(id).first();
   await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,Number(max?.n||0)+1,ts).run();
   await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
+}
+async function verifyImageKitFile(env,fileId,url){
+  if(!env.IMAGEKIT_PRIVATE_KEY||!env.IMAGEKIT_URL_ENDPOINT)return false;
+  let endpoint;
+  let target;
+  try{endpoint=new URL(env.IMAGEKIT_URL_ENDPOINT);target=new URL(url);}catch{return false;}
+  if(endpoint.protocol!=="https:"||target.protocol!=="https:"||target.origin!==endpoint.origin)return false;
+  const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");
+  const response=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(fileId),{
+    method:"GET",headers:{Authorization:authHeader,Accept:"application/json"}
+  });
+  if(!response.ok)return false;
+  const remote=await response.json().catch(()=>null);
+  if(!remote?.fileId)return false;
+  try{return new URL(String(remote.url||"")).origin===target.origin&&String(remote.fileId)===String(fileId);}catch{return false;}
 }
 async function uploadAuth(env,request){
   const g=await guard(env,request);if(g.error)return g.error;if(!env.IMAGEKIT_PRIVATE_KEY||!env.IMAGEKIT_PUBLIC_KEY)return fail("ImageKit não está configurado no Worker.",503,"IMAGEKIT_NOT_CONFIGURED");
@@ -910,7 +923,7 @@ async function api(env,request,url,ctx){
     catch(error){return fail(error?.message||"Não foi possível confirmar o pagamento.",500,error?.code||"PAYMENT_CAPTURE_ERROR");}
   }
 
-  if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{provider:"firebase",ready:true}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
+  if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:ready},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(p==="/api/account/me"&&m==="GET"){
     try{
       const a=await firebaseAccountAuth(env,request,false);
@@ -1055,7 +1068,7 @@ async function api(env,request,url,ctx){
   if(p==="/api/auth/password"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;const d=await bodyJson(request),cur=String(d?.current_password||""),next=String(d?.new_password||"");if(next.length<12)return fail("A nova senha precisa ter pelo menos 12 caracteres.",422);const u=await env.DB.prepare("SELECT password_hash FROM users WHERE id=?").bind(g.auth.id).first();if(!u||!(await verifyPassword(cur,u.password_hash)))return fail("Senha atual inválida.",401);await env.DB.prepare("UPDATE users SET password_hash=?,updated_at=? WHERE id=?").bind(await hashPassword(next),nowIso(),g.auth.id).run();await env.DB.prepare("DELETE FROM sessions WHERE user_id=? AND id<>?").bind(g.auth.id,g.auth.session_id).run();await audit(env,g.auth.id,"auth.password_changed","user",g.auth.id,{});return json({ok:true});}
   if(p==="/api/media/auth"&&m==="GET")return uploadAuth(env,request);
   if(p==="/api/media"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const r=await env.DB.prepare("SELECT * FROM media ORDER BY created_at DESC LIMIT 100").all();return json({ok:true,media:r.results});}
-  if(p==="/api/media"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
+  if(p==="/api/media"&&m==="POST"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");if(!await verifyImageKitFile(env,text(d.fileId,255).trim(),text(d.url,2000).trim()))return fail("O arquivo ImageKit não pôde ser validado.",422,"IMAGEKIT_FILE_INVALID");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
   const mm=p.match(/^\/api\/media\/([^/]+)$/);if(mm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=mm[1],row=await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first();if(!row)return fail("Mídia não encontrada.",404);if(env.IMAGEKIT_PRIVATE_KEY&&row.imagekit_file_id){const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");const ir=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(row.imagekit_file_id),{method:"DELETE",headers:{Authorization:authHeader,Accept:"application/json"}});if(!ir.ok&&ir.status!==404)return fail("O arquivo não pôde ser removido do ImageKit.",502,"IMAGEKIT_DELETE_FAILED");}await env.DB.prepare("UPDATE posts SET cover_media_id=NULL,social_image=? WHERE cover_media_id=?").bind(DEFAULT_SOCIAL_IMAGE,id).run();await env.DB.prepare("DELETE FROM media WHERE id=?").bind(id).run();await audit(env,g.auth.id,"media.deleted","media",id,{filename:row.filename});return json({ok:true});}
 
   if(p==="/api/tool-registry"&&m==="GET"){
@@ -1174,7 +1187,7 @@ async function page(env,request,url){
         }
       }catch{}
     }
-    return env.ASSETS.fetch(new Request(new URL("/index.html",request.url)));
+    return fail("Página não encontrada.",404,"NOT_FOUND");
   }
   const asset=await env.ASSETS.fetch(new Request(new URL("/blog/index.html",request.url)));
   if(!asset.ok)return asset;
@@ -1192,7 +1205,13 @@ async function page(env,request,url){
   if(path.match(/^\/post\/[^/]+$/)){
     if(!(await dbReady(env)))return asset;
     const slug=decodeURIComponent(path.slice(6));
-    const p=await env.DB.prepare("SELECT p.title,p.slug,p.excerpt,p.content,p.meta_title,p.meta_description,CASE WHEN NULLIF(m.url,'') IS NOT NULL THEN m.url ELSE 'https://nexaurenstory.com/social-preview.png?v=20260922-1' END social_image,p.published_at,p.updated_at,p.type,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
+    const requestedSource="/blog/post/"+encodeURIComponent(slug);
+    const redirect=await env.DB.prepare("SELECT destination,status_code FROM redirects WHERE source=? LIMIT 1").bind(requestedSource).first();
+    if(redirect?.destination){
+      const status=Number(redirect.status_code);
+      return Response.redirect(new URL(redirect.destination,request.url),[301,302,307,308].includes(status)?status:301);
+    }
+    const p=await env.DB.prepare("SELECT p.title,p.slug,p.excerpt,p.content,p.meta_title,p.meta_description,CASE WHEN NULLIF(m.url,'') IS NOT NULL THEN m.url ELSE 'https://nexaurenstory.com/social-preview.png?v=20260922-1' END social_image,p.published_at,p.updated_at,p.type,c.name category_name,c.slug category_slug,m.url cover_url,m.width ,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
     if(!p)return asset;
     const localizedTitle=lang==="en"?(p.translation_title||p.title):p.title;
     const localizedMetaTitle=lang==="en"?(p.translation_meta_title||""):(p.meta_title||"");
