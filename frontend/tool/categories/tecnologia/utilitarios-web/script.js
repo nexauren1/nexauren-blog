@@ -1,0 +1,1 @@
+document.querySelectorAll(".card").forEach(card=>card.addEventListener("pointerdown",()=>card.classList.add("active")));
