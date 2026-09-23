@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T16:47:49.155929Z",
+  "generatedAt": "2026-09-23T16:48:17.359852Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -14,7 +14,9 @@
     "/tool/categories/tecnologia/",
     "/tool/categories/tecnologia/analisador-de-url/",
     "/tool/categories/tecnologia/base64-encoder-decoder/",
+    "/tool/categories/tecnologia/conversor-de-cores/",
     "/tool/categories/tecnologia/conversor-de-timestamp/",
+    "/tool/categories/tecnologia/diff-checker/",
     "/tool/categories/tecnologia/encoder-decoder-url/",
     "/tool/categories/tecnologia/formatador-css-minifier/",
     "/tool/categories/tecnologia/formatador-html/",
