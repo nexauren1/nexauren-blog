@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gerador de API Key Pro · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="pro-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header>
+<div class="eyebrow"><span>NEXAUREN PRO</span><b>SECURITY / API</b></div>
+<div class="hero">
+<div><h1>Gerador de API Key</h1><p>Gere chaves aleatórias fortes para projetos e ambientes de desenvolvimento, com formato e comprimento configuráveis.</p></div>
+<div class="seal">PRO<br><small>VERIFIED</small></div>
+</div>
+</header>
+
+<section id="gate" class="gate">
+<div class="gate-icon">🔒</div>
+<div><strong id="gateTitle">A verificar acesso Pro…</strong><p id="gateText">A ferramenta consulta a sua sessão e o estado do plano antes de liberar qualquer geração.</p></div>
+</section>
+
+<section id="workspace" class="workspace" hidden>
+<div class="settings">
+<label>COMPRIMENTO<select id="length"><option value="32">32</option><option value="40">40</option><option value="64">64</option><option value="96">96</option><option value="128">128</option></select></label>
+<label>FORMATO<select id="format"><option value="url">URL-safe</option><option value="hex">Hexadecimal</option><option value="base64">Base64</option></select></label>
+<label class="prefix">PREFIXO<input id="prefix" value="nx_" maxlength="16" spellcheck="false"></label>
+<label class="qty">QUANTIDADE<input id="quantity" type="number" value="1" min="1" max="20" inputmode="numeric"></label>
+<button id="generate" class="primary">Gerar chave</button>
+</div>
+<div class="notice">As chaves são geradas localmente com <code>crypto.getRandomValues()</code>. Elas não são enviadas para o servidor.</div>
+<div class="output">
+<div class="output-head"><span>02 · CHAVES GERADAS</span><span id="status">AGUARDANDO</span></div>
+<div id="keys" class="keys"><div class="empty">Nenhuma chave gerada.</div></div>
+</div>
+<p id="message" class="message">Acesso confirmado pelo sistema Pro.</p>
+</section>
+
+<footer>NEXAUREN TOOLS · Pro Security Lab · API Key</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged,getPlanState,verifyToolAccess,upgradeUrl} from "/tool/frontend/tool-access.js?v=20260923";
+const TOOL_ID="gerador-de-api-key";
+const gate=document.querySelector("#gate"),workspace=document.querySelector("#workspace"),title=document.querySelector("#gateTitle"),text=document.querySelector("#gateText");
+async function verify(){
+ gate.hidden=false;workspace.hidden=true;title.textContent="A verificar acesso Pro…";text.textContent="A confirmar autenticação, plano e autorização desta ferramenta.";
+ const user=auth.currentUser;
+ if(!user){title.textContent="Entre para usar esta ferramenta.";text.textContent="Esta é uma ferramenta Pro e exige uma conta autenticada.";return}
+ const [plan,unlock]=await Promise.all([getPlanState({force:true}),verifyToolAccess(TOOL_ID)]);
+ if(plan.pro===true&&plan.plan.toLowerCase()==="pro"&&plan.status.toUpperCase()==="ACTIVE"&&unlock.unlocked===true&&!unlock.error){
+  gate.hidden=true;workspace.hidden=false;return
+ }
+ if(plan.authenticated&&plan.pro===false){title.textContent="Ferramenta exclusiva Pro";text.textContent="O seu plano atual não tem acesso a esta ferramenta. Faça upgrade para desbloquear.";const b=document.createElement("a");b.href=upgradeUrl();b.className="upgrade";b.textContent="Ver plano Pro";gate.querySelector("div:last-child").appendChild(b);return}
+ title.textContent="Acesso Pro não confirmado";text.textContent="O sistema não confirmou um plano Pro ativo para esta ferramenta. A geração permanece bloqueada.";
+}
+let first=true;
+onAuthStateChanged(auth,async user=>{if(first||user){first=false;await verify()}else{await verify()}});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
