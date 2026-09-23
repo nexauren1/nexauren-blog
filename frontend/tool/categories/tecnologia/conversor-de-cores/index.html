@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Conversor de Cores · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="color-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header>
+<div class="eyebrow">NEXAUREN / COLOR LAB</div>
+<h1>Conversor de Cores</h1>
+<p>Converta uma cor entre HEX, RGB, HSL, HSV e CMYK e veja a amostra em tempo real.</p>
+</header>
+
+<section class="lab">
+<div class="picker-row">
+<div class="input-card"><label for="color">COR DE ENTRADA</label><div class="input-row"><input id="color" value="#7C5CFC" placeholder="#7C5CFC"><button id="convert">Converter</button></div><div class="samples"><button data-color="#7C5CFC">Violeta</button><button data-color="#22C55E">Verde</button><button data-color="#F97316">Laranja</button><button data-color="#0EA5E9">Azul</button></div></div>
+<div id="swatch" class="swatch" aria-label="Amostra da cor"></div>
+</div>
+
+<div id="result" class="formats">
+<div class="format-card" data-key="hex"><span>HEX</span><strong id="hex">—</strong><button data-copy="hex">Copiar</button></div>
+<div class="format-card" data-key="rgb"><span>RGB</span><strong id="rgb">—</strong><button data-copy="rgb">Copiar</button></div>
+<div class="format-card" data-key="hsl"><span>HSL</span><strong id="hsl">—</strong><button data-copy="hsl">Copiar</button></div>
+<div class="format-card" data-key="hsv"><span>HSV</span><strong id="hsv">—</strong><button data-copy="hsv">Copiar</button></div>
+<div class="format-card" data-key="cmyk"><span>CMYK</span><strong id="cmyk">—</strong><button data-copy="cmyk">Copiar</button></div>
+</div>
+
+<div class="contrast">
+<div><span>Contraste sobre branco</span><strong id="onWhite">—</strong></div>
+<div><span>Contraste sobre preto</span><strong id="onBlack">—</strong></div>
+</div>
+<p id="message" class="message">Introduza uma cor CSS válida.</p>
+</section>
+<p id="access" class="access" hidden></p>
+<footer>NEXAUREN TOOLS · Color Lab · Processamento local</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const app=document.querySelector(".lab"),msg=document.querySelector("#access");
+onAuthStateChanged(auth,user=>{
+ const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
+ app.querySelectorAll("button,input").forEach(el=>el.disabled=locked);
+});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
