@@ -15,9 +15,9 @@ Binding: `DB`
 
 Database: `nexauren-blog`
 
-The complete SQL is in `schema.sql`.
+The complete D1 schemas are in `database/primary-complete.sql` and `database/accounts-complete.sql`.
 
-**This project does not run D1 migrations automatically.** Create the tables manually in the D1 dashboard/console by running `schema.sql` once.
+**D1 setup is manual.** Execute the complete SQL files directly in the corresponding D1 database. Do not use migration scripts.
 
 ## Secrets
 
@@ -137,7 +137,7 @@ O portal público começa por pedir ao visitante o idioma, Português ou Inglês
 
 As publicações possuem armazenamento bilingue em D1. Com a binding `AI` do Cloudflare Workers AI, o Worker pode gerar automaticamente a versão em inglês e preencher metadados SEO em PT/EN quando uma publicação é criada ou atualizada. `TRANSLATION_AI_MODEL` pode alterar o modelo usado.
 
-Antes de usar a nova versão, execute `database/editorial-upgrade.sql` no D1 existente. Esse SQL também substitui a taxonomia antiga pelas novas categorias e preserva a classificação básica das publicações.
+Para uma instalação nova, execute o SQL completo indicado em `database/`. A instalação é manual no D1.
 
 ## Publicidade
 
@@ -147,4 +147,4 @@ As verificações automáticas estão em `.github/workflows/validate-post-ads.ym
 
 ## Nexauren Accounts D1
 
-The public Nexauren account system is isolated from the blog database. The blog uses the `DB` binding; public Firebase-backed accounts use the separate `ACCOUNTS_DB` binding. The separate Cloudflare D1 database for Nexauren accounts is configured through `ACCOUNTS_DB` in `wrangler.json` (database ID `2f22bdb8-8e34-4036-bbd7-10053cfbca24`), and apply `database/accounts-upgrade.sql` to that database. Never apply the account migration to the blog D1.
+The public Nexauren account system is isolated from the blog database. The blog uses the `DB` binding; public Firebase-backed accounts use the separate `ACCOUNTS_DB` binding. The separate Cloudflare D1 database for Nexauren accounts is configured through `ACCOUNTS_DB` in `wrangler.json` (database ID `2f22bdb8-8e34-4036-bbd7-10053cfbca24`), and execute `database/accounts-complete.sql` manually in that database. Never execute the Accounts SQL in the blog D1.
