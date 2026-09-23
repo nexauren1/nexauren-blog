@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T16:48:17.359852Z",
+  "generatedAt": "2026-09-23T16:53:21.642371Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -27,6 +27,7 @@
     "/tool/categories/tecnologia/gerador-de-hash/",
     "/tool/categories/tecnologia/gerador-de-lorem-ipsum/",
     "/tool/categories/tecnologia/gerador-de-meta-tags/",
+    "/tool/categories/tecnologia/gerador-de-paleta-de-cores/",
     "/tool/categories/tecnologia/gerador-de-qr-code/",
     "/tool/categories/tecnologia/gerador-de-robots-txt/",
     "/tool/categories/tecnologia/gerador-de-sitemap/",
