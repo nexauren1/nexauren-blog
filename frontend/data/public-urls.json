@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T16:27:38.016930Z",
+  "generatedAt": "2026-09-23T16:29:28.926953Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -12,6 +12,7 @@
     "/tool/categories/produtividade/contador-de-palavras/",
     "/tool/categories/produtividade/gerador-de-orcamentos/",
     "/tool/categories/tecnologia/",
+    "/tool/categories/tecnologia/analisador-de-url/",
     "/tool/categories/tecnologia/base64-encoder-decoder/",
     "/tool/categories/tecnologia/formatador-json/",
     "/tool/categories/tecnologia/formatador-xml/",
