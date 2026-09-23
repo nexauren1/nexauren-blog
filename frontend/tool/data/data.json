@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T16:19:44.748Z",
+    "updatedAt": "2026-09-23T16:27:38.979Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -404,6 +404,55 @@
       "popular": false,
       "access": "public",
       "sortOrder": 140
+    },
+    {
+      "id": "gerador-de-sitemap",
+      "name": "Gerador de Sitemap",
+      "description": "Gere sitemap.xml a partir de uma lista de URLs com frequência, prioridade e última atualização.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "⌘",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-sitemap/",
+      "tags": [
+        "sitemap",
+        "XML",
+        "SEO",
+        "URLs",
+        "web",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 150
+    },
+    {
+      "id": "gerador-de-robots-txt",
+      "name": "Gerador de Robots.txt",
+      "description": "Crie regras Allow e Disallow por user-agent e gere um robots.txt pronto para publicar.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "⚑",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-robots-txt/",
+      "tags": [
+        "robots.txt",
+        "crawler",
+        "bot",
+        "SEO",
+        "Allow",
+        "Disallow",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 160
     }
   ]
 }
