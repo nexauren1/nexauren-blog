@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T15:29:36.843Z",
+    "updatedAt": "2026-09-23T15:47:30.302Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -334,6 +334,29 @@
       "popular": false,
       "access": "public",
       "sortOrder": 110
+    },
+    {
+      "id": "json-csv",
+      "name": "JSON ↔ CSV",
+      "description": "Converta dados entre JSON e CSV nos dois sentidos, com suporte a cabeçalhos, delimitadores e JSON formatado.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "⇄",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/json-csv/",
+      "tags": [
+        "JSON",
+        "CSV",
+        "conversor",
+        "dados",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 120
     }
   ]
 }
