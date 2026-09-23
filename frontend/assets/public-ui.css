@@ -1007,3 +1007,14 @@ body.nx-page:after{opacity:.34!important;background-size:52px 52px!important}
 @media(prefers-reduced-motion:reduce){
  .error-page .error-orbit,.error-page .error-orbit i,.error-page .error-orbit b{animation:none}
 }
+
+
+/* Print-safe contract: tool documents must remain white and readable in PDF/print. */
+@media print{
+  body.nx-page{background:#fff!important;color:#111!important}
+  body.nx-page:before,body.nx-page:after,.nx-page .nx-cursor-glow,.nx-page .nx-top,.nx-page .nx-scroll-progress,
+  .nx-page .nx-navigation-loader,.nx-page .site-header,.nx-page .tool-header,.nx-page .account-header,.nx-page .legal-header,
+  .nx-page .site-footer,.nx-page .tool-footer,.nx-page .account-footer,.nx-page .legal-footer,.nx-page .page-footer{display:none!important}
+  .nx-page .quote-wrap,.nx-page .quote-app,.nx-page .tool{color:#111!important;background:#fff!important;border-color:#ddd!important;box-shadow:none!important}
+  .nx-page .quote-app input,.nx-page .quote-app textarea,.nx-page .tool textarea{color:#111!important;background:#fff!important}
+}
