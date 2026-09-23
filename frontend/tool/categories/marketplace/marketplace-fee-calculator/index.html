@@ -4,36 +4,120 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07111f">
-<meta name="description" content="Marketplace Fee Calculator: calcule taxas, custos, lucro e margem de uma venda online de forma rápida e precisa.">
-<title>Marketplace Fee Calculator — Calculadora de Taxas de Marketplace</title>
+<meta name="description" content="Marketplace Fee Calculator: calcule taxas, lucro por unidade, preço mínimo, margem, ponto de equilíbrio, descontos, impostos e cenários de venda.">
+<title>Marketplace Fee Calculator — Calculadora de Taxas, Lucro e Margem</title>
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/">
-<meta property="og:site_name" content="Nexauren Story"><meta property="og:title" content="Marketplace Fee Calculator — Calculadora de Taxas de Marketplace"><meta property="og:description" content="Calcule taxas de marketplace, custos, lucro e margem numa venda online."><meta property="og:type" content="website"><meta property="og:url" content="https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/"><meta property="og:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:type" content="image/png"><meta property="og:image:alt" content="Marketplace Fee Calculator — Nexauren Story">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Marketplace Fee Calculator"><meta name="twitter:description" content="Calcule taxas, custos, lucro e margem de uma venda online."><meta name="twitter:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1"><link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5"><link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5"><link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5"><link rel="manifest" href="/manifest.json">
+<meta property="og:site_name" content="Nexauren Story">
+<meta property="og:title" content="Marketplace Fee Calculator — Calculadora de Taxas, Lucro e Margem">
+<meta property="og:description" content="Calcule taxas, lucro por unidade, preço mínimo, margem, ponto de equilíbrio, descontos, impostos e cenários de venda.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/">
+<meta property="og:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:alt" content="Marketplace Fee Calculator — Nexauren Story">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Marketplace Fee Calculator">
+<meta name="twitter:description" content="Calcule taxas, custos, lucro, preço mínimo e margem de uma venda online.">
+<meta name="twitter:image" content="https://nexaurenstory.com/social-preview.png?v=20260922-1">
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5">
+<link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-5">
+<link rel="apple-touch-icon" href="/nexauren-story-apple-touch-icon.png?v=20260922-5">
+<link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="./style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Marketplace Fee Calculator","url":"https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/","applicationCategory":"BusinessApplication","operatingSystem":"Any","description":"Calculadora online de taxas, custos, lucro e margem para vendas em marketplaces.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Marketplace Fee Calculator","url":"https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/","applicationCategory":"BusinessApplication","operatingSystem":"Any","description":"Calculadora de taxas, lucro, margem, preço mínimo, ponto de equilíbrio, descontos e cenários para vendas em marketplaces.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
 </head>
-<body><main class="mfc-shell">
+<body>
+<main class="mfc-shell">
 <nav class="mfc-topbar"><a class="mfc-back" href="/tool/">← Ferramentas</a><div class="mfc-brand"><span class="mfc-brand-dot"></span><span>NEXAUREN TOOLS</span><span class="mfc-slash">/</span><span>MARKETPLACE</span></div></nav>
-<header class="mfc-hero"><div class="mfc-hero-copy"><span class="mfc-kicker">MARKETPLACE · PROFIT ENGINE</span><h1>Marketplace Fee Calculator</h1><p>Calcule taxas, custos, lucro líquido e margem de uma venda online em segundos.</p></div><div class="mfc-hero-status"><span class="mfc-pulse"></span>PROCESSAMENTO LOCAL</div></header>
-<section class="mfc-grid"><form class="mfc-panel mfc-inputs" id="calculator" autocomplete="off">
-<div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">01 · ENTRADA</span><h2>Dados da venda</h2></div><button type="button" class="mfc-reset" id="reset" title="Restaurar valores">↺ Restaurar</button></div>
-<div class="mfc-fields">
-<label class="mfc-field mfc-field-wide mfc-quantity-field"><span>Quantidade de produtos</span><div class="mfc-control mfc-quantity"><span class="mfc-quantity-icon">×</span><input id="quantity" inputmode="numeric" type="number" min="1" step="1" value="1"><span class="mfc-quantity-unit">unidades</span></div></label>
-<label class="mfc-field mfc-field-wide"><span>Preço de venda por produto</span><div class="mfc-control mfc-money"><span class="mfc-prefix" id="currencyPrefix">€</span><input id="salePrice" inputmode="decimal" type="number" min="0" step="0.01" value="100"></div></label>
-<label class="mfc-field"><span>Custo do produto por unidade</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="productCost" inputmode="decimal" type="number" min="0" step="0.01" value="40"></div></label>
-<label class="mfc-field"><span>Envio por unidade</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="shippingCost" inputmode="decimal" type="number" min="0" step="0.01" value="6"></div></label>
-<label class="mfc-field"><span>Taxa do marketplace</span><div class="mfc-control mfc-percent"><input id="marketplaceFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="15"><span>%</span></div></label>
-<label class="mfc-field"><span>Taxa de pagamento</span><div class="mfc-control mfc-percent"><input id="paymentFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="3"><span>%</span></div></label>
-<label class="mfc-field"><span>Publicidade / anúncios</span><div class="mfc-control mfc-percent"><input id="adsFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="0"><span>%</span></div></label>
-<label class="mfc-field"><span>Outros custos por unidade</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="otherCosts" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
-<label class="mfc-field"><span>Moeda</span><div class="mfc-control"><select id="currency" aria-label="Moeda"><option value="EUR">EUR · €</option><option value="USD">USD · $</option><option value="GBP">GBP · £</option><option value="MZN">MZN · MT</option><option value="BRL">BRL · R$</option><option value="ZAR">ZAR · R</option></select></div></label>
-</div><div class="mfc-tip"><span class="mfc-tip-icon">i</span><p>Os valores monetários de produto, envio e outros custos são considerados por unidade. A quantidade multiplica automaticamente a receita e esses custos.</p></div>
+
+<header class="mfc-hero">
+  <div class="mfc-hero-copy"><span class="mfc-kicker">MARKETPLACE · PROFIT ENGINE</span><h1>Marketplace Fee Calculator</h1><p>Calcule taxas, custos, lucro líquido, preço mínimo, metas e cenários de uma venda online em segundos.</p></div>
+  <div class="mfc-hero-status"><span class="mfc-pulse"></span>PROCESSAMENTO LOCAL</div>
+</header>
+
+<section class="mfc-grid">
+<form class="mfc-panel mfc-inputs" id="calculator" autocomplete="off">
+  <div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">01 · ENTRADA</span><h2>Dados da venda</h2></div><button type="button" class="mfc-reset" id="reset" title="Restaurar valores">↺ Restaurar</button></div>
+  <div class="mfc-fields">
+    <label class="mfc-field mfc-field-wide"><span>Quantidade de produtos</span><div class="mfc-control mfc-quantity"><span class="mfc-quantity-icon">×</span><input id="quantity" inputmode="numeric" type="number" min="1" step="1" value="1"><span class="mfc-quantity-unit">unidades</span></div></label>
+    <label class="mfc-field mfc-field-wide"><span>Preço de venda por produto</span><div class="mfc-control mfc-money"><span class="mfc-prefix" id="currencyPrefix">€</span><input id="salePrice" inputmode="decimal" type="number" min="0" step="0.01" value="100"></div></label>
+    <label class="mfc-field"><span>Custo do produto por unidade</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="productCost" inputmode="decimal" type="number" min="0" step="0.01" value="40"></div></label>
+    <label class="mfc-field"><span>Envio por unidade</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="shippingCost" inputmode="decimal" type="number" min="0" step="0.01" value="6"></div></label>
+    <label class="mfc-field"><span>Taxa do marketplace</span><div class="mfc-control mfc-percent"><input id="marketplaceFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="15"><span>%</span></div></label>
+    <label class="mfc-field"><span>Taxa de pagamento</span><div class="mfc-control mfc-percent"><input id="paymentFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="3"><span>%</span></div></label>
+    <label class="mfc-field"><span>Publicidade / anúncios</span><div class="mfc-control mfc-percent"><input id="adsFee" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="0"><span>%</span></div></label>
+    <label class="mfc-field"><span>Comissão fixa por venda</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="fixedFee" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
+    <label class="mfc-field"><span>Outros custos por unidade</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="otherCosts" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
+    <label class="mfc-field"><span>Desconto concedido</span><div class="mfc-control mfc-percent"><input id="discount" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="0"><span>%</span></div></label>
+    <label class="mfc-field"><span>Imposto / IVA</span><div class="mfc-control mfc-percent"><input id="taxRate" inputmode="decimal" type="number" min="0" max="100" step="0.01" value="0"><span>%</span></div></label>
+    <label class="mfc-field"><span>Tratamento do imposto</span><div class="mfc-control"><select id="taxMode" aria-label="Tratamento do imposto"><option value="included">Incluído no preço</option><option value="added">Acrescentado ao preço</option></select></div></label>
+    <label class="mfc-field mfc-field-wide"><span>Custos fixos da operação</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="fixedCosts" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
+    <label class="mfc-field"><span>Margem desejada</span><div class="mfc-control mfc-percent"><input id="targetMargin" inputmode="decimal" type="number" min="0" max="99.99" step="0.01" value="20"><span>%</span></div></label>
+    <label class="mfc-field"><span>Lucro total desejado</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="targetProfit" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
+  </div>
+  <div class="mfc-tip"><span class="mfc-tip-icon">i</span><p>Desconto reduz o preço antes das taxas. O imposto pode ser tratado como incluído no preço ou acrescentado ao preço. As regras reais das plataformas variam, por isso usa os campos como simulação.</p></div>
 </form>
-<section class="mfc-panel mfc-results" aria-live="polite"><div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">02 · RESULTADO</span><h2>Economia da venda</h2></div><span class="mfc-live">LIVE</span></div>
-<div class="mfc-profit-card"><div><span class="mfc-profit-label">LUCRO LÍQUIDO ESTIMADO</span><strong id="netProfit">€ 38,00</strong></div><div class="mfc-margin-box"><span>MARGEM</span><strong id="margin">38,00%</strong></div></div>
-<div class="mfc-breakdown" id="breakdown"></div>
-<div class="mfc-metrics"><div class="mfc-metric"><span>PRODUTOS</span><strong id="quantityResult">1 unidade</strong></div><div class="mfc-metric"><span>RECEITA</span><strong id="revenue">€ 100,00</strong></div><div class="mfc-metric"><span>TOTAL DE CUSTOS</span><strong id="totalCosts">€ 62,00</strong></div><div class="mfc-metric"><span>TAXAS TOTAIS</span><strong id="totalFees">€ 18,00</strong></div><div class="mfc-metric"><span>RETORNO SOBRE CUSTO</span><strong id="roi">61,29%</strong></div><div class="mfc-metric"><span>PREÇO / UNIDADE</span><strong id="unitPrice">€ 100,00</strong></div></div>
-<div class="mfc-equation"><span>RECEITA TOTAL</span><b>−</b><span>CUSTOS</span><b>−</b><span>TAXAS</span><b>=</b><strong>LUCRO</strong></div></section></section>
-<section class="mfc-info-grid"><article><span class="mfc-info-number">A</span><div><h3>O que a ferramenta calcula?</h3><p>Estima quanto sobra da venda depois do custo do produto, envio, taxas percentuais e outros custos definidos por ti.</p></div></article><article><span class="mfc-info-number">B</span><div><h3>Como usar?</h3><p>Define a quantidade e os valores por unidade. A ferramenta calcula automaticamente o resultado total do pedido.</p></div></article><article><span class="mfc-info-number">C</span><div><h3>O cálculo é local?</h3><p>Sim. Os valores são processados no navegador e não precisam de ser enviados para um servidor.</p></div></article></section>
-<footer class="mfc-footer"><span>NEXAUREN TOOLS · MARKETPLACE FEE CALCULATOR</span><a href="/tool/">Voltar ao catálogo</a></footer></main><script src="./script.js"></script></body></html>
+
+<section class="mfc-panel mfc-results" aria-live="polite">
+  <div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">02 · RESULTADO</span><h2>Economia da venda</h2></div><span class="mfc-live">LIVE</span></div>
+  <div class="mfc-profit-card"><div><span class="mfc-profit-label">LUCRO LÍQUIDO ESTIMADO</span><strong id="netProfit">€ 38,00</strong></div><div class="mfc-margin-box"><span>MARGEM</span><strong id="margin">38,00%</strong></div></div>
+  <div class="mfc-unit-grid">
+    <div class="mfc-unit-card"><span>LUCRO / UNIDADE</span><strong id="unitProfit">€ 38,00</strong></div>
+    <div class="mfc-unit-card"><span>CUSTO / UNIDADE</span><strong id="unitTotalCost">€ 62,00</strong></div>
+    <div class="mfc-unit-card"><span>RECEITA LÍQUIDA / UN.</span><strong id="unitRevenue">€ 100,00</strong></div>
+  </div>
+  <div class="mfc-breakdown" id="breakdown"></div>
+  <div class="mfc-metrics">
+    <div class="mfc-metric"><span>PRODUTOS</span><strong id="quantityResult">1 unidade</strong></div>
+    <div class="mfc-metric"><span>RECEITA LÍQUIDA</span><strong id="revenue">€ 100,00</strong></div>
+    <div class="mfc-metric"><span>TOTAL DE CUSTOS</span><strong id="totalCosts">€ 62,00</strong></div>
+    <div class="mfc-metric"><span>TAXAS + COMISSÕES</span><strong id="totalFees">€ 18,00</strong></div>
+    <div class="mfc-metric"><span>IMPOSTO / IVA</span><strong id="taxTotal">€ 0,00</strong></div>
+    <div class="mfc-metric"><span>DESCONTO</span><strong id="discountTotal">€ 0,00</strong></div>
+    <div class="mfc-metric"><span>RETORNO SOBRE CUSTO</span><strong id="roi">61,29%</strong></div>
+    <div class="mfc-metric"><span>PREÇO LISTADO / UN.</span><strong id="unitPrice">€ 100,00</strong></div>
+  </div>
+  <div class="mfc-equation"><span>PREÇO</span><b>−</b><span>DESCONTO</span><b>−</b><span>CUSTOS</span><b>−</b><span>TAXAS</span><b>=</b><strong>LUCRO</strong></div>
+</section>
+</section>
+
+<section class="mfc-tools-grid">
+  <article class="mfc-tool-panel">
+    <div class="mfc-tool-head"><span>03 · PREÇO INTELIGENTE</span><b>RECOMENDAÇÕES</b></div>
+    <div class="mfc-recommend-grid">
+      <div class="mfc-recommend"><span>PREÇO MÍNIMO · SEM PREJUÍZO</span><strong id="minimumPrice">€ 0,00</strong><small>Preço por unidade necessário para lucro zero.</small></div>
+      <div class="mfc-recommend"><span>PREÇO PARA A MARGEM DESEJADA</span><strong id="marginPrice">€ 0,00</strong><small>Baseado na margem definida acima.</small></div>
+      <div class="mfc-recommend"><span>PREÇO PARA O LUCRO DESEJADO</span><strong id="profitPrice">€ 0,00</strong><small>Distribui a meta de lucro pela quantidade.</small></div>
+      <div class="mfc-recommend"><span>COMISSÕES / TAXAS POR UNIDADE</span><strong id="unitFees">€ 0,00</strong><small>Percentuais + comissão fixa por venda.</small></div>
+    </div>
+  </article>
+
+  <article class="mfc-tool-panel">
+    <div class="mfc-tool-head"><span>04 · EQUILÍBRIO</span><b>BREAK-EVEN</b></div>
+    <div class="mfc-break-even">
+      <div><span>UNIDADES PARA RECUPERAR OS CUSTOS FIXOS</span><strong id="breakEvenUnits">0 unidades</strong></div>
+      <div><span>CONTRIBUIÇÃO POR UNIDADE</span><strong id="contributionUnit">€ 0,00</strong></div>
+    </div>
+    <p class="mfc-note">O ponto de equilíbrio usa os custos fixos informados e a contribuição atual de cada unidade.</p>
+  </article>
+</section>
+
+<section class="mfc-scenarios mfc-tool-panel">
+  <div class="mfc-tool-head"><span>05 · SIMULADOR</span><b>CENÁRIOS DE PREÇO</b></div>
+  <div class="mfc-scenario-grid" id="scenarios"></div>
+</section>
+
+<section class="mfc-info-grid">
+  <article><span class="mfc-info-number">A</span><div><h3>O que a ferramenta calcula?</h3><p>Lucro total e por unidade, margem, ROI, taxas, comissões, descontos, imposto, preço mínimo, metas de preço e ponto de equilíbrio.</p></div></article>
+  <article><span class="mfc-info-number">B</span><div><h3>Como usar?</h3><p>Define quantidade, preços, custos e taxas. Depois ajusta a margem ou o lucro desejado para receber preços de referência automaticamente.</p></div></article>
+  <article><span class="mfc-info-number">C</span><div><h3>O cálculo é local?</h3><p>Sim. Os valores são processados no navegador e não precisam de ser enviados para um servidor.</p></div></article>
+</section>
+
+<footer class="mfc-footer"><span>NEXAUREN TOOLS · MARKETPLACE FEE CALCULATOR</span><a href="/tool/">Voltar ao catálogo</a></footer>
+</main>
+<script src="./script.js"></script>
+</body>
+</html>
