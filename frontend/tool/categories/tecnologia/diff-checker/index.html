@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Diff Checker · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="diff-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header>
+<div class="eyebrow">NEXAUREN / DIFFERENCE MATRIX</div>
+<div class="hero-row"><div><h1>Diff Checker</h1><p>Compare dois textos linha a linha e encontre rapidamente adições, remoções e trechos iguais.</p></div><div class="matrix" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+</header>
+
+<section class="compare">
+<div class="buttons"><button id="compareBtn" class="primary">Comparar</button><button id="swap">Trocar lados</button><button id="sample">Exemplo</button><button id="clear">Limpar</button><button id="copy" class="copy">Copiar resultado</button></div>
+<div class="inputs">
+<section class="side left"><div class="side-head"><span>VERSÃO A</span><span id="aCount">0 linhas</span></div><textarea id="a" spellcheck="false" placeholder="Cole a primeira versão..."></textarea></section>
+<section class="side right"><div class="side-head"><span>VERSÃO B</span><span id="bCount">0 linhas</span></div><textarea id="b" spellcheck="false" placeholder="Cole a segunda versão..."></textarea></section>
+</div>
+<div class="summary"><div><strong id="added">0</strong><span>adicionadas</span></div><div><strong id="removed">0</strong><span>removidas</span></div><div><strong id="same">0</strong><span>iguais</span></div><div><strong id="changes">0</strong><span>alterações</span></div></div>
+<section class="result">
+<div class="result-head"><span>03 · RESULTADO</span><span id="resultStatus">Aguardando</span></div>
+<div id="diff" class="diff"><div class="empty">Compare dois textos para ver as diferenças.</div></div>
+</section>
+<p id="message" class="message">O resultado é processado localmente.</p>
+</section>
+<p id="access" class="access" hidden></p>
+<footer>NEXAUREN TOOLS · Difference Matrix · Processamento local</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const app=document.querySelector(".compare"),msg=document.querySelector("#access");
+onAuthStateChanged(auth,user=>{
+ const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
+ app.querySelectorAll("button,textarea").forEach(el=>el.disabled=locked);
+});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
