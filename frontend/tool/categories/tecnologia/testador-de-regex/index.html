@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Testador de Regex · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<main class="regex-app">
+<a class="back-link" href="/tool/">← Ferramentas</a>
+<header class="hero"><div class="eyebrow">NEXAUREN / REGEX LAB</div><div class="hero-line"><div><h1>Testador de Regex</h1><p>Teste padrões, encontre correspondências, veja grupos e simule substituições.</p></div><span class="chip">LOCAL · PRIVADO</span></div></header>
+<section class="lab">
+<div class="pattern-card"><div class="label-row"><label for="pattern">Expressão regular</label><span id="validity">Aguardando</span></div><div class="pattern-row"><span class="slash">/</span><input id="pattern" spellcheck="false" autocomplete="off" placeholder="\b[A-Z][a-z]+\b"><span class="slash">/</span><input id="flags" class="flags" spellcheck="false" maxlength="8" value="g" aria-label="Flags"><button id="test" class="run">Testar</button></div><div class="flags-help"><button data-flag="g">g global</button><button data-flag="i">i ignorar maiúsculas</button><button data-flag="m">m multilinha</button><button data-flag="s">s dotAll</button><button data-flag="u">u Unicode</button></div></div>
+<div class="grid">
+<section class="editor-card"><div class="card-head"><span>01 · TEXTO DE TESTE</span><span id="text-count">0 caracteres</span></div><textarea id="test-text" spellcheck="false" placeholder="Digite ou cole o texto que deseja analisar…">Olá Nexauren. Tecnologia e produtividade para criar ferramentas melhores.</textarea><div class="quick-row"><button id="sample">Exemplo</button><button id="escape">Escapar regex</button><button id="clear">Limpar</button></div></section>
+<section class="results-card"><div class="card-head"><span>02 · CORRESPONDÊNCIAS</span><span id="match-count">0 encontradas</span></div><div id="results" class="results empty">Execute um teste para ver os resultados.</div></section>
+</div>
+<section class="replace-card"><div class="card-head"><span>03 · SUBSTITUIÇÃO</span><span>Pré-visualização</span></div><div class="replace-grid"><input id="replacement" placeholder="Texto de substituição, ex.: $1"><div id="preview" class="preview">A pré-visualização aparecerá aqui.</div><button id="copy-preview">Copiar resultado</button></div></section>
+</section>
+<p id="access-message" class="access-message" hidden></p><footer>NEXAUREN TOOLS · Regex Lab · Execução local no navegador</footer>
+</main>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const pattern=document.querySelector("#pattern"),text=document.querySelector("#test-text"),access=document.querySelector("#access-message");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);access.hidden=!locked;access.textContent=locked?"Entre para usar esta ferramenta.":"";[pattern,text].forEach(el=>el.disabled=locked)});</script>
+<script src="./script.js"></script>
+</body></html>
