@@ -2,10 +2,7 @@
   "version": 3,
   "site": "Nexauren Story",
   "basePath": "/tool/",
-  "registry": {
-    "updatedAt": "2026-09-23T10:33:00.000Z",
-    "source": "data/data.json"
-  },
+  "registry": {"updatedAt":"2026-09-23T10:45:00.000Z","source":"data/data.json"},
   "categories": [
     {"id":"produtividade","name":"Produtividade","description":"Organização, cálculo e tarefas do dia a dia.","icon":"◷","sortOrder":10,"path":"/tool/categories/produtividade/"},
     {"id":"texto","name":"Texto","description":"Ferramentas para escrever, transformar e trabalhar com texto.","icon":"Aa","sortOrder":20,"path":"/tool/categories/texto/"},
@@ -16,6 +13,7 @@
     {"id":"contador-de-palavras","name":"Contador de Palavras","description":"Conte palavras, caracteres, linhas e tempo de leitura instantaneamente.","category":"produtividade","icon":"Aa","version":"1.0.0","status":"active","path":"/tool/categories/produtividade/contador-de-palavras/","tags":["texto","contagem","produtividade"],"featured":true,"popular":true,"access":"public","sortOrder":10},
     {"id":"gerador-de-orcamentos","name":"Gerador de Orçamentos Pro","description":"Crie orçamentos profissionais com itens, impostos, desconto, validade e impressão pronta para PDF.","category":"produtividade","icon":"▣","version":"1.0.0","status":"active","path":"/tool/categories/produtividade/gerador-de-orcamentos/","tags":["orçamento","negócios","PDF","profissional"],"featured":true,"popular":false,"access":"premium","sortOrder":5},
     {"id":"gerador-de-qr-code","name":"Gerador de QR Code","description":"Crie QR Codes para URLs, texto, redes Wi-Fi e contactos diretamente no navegador.","category":"tecnologia","group":"qr-codigos","icon":"⌁","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/gerador-de-qr-code/","tags":["QR Code","QR","URL","Wi-Fi","contacto","tecnologia"],"featured":true,"popular":true,"access":"public","sortOrder":10},
-    {"id":"leitor-de-qr-code","name":"Leitor de QR Code","description":"Leia QR Codes com a câmara do telemóvel ou a partir de uma imagem, diretamente no navegador.","category":"tecnologia","group":"qr-codigos","icon":"⌗","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/leitor-de-qr-code/","tags":["QR Code","QR","scanner","câmara","imagem","tecnologia"],"featured":false,"popular":true,"access":"public","sortOrder":20}
+    {"id":"leitor-de-qr-code","name":"Leitor de QR Code","description":"Leia QR Codes com a câmara do telemóvel ou a partir de uma imagem, diretamente no navegador.","category":"tecnologia","group":"qr-codigos","icon":"⌗","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/leitor-de-qr-code/","tags":["QR Code","QR","scanner","câmara","imagem","tecnologia"],"featured":false,"popular":true,"access":"public","sortOrder":20},
+    {"id":"gerador-de-codigo-de-barras","name":"Gerador de Código de Barras","description":"Gere códigos EAN-13, EAN-8, UPC-A, Code 128 e Code 39 com validação e saída para impressão.","category":"tecnologia","group":"qr-codigos","icon":"▥","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/gerador-de-codigo-de-barras/","tags":["barcode","EAN-13","EAN-8","UPC","Code 128","Code 39","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":30}
   ]
 }
