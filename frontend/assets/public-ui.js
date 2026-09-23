@@ -59,11 +59,16 @@
   }
 
   function initMenus(){
-    const pairs=[
+    const rawPairs=[
       ...$$(config.selectors.menuButton).map(button=>({button,panel:button.closest("header")?.querySelector(config.selectors.menuPanel)})),
       ...$$(".menu-toggle").map(button=>({button,panel:button.closest("header")?.querySelector(".mobile-menu,.mobile-nav,.tool-mobile")})),
       ...$$(".tool-menu").map(button=>({button,panel:button.closest("header")?.querySelector(".tool-mobile")}))
-    ].filter(({button,panel})=>button&&panel&&button.dataset.nxMenuBound!=="1");
+    ];
+    const seen=new Set();
+    const pairs=rawPairs.filter(({button,panel})=>{
+      if(!button||!panel||seen.has(button)||button.dataset.nxMenuBound==="1")return false;
+      seen.add(button);return true;
+    });
     if(!pairs.length)return;
 
     pairs.forEach(({button,panel})=>{
@@ -89,26 +94,32 @@
         panel.style.opacity=open?"1":"";
         panel.style.pointerEvents=open?"auto":"";
         document.body.classList.toggle("nx-menu-open",open);
-        document.documentElement.style.overflow=open?"hidden":"";
+        /* Never lock the document or html scroll when the mobile menu opens. */
+        document.documentElement.style.removeProperty("overflow");
+        document.body.style.removeProperty("overflow");
       };
 
-      button.addEventListener("click",event=>{
+      const toggle=event=>{
         event.preventDefault();
         event.stopPropagation();
         sync(!panel.classList.contains("open"));
-      });
+      };
+      button.addEventListener("click",toggle);
+      button.addEventListener("pointerup",event=>{
+        if(event.pointerType==="touch")event.preventDefault();
+      },{passive:false});
 
       panel.addEventListener("click",event=>{
         const link=event.target instanceof Element?event.target.closest("a"):null;
         if(link)sync(false);
       });
 
-      document.addEventListener("click",event=>{
+      document.addEventListener("pointerdown",event=>{
         if(!panel.classList.contains("open"))return;
         const target=event.target;
         if(button.contains(target)||panel.contains(target))return;
         sync(false);
-      });
+      },{passive:true});
 
       window.addEventListener("resize",()=>{
         if(panel.classList.contains("open"))placePanel();
@@ -131,7 +142,8 @@
           panel.closest("header")?.querySelector(".menu-toggle,.tool-menu,[data-nx-menu]")?.setAttribute("aria-expanded","false");
         });
         document.body.classList.remove("nx-menu-open");
-        document.documentElement.style.overflow="";
+        document.documentElement.style.removeProperty("overflow");
+        document.body.style.removeProperty("overflow");
       });
     }
   }
