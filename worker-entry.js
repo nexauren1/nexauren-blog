@@ -826,9 +826,9 @@ async function toolUnlockExists(env,accountId,toolId){
 async function toolUnlockCreateOrder(env,account,toolId){
   const order=await paypalRequest(env,"/v2/checkout/orders",{
     method:"POST",headers:{"PayPal-Request-Id":"nexauren-tool-"+toolId+"-"+crypto.randomUUID()},
-    body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:toolId,custom_id:account.id,description:"Nexauren — acesso à ferramenta "+toolId,amount:{currency_code:"USD",value:"0.50"}}],application_context:{brand_name:"Nexauren Story",user_action:"PAY_NOW",return_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=success",cancel_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=cancel"}})
+    body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:toolId,custom_id:account.id,description:"Nexauren - acesso à ferramenta "+toolId,amount:{currency_code:"USD",value:"0.50"}}],payment_source:{paypal:{experience_context:{brand_name:"Nexauren Story",user_action:"PAY_NOW",return_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=success",cancel_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=cancel"}}}})
   });
-  const approve=Array.isArray(order?.links)?order.links.find(x=>x.rel==="approve")?.href:null;
+  const approve=Array.isArray(order?.links)?(order.links.find(x=>x.rel==="payer-action")?.href||order.links.find(x=>x.rel==="approve")?.href):null;
   if(!order?.id||!approve)throw new Error("O PayPal não devolveu o link de pagamento.");
   return {id:order.id,approve_url:approve};
 }
