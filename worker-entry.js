@@ -363,51 +363,26 @@ async function autoTranslatePost(env,postId){
     }
   }catch(e){console.error("autoTranslatePost",e);}
 }
-async function saveTranslations(env,postId,translations){
+function postRelationStatements(env,postId,tags,translations,includeTagReset=true){
+  const statements=[];
+  if(includeTagReset)statements.push(env.DB.prepare("DELETE FROM post_tags WHERE post_id=?").bind(postId));
+  for(const item of (Array.isArray(tags)?tags:[]).slice(0,12)){
+    const name=text(item,60).trim(),slug=slugify(name);
+    if(!name||!slug)continue;
+    statements.push(env.DB.prepare("INSERT INTO tags (id,name,slug,created_at) VALUES (?,?,?,?) ON CONFLICT(slug) DO UPDATE SET name=excluded.name").bind(crypto.randomUUID(),name,slug,nowIso()));
+    statements.push(env.DB.prepare("INSERT OR IGNORE INTO post_tags (post_id,tag_id) SELECT ?,id FROM tags WHERE slug=? LIMIT 1").bind(postId,slug));
+  }
   for(const lang of ["pt","en"]){
-    const t=translations?.[lang];if(!t)continue;
+    const t=translations?.[lang];
+    if(!t)continue;
     const title=text(t.title,180).trim(),content=text(t.content,2000000),excerpt=text(t.excerpt,500).trim();
     if(!title&&!content&&!excerpt)continue;
-    const row=await env.DB.prepare("SELECT id FROM post_translations WHERE post_id=? AND language=?").bind(postId,lang).first();
-    const id=row?.id||crypto.randomUUID(),ts=nowIso();
-    await env.DB.prepare(`INSERT INTO post_translations (id,post_id,language,title,excerpt,content,meta_title,meta_description,created_at,updated_at)
+    const ts=nowIso();
+    statements.push(env.DB.prepare(`INSERT INTO post_translations (id,post_id,language,title,excerpt,content,meta_title,meta_description,created_at,updated_at)
       VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(post_id,language) DO UPDATE SET title=excluded.title,excerpt=excluded.excerpt,content=excluded.content,meta_title=excluded.meta_title,meta_description=excluded.meta_description,updated_at=excluded.updated_at`)
-      .bind(id,postId,lang,title||"",excerpt,content,text(t.meta_title,180).trim(),text(t.meta_description,300).trim(),ts,ts).run();
+      .bind(crypto.randomUUID(),postId,lang,title||"",excerpt,content,text(t.meta_title,180).trim(),text(t.meta_description,300).trim(),ts,ts));
   }
-}
-async function getPost(env,id){
-  const p=await env.DB.prepare(`SELECT p.*,c.name category_name,c.slug category_slug,m.url cover_url,m.alt_text cover_alt,m.caption cover_caption,u.display_name author_name
-    FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id
-    WHERE p.id=? LIMIT 1`).bind(id).first();
-  if(!p)return null;const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(id).all();
-  const trs=await env.DB.prepare("SELECT language,title,excerpt,content,meta_title,meta_description FROM post_translations WHERE post_id=?").bind(id).all();
-  return {...p,social_image:p.cover_url||DEFAULT_SOCIAL_IMAGE,tags:tags.results,translations:Object.fromEntries((trs.results||[]).map(x=>[x.language,x]))};
-}
-async function saveTags(env,postId,tags){
-  await env.DB.prepare("DELETE FROM post_tags WHERE post_id=?").bind(postId).run();
-  for(const item of (Array.isArray(tags)?tags:[]).slice(0,12)){
-    const name=text(item,60).trim(),slug=slugify(name);if(!name||!slug)continue;
-    const old=await env.DB.prepare("SELECT id FROM tags WHERE slug=?").bind(slug).first(),id=old?.id||crypto.randomUUID();
-    if(!old)await env.DB.prepare("INSERT INTO tags (id,name,slug,created_at) VALUES (?,?,?,?)").bind(id,name,slug,nowIso()).run();
-    await env.DB.prepare("INSERT OR IGNORE INTO post_tags (post_id,tag_id) VALUES (?,?)").bind(postId,id).run();
-  }
-}
-async function postsAdmin(env,url){
-  const w=["1=1"],b=[],status=url.searchParams.get("status"),type=url.searchParams.get("type"),q=url.searchParams.get("search");
-  if(status){w.push("p.status=?");b.push(status)}if(type){w.push("p.type=?");b.push(type)}if(q){w.push("(p.title LIKE ? OR p.slug LIKE ? OR p.excerpt LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
-  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,m.url cover_url
-    FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
-    WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.max(1,Math.min(Number(url.searchParams.get("limit")||100),100)),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
-  return json({ok:true,posts:(r.results||[]).map(x=>({...x,social_image:x.cover_url||DEFAULT_SOCIAL_IMAGE}))});
-}
-async function publicPosts(env,url){
-  const w=["p.status='published'","p.published_at IS NOT NULL"],b=[],type=url.searchParams.get("type"),cat=url.searchParams.get("category"),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
-  if(type){w.push("p.type=?");b.push(type)}if(cat){w.push("c.slug=?");b.push(cat)}
-  const r=await env.DB.prepare(`SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,COALESCE(NULLIF(t.content,''),p.content) content,p.type,CASE WHEN NULLIF(m.url,'') IS NOT NULL THEN m.url ELSE 'https://nexaurenstory.com/social-preview.png?v=20260922-1' END social_image,p.published_at,p.featured,c.name category_name,c.slug category_slug,m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,CASE WHEN t.id IS NULL THEN 0 ELSE 1 END translation_available
-    FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id
-    WHERE ${w.join(" AND ")} ORDER BY p.featured DESC,p.published_at DESC LIMIT ? OFFSET ?`)
-    .bind(lang,...b,Math.max(1,Math.min(Number(url.searchParams.get("limit")||24),60)),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
-  return json({ok:true,language:lang,posts:r.results});
+  return statements;
 }
 async function createPost(env,a,d,ctx){
   const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);
@@ -415,12 +390,20 @@ async function createPost(env,a,d,ctx){
   const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():null;
   if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);if(status==="published"&&!published)published=nowIso();
   if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
-  const id=crypto.randomUUID(),ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);const coverMediaId=d.cover_media_id||null;let socialImage=DEFAULT_SOCIAL_IMAGE;if(coverMediaId){const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();socialImage=text(cm?.url,2000).trim()||DEFAULT_SOCIAL_IMAGE;}
-  if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))await env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId).run();
-  await env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,social_image,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,a.id,title,slug,excerpt,content,"markdown",type,status,d.category_id||null,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,ts).run();
-  await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts).run();
-  await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
+  const id=crypto.randomUUID(),ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000),coverMediaId=d.cover_media_id||null;
+  let socialImage=DEFAULT_SOCIAL_IMAGE;
+  if(coverMediaId){
+    const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();
+    if(!cm)return fail("A mídia de capa não existe.",422,"MEDIA_NOT_FOUND");
+    socialImage=text(cm.url,2000).trim()||DEFAULT_SOCIAL_IMAGE;
+  }
+  const statements=[env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,social_image,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,a.id,title,slug,excerpt,content,"markdown",type,status,d.category_id||null,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,ts)];
+  if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))statements.push(env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId));
+  statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
+  statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts));
+  await env.DB.batch(statements);
+  if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
 }
 async function updatePost(env,a,id,d,ctx){
   const old=await getPost(env,id);if(!old)return fail("Artigo não encontrado.",404,"NOT_FOUND");const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);
@@ -428,30 +411,24 @@ async function updatePost(env,a,id,d,ctx){
   let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:old.status;const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():old.published_at;
   if(status==="published"&&!published)published=nowIso();if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);
   if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
-  const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000);if(old.slug!==slug){await env.DB.prepare("INSERT INTO redirects (id,source,destination,status_code,created_at) VALUES (?,?,?,?,?) ON CONFLICT(source) DO UPDATE SET destination=excluded.destination,status_code=excluded.status_code").bind(crypto.randomUUID(),"/blog/post/"+encodeURIComponent(old.slug),"/blog/post/"+encodeURIComponent(slug),301,ts).run();}
-  const coverMediaId=d.cover_media_id||null;let socialImage=DEFAULT_SOCIAL_IMAGE;if(coverMediaId){const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();socialImage=text(cm?.url,2000).trim()||DEFAULT_SOCIAL_IMAGE;}
-  if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))await env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId).run();
-  await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,social_image=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
-    .bind(title,slug,excerpt,content,type,status,d.category_id||null,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id).run();
-  await saveTags(env,id,d.tags);await saveTranslations(env,id,d.translations);if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));const max=await env.DB.prepare("SELECT COALESCE(MAX(revision_number),0) n FROM revisions WHERE post_id=?").bind(id).first();
-  await env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,Number(max?.n||0)+1,ts).run();
-  await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
+  const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000),coverMediaId=d.cover_media_id||null;
+  let socialImage=DEFAULT_SOCIAL_IMAGE;
+  if(coverMediaId){
+    const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();
+    if(!cm)return fail("A mídia de capa não existe.",422,"MEDIA_NOT_FOUND");
+    socialImage=text(cm.url,2000).trim()||DEFAULT_SOCIAL_IMAGE;
+  }
+  const statements=[];
+  if(old.slug!==slug)statements.push(env.DB.prepare("INSERT INTO redirects (id,source,destination,status_code,created_at) VALUES (?,?,?,?,?) ON CONFLICT(source) DO UPDATE SET destination=excluded.destination,status_code=excluded.status_code").bind(crypto.randomUUID(),"/blog/post/"+encodeURIComponent(old.slug),"/blog/post/"+encodeURIComponent(slug),301,ts));
+  statements.push(env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,social_image=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
+    .bind(title,slug,excerpt,content,type,status,d.category_id||null,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id));
+  if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))statements.push(env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId));
+  statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
+  statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
+  await env.DB.batch(statements);
+  if(ctx?.waitUntil)ctx.waitUntil(autoTranslatePost(env,id));await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
 }
-async function verifyImageKitFile(env,fileId,url){
-  if(!env.IMAGEKIT_PRIVATE_KEY||!env.IMAGEKIT_URL_ENDPOINT)return false;
-  let endpoint;
-  let target;
-  try{endpoint=new URL(env.IMAGEKIT_URL_ENDPOINT);target=new URL(url);}catch{return false;}
-  if(endpoint.protocol!=="https:"||target.protocol!=="https:"||target.origin!==endpoint.origin)return false;
-  const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");
-  const response=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(fileId),{
-    method:"GET",headers:{Authorization:authHeader,Accept:"application/json"}
-  });
-  if(!response.ok)return false;
-  const remote=await response.json().catch(()=>null);
-  if(!remote?.fileId)return false;
-  try{return new URL(String(remote.url||"")).origin===target.origin&&String(remote.fileId)===String(fileId);}catch{return false;}
-}
+
 async function uploadAuth(env,request){
   const g=await guard(env,request);if(g.error)return g.error;if(!env.IMAGEKIT_PRIVATE_KEY||!env.IMAGEKIT_PUBLIC_KEY)return fail("ImageKit não está configurado no Worker.",503,"IMAGEKIT_NOT_CONFIGURED");
   const expire=Math.floor(Date.now()/1000)+600,token=crypto.randomUUID(),signature=await hmacSha1(token+expire,env.IMAGEKIT_PRIVATE_KEY);
