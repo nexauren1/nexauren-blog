@@ -611,7 +611,9 @@ async function loadToolRegistry(env,request){
   // O catálogo em ficheiro é a fonte base. Um registro D1 vazio ou incompleto
   // não pode fazer a página pública aparecer como "0 ferramentas".
   if(!dbRegistry)return assetRegistry||normalizeToolRegistry({categories:[],tools:[]});
-  if(!dbRegistry.tools.length && assetRegistry?.tools?.length)return assetRegistry;
+  const dbActiveTools=dbRegistry.tools.filter(t=>t.status==="active");
+  const assetActiveTools=assetRegistry?.tools?.filter(t=>t.status==="active")||[];
+  if(!dbActiveTools.length && assetActiveTools.length)return assetRegistry;
   if(!dbRegistry.categories.length && assetRegistry?.categories?.length)return {...dbRegistry,categories:assetRegistry.categories};
   return dbRegistry;
 }
