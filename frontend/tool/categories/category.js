@@ -1,18 +1,14 @@
-(() => {
+(()=>{
   const DATA_URL="/api/tool-registry";
   const FALLBACK_DATA_URL="/tool/data/data.json";
   const CACHE_KEY="nexauren:tool-registry:v5";
   const REQUEST_TIMEOUT=5000;
-  const DEVELOPER_CATEGORY={id:"developer",name:"Developer",description:"Ferramentas para ler, testar e trabalhar com código.",icon:"</>",sortOrder:50,path:"/tool/categories/developer/"};
-  const DEVELOPER_TOOL={id:"leitor-de-codigo-web",name:"Leitor de Código Web",description:"Leia, organize e inspecione HTML, CSS e JavaScript numa única ferramenta.",category:"developer",icon:"</>",version:"1.0.0",status:"active",path:"/tool/categories/developer/leitor-de-codigo-web/",tags:["HTML","CSS","JavaScript","código","leitor","desenvolvimento"],featured:true,popular:true,access:"public",sortOrder:10};
   let registryPromise=null;
   let refreshPromise=null;
 
   function normalize(raw){
     const categories=Array.isArray(raw?.categories)?raw.categories.slice():[];
     const tools=Array.isArray(raw?.tools)?raw.tools.slice():[];
-    if(!categories.some(c=>c.id===DEVELOPER_CATEGORY.id))categories.push({...DEVELOPER_CATEGORY});
-    if(!tools.some(t=>t.id===DEVELOPER_TOOL.id))tools.push({...DEVELOPER_TOOL});
     categories.sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
     return {version:raw?.version||1,site:raw?.site||"Nexauren Story",basePath:raw?.basePath||"/tool/",registry:raw?.registry||null,categories,tools};
   }
