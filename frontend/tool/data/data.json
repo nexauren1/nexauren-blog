@@ -77,9 +77,7 @@
       ],
       "featured": true,
       "popular": false,
-      "access": "paid",
-      "price": "0.50",
-      "currency": "USD",
+      "access": "premium",
       "sortOrder": 5
     }
   ]

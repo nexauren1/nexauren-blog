@@ -832,41 +832,9 @@ async function billingSyncFromPaypal(env,row,remote){
   return await billingRow(env,row.account_id);
 }
 
-async function toolUnlockExists(env,accountId,toolId){
-  return await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_tool_unlocks WHERE account_id=? AND tool_id=? AND status='COMPLETED' LIMIT 1").bind(accountId,toolId).first();
-}
-async function paidToolForRequest(env,request,toolId){
-  const registry=await loadToolRegistry(env,request);
-  const tool=registry?.tools?.find(t=>t.id===toolId&&t.status==="active");
-  if(!tool)throw Object.assign(new Error("Ferramenta não encontrada."),{code:"TOOL_NOT_FOUND"});
-  if(tool.access!=="paid")throw Object.assign(new Error("Esta ferramenta não requer pagamento por desbloqueio."),{code:"TOOL_NOT_PAID"});
-  const value=Number(tool.price);
-  const currency=String(tool.currency||"").toUpperCase();
-  if(!Number.isFinite(value)||value<=0||value>1000||!/^USD$/.test(currency))throw Object.assign(new Error("Preço da ferramenta não está configurado corretamente."),{code:"TOOL_PRICE_INVALID"});
-  return {...tool,price:value.toFixed(2),currency};
-}
-async function toolUnlockCreateOrder(env,account,tool){
-  const order=await paypalRequest(env,"/v2/checkout/orders",{
-    method:"POST",headers:{"PayPal-Request-Id":"nexauren-tool-"+tool.id+"-"+crypto.randomUUID()},
-    body:JSON.stringify({intent:"CAPTURE",purchase_units:[{reference_id:tool.id,custom_id:account.id,description:"Nexauren - acesso à ferramenta "+tool.id,amount:{currency_code:tool.currency,value:tool.price}}],payment_source:{paypal:{experience_context:{brand_name:"Nexauren Story",shipping_preference:"NO_SHIPPING",user_action:"PAY_NOW",return_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=success",cancel_url:"https://nexaurenstory.com/tool/categories/produtividade/gerador-de-orcamentos/?paypal=cancel"}}}})
-  });
-  const approve=Array.isArray(order?.links)?(order.links.find(x=>x.rel==="payer-action")?.href||order.links.find(x=>x.rel==="approve")?.href):null;
-  if(!order?.id||!approve)throw new Error("O PayPal não devolveu o link de pagamento.");
-  return {id:order.id,approve_url:approve};
-}
-async function toolUnlockCapture(env,account,toolId,orderId,tool){
-  const existing=await toolUnlockExists(env,account.id,toolId);if(existing)return existing;
-  const order=await paypalRequest(env,"/v2/checkout/orders/"+encodeURIComponent(orderId),{method:"GET"});
-  const unit=order?.purchase_units?.[0],custom=String(unit?.custom_id||"");
-  if(custom!==account.id||String(unit?.reference_id||"")!==toolId)throw Object.assign(new Error("Este pagamento não corresponde à sua conta ou ferramenta."),{code:"PAYMENT_MISMATCH"});
-  if(order.status!=="APPROVED"&&order.status!=="COMPLETED")throw Object.assign(new Error("O pagamento ainda não está aprovado."),{code:"PAYMENT_NOT_APPROVED"});
-  let captured=order;if(order.status==="APPROVED")captured=await paypalRequest(env,"/v2/checkout/orders/"+encodeURIComponent(orderId)+"/capture",{method:"POST",headers:{"PayPal-Request-Id":"capture-"+orderId}});
-  const capture=captured?.purchase_units?.[0]?.payments?.captures?.[0];
-  if(captured.status!=="COMPLETED"||!capture||capture.status!=="COMPLETED")throw Object.assign(new Error("O pagamento não foi concluído."),{code:"PAYMENT_NOT_COMPLETED"});
-  if(String(capture?.amount?.value||"")!==tool.price||String(capture?.amount?.currency_code||"")!==tool.currency)throw Object.assign(new Error("Valor do pagamento inválido."),{code:"PAYMENT_AMOUNT_INVALID"});
-  const ts=nowIso(),id=crypto.randomUUID();
-  try{await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_tool_unlocks (id,account_id,tool_id,paypal_order_id,status,amount,currency,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,account.id,toolId,orderId,"COMPLETED",tool.price,tool.currency,ts,ts).run();}catch(e){const again=await toolUnlockExists(env,account.id,toolId);if(again)return again;throw e;}
-  return await toolUnlockExists(env,account.id,toolId);
+async function proToolAccess(env,accountId){
+  const row=await env.ACCOUNTS_DB.prepare("SELECT 1 FROM nexauren_subscriptions WHERE account_id=? AND plan='pro' AND status='ACTIVE' LIMIT 1").bind(accountId).first();
+  return !!row;
 }
 
 async function verifyPaypalWebhook(env,request,rawBody){
@@ -910,16 +878,20 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/tool/unlock"&&m==="GET"){
-    try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const toolId=text(url.searchParams.get("tool_id")||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");return json({ok:true,unlocked:!!(await toolUnlockExists(env,a.account.id,toolId))});}
-    catch(error){return fail(error?.message||"Não foi possível verificar o acesso.",500,error?.code||"TOOL_UNLOCK_ERROR");}
-  }
-  if(p==="/api/tool/unlock/create"&&m==="POST"){if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=slugify(body?.tool_id||"");if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");const tool=await paidToolForRequest(env,request,toolId);if(await toolUnlockExists(env,a.account.id,toolId))return json({ok:true,unlocked:true});const order=await toolUnlockCreateOrder(env,a.account,tool);return json({ok:true,unlocked:false,order_id:order.id,approve_url:order.approve_url});}
-    catch(error){return fail(error?.message||"Não foi possível criar o pagamento.",500,error?.code||"PAYMENT_CREATE_ERROR");}
-  }
-  if(p==="/api/tool/unlock/capture"&&m==="POST"){if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-    try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=slugify(body?.tool_id||""),orderId=text(body?.order_id||"",180);if(!toolId||!orderId)return fail("Pagamento incompleto.",400,"PAYMENT_REQUIRED");const tool=await paidToolForRequest(env,request,toolId);const row=await toolUnlockCapture(env,a.account,toolId,orderId,tool);return json({ok:true,unlocked:!!row,tool_id:toolId});}
-    catch(error){return fail(error?.message||"Não foi possível confirmar o pagamento.",500,error?.code||"PAYMENT_CAPTURE_ERROR");}
+    try{
+      const a=await firebaseAccountAuth(env,request,false);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      const toolId=text(url.searchParams.get("tool_id")||"",120);
+      if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");
+      const registry=await loadToolRegistry(env,request);
+      const tool=registry?.tools?.find(t=>t.id===toolId&&t.status==="active");
+      if(!tool)return fail("Ferramenta não encontrada.",404,"TOOL_NOT_FOUND");
+      const requiresPro=tool.access==="premium";
+      const activePro=requiresPro?await proToolAccess(env,a.account.id):true;
+      return json({ok:true,unlocked:activePro,requires_pro:requiresPro});
+    }catch(error){
+      return fail(error?.message||"Não foi possível verificar o acesso.",500,error?.code||"TOOL_ACCESS_ERROR");
+    }
   }
 
   if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:ready},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
