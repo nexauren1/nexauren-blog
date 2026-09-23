@@ -111,7 +111,8 @@ CREATE TABLE IF NOT EXISTS revisions (
   excerpt TEXT DEFAULT '',
   content TEXT NOT NULL,
   revision_number INTEGER NOT NULL,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  UNIQUE(post_id, revision_number)
 );
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
@@ -119,6 +120,15 @@ CREATE TABLE IF NOT EXISTS settings (
   type TEXT NOT NULL DEFAULT 'string',
   updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS tool_usage (
+  tool_id TEXT NOT NULL,
+  bucket TEXT NOT NULL,
+  visitor_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (tool_id,bucket,visitor_hash)
+);
+CREATE INDEX IF NOT EXISTS idx_tool_usage_bucket ON tool_usage(bucket,tool_id);
+
 CREATE TABLE IF NOT EXISTS navigation (
   id TEXT PRIMARY KEY,
   location TEXT NOT NULL DEFAULT 'header',
