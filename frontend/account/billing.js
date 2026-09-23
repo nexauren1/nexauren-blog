@@ -60,11 +60,12 @@ async function initBilling(root){
     if(paypal==="success"&&subscriptionId){
       host.innerHTML='<div class="billing-loading">A confirmar a sua assinatura PayPal…</div>';
       const confirmed=await workerFetch("/api/account/paypal/confirm",{method:"POST",body:JSON.stringify({subscription_id:subscriptionId})});
-      notice=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.status==="ACTIVE"
+      const activated=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.status==="ACTIVE";
+      notice=activated
         ?"Assinatura Pro ativada com sucesso."
         :"O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo.";
       history.replaceState({},document.title,"/account/upgrade/");
-      if(requestedReturn){try{sessionStorage.removeItem("nexauren-tool-return")}catch{};location.replace(requestedReturn);return}
+      if(activated&&requestedReturn){try{sessionStorage.removeItem("nexauren-tool-return")}catch{};location.replace(requestedReturn);return}
     }else if(paypal==="cancel"){
       notice="O processo PayPal foi cancelado. A sua conta continua no plano Free.";
       history.replaceState({},document.title,"/account/upgrade/");
