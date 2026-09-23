@@ -43,6 +43,10 @@ function billingMarkup(b,notice=""){
     </section>
   `;
 }
+function safeReturnTo(value){
+  try{const u=new URL(String(value||""),location.origin);if(u.origin!==location.origin||!u.pathname.startsWith("/tool/"))return "";return u.pathname+u.search}catch{return ""}
+}
+
 async function initBilling(root){
   const host=root.querySelector("[data-billing]");
   if(!host)return;
@@ -50,17 +54,22 @@ async function initBilling(root){
   const params=new URLSearchParams(location.search);
   const paypal=params.get("paypal");
   const subscriptionId=params.get("subscription_id");
+  const requestedReturn=safeReturnTo(params.get("return_to")||sessionStorage.getItem("nexauren-tool-return")||"");
+  if(requestedReturn){try{sessionStorage.setItem("nexauren-tool-return",requestedReturn)}catch{}}
   try{
     if(paypal==="success"&&subscriptionId){
       host.innerHTML='<div class="billing-loading">A confirmar a sua assinatura PayPal…</div>';
       const confirmed=await workerFetch("/api/account/paypal/confirm",{method:"POST",body:JSON.stringify({subscription_id:subscriptionId})});
-      notice=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.status==="ACTIVE"
+      const activated=confirmed?.paypal_status==="ACTIVE"||confirmed?.billing?.status==="ACTIVE";
+      notice=activated
         ?"Assinatura Pro ativada com sucesso."
         :"O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo.";
       history.replaceState({},document.title,"/account/upgrade/");
+      if(activated&&requestedReturn){try{sessionStorage.removeItem("nexauren-tool-return")}catch{};location.replace(requestedReturn);return}
     }else if(paypal==="cancel"){
       notice="O processo PayPal foi cancelado. A sua conta continua no plano Free.";
       history.replaceState({},document.title,"/account/upgrade/");
+      try{sessionStorage.removeItem("nexauren-tool-return")}catch{}
     }
     const result=await workerFetch("/api/account/billing");
     host.innerHTML=billingMarkup(result.billing,notice);
