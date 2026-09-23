@@ -640,9 +640,6 @@ async function loadToolRegistry(env,request){
   }
   return {...dbRegistry,tools:mergedTools,categories:mergedCategories};
 }
-async function ensureToolUsageTable(env){
-  await env.DB.prepare("CREATE TABLE IF NOT EXISTS tool_usage (tool_id TEXT NOT NULL,bucket TEXT NOT NULL,visitor_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tool_id,bucket,visitor_hash))").run();
-}
 async function toolRegistryWithUsage(env,request){
   const registry=await loadToolRegistry(env,request);
   try{
@@ -746,11 +743,6 @@ async function paypalRequest(env,path,options={}){
   if(!response.ok)throw Object.assign(new Error(data?.message||data?.details?.[0]?.description||"O PayPal recusou o pedido."),{code:"PAYPAL_API_ERROR",paypal:data,status:response.status});
   return data;
 }
-async function ensureBillingSchema(env){
-  await env.ACCOUNTS_DB.prepare(`CREATE TABLE IF NOT EXISTS nexauren_billing_config (key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at TEXT NOT NULL)`).run();
-  await env.ACCOUNTS_DB.prepare(`CREATE TABLE IF NOT EXISTS nexauren_subscriptions (id TEXT PRIMARY KEY,account_id TEXT NOT NULL UNIQUE REFERENCES nexauren_accounts(id) ON DELETE CASCADE,plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','pro')),status TEXT NOT NULL DEFAULT 'FREE',paypal_subscription_id TEXT UNIQUE,paypal_plan_id TEXT,amount TEXT NOT NULL DEFAULT '5.00',currency TEXT NOT NULL DEFAULT 'USD',current_period_end TEXT,cancel_at_period_end INTEGER NOT NULL DEFAULT 0 CHECK (cancel_at_period_end IN (0,1)),created_at TEXT NOT NULL,updated_at TEXT NOT NULL)`).run();
-  await env.ACCOUNTS_DB.prepare(`CREATE INDEX IF NOT EXISTS idx_nexauren_subscriptions_paypal ON nexauren_subscriptions(paypal_subscription_id)`).run();
-}
 async function billingConfigGet(env,key){
   const row=await env.ACCOUNTS_DB.prepare("SELECT value FROM nexauren_billing_config WHERE key=? LIMIT 1").bind(key).first();
   return row?.value||null;
@@ -840,10 +832,6 @@ async function billingSyncFromPaypal(env,row,remote){
   return await billingRow(env,row.account_id);
 }
 
-async function ensureToolUnlockSchema(env){
-  await env.ACCOUNTS_DB.prepare(`CREATE TABLE IF NOT EXISTS nexauren_tool_unlocks (id TEXT PRIMARY KEY,account_id TEXT NOT NULL REFERENCES nexauren_accounts(id) ON DELETE CASCADE,tool_id TEXT NOT NULL,paypal_order_id TEXT UNIQUE NOT NULL,status TEXT NOT NULL DEFAULT 'COMPLETED',amount TEXT NOT NULL DEFAULT '0.50',currency TEXT NOT NULL DEFAULT 'USD',created_at TEXT NOT NULL,updated_at TEXT NOT NULL)`).run();
-  await env.ACCOUNTS_DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_nexauren_tool_unlock_account_tool ON nexauren_tool_unlocks(account_id,tool_id)`).run();
-}
 async function toolUnlockExists(env,accountId,toolId){
   return await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_tool_unlocks WHERE account_id=? AND tool_id=? AND status='COMPLETED' LIMIT 1").bind(accountId,toolId).first();
 }
@@ -925,13 +913,11 @@ async function api(env,request,url,ctx){
     try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const toolId=text(url.searchParams.get("tool_id")||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");return json({ok:true,unlocked:!!(await toolUnlockExists(env,a.account.id,toolId))});}
     catch(error){return fail(error?.message||"Não foi possível verificar o acesso.",500,error?.code||"TOOL_UNLOCK_ERROR");}
   }
-  if(p==="/api/tool/unlock/create"&&m==="POST"){
-    await ensureToolUnlockSchema(env);if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  if(p==="/api/tool/unlock/create"&&m==="POST"){if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=slugify(body?.tool_id||"");if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");const tool=await paidToolForRequest(env,request,toolId);if(await toolUnlockExists(env,a.account.id,toolId))return json({ok:true,unlocked:true});const order=await toolUnlockCreateOrder(env,a.account,tool);return json({ok:true,unlocked:false,order_id:order.id,approve_url:order.approve_url});}
     catch(error){return fail(error?.message||"Não foi possível criar o pagamento.",500,error?.code||"PAYMENT_CREATE_ERROR");}
   }
-  if(p==="/api/tool/unlock/capture"&&m==="POST"){
-    await ensureToolUnlockSchema(env);if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  if(p==="/api/tool/unlock/capture"&&m==="POST"){if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const body=await request.json().catch(()=>({})),toolId=slugify(body?.tool_id||""),orderId=text(body?.order_id||"",180);if(!toolId||!orderId)return fail("Pagamento incompleto.",400,"PAYMENT_REQUIRED");const tool=await paidToolForRequest(env,request,toolId);const row=await toolUnlockCapture(env,a.account,toolId,orderId,tool);return json({ok:true,unlocked:!!row,tool_id:toolId});}
     catch(error){return fail(error?.message||"Não foi possível confirmar o pagamento.",500,error?.code||"PAYMENT_CAPTURE_ERROR");}
   }
@@ -1265,8 +1251,8 @@ export default{
   async fetch(request,env,ctx){try{const url=new URL(request.url);if(url.pathname.startsWith("/api/"))return await api(env,request,url,ctx);return await page(env,request,url);}catch(e){console.error(e);return fail("Erro interno do servidor.",500,"INTERNAL_ERROR");}},
   async scheduled(_controller,env){
     try{await publishDue(env);await cleanup(env);}catch(e){console.error("maintenance",e);}
-    try{await ensureBillingSchema(env);}catch(e){console.error("billing schema",e);}
-    try{await ensureToolUnlockSchema(env);}catch(e){console.error("tool unlock schema",e);}
-    try{await ensureToolUsageTable(env);}catch(e){console.error("tool usage schema",e);}
+    try{}catch(e){console.error("billing schema",e);}
+    try{}catch(e){console.error("tool unlock schema",e);}
+    try{}catch(e){console.error("tool usage schema",e);}
   }
 };
