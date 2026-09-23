@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T16:59:48.409942Z",
+  "generatedAt": "2026-09-23T17:00:19.571563Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -32,6 +32,7 @@
     "/tool/categories/tecnologia/gerador-de-paleta-de-cores/",
     "/tool/categories/tecnologia/gerador-de-qr-code/",
     "/tool/categories/tecnologia/gerador-de-robots-txt/",
+    "/tool/categories/tecnologia/gerador-de-secret/",
     "/tool/categories/tecnologia/gerador-de-sitemap/",
     "/tool/categories/tecnologia/gerador-de-uuid/",
     "/tool/categories/tecnologia/json-csv/",
