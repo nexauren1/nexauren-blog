@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T17:00:19.571563Z",
+  "generatedAt": "2026-09-23T17:23:58.032435Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -38,6 +38,7 @@
     "/tool/categories/tecnologia/json-csv/",
     "/tool/categories/tecnologia/jwt-decoder/",
     "/tool/categories/tecnologia/leitor-de-qr-code/",
+    "/tool/categories/tecnologia/qr-e-codigos/",
     "/tool/categories/tecnologia/testador-de-regex/",
     "/tool/categories/tecnologia/validador-json/",
     "/tool/categories/texto/",
