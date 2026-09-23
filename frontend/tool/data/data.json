@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T17:32:00.000Z",
+    "updatedAt": "2026-09-23T15:29:36.843Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -310,6 +310,30 @@
       "popular": false,
       "access": "public",
       "sortOrder": 100
+    },
+    {
+      "id": "testador-de-regex",
+      "name": "Testador de Regex",
+      "description": "Teste expressões regulares, encontre correspondências, visualize grupos e simule substituições diretamente no navegador.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "∿",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/testador-de-regex/",
+      "tags": [
+        "Regex",
+        "expressão regular",
+        "matches",
+        "grupos",
+        "substituição",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 110
     }
   ]
 }
