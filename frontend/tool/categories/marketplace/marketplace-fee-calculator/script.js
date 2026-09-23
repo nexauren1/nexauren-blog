@@ -4,23 +4,30 @@
   const symbols={EUR:"€",USD:"$",GBP:"£",MZN:"MT",BRL:"R$",ZAR:"R"};
   const formatter=new Intl.NumberFormat(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 
-  function num(el){const value=Number.parseFloat(el.value);return Number.isFinite(value)?Math.max(0,value):0}
+  function num(el){
+    const value=Number.parseFloat(el.value);
+    return Number.isFinite(value)?Math.max(0,value):0;
+  }
   function money(value){
     const code=fields.currency.value;
-    return `${symbols[code]||code} ${formatter.format(Math.max(0,value))}`;
+    const symbol=symbols[code]||code;
+    const amount=Number.isFinite(value)?value:0;
+    const sign=amount<0?"−":"";
+    return `${sign}${symbol} ${formatter.format(Math.abs(amount))}`;
   }
-  function pct(value){return `${formatter.format(value)}%`}
-
+  function pct(value){
+    const amount=Number.isFinite(value)?value:0;
+    const sign=amount<0?"−":"";
+    return `${sign}${formatter.format(Math.abs(amount))}%`;
+  }
   function updatePrefixes(){
     const symbol=symbols[fields.currency.value]||fields.currency.value;
     document.getElementById("currencyPrefix").textContent=symbol;
     document.querySelectorAll("[data-currency]").forEach(el=>el.textContent=symbol);
   }
-
   function row(label,value,cls=""){
     return `<div class="mfc-row ${cls}"><span>${label}</span><strong>${money(value)}</strong></div>`;
   }
-
   function calculate(){
     const sale=num(fields.salePrice);
     const product=num(fields.productCost);
@@ -49,26 +56,22 @@
     document.getElementById("breakdown").innerHTML=[
       row("Custo do produto",product),
       row("Custo de envio",shipping),
-      row("Taxa do marketplace",marketplaceFee),
-      row("Taxa de pagamento",paymentFee),
-      row("Publicidade / anúncios",adsFee),
+      row("Taxa do marketplace",marketplaceFee,"fee"),
+      row("Taxa de pagamento",paymentFee,"fee"),
+      row("Publicidade / anúncios",adsFee,"fee"),
       row("Outros custos",other),
       row("Total de custos",totalCosts,"total")
     ].join("");
 
-    const profitEl=document.getElementById("netProfit");
-    const marginEl=document.getElementById("margin");
-    const positive=profit>=0;
-    profitEl.style.color=positive?"#bff5ff":"#ff9daa";
-    marginEl.style.color=positive?"#64e2aa":"#ff9daa";
+    const profitCard=document.querySelector(".mfc-profit-card");
+    profitCard.classList.toggle("is-positive",profit>=0);
+    profitCard.classList.toggle("is-negative",profit<0);
   }
-
   function reset(){
     Object.entries(defaults).forEach(([key,value])=>{fields[key].value=value});
     updatePrefixes();
     calculate();
   }
-
   Object.values(fields).forEach(el=>{
     el.addEventListener("input",calculate);
     el.addEventListener("change",()=>{updatePrefixes();calculate()});
