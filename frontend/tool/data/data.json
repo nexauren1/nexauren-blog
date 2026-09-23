@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T18:22:03.678Z",
+    "updatedAt": "2026-09-23T18:26:53.464Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -758,6 +758,33 @@
       "popular": false,
       "access": "premium",
       "sortOrder": 280
+    },
+    {
+      "id": "marketplace-fee-calculator",
+      "name": "Marketplace Fee Calculator",
+      "description": "Calcule taxas de marketplace, custos, lucro líquido e margem de uma venda online.",
+      "category": "marketplace",
+      "group": "taxas-e-lucro",
+      "icon": "%✦",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/marketplace/marketplace-fee-calculator/",
+      "tags": [
+        "Marketplace Fee Calculator",
+        "marketplace fees",
+        "seller fees",
+        "profit calculator",
+        "selling price",
+        "ecommerce",
+        "vendedor",
+        "taxas",
+        "lucro",
+        "margem"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 10
     }
   ]
 }
