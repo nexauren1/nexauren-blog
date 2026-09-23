@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T16:54:27.343864Z",
+  "generatedAt": "2026-09-23T16:59:48.409942Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -24,6 +24,7 @@
     "/tool/categories/tecnologia/formatador-js-minifier/",
     "/tool/categories/tecnologia/formatador-json/",
     "/tool/categories/tecnologia/formatador-xml/",
+    "/tool/categories/tecnologia/gerador-de-api-key/",
     "/tool/categories/tecnologia/gerador-de-codigo-de-barras/",
     "/tool/categories/tecnologia/gerador-de-hash/",
     "/tool/categories/tecnologia/gerador-de-lorem-ipsum/",
