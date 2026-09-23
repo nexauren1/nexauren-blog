@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="pt">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>JSON ↔ CSV · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
+<body><main class="converter-app">
+<a class="back-link" href="/tool/">← Ferramentas</a>
+<header class="hero"><div class="eyebrow">NEXAUREN / DATA BRIDGE</div><div class="hero-row"><div><h1>JSON ↔ CSV</h1><p>Converta dados entre JSON e CSV com controlo de cabeçalhos, delimitador e formatação.</p></div><span class="chip">LOCAL · SEM UPLOAD</span></div></header>
+<section class="bridge">
+<div class="mode-switch" role="tablist" aria-label="Direção da conversão"><button id="jsonToCsv" class="mode active">JSON → CSV</button><button id="csvToJson" class="mode">CSV → JSON</button></div>
+<div class="toolbar"><label>Delimitador<select id="delimiter"><option value="auto">Automático</option><option value=",">Vírgula ,</option><option value=";">Ponto e vírgula ;</option><option value="\t">Tabulação</option></select></label><label class="check"><input id="headers" type="checkbox" checked> Primeira linha como cabeçalho</label><label class="check"><input id="pretty" type="checkbox" checked> JSON formatado</label><button id="sample" class="secondary">Inserir exemplo</button><button id="swap" class="secondary">Trocar direção</button></div>
+<div class="panels"><section class="pane input-pane"><div class="pane-head"><span id="source-label">01 · JSON DE ENTRADA</span><span id="source-count">0 caracteres</span></div><textarea id="source" spellcheck="false" placeholder="Cole um array JSON ou CSV aqui…"></textarea></section>
+<div class="arrow">⇄</div><section class="pane output-pane"><div class="pane-head"><span id="output-label">02 · CSV DE SAÍDA</span><span id="output-status">Aguardando</span></div><textarea id="output" readonly spellcheck="false" placeholder="O resultado aparecerá aqui…"></textarea></section></div>
+<div class="actions"><button id="convert" class="primary">Converter</button><button id="copy" class="secondary">Copiar resultado</button><button id="clear" class="secondary">Limpar</button></div>
+<div id="message" class="message idle">Pronto para converter.</div></section>
+<p id="access-message" class="access-message" hidden></p><footer>NEXAUREN TOOLS · Data Bridge · Processamento local no navegador</footer>
+</main>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const controls=document.querySelectorAll(".bridge button,.bridge select,.bridge input,.bridge textarea"),access=document.querySelector("#access-message");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);access.hidden=!locked;access.textContent=locked?"Entre para usar esta ferramenta.":"";controls.forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script></body></html>
