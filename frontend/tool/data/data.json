@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T17:00:27.459Z",
+    "updatedAt": "2026-09-23T17:27:05.693Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -34,32 +34,21 @@
     {
       "id": "tecnologia",
       "name": "Tecnologia",
-      "description": "Ferramentas para desenvolvimento e tarefas técnicas.",
+      "description": "Utilitários técnicos para web, dados, conversão, segurança e operações digitais.",
       "icon": "⌘",
       "sortOrder": 40,
       "path": "/tool/categories/tecnologia/"
+    },
+    {
+      "id": "developer",
+      "name": "Developer",
+      "description": "Ferramentas para ler, formatar, testar e trabalhar com código.",
+      "icon": "</>",
+      "sortOrder": 50,
+      "path": "/tool/categories/developer/"
     }
   ],
   "tools": [
-    {
-      "id": "contador-de-palavras",
-      "name": "Contador de Palavras",
-      "description": "Conte palavras, caracteres, linhas e tempo de leitura instantaneamente.",
-      "category": "produtividade",
-      "icon": "Aa",
-      "version": "1.0.0",
-      "status": "active",
-      "path": "/tool/categories/produtividade/contador-de-palavras/",
-      "tags": [
-        "texto",
-        "contagem",
-        "produtividade"
-      ],
-      "featured": true,
-      "popular": true,
-      "access": "public",
-      "sortOrder": 10
-    },
     {
       "id": "gerador-de-orcamentos",
       "name": "Gerador de Orçamentos Pro",
@@ -81,6 +70,25 @@
       "sortOrder": 5
     },
     {
+      "id": "contador-de-palavras",
+      "name": "Contador de Palavras",
+      "description": "Conte palavras, caracteres, linhas e tempo de leitura instantaneamente.",
+      "category": "produtividade",
+      "icon": "Aa",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/produtividade/contador-de-palavras/",
+      "tags": [
+        "texto",
+        "contagem",
+        "produtividade"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 10
+    },
+    {
       "id": "gerador-de-qr-code",
       "name": "Gerador de QR Code",
       "description": "Crie QR Codes para URLs, texto, redes Wi-Fi e contactos diretamente no navegador.",
@@ -88,7 +96,7 @@
       "group": "qr-codigos",
       "icon": "⌁",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-qr-code/",
       "tags": [
         "QR Code",
@@ -104,6 +112,33 @@
       "sortOrder": 10
     },
     {
+      "id": "qr-e-codigos",
+      "name": "QR & Códigos Studio",
+      "description": "Gere e leia QR Codes e trabalhe com códigos de barras numa única área.",
+      "category": "tecnologia",
+      "group": "qr-codigos",
+      "icon": "⌁",
+      "path": "/tool/categories/tecnologia/qr-e-codigos/",
+      "tags": [
+        "QR Code",
+        "barcode",
+        "scanner",
+        "EAN",
+        "UPC"
+      ],
+      "access": "public",
+      "sortOrder": 10,
+      "featured": true,
+      "popular": true,
+      "modules": [
+        "Gerador de QR Code",
+        "Leitor de QR Code",
+        "Gerador de Código de Barras"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "leitor-de-qr-code",
       "name": "Leitor de QR Code",
       "description": "Leia QR Codes com a câmara do telemóvel ou a partir de uma imagem, diretamente no navegador.",
@@ -111,7 +146,7 @@
       "group": "qr-codigos",
       "icon": "⌗",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/leitor-de-qr-code/",
       "tags": [
         "QR Code",
@@ -127,6 +162,34 @@
       "sortOrder": 20
     },
     {
+      "id": "codificacao-e-tokens",
+      "name": "Codificação & Tokens Studio",
+      "description": "UUID, hashes, Base64 e JWT reunidos numa só ferramenta.",
+      "category": "tecnologia",
+      "group": "codificacao",
+      "icon": "⇄",
+      "path": "/tool/categories/tecnologia/codificacao-e-tokens/",
+      "tags": [
+        "UUID",
+        "Hash",
+        "Base64",
+        "JWT",
+        "tokens"
+      ],
+      "access": "public",
+      "sortOrder": 20,
+      "featured": false,
+      "popular": true,
+      "modules": [
+        "UUID",
+        "Hash",
+        "Base64",
+        "JWT Decoder"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "gerador-de-codigo-de-barras",
       "name": "Gerador de Código de Barras",
       "description": "Gere códigos EAN-13, EAN-8, UPC-A, Code 128 e Code 39 com validação e saída para impressão.",
@@ -134,7 +197,7 @@
       "group": "qr-codigos",
       "icon": "▥",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-codigo-de-barras/",
       "tags": [
         "barcode",
@@ -151,6 +214,34 @@
       "sortOrder": 30
     },
     {
+      "id": "dados-estruturados",
+      "name": "Dados Estruturados Studio",
+      "description": "Formate, valide e converta JSON, XML e CSV sem espalhar funções semelhantes.",
+      "category": "tecnologia",
+      "group": "dados",
+      "icon": "{}",
+      "path": "/tool/categories/tecnologia/dados-estruturados/",
+      "tags": [
+        "JSON",
+        "XML",
+        "CSV",
+        "validação",
+        "formatador"
+      ],
+      "access": "public",
+      "sortOrder": 30,
+      "featured": false,
+      "popular": true,
+      "modules": [
+        "JSON Studio",
+        "Validador JSON",
+        "XML Studio",
+        "JSON ↔ CSV"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "gerador-de-uuid",
       "name": "Gerador de UUID",
       "description": "Gere UUID v4 seguros, em múltiplas quantidades, com cópia rápida diretamente no navegador.",
@@ -158,7 +249,7 @@
       "group": "desenvolvimento",
       "icon": "◇",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-uuid/",
       "tags": [
         "UUID",
@@ -173,6 +264,37 @@
       "sortOrder": 40
     },
     {
+      "id": "utilitarios-web",
+      "name": "Web Utilities Studio",
+      "description": "URLs, SEO e utilitários de publicação web reunidos num único ponto de entrada.",
+      "category": "tecnologia",
+      "group": "web",
+      "icon": "↗",
+      "path": "/tool/categories/tecnologia/utilitarios-web/",
+      "tags": [
+        "URL",
+        "SEO",
+        "Sitemap",
+        "Robots",
+        "Meta Tags",
+        "Timestamp"
+      ],
+      "access": "public",
+      "sortOrder": 40,
+      "featured": false,
+      "popular": false,
+      "modules": [
+        "Meta Tags",
+        "Sitemap",
+        "Robots.txt",
+        "Analisador de URL",
+        "URL Encoder / Decoder",
+        "Timestamp"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "gerador-de-hash",
       "name": "Gerador de Hash",
       "description": "Gere hashes SHA-256, SHA-384, SHA-512 e algoritmos legados localmente no navegador.",
@@ -180,7 +302,7 @@
       "group": "desenvolvimento",
       "icon": "#",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-hash/",
       "tags": [
         "hash",
@@ -196,6 +318,32 @@
       "sortOrder": 50
     },
     {
+      "id": "texto-e-regex",
+      "name": "Texto & Regex Studio",
+      "description": "Gere texto de teste e trabalhe com expressões regulares numa mesma família.",
+      "category": "tecnologia",
+      "group": "texto",
+      "icon": "∿",
+      "path": "/tool/categories/tecnologia/texto-e-regex/",
+      "tags": [
+        "Lorem Ipsum",
+        "Regex",
+        "texto",
+        "matches",
+        "substituição"
+      ],
+      "access": "public",
+      "sortOrder": 50,
+      "featured": false,
+      "popular": false,
+      "modules": [
+        "Lorem Ipsum",
+        "Regex Tester"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "base64-encoder-decoder",
       "name": "Codificador / Descodificador Base64",
       "description": "Converta texto para Base64 e descodifique Base64 para texto com suporte UTF-8.",
@@ -203,7 +351,7 @@
       "group": "desenvolvimento",
       "icon": "⇄",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/base64-encoder-decoder/",
       "tags": [
         "Base64",
@@ -219,6 +367,33 @@
       "sortOrder": 60
     },
     {
+      "id": "color-studio",
+      "name": "Color Studio",
+      "description": "Converta cores e crie paletas reutilizáveis para interfaces e projetos.",
+      "category": "tecnologia",
+      "group": "cores",
+      "icon": "◈",
+      "path": "/tool/categories/tecnologia/color-studio/",
+      "tags": [
+        "HEX",
+        "RGB",
+        "HSL",
+        "HSV",
+        "CMYK",
+        "paletas"
+      ],
+      "access": "public",
+      "sortOrder": 60,
+      "featured": false,
+      "popular": true,
+      "modules": [
+        "Conversor de Cores",
+        "Gerador de Cores / Paletas"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "jwt-decoder",
       "name": "JWT Decoder",
       "description": "Visualize Header, Payload e Signature de tokens JWT com JSON formatado e timestamps legíveis.",
@@ -226,7 +401,7 @@
       "group": "desenvolvimento",
       "icon": "🔐",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/jwt-decoder/",
       "tags": [
         "JWT",
@@ -241,6 +416,33 @@
       "sortOrder": 70
     },
     {
+      "id": "dados-e-bytes",
+      "name": "Data Scale Studio",
+      "description": "Converta unidades de armazenamento entre escalas SI e IEC.",
+      "category": "tecnologia",
+      "group": "unidades",
+      "icon": "B",
+      "path": "/tool/categories/tecnologia/dados-e-bytes/",
+      "tags": [
+        "bytes",
+        "KB",
+        "MB",
+        "GB",
+        "TB",
+        "KiB",
+        "MiB"
+      ],
+      "access": "public",
+      "sortOrder": 70,
+      "featured": false,
+      "popular": false,
+      "modules": [
+        "Conversor de Dados / Bytes"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "formatador-json",
       "name": "Formatador JSON",
       "description": "Formate, compacte e valide JSON com indentação configurável diretamente no navegador.",
@@ -248,7 +450,7 @@
       "group": "desenvolvimento",
       "icon": "{}",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/formatador-json/",
       "tags": [
         "JSON",
@@ -265,6 +467,32 @@
       "sortOrder": 80
     },
     {
+      "id": "security-generator-studio",
+      "name": "Security Generator Studio",
+      "description": "Gere API Keys e Secrets com funções Pro relacionadas à segurança e desenvolvimento.",
+      "category": "tecnologia",
+      "group": "seguranca",
+      "icon": "⌁",
+      "path": "/tool/categories/tecnologia/security-studio/",
+      "tags": [
+        "API Key",
+        "Secret",
+        "segurança",
+        "criptografia",
+        "Pro"
+      ],
+      "access": "premium",
+      "sortOrder": 80,
+      "featured": true,
+      "popular": false,
+      "modules": [
+        "API Key Generator Pro",
+        "Secret Generator Pro"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+    {
       "id": "formatador-xml",
       "name": "Formatador XML",
       "description": "Formate, compacte e valide documentos XML diretamente no navegador.",
@@ -272,7 +500,7 @@
       "group": "desenvolvimento",
       "icon": "</>",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/formatador-xml/",
       "tags": [
         "XML",
@@ -296,7 +524,7 @@
       "group": "desenvolvimento",
       "icon": "✓",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/validador-json/",
       "tags": [
         "JSON",
@@ -319,7 +547,7 @@
       "group": "desenvolvimento",
       "icon": "∿",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/testador-de-regex/",
       "tags": [
         "Regex",
@@ -343,7 +571,7 @@
       "group": "desenvolvimento",
       "icon": "⇄",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/json-csv/",
       "tags": [
         "JSON",
@@ -366,7 +594,7 @@
       "group": "desenvolvimento",
       "icon": "¶",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-lorem-ipsum/",
       "tags": [
         "Lorem Ipsum",
@@ -389,7 +617,7 @@
       "group": "desenvolvimento",
       "icon": "<>",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-meta-tags/",
       "tags": [
         "Meta Tags",
@@ -413,7 +641,7 @@
       "group": "desenvolvimento",
       "icon": "⌘",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-sitemap/",
       "tags": [
         "sitemap",
@@ -437,7 +665,7 @@
       "group": "desenvolvimento",
       "icon": "⚑",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-robots-txt/",
       "tags": [
         "robots.txt",
@@ -462,7 +690,7 @@
       "group": "desenvolvimento",
       "icon": "⌁",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/analisador-de-url/",
       "tags": [
         "URL",
@@ -486,7 +714,7 @@
       "group": "desenvolvimento",
       "icon": "↕",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/encoder-decoder-url/",
       "tags": [
         "URL",
@@ -510,7 +738,7 @@
       "group": "desenvolvimento",
       "icon": "◷",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/conversor-de-timestamp/",
       "tags": [
         "timestamp",
@@ -534,7 +762,7 @@
       "group": "desenvolvimento",
       "icon": "</>",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/formatador-html/",
       "tags": [
         "HTML",
@@ -559,7 +787,7 @@
       "group": "desenvolvimento",
       "icon": "{}",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/formatador-css-minifier/",
       "tags": [
         "CSS",
@@ -583,7 +811,7 @@
       "group": "desenvolvimento",
       "icon": "JS",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/formatador-js-minifier/",
       "tags": [
         "JavaScript",
@@ -607,7 +835,7 @@
       "group": "desenvolvimento",
       "icon": "±",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/diff-checker/",
       "tags": [
         "Diff",
@@ -631,7 +859,7 @@
       "group": "desenvolvimento",
       "icon": "◈",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/conversor-de-cores/",
       "tags": [
         "cores",
@@ -657,7 +885,7 @@
       "group": "desenvolvimento",
       "icon": "◈",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-paleta-de-cores/",
       "tags": [
         "cores",
@@ -682,7 +910,7 @@
       "group": "desenvolvimento",
       "icon": "⇄",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/conversor-de-dados-e-bytes/",
       "tags": [
         "bytes",
@@ -710,7 +938,7 @@
       "group": "seguranca",
       "icon": "⌁",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-api-key/",
       "tags": [
         "API Key",
@@ -734,7 +962,7 @@
       "group": "seguranca",
       "icon": "●",
       "version": "1.0.0",
-      "status": "active",
+      "status": "disabled",
       "path": "/tool/categories/tecnologia/gerador-de-secret/",
       "tags": [
         "secret",
@@ -750,6 +978,35 @@
       "popular": false,
       "access": "premium",
       "sortOrder": 280
+    },
+    {
+      "id": "code-studio",
+      "name": "Code Studio",
+      "description": "HTML, CSS, JavaScript e comparação de código num único espaço de trabalho Developer.",
+      "category": "developer",
+      "group": "codigo",
+      "icon": "</>",
+      "path": "/tool/categories/developer/code-studio/",
+      "tags": [
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "Diff",
+        "formatter",
+        "minifier"
+      ],
+      "access": "public",
+      "sortOrder": 10,
+      "featured": true,
+      "popular": true,
+      "modules": [
+        "HTML Studio",
+        "CSS Formatter / Minifier",
+        "JS Formatter / Minifier",
+        "Diff Checker"
+      ],
+      "version": "1.0.0",
+      "status": "active"
     }
   ]
 }
