@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T16:29:28.926953Z",
+  "generatedAt": "2026-09-23T16:36:10.516613Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -14,6 +14,7 @@
     "/tool/categories/tecnologia/",
     "/tool/categories/tecnologia/analisador-de-url/",
     "/tool/categories/tecnologia/base64-encoder-decoder/",
+    "/tool/categories/tecnologia/encoder-decoder-url/",
     "/tool/categories/tecnologia/formatador-json/",
     "/tool/categories/tecnologia/formatador-xml/",
     "/tool/categories/tecnologia/gerador-de-codigo-de-barras/",
