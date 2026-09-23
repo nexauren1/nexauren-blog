@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T09:07:54.756192Z",
+  "generatedAt": "2026-09-23T09:12:17.607743Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -12,6 +12,7 @@
     "/tool/categories/produtividade/contador-de-palavras/",
     "/tool/categories/produtividade/gerador-de-orcamentos/",
     "/tool/categories/tecnologia/",
+    "/tool/categories/tecnologia/base64-encoder-decoder/",
     "/tool/categories/tecnologia/gerador-de-codigo-de-barras/",
     "/tool/categories/tecnologia/gerador-de-hash/",
     "/tool/categories/tecnologia/gerador-de-qr-code/",
