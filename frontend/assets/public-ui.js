@@ -105,9 +105,6 @@
         sync(!panel.classList.contains("open"));
       };
       button.addEventListener("click",toggle);
-      button.addEventListener("pointerup",event=>{
-        if(event.pointerType==="touch")event.preventDefault();
-      },{passive:false});
 
       panel.addEventListener("click",event=>{
         const link=event.target instanceof Element?event.target.closest("a"):null;
