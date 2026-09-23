@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T15:47:30.302Z",
+    "updatedAt": "2026-09-23T16:19:44.748Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -357,6 +357,53 @@
       "popular": false,
       "access": "public",
       "sortOrder": 120
+    },
+    {
+      "id": "gerador-de-lorem-ipsum",
+      "name": "Gerador de Lorem Ipsum",
+      "description": "Gere texto fictício em parágrafos, frases ou palavras para protótipos, interfaces e testes de layout.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "¶",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-lorem-ipsum/",
+      "tags": [
+        "Lorem Ipsum",
+        "texto",
+        "gerador",
+        "protótipo",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 130
+    },
+    {
+      "id": "gerador-de-meta-tags",
+      "name": "Gerador de Meta Tags",
+      "description": "Crie meta tags de descrição, robots, canonical, Open Graph e Twitter Card e copie o HTML pronto.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "<>",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/gerador-de-meta-tags/",
+      "tags": [
+        "Meta Tags",
+        "SEO",
+        "Open Graph",
+        "Twitter Card",
+        "HTML",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 140
     }
   ]
 }
