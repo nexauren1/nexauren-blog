@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gerador de Cores e Paletas · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="palette-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header>
+<div class="eyebrow">NEXAUREN / PALETTE STUDIO</div>
+<div class="title-row">
+<div>
+<h1>Gerador de Cores / Paletas</h1>
+<p>Gere paletas harmoniosas a partir de uma cor-base, ajuste a família visual e copie os valores para o seu projeto.</p>
+</div>
+<div class="lens"><span></span></div>
+</div>
+</header>
+
+<section class="studio">
+<div class="controls">
+<div class="field">
+<label for="base">COR-BASE</label>
+<div class="color-input"><input id="picker" type="color" value="#7C5CFC"><input id="base" value="#7C5CFC" spellcheck="false"></div>
+</div>
+<label class="field">MODO
+<select id="mode">
+<option value="complementary">Complementar</option>
+<option value="analogous">Análoga</option>
+<option value="triadic">Triádica</option>
+<option value="split">Complementar dividida</option>
+<option value="monochrome">Monocromática</option>
+</select>
+</label>
+<label class="field">QUANTIDADE
+<select id="count"><option>5</option><option>4</option><option>6</option><option>7</option></select>
+</label>
+<button id="generate" class="primary">Gerar paleta</button>
+<button id="random">Cor aleatória</button>
+<button id="copy">Copiar CSS</button>
+</div>
+
+<div id="palette" class="palette"></div>
+<div class="code-card">
+<div class="code-head"><span>02 · TOKENS CSS</span><span id="status">PRONTO</span></div>
+<pre id="cssOutput">/* Gere uma paleta para criar tokens CSS. */</pre>
+</div>
+<p id="message" class="message">A paleta é processada localmente.</p>
+</section>
+
+<p id="access" class="access" hidden></p>
+<footer>NEXAUREN TOOLS · Palette Studio · Processamento local</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const app=document.querySelector(".studio"),msg=document.querySelector("#access");
+onAuthStateChanged(auth,user=>{
+ const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
+ app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked);
+});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
