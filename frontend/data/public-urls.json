@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T08:36:46.012113Z",
+  "generatedAt": "2026-09-23T08:40:05.822001Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -13,9 +13,9 @@
     "/tool/categories/produtividade/gerador-de-orcamentos/",
     "/tool/categories/tecnologia/",
     "/tool/categories/tecnologia/gerador-de-qr-code/",
+    "/tool/categories/tecnologia/leitor-de-qr-code/",
     "/tool/categories/texto/",
     "/tool/destaques/",
-    "/tool/populares/",
-    "/tools/technology/leitor-de-qr-code/"
+    "/tool/populares/"
   ]
 }
