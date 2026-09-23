@@ -1,42 +1,65 @@
 <!doctype html>
 <html lang="pt">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="robots" content="noindex,follow">
-  <meta name="theme-color" content="#f6f8fc">
-  <title>404 — Página não encontrada · Nexauren Story</title>
-  <meta name="description" content="A página que procura não foi encontrada no Nexauren Story.">
-  <link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
-  <link rel="stylesheet" href="/assets/blog-modern.css?v=20260922-1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#070a12">
+<title>404 — Página não encontrada · Nexauren Story</title>
+<meta name="description" content="A página que procura não foi encontrada no Nexauren Story.">
+<link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-4">
+<link rel="stylesheet" href="/assets/site.css?v=20260923-quantum">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-quantum">
 </head>
-<body class="error-page">
-  <header>
-    <div class="error-nav">
-      <a class="error-brand" href="/">
-        <span class="error-mark">N</span>
-        <span>Nexauren <b>Story</b></span>
-      </a>
-      <nav class="error-links" aria-label="Navegação">
-        <a href="/">Início</a>
-        <a href="/blog/">Blog</a>
-        <a href="/tool/">Ferramentas</a>
-        <a href="/account">Conta</a>
-      </nav>
-      <a class="error-menu" href="/blog/">Explorar</a>
+<body class="nx-page error-page">
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Nexauren Story">
+      <img class="brand-logo" src="/nexauren-story-favicon.svg?v=20260922-6" alt="" width="42" height="42">
+      <span class="brand-copy"><strong>Nexauren</strong><span>Story</span></span>
+    </a>
+    <nav class="nav-links" aria-label="Navegação principal">
+      <a href="/">Início</a>
+      <a href="/blog/">Blog</a>
+      <a href="/tool/">Ferramentas</a>
+      <a href="/account">Conta</a>
+    </nav>
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+  </div>
+  <div class="mobile-menu" data-mobile-menu>
+    <div class="wrap">
+      <a href="/">Início</a>
+      <a href="/blog/">Blog</a>
+      <a href="/tool/">Ferramentas</a>
+      <a href="/account">Conta</a>
+      <a href="/account/upgrade/">Planos</a>
     </div>
-  </header>
-  <main>
-    <section class="error-card" aria-labelledby="error-title">
-      <div class="error-code" aria-hidden="true">404</div>
-      <h1 id="error-title">Esta página saiu do mapa.</h1>
-      <p>O endereço pode estar incorreto, ter sido movido ou já não existir. Volte ao início ou continue a explorar o Nexauren Story.</p>
-      <div class="error-actions">
-        <a class="error-primary" href="/">← Voltar ao início</a>
-        <a class="error-secondary" href="/blog/">Explorar o Blog →</a>
-        <a class="error-secondary" href="/tool/">Ver Ferramentas</a>
-      </div>
-    </section>
-  </main>
+  </div>
+</header>
+<main class="wrap error-main">
+  <section class="error-card" aria-labelledby="error-title">
+    <div class="error-orbit" aria-hidden="true"><span>404</span><i></i><b></b></div>
+    <div class="nx-kicker">NEXAUREN · SYSTEM</div>
+    <h1 id="error-title">Esta página saiu do mapa.</h1>
+    <p>O endereço pode estar incorreto, ter sido movido ou já não existir. Volte ao início ou continue a explorar o ecossistema Nexauren.</p>
+    <div class="error-actions">
+      <a class="button primary" href="/">Voltar ao início <span>→</span></a>
+      <a class="button secondary" href="/tool/">Abrir ferramentas <span>→</span></a>
+      <a class="button secondary" href="/blog/">Explorar o Blog <span>→</span></a>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap nx-footer-grid">
+    <div>
+      <strong>Nexauren Story</strong>
+      <p class="nx-footer-copy">Conteúdo, ferramentas e novas experiências num único ecossistema.</p>
+    </div>
+    <div><div class="nx-footer-title">Explorar</div><a class="nx-footer-link" href="/tool/">Ferramentas</a><a class="nx-footer-link" href="/account">Conta</a></div>
+    <div><div class="nx-footer-title">Legal</div><a class="nx-footer-link" href="/legal/privacidade/">Privacidade</a><a class="nx-footer-link" href="/legal/termos/">Termos</a></div>
+  </div>
+  <div class="nx-footer-bottom"><div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span>Uma experiência Nexauren.</span></div></div>
+</footer>
+<script src="/assets/public-ui.js?v=20260923-quantum" defer></script>
 </body>
 </html>

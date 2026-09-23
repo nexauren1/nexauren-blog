@@ -37,14 +37,28 @@
     if(!pairs.length)return;
     pairs.forEach(({button,panel})=>{
       button.dataset.nxMenuBound="1";
+      let returnFocus=button;
       const sync=open=>{
         button.setAttribute("aria-expanded",String(open));
         button.setAttribute("aria-label",open?"Fechar menu":"Abrir menu");
         panel.classList.toggle("open",open);
         document.body.classList.toggle("nx-menu-open",open);
+        document.documentElement.style.overflow=open?"hidden":"";
+        if(open){
+          returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:button;
+          const first=$("a,button,input",panel)[0];
+          first?.focus({preventScroll:true});
+        }else if(returnFocus?.focus){
+          returnFocus.focus({preventScroll:true});
+        }
       };
       button.addEventListener("click",()=>sync(!panel.classList.contains("open")));
-      $$("a",panel).forEach(a=>a.addEventListener("click",()=>sync(false)));
+      $("a",panel).forEach(a=>a.addEventListener("click",()=>sync(false)));
+      document.addEventListener("pointerdown",event=>{
+        if(!panel.classList.contains("open"))return;
+        if(button.contains(event.target)||panel.contains(event.target))return;
+        sync(false);
+      });
       sync(panel.classList.contains("open"));
     });
     if(!document.body.dataset.nxMenuGlobal){
