@@ -848,6 +848,7 @@ async function toolUnlockCapture(env,account,toolId,orderId){
 }
 
 async function api(env,request,url,ctx){
+  const p=url.pathname,m=request.method;
   if(p==="/api/tool/unlock"&&m==="GET"){
     await ensureToolUnlockSchema(env);
     try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const toolId=text(url.searchParams.get("tool_id")||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");return json({ok:true,unlocked:!!(await toolUnlockExists(env,a.account.id,toolId))});}
@@ -864,7 +865,6 @@ async function api(env,request,url,ctx){
     catch(error){return fail(error?.message||"Não foi possível confirmar o pagamento.",500,error?.code||"PAYMENT_CAPTURE_ERROR");}
   }
 
-  const p=url.pathname,m=request.method;
   if(p==="/api/health"&&m==="GET"){try{const check=await dbCheck(env),ready=check.ready;return json({ok:ready,db:ready,ready,imagekit:!!(env.IMAGEKIT_PRIVATE_KEY&&env.IMAGEKIT_PUBLIC_KEY),translation:!!env.AI,translation_model:env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",version:"1.8.0",schema:ready?{status:"ok"}:{status:"incomplete",missingTables:check.missingTables,missingColumns:check.missingColumns,error:check.error||null},account:{provider:"firebase",ready:true}},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
   if(p==="/api/account/me"&&m==="GET"){
     try{
