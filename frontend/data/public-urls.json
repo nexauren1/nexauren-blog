@@ -1,12 +1,13 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T17:44:02.127521Z",
+  "generatedAt": "2026-09-23T17:45:43.375969Z",
   "urls": [
     "/",
     "/legal/cookies/",
     "/legal/privacidade/",
     "/legal/termos/",
     "/tool/",
+    "/tool/categories/developer/",
     "/tool/categories/developer/leitor-de-codigo-web/",
     "/tool/categories/imagem/",
     "/tool/categories/produtividade/",
