@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T17:26:03.124443Z",
+  "generatedAt": "2026-09-23T17:26:26.362638Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -43,6 +43,7 @@
     "/tool/categories/tecnologia/jwt-decoder/",
     "/tool/categories/tecnologia/leitor-de-qr-code/",
     "/tool/categories/tecnologia/qr-e-codigos/",
+    "/tool/categories/tecnologia/security-studio/",
     "/tool/categories/tecnologia/testador-de-regex/",
     "/tool/categories/tecnologia/texto-e-regex/",
     "/tool/categories/tecnologia/utilitarios-web/",
