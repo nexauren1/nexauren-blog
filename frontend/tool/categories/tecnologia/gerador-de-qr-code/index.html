@@ -10,7 +10,7 @@
 <title>Gerador de QR Code — Nexauren Tools</title>
 <link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-5">
 <link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
-<link rel="stylesheet" href="./style.css?v=20260923-1">
+<link rel="stylesheet" href="./style.css?v=20260923-2">
 </head>
 <body class="nx-page qr-tool-page">
 <header class="qr-header">
@@ -21,99 +21,26 @@
   </div>
   <div class="mobile-nav" data-mobile-nav><div class="wrap"><a href="/tool/">Ferramentas</a><a href="/blog/">Blog</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a></div></div>
 </header>
-
 <main class="wrap qr-main">
   <div class="qr-breadcrumb"><a href="/tool/categories/tecnologia/">← Tecnologia</a><span>/</span><strong>QR Code</strong></div>
-  <section class="qr-hero">
-    <div>
-      <div class="qr-eyebrow">NEXAUREN TOOL · TECNOLOGIA</div>
-      <h1>Gerador de <span>QR Code.</span></h1>
-      <p>Crie códigos QR prontos para partilhar. Gere tudo no seu navegador, sem enviar o conteúdo para um servidor.</p>
-    </div>
-    <div class="qr-hero-chip"><span class="qr-dot"></span><span>LOCAL · RÁPIDO · PRIVADO</span></div>
-  </section>
-
-  <section class="qr-account-gate" id="account-gate" hidden>
-    <div class="qr-gate-mark">⌁</div>
-    <div class="qr-eyebrow">CONTA NEXAUREN</div>
-    <h2>Entre para usar esta ferramenta.</h2>
-    <p>As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados.</p>
-    <a class="primary" href="/account">Entrar ou criar conta</a>
-  </section>
-
+  <section class="qr-hero"><div><div class="qr-eyebrow">NEXAUREN TOOL · TECNOLOGIA</div><h1>Gerador de <span>QR Code.</span></h1><p>Crie códigos QR prontos para partilhar. Gere tudo no seu navegador, sem enviar o conteúdo para um servidor.</p></div><div class="qr-hero-chip"><span class="qr-dot"></span><span>LOCAL · RÁPIDO · PRIVADO</span></div></section>
+  <section class="qr-account-gate" id="account-gate" hidden><div class="qr-gate-mark">⌁</div><div class="qr-eyebrow">CONTA NEXAUREN</div><h2>Entre para usar esta ferramenta.</h2><p>As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados.</p><a class="primary" href="/account">Entrar ou criar conta</a></section>
   <section class="qr-app" id="tool-app" hidden>
     <div class="qr-workspace">
-      <section class="qr-panel qr-builder">
-        <div class="qr-panel-head">
-          <div><span>01</span><strong>Conteúdo</strong></div>
-          <small>Escolha o que o QR Code vai transportar.</small>
-        </div>
-
-        <div class="qr-type-grid" role="tablist" aria-label="Tipo de QR Code">
-          <button type="button" class="qr-type active" data-type="url"><span>↗</span>URL</button>
-          <button type="button" class="qr-type" data-type="text"><span>✎</span>Texto</button>
-          <button type="button" class="qr-type" data-type="wifi"><span>⌁</span>Wi-Fi</button>
-          <button type="button" class="qr-type" data-type="contact"><span>◉</span>Contacto</button>
-        </div>
-
-        <div class="qr-fields">
-          <div class="qr-field qr-field-url" data-fields="url">
-            <label for="url">URL</label>
-            <input id="url" type="url" inputmode="url" autocomplete="url" placeholder="https://exemplo.com" value="https://nexaurenstory.com/">
-          </div>
-          <div class="qr-field qr-field-text" data-fields="text" hidden>
-            <label for="text">Texto</label>
-            <textarea id="text" rows="6" maxlength="1200" placeholder="Escreva a mensagem…"></textarea>
-          </div>
-          <div class="qr-field qr-field-wifi" data-fields="wifi" hidden>
-            <div class="qr-field-grid">
-              <div><label for="wifi-ssid">Nome da rede</label><input id="wifi-ssid" type="text" autocomplete="off" placeholder="Minha Wi-Fi"></div>
-              <div><label for="wifi-password">Palavra-passe</label><input id="wifi-password" type="text" autocomplete="off" placeholder="••••••••"></div>
-            </div>
-            <div class="qr-field-grid qr-field-grid-3">
-              <div><label for="wifi-security">Segurança</label><select id="wifi-security"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Sem palavra-passe</option></select></div>
-              <label class="qr-check"><input id="wifi-hidden" type="checkbox"> Rede oculta</label>
-            </div>
-          </div>
-          <div class="qr-field qr-field-contact" data-fields="contact" hidden>
-            <div class="qr-field-grid">
-              <div><label for="contact-name">Nome</label><input id="contact-name" type="text" autocomplete="name" placeholder="Nome completo"></div>
-              <div><label for="contact-phone">Telefone</label><input id="contact-phone" type="tel" autocomplete="tel" placeholder="+258 84 000 0000"></div>
-              <div><label for="contact-email">Email</label><input id="contact-email" type="email" autocomplete="email" placeholder="nome@exemplo.com"></div>
-              <div><label for="contact-company">Empresa</label><input id="contact-company" type="text" autocomplete="organization" placeholder="Empresa"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="qr-builder-options">
-          <div><label for="size">Tamanho</label><div class="qr-range"><input id="size" type="range" min="180" max="640" step="20" value="320"><output id="size-value">320 px</output></div></div>
-          <div><label for="level">Correção de erro</label><select id="level"><option value="M">M — Equilibrada</option><option value="Q">Q — Alta</option><option value="H">H — Muito alta</option><option value="L">L — Básica</option></select></div>
-        </div>
-
-        <div class="qr-actions">
-          <button id="generate" class="primary" type="button">Gerar QR Code</button>
-          <button id="reset" class="secondary" type="button">Repor</button>
-        </div>
-        <p class="qr-status" id="status" aria-live="polite"></p>
+      <section class="qr-panel qr-builder"><div class="qr-panel-head"><div><span>01</span><strong>Conteúdo</strong></div><small>Escolha o que o QR Code vai transportar.</small></div>
+        <div class="qr-type-grid" role="tablist" aria-label="Tipo de QR Code"><button type="button" class="qr-type active" data-type="url"><span>↗</span>URL</button><button type="button" class="qr-type" data-type="text"><span>✎</span>Texto</button><button type="button" class="qr-type" data-type="wifi"><span>⌁</span>Wi-Fi</button><button type="button" class="qr-type" data-type="contact"><span>◉</span>Contacto</button></div>
+        <div class="qr-fields"><div class="qr-field" data-fields="url"><label for="url">URL</label><input id="url" type="url" inputmode="url" autocomplete="url" placeholder="https://exemplo.com" value="https://nexaurenstory.com/"></div><div class="qr-field" data-fields="text" hidden><label for="text">Texto</label><textarea id="text" rows="6" maxlength="1200" placeholder="Escreva a mensagem…"></textarea></div><div class="qr-field" data-fields="wifi" hidden><div class="qr-field-grid"><div><label for="wifi-ssid">Nome da rede</label><input id="wifi-ssid" type="text" autocomplete="off" placeholder="Minha Wi-Fi"></div><div><label for="wifi-password">Palavra-passe</label><input id="wifi-password" type="text" autocomplete="off" placeholder="••••••••"></div></div><div class="qr-field-grid qr-field-grid-3"><div><label for="wifi-security">Segurança</label><select id="wifi-security"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Sem palavra-passe</option></select></div><label class="qr-check"><input id="wifi-hidden" type="checkbox"> Rede oculta</label></div></div><div class="qr-field" data-fields="contact" hidden><div class="qr-field-grid"><div><label for="contact-name">Nome</label><input id="contact-name" type="text" autocomplete="name" placeholder="Nome completo"></div><div><label for="contact-phone">Telefone</label><input id="contact-phone" type="tel" autocomplete="tel" placeholder="+258 84 000 0000"></div><div><label for="contact-email">Email</label><input id="contact-email" type="email" autocomplete="email" placeholder="nome@exemplo.com"></div><div><label for="contact-company">Empresa</label><input id="contact-company" type="text" autocomplete="organization" placeholder="Empresa"></div></div></div></div>
+        <div class="qr-builder-options"><div><label for="size">Tamanho</label><div class="qr-range"><input id="size" type="range" min="180" max="640" step="20" value="320"><output id="size-value">320 px</output></div></div><div><label for="level">Correção de erro</label><select id="level"><option value="M">M — Equilibrada</option><option value="Q">Q — Alta</option><option value="H">H — Muito alta</option><option value="L">L — Básica</option></select></div></div>
+        <div class="qr-actions"><button id="generate" class="primary" type="button">Gerar QR Code</button><button id="reset" class="secondary" type="button">Repor</button></div><p class="qr-status" id="status" aria-live="polite"></p>
       </section>
-
-      <aside class="qr-panel qr-preview">
-        <div class="qr-panel-head">
-          <div><span>02</span><strong>Pré-visualização</strong></div>
-          <small>Pronto para guardar ou partilhar.</small>
-        </div>
-        <div class="qr-canvas-wrap"><canvas id="qr-canvas" width="320" height="320" aria-label="QR Code gerado"></canvas><div id="qr-empty" class="qr-preview-empty">O seu QR Code aparece aqui.</div></div>
-        <div class="qr-payload"><span>CONTEÚDO</span><code id="payload-preview">—</code></div>
-        <button id="download" class="qr-download" type="button" disabled>↓ Guardar PNG</button>
-      </aside>
-    </div>
-    <section class="qr-note"><strong>Privacidade local.</strong><span>O Nexauren gera o QR Code no próprio navegador. O texto, Wi-Fi ou contacto não é enviado para o servidor.</span></section>
+      <aside class="qr-panel qr-preview"><div class="qr-panel-head"><div><span>02</span><strong>Pré-visualização</strong></div><small>Pronto para guardar ou partilhar.</small></div><div class="qr-canvas-wrap"><canvas id="qr-canvas" width="320" height="320" aria-label="QR Code gerado"></canvas><div id="qr-empty" class="qr-preview-empty">O seu QR Code aparece aqui.</div></div><div class="qr-payload"><span>CONTEÚDO</span><code id="payload-preview">—</code></div><button id="download" class="qr-download" type="button" disabled>↓ Guardar PNG</button></aside>
+    </div><section class="qr-note"><strong>Privacidade local.</strong><span>O Nexauren gera o QR Code no próprio navegador. O texto, Wi-Fi ou contacto não é enviado para o servidor.</span></section>
   </section>
 </main>
-
 <footer class="page-footer"><div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span><a href="/tool/categories/tecnologia/">Tecnologia</a> · <a href="/tool/">Ferramentas</a> · <a href="/account">Conta</a></span></div></footer>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
-<script type="module" src="./script.js?v=20260923-1"></script>
+<!-- qrcode 1.5.4 deixou de publicar o bundle build/; 1.5.1 ainda fornece o bundle browser. -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script>if(!window.QRCode){document.write('<script src="https://unpkg.com/qrcode@1.5.1/build/qrcode.min.js"><\\/script>')}</script>
+<script type="module" src="./script.js?v=20260923-2"></script>
 <script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
-</body>
-</html>
+</body></html>
