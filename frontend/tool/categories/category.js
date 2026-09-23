@@ -1,8 +1,9 @@
 (() => {
   const DATA_URL="/api/tool-registry";
-  const FALLBACK_DATA_URL="/tool/data/data.json?v=20260923-2";
-  const CACHE_KEY="nexauren:tool-registry:v3";
+  const FALLBACK_DATA_URL="/tool/data/data.json";
+  const CACHE_KEY="nexauren:tool-registry:v4";
   let registryPromise=null;
+  let refreshPromise=null;
 
   function normalize(raw){
     const categories=Array.isArray(raw?.categories)?raw.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)):[];
@@ -20,30 +21,38 @@
   function saveCache(registry){
     try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),registry}));}catch{}
   }
+  async function fetchFresh(url,options={}){
+    const r=await fetch(url,{cache:"no-store",credentials:"same-origin",...options});
+    if(!r.ok)throw new Error("Catálogo indisponível");
+    return normalize(await r.json());
+  }
   async function refreshRegistry(){
-    try{
-      const r=await fetch(DATA_URL,{cache:"no-store",credentials:"same-origin"});
-      if(!r.ok)throw new Error("API indisponível");
-      const registry=normalize(await r.json());
-      if(!registry.categories.length||!registry.tools.some(t=>t.status==="active"))throw new Error("Catálogo incompleto");
-      saveCache(registry);
-      window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
-      return registry;
-    }catch(primary){
-      const r=await fetch(FALLBACK_DATA_URL,{cache:"no-store",credentials:"same-origin"});
-      if(!r.ok)throw primary;
-      const registry=normalize(await r.json());
-      if(valid(registry))saveCache(registry);
-      window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
-      return registry;
-    }
+    if(refreshPromise)return refreshPromise;
+    refreshPromise=(async()=>{
+      try{
+        const registry=await fetchFresh(DATA_URL);
+        if(!registry.categories.length||!registry.tools.some(t=>t.status==="active"))throw new Error("Catálogo incompleto");
+        saveCache(registry);
+        window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
+        return registry;
+      }catch(primary){
+        const registry=await fetchFresh(FALLBACK_DATA_URL+"?v="+Date.now());
+        if(valid(registry)){
+          saveCache(registry);
+          window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
+          return registry;
+        }
+        throw primary;
+      }finally{refreshPromise=null;}
+    })();
+    return refreshPromise;
   }
   async function loadRegistry(){
     if(!registryPromise){
       const cached=readCache();
       if(cached){
         registryPromise=Promise.resolve(cached);
-        refreshRegistry().catch(()=>{});
+        refreshRegistry().then(fresh=>{registryPromise=Promise.resolve(fresh)}).catch(()=>{});
       }else{
         registryPromise=refreshRegistry();
       }
