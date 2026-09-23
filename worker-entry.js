@@ -364,6 +364,22 @@ async function autoTranslatePost(env,postId){
     }
   }catch(e){console.error("autoTranslatePost",e);}
 }
+async function publicPosts(env,url){
+  const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
+  const requestedLimit=Number.parseInt(url.searchParams.get("limit")||"12",10);
+  const limit=Number.isFinite(requestedLimit)?Math.min(60,Math.max(1,requestedLimit)):12;
+  const category=text(url.searchParams.get("category")||"",100).trim();
+  const params=[lang];
+  const where=["p.status='published'","p.published_at IS NOT NULL"];
+  if(category){
+    where.push("c.slug=?");
+    params.push(category);
+  }
+  const sql="SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,p.category_id,p.allow_comments,c.name category_name,c.slug category_slug,COALESCE(NULLIF(m.url,''),NULLIF(p.social_image,'')) cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE "+where.join(" AND ")+" ORDER BY p.published_at DESC LIMIT "+limit;
+  const result=await env.DB.prepare(sql).bind(...params).all();
+  return json({ok:true,language:lang,posts:result.results||[]});
+}
+
 function postRelationStatements(env,postId,tags,translations,includeTagReset=true){
   const statements=[];
   if(includeTagReset)statements.push(env.DB.prepare("DELETE FROM post_tags WHERE post_id=?").bind(postId));
