@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gerador de Robots.txt · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
+<body><main class="robots-app"><a class="back" href="/tool/">← Ferramentas</a>
+<header><div class="mark">NEXAUREN / CRAWLER CONTROL</div><div class="hero"><div><h1>Gerador de Robots.txt</h1><p>Defina regras de rastreamento para bots e produza um robots.txt pronto para publicar.</p></div><span class="mode">TXT · LOCAL</span></div></header>
+<section class="console"><div class="controls"><div class="section">01 · REGRAS</div>
+<label>User-agent<select id="agent"><option>*</option><option>Googlebot</option><option>Bingbot</option><option>Googlebot-Image</option><option>GPTBot</option><option>facebookexternalhit</option></select></label>
+<div class="path-row"><label>Permitir<input id="allow" placeholder="/"></label><button id="addAllow" class="mini">+ Permitir</button></div>
+<div class="path-row"><label>Bloquear<input id="disallow" placeholder="/admin/"></label><button id="addDisallow" class="mini">+ Bloquear</button></div>
+<label>Sitemap<input id="sitemap" type="url" placeholder="https://exemplo.com/sitemap.xml"></label>
+<div class="rule-list" id="rules"><div class="empty">Nenhuma regra adicionada.</div></div>
+<div class="buttons"><button id="generate" class="primary">Gerar robots.txt</button><button id="sample" class="secondary">Exemplo</button><button id="clear" class="secondary">Limpar</button></div></div>
+<div class="preview"><div class="section">02 · PRÉVIA EM TEMPO REAL</div><pre id="output">User-agent: *
+</pre><div class="actions"><button id="copy" class="primary">Copiar TXT</button><button id="download" class="secondary">Baixar robots.txt</button></div></div></section>
+<p id="message" class="message">Configure as regras e gere o ficheiro.</p><p id="access" class="access" hidden></p><footer>NEXAUREN TOOLS · Crawler Control · Processamento local</footer></main>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".console"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script></body></html>
