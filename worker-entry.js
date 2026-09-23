@@ -835,7 +835,7 @@ async function billingSyncFromPaypal(env,row,remote){
   const active=remote.status==="ACTIVE";
   const plan=active?"pro":"free";
   const currentEnd=remote?.billing_info?.next_billing_time||null;
-  const cancelAt=!!remote?.billing_info?.next_billing_time&&remote?.status==="ACTIVE"&&!!remote?.status_change_note&&/cancel/i.test(String(remote.status_change_note))?1:0;
+  const cancelAt=0;
   await env.ACCOUNTS_DB.prepare("UPDATE nexauren_subscriptions SET plan=?,status=?,paypal_plan_id=?,current_period_end=?,cancel_at_period_end=?,updated_at=? WHERE account_id=?")
     .bind(plan,remote.status||"UNKNOWN",remote.plan_id||row.paypal_plan_id||null,currentEnd,cancelAt,nowIso(),row.account_id).run();
   return await billingRow(env,row.account_id);
@@ -882,8 +882,46 @@ async function toolUnlockCapture(env,account,toolId,orderId,tool){
   return await toolUnlockExists(env,account.id,toolId);
 }
 
+async function verifyPaypalWebhook(env,request,rawBody){
+  const webhookId=String(env.PAYPAL_WEBHOOK_ID||"").trim();
+  if(!webhookId)throw Object.assign(new Error("PAYPAL_WEBHOOK_ID não está configurado."),{code:"PAYPAL_WEBHOOK_NOT_CONFIGURED"});
+  const required=["paypal-auth-algo","paypal-cert-url","paypal-transmission-id","paypal-transmission-sig","paypal-transmission-time"];
+  const headers={};
+  for(const name of required){const value=request.headers.get(name);if(!value)throw Object.assign(new Error("Cabeçalhos de assinatura PayPal em falta."),{code:"PAYPAL_WEBHOOK_HEADERS_MISSING"});headers[name.replaceAll("-","_")]=value;}
+  headers.webhook_event=rawBody;headers.webhook_id=webhookId;
+  const result=await paypalRequest(env,"/v1/notifications/verify-webhook-signature",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(headers)});
+  if(result?.verification_status!=="SUCCESS")throw Object.assign(new Error("Assinatura do webhook PayPal inválida."),{code:"PAYPAL_WEBHOOK_INVALID"});
+}
+async function handlePaypalWebhook(env,request){
+  const raw=await request.text();
+  if(raw.length>500000)throw Object.assign(new Error("Webhook demasiado grande."),{code:"PAYPAL_WEBHOOK_TOO_LARGE"});
+  await verifyPaypalWebhook(env,request,raw);
+  const event=JSON.parse(raw);
+  const type=String(event?.event_type||"");
+  const resource=event?.resource||{};
+  if(!["BILLING.SUBSCRIPTION.ACTIVATED","BILLING.SUBSCRIPTION.UPDATED","BILLING.SUBSCRIPTION.SUSPENDED","BILLING.SUBSCRIPTION.CANCELLED","BILLING.SUBSCRIPTION.EXPIRED"].includes(type))return json({ok:true,ignored:true});
+  const subscriptionId=String(resource.id||"").trim();
+  const customId=String(resource.custom_id||"").trim();
+  if(!subscriptionId)return json({ok:true,ignored:true});
+  let row=await env.ACCOUNTS_DB.prepare("SELECT * FROM nexauren_subscriptions WHERE paypal_subscription_id=? LIMIT 1").bind(subscriptionId).first();
+  if(!row&&customId)row=await billingRow(env,customId);
+  if(!row)return json({ok:true,ignored:true});
+  const active=String(resource.status||"") === "ACTIVE";
+  const plan=active?"pro":"free";
+  await env.ACCOUNTS_DB.prepare("UPDATE nexauren_subscriptions SET plan=?,status=?,paypal_subscription_id=?,paypal_plan_id=?,current_period_end=?,cancel_at_period_end=?,updated_at=? WHERE account_id=?")
+    .bind(plan,String(resource.status||"UNKNOWN"),subscriptionId,resource.plan_id||row.paypal_plan_id||null,resource?.billing_info?.next_billing_time||null,0,nowIso(),row.account_id).run();
+  return json({ok:true});
+}
+
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
+  if(p==="/api/paypal/webhook"&&m==="POST"){
+    try{return await handlePaypalWebhook(env,request);}catch(error){
+      const code=error?.code||"PAYPAL_WEBHOOK_ERROR";
+      const status=["PAYPAL_WEBHOOK_INVALID","PAYPAL_WEBHOOK_HEADERS_MISSING"].includes(code)?400:503;
+      return fail(error?.message||"Não foi possível processar o webhook PayPal.",status,code);
+    }
+  }
   if(p==="/api/tool/unlock"&&m==="GET"){
     await ensureToolUnlockSchema(env);
     try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const toolId=text(url.searchParams.get("tool_id")||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");return json({ok:true,unlocked:!!(await toolUnlockExists(env,a.account.id,toolId))});}
@@ -935,7 +973,10 @@ async function api(env,request,url,ctx){
         try{
           const remote=await paypalRequest(env,"/v1/billing/subscriptions/"+encodeURIComponent(row.paypal_subscription_id)+"?fields=plan", {method:"GET"});
           if(remote?.plan_id===row.paypal_plan_id||!row.paypal_plan_id)row=await billingSyncFromPaypal(env,row,remote);
-        }catch{}
+        }catch(error){
+          console.error("billing.remote_sync",String(error?.message||error));
+          return fail("Não foi possível validar o estado atual da assinatura.",503,"BILLING_SYNC_UNAVAILABLE");
+        }
       }
       return json({ok:true,billing:billingPublic(row)});
     }catch(error){
