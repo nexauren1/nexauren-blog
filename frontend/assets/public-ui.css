@@ -358,3 +358,57 @@ textarea{resize:vertical}
 .tool-search-meta button{color:var(--accent);font-weight:850}
 .tool-search-premium{display:inline-flex;margin-top:10px;font-size:10px;letter-spacing:.08em;color:var(--accent)}
 @media(max-width:700px){.tool-search-controls{grid-template-columns:1fr}.tool-advanced-search{padding:13px}.tool-search-main{min-height:50px}}
+
+
+/* Tools grid + Pro cards */
+.tool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tool-card{
+  min-height:248px;padding:20px;
+  border-radius:20px;
+  border:1px solid #e1e5ec;
+  background:linear-gradient(145deg,#fff,#f9faff);
+  box-shadow:0 12px 34px rgba(16,21,37,.07);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.tool-card:hover{transform:translateY(-5px);box-shadow:0 20px 45px rgba(16,21,37,.12);border-color:#d3d8e3}
+.tool-card:before{height:3px}
+.tool-card-icon{width:46px;height:46px;border-radius:14px}
+.tool-card h2{font-size:18px;margin:15px 0 7px}
+.tool-card p{font-size:11px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tool-card small{font-size:8px;line-height:1.45}
+.tool-card-badges{min-height:22px}
+.tool-card-badge.pro,.tool-search-premium{
+  background:linear-gradient(135deg,#fff4c2,#e8bd57);
+  color:#6b4a00;border:1px solid #d6ad4e;
+}
+.tool-card-locked{
+  border-color:#d9bf72;
+  background:linear-gradient(145deg,#fffdf5,#fff8df);
+}
+.tool-card-locked:after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,248,220,.08),rgba(255,243,193,.22));
+  pointer-events:none;
+}
+.tool-lock{
+  position:absolute;right:17px;bottom:16px;
+  width:30px;height:30px;display:grid;place-items:center;
+  border-radius:10px;background:#fff;border:1px solid #dfc777;
+  box-shadow:0 7px 18px rgba(107,74,0,.12);font-size:14px;
+}
+.tool-card-locked .tool-arrow{color:#9b7417}
+.tool-card-locked .tool-card-icon{background:#fff4c9;color:#9b7417}
+@media(max-width:960px){
+  .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}
+@media(max-width:700px){
+  .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .tool-card{min-height:238px;padding:14px;border-radius:16px}
+  .tool-card-icon{width:40px;height:40px;border-radius:12px}
+  .tool-card h2{font-size:15px;line-height:1.12;margin:12px 0 6px}
+  .tool-card p{font-size:10px;line-height:1.55;-webkit-line-clamp:4}
+  .tool-card small{font-size:7px}
+  .tool-card-badge{font-size:7px;padding:4px 6px}
+  .tool-lock{right:11px;bottom:11px;width:26px;height:26px;font-size:12px}
+  .tool-marquee-group .tool-card{width:240px;flex-basis:240px}
+}

@@ -22,17 +22,25 @@
   };
 
   const toolCard=(t,ranked=false)=>{
-    const badges=(t.featured?'<span class="tool-card-badge featured">Destaque</span>':"")+(t.popular?'<span class="tool-card-badge popular">Popular</span>':"");
-    return '<a class="tool-card cat-'+esc(t.category||"geral")+' '+(ranked?"tool-card-ranked ":"")+'nx-spotlight nx-reveal" data-tool-id="'+esc(t.id)+'" data-category="'+esc(t.category||"")+'" href="'+esc(t.path)+'">'+
+    const locked=t.access==="premium"&&!isPro;\n    const badges=(t.featured?'<span class="tool-card-badge featured">Destaque</span>':"")+(t.popular?'<span class="tool-card-badge popular">Popular</span>':"");
+    return '<a class="tool-card cat-'+esc(t.category||"geral")+' '+(ranked?"tool-card-ranked ":"")+'nx-spotlight nx-reveal" data-tool-id="'+esc(t.id)+'" data-category="'+esc(t.category||"")+'" href="'+esc(locked?"/account/upgrade/":t.path)+'" aria-label="'+esc(t.name+(locked?" — requer Pro":""))+'">'+
       '<div class="tool-card-top"><span class="tool-card-icon">'+iconSvg(t.category)+'</span><span class="tool-arrow">→</span></div>'+
-      '<div class="tool-card-badges">'+badges+'</div><h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p><small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small></a>';
+      '<div class="tool-card-badges">'+badges+(t.access==="premium"?'<span class="tool-card-badge pro">PRO</span>':"")+'</div><h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p><small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small></a>';
   };
 
   const categoryCard=c=>'<a class="tool-card category-card cat-'+esc(c.id)+' nx-spotlight nx-reveal" data-category="'+esc(c.id)+'" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'">'+
     '<div class="tool-card-top"><span class="tool-card-icon">'+iconSvg(c.id)+'</span><span class="tool-arrow">→</span></div>'+
     '<h2>'+esc(c.name)+'</h2><p>'+esc(c.description||"")+'</p><small>'+Number(c.count||0)+' ferramenta(s)</small></a>';
 
-  let categories=[],tools=[];
+  let categories=[],tools=[],isPro=false;
+  async function getProAccess(){
+    try{
+      const mod=await import("/account/account-client.js?v=20260923-tool-access");
+      if(!mod.auth?.currentUser)return false;
+      const data=await mod.workerFetch("/api/account/billing",{method:"GET"});
+      return String(data?.billing?.plan||"").toLowerCase()==="pro" && ["ACTIVE","APPROVED"].includes(String(data?.billing?.status||"").toUpperCase());
+    }catch{return false;}
+  }
 
   async function directRegistry(){
     const response=await fetch("/tool/data/data.json?v=20260923-1",{cache:"no-store"});
@@ -106,6 +114,7 @@
       tools=registry.tools.filter(t=>t.status==="active");
       categories=registry.categories.map(c=>({...c,count:registry.tools.filter(t=>t.status==="active"&&t.category===c.id).length}));
       if(countEl)countEl.textContent=tools.length;
+      isPro=await getProAccess();
       renderHighlights();
       const stored=localStorage.getItem("nexauren-tool-search")||"";
       if(search&&stored){search.value=stored;applySearch(stored);}else{renderCategories(categories);renderResults([]);}
