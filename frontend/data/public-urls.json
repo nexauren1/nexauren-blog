@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T08:43:02.404247Z",
+  "generatedAt": "2026-09-23T08:52:10.713915Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -14,6 +14,7 @@
     "/tool/categories/tecnologia/",
     "/tool/categories/tecnologia/gerador-de-codigo-de-barras/",
     "/tool/categories/tecnologia/gerador-de-qr-code/",
+    "/tool/categories/tecnologia/gerador-de-uuid/",
     "/tool/categories/tecnologia/leitor-de-qr-code/",
     "/tool/categories/texto/",
     "/tool/destaques/",
