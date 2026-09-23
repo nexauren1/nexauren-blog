@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10131a"><meta name="description" content="Gerador de Código de Barras Nexauren — crie códigos EAN, UPC e Code 128.">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access"><link rel="stylesheet" href="./style.css?v=20260923-1">
+<title>Gerador de Código de Barras — Nexauren Tools</title>
+</head>
+<body class="barcode-page">
+<header class="barcode-header"><div class="wrap nav"><a class="brand" href="/">Nexauren Story</a><nav class="nav-links"><a href="/tool/">Ferramentas</a><a href="/blog/">Blog</a><a href="/account">Conta</a></nav><button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button></div><div class="mobile-nav" data-mobile-nav><div class="wrap"><a href="/tool/">Ferramentas</a><a href="/blog/">Blog</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a></div></div></header>
+<main class="wrap barcode-main">
+<div class="crumb"><a href="/tool/categories/tecnologia/">Tecnologia</a><span>›</span><strong>Código de Barras</strong></div>
+<section class="hero"><div><span class="kicker">NEXAUREN / DATA MARKING</span><h1>Transforme dados em <em>barras.</em></h1><p>Gere códigos de barras prontos para imprimir, guardar ou utilizar em sistemas.</p></div><div class="hero-meter"><b>BARCODE</b><span>LOCAL ENGINE</span></div></section>
+<section id="account-gate" class="gate" hidden><div class="gate-symbol">▥</div><span class="kicker">CONTA NECESSÁRIA</span><h2>Entre para usar esta ferramenta.</h2><p>A geração acontece no navegador depois da autenticação.</p><a class="primary" href="/account">Entrar ou criar conta</a></section>
+<section id="tool-app" hidden>
+<div class="barcode-grid">
+<section class="panel controls"><div class="panel-title"><span>01</span><div><strong>Configuração</strong><small>Escolha o padrão e introduza o valor.</small></div></div>
+<div class="formats" role="tablist"><button class="format active" data-format="code128">Code 128<small>Alfanumérico</small></button><button class="format" data-format="ean13">EAN-13<small>13 dígitos</small></button><button class="format" data-format="ean8">EAN-8<small>8 dígitos</small></button><button class="format" data-format="upc">UPC-A<small>12 dígitos</small></button><button class="format" data-format="code39">Code 39<small>Legado</small></button></div>
+<label class="field"><span>Conteúdo</span><input id="value" autocomplete="off" placeholder="Ex.: NEXAUREN-2026" maxlength="80"></label>
+<div class="hint" id="format-hint">Code 128 aceita números, letras e vários símbolos.</div>
+<div class="options"><label><span>Largura</span><input id="width" type="range" min="1" max="4" value="2"><output id="width-out">2×</output></label><label><span>Altura</span><input id="height" type="range" min="40" max="180" value="100"><output id="height-out">100 px</output></label><label class="check"><input id="show-text" type="checkbox" checked><span>Mostrar texto</span></label></div>
+<div class="actions"><button id="generate" class="primary" type="button">Gerar código</button><button id="clear" class="secondary" type="button">Limpar</button></div><p id="status" class="status" aria-live="polite"></p></section>
+<section class="panel preview"><div class="panel-title"><span>02</span><div><strong>Pré-visualização</strong><small>Resultado pronto para saída.</small></div></div><div class="barcode-stage"><svg id="barcode" aria-label="Código de barras"></svg><div id="empty" class="empty"><div>▥</div><strong>Aguardando dados</strong><span>O código aparecerá nesta área.</span></div></div><div class="output-actions"><button id="download" class="secondary" type="button" disabled>Download SVG</button><button id="print" class="secondary" type="button" disabled>Imprimir</button></div></section>
+</div><div class="note"><strong>Validação:</strong><span id="validation">Escolha um formato para ver as regras de entrada.</span></div>
+</section></main>
+<footer class="page-footer"><div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span><a href="/tool/">Ferramentas</a> · <a href="/account">Conta</a></span></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script><script type="module" src="./script.js?v=20260923-1"></script><script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body></html>
