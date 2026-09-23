@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Conversor de Dados / Bytes · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="data-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header>
+<div class="eyebrow">NEXAUREN / DATA SCALE</div>
+<div class="hero"><div><h1>Conversor de Dados / Bytes</h1><p>Converta rapidamente bytes entre unidades SI e binárias, confira o valor exato e compare escalas.</p></div><div class="stack" aria-hidden="true"><span>B</span><span>KB</span><span>MB</span><span>GB</span></div></div>
+</header>
+<section class="converter">
+<div class="input-block">
+<label for="value">VALOR</label>
+<div class="input-row"><input id="value" type="number" inputmode="decimal" value="1024" min="0" step="any"><button id="convert" class="primary">Converter</button></div>
+<div class="presets"><button data-v="1024">1 KiB</button><button data-v="1048576">1 MiB</button><button data-v="1000000">1 MB</button><button data-v="1073741824">1 GiB</button></div>
+</div>
+<div class="selectors">
+<label>UNIDADE DE ENTRADA<select id="from"><option value="B">Bytes</option><option value="KB">KB</option><option value="MB">MB</option><option value="GB">GB</option><option value="TB">TB</option><option value="KiB">KiB</option><option value="MiB">MiB</option><option value="GiB">GiB</option><option value="TiB">TiB</option></select></label>
+<label>ESCALA DE SAÍDA<select id="scale"><option value="decimal">SI · 1000</option><option value="binary">IEC · 1024</option></select></label>
+</div>
+<div id="results" class="results"></div>
+<div class="exact"><span>BYTES EXATOS</span><strong id="exact">—</strong><button id="copyExact">Copiar</button></div>
+<p id="message" class="message">Os cálculos são realizados localmente.</p>
+</section>
+<p id="access" class="access" hidden></p>
+<footer>NEXAUREN TOOLS · Data Scale · Processamento local</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
+const app=document.querySelector(".converter"),msg=document.querySelector("#access");
+onAuthStateChanged(auth,user=>{
+ const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
+ app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked);
+});
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
