@@ -28,6 +28,36 @@
     });
   }
 
+  function ensureResponsiveMenus(){
+    $$("header").forEach(header=>{
+      const nav=$("nav",header);
+      if(!nav||header.querySelector(".menu-toggle,.tool-menu,[data-nx-auto-menu]"))return;
+      const links=$$("a",nav).map(a=>({
+        href:a.getAttribute("href"),
+        text:(a.textContent||"").trim()
+      })).filter(item=>item.href&&item.text);
+      if(!links.length)return;
+
+      const isTool=header.classList.contains("tool-header");
+      const button=document.createElement("button");
+      button.className=isTool?"tool-menu":"menu-toggle";
+      button.type="button";
+      button.setAttribute("aria-label","Abrir menu");
+      button.setAttribute("aria-expanded","false");
+      button.dataset.nxAutoMenu="1";
+      button.innerHTML="<span></span>";
+
+      const panel=document.createElement("div");
+      panel.className=isTool?"tool-mobile":"mobile-menu";
+      panel.dataset.nxAutoPanel="1";
+      panel.innerHTML=links.map(item=>'<a href="'+String(item.href).replace(/"/g,"&quot;")+'">'+String(item.text).replace(/[&<>]/g,"")+"</a>").join("");
+
+      header.querySelector(".nav,.tool-nav")?.appendChild(button);
+      if(!button.isConnected)header.firstElementChild?.appendChild(button);
+      header.appendChild(panel);
+    });
+  }
+
   function initMenus(){
     const pairs=[
       ...$$(config.selectors.menuButton).map(button=>({button,panel:button.closest("header")?.querySelector(config.selectors.menuPanel)})),
@@ -229,6 +259,6 @@
     });
   }
 
-  function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");ensureLegalNavigation();setActiveNavigation();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
+  function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");ensureLegalNavigation();setActiveNavigation();ensureResponsiveMenus();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
