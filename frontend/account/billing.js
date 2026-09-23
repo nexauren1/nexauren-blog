@@ -69,6 +69,7 @@ async function initBilling(root){
     }else if(paypal==="cancel"){
       notice="O processo PayPal foi cancelado. A sua conta continua no plano Free.";
       history.replaceState({},document.title,"/account/upgrade/");
+      try{sessionStorage.removeItem("nexauren-tool-return")}catch{}
     }
     const result=await workerFetch("/api/account/billing");
     host.innerHTML=billingMarkup(result.billing,notice);
