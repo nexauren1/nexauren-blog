@@ -1,7 +1,7 @@
 (() => {
   const DATA_URL="/api/tool-registry";
-  const FALLBACK_DATA_URL="/tool/data/data.json?v=20260923-1";
-  const CACHE_KEY="nexauren:tool-registry:v2";
+  const FALLBACK_DATA_URL="/tool/data/data.json?v=20260923-2";
+  const CACHE_KEY="nexauren:tool-registry:v3";
   let registryPromise=null;
 
   function normalize(raw){
@@ -30,7 +30,7 @@
       window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
       return registry;
     }catch(primary){
-      const r=await fetch(FALLBACK_DATA_URL,{cache:"force-cache",credentials:"same-origin"});
+      const r=await fetch(FALLBACK_DATA_URL,{cache:"no-store",credentials:"same-origin"});
       if(!r.ok)throw primary;
       const registry=normalize(await r.json());
       if(valid(registry))saveCache(registry);
