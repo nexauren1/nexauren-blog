@@ -2,6 +2,7 @@
   const DATA_URL="/api/tool-registry";
   const FALLBACK_DATA_URL="/tool/data/data.json";
   const CACHE_KEY="nexauren:tool-registry:v4";
+  const REQUEST_TIMEOUT=5000;
   let registryPromise=null;
   let refreshPromise=null;
 
@@ -10,21 +11,28 @@
     const tools=Array.isArray(raw?.tools)?raw.tools:[];
     return {version:raw?.version||1,site:raw?.site||"Nexauren Story",basePath:raw?.basePath||"/tool/",registry:raw?.registry||null,categories,tools};
   }
-  function valid(raw){return !!raw&&Array.isArray(raw.categories)&&Array.isArray(raw.tools);}
+  function valid(raw){return !!raw&&Array.isArray(raw.categories)&&Array.isArray(raw.tools)}
   function readCache(){
     try{
       const saved=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
       const registry=normalize(saved?.registry);
       return valid(registry)?registry:null;
-    }catch{return null;}
+    }catch{return null}
   }
   function saveCache(registry){
-    try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),registry}));}catch{}
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),registry}))}catch{}
   }
   async function fetchFresh(url,options={}){
-    const r=await fetch(url,{cache:"no-store",credentials:"same-origin",...options});
-    if(!r.ok)throw new Error("Catálogo indisponível");
-    return normalize(await r.json());
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT);
+    try{
+      const r=await fetch(url,{cache:"no-store",credentials:"same-origin",signal:controller.signal,...options});
+      if(!r.ok)throw new Error("Catálogo indisponível");
+      return normalize(await r.json());
+    }catch(error){
+      if(error?.name==="AbortError")throw new Error("Tempo limite ao carregar o catálogo.");
+      throw error;
+    }finally{clearTimeout(timer)}
   }
   async function refreshRegistry(){
     if(refreshPromise)return refreshPromise;
@@ -36,14 +44,16 @@
         window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
         return registry;
       }catch(primary){
-        const registry=await fetchFresh(FALLBACK_DATA_URL+"?v="+Date.now());
-        if(valid(registry)){
-          saveCache(registry);
-          window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
-          return registry;
-        }
+        try{
+          const registry=await fetchFresh(FALLBACK_DATA_URL+"?v="+Date.now());
+          if(valid(registry)){
+            saveCache(registry);
+            window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
+            return registry;
+          }
+        }catch{}
         throw primary;
-      }finally{refreshPromise=null;}
+      }finally{refreshPromise=null}
     })();
     return refreshPromise;
   }
@@ -59,7 +69,7 @@
     }
     return registryPromise;
   }
-  function getCachedRegistry(){return readCache();}
+  function getCachedRegistry(){return readCache()}
   function getCategory(registry,slug){return registry.categories.find(c=>c.id===slug||c.slug===slug)||null}
   function getTools(registry,slug){return registry.tools.filter(t=>t.status!=="disabled"&&(!slug||t.category===slug))}
   window.NexaurenToolRegistry={loadRegistry,refreshRegistry,getCachedRegistry,getCategory,getTools};
