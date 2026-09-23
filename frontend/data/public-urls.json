@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-23T17:37:01.437458Z",
+  "generatedAt": "2026-09-23T17:37:30.979733Z",
   "urls": [
     "/",
     "/legal/cookies/",
@@ -19,7 +19,6 @@
     "/tool/categories/tecnologia/conversor-de-cores/",
     "/tool/categories/tecnologia/conversor-de-dados-e-bytes/",
     "/tool/categories/tecnologia/conversor-de-timestamp/",
-    "/tool/categories/tecnologia/dados-e-bytes/",
     "/tool/categories/tecnologia/diff-checker/",
     "/tool/categories/tecnologia/encoder-decoder-url/",
     "/tool/categories/tecnologia/formatador-css-minifier/",
@@ -41,7 +40,6 @@
     "/tool/categories/tecnologia/json-csv/",
     "/tool/categories/tecnologia/jwt-decoder/",
     "/tool/categories/tecnologia/leitor-de-qr-code/",
-    "/tool/categories/tecnologia/security-studio/",
     "/tool/categories/tecnologia/testador-de-regex/",
     "/tool/categories/tecnologia/texto-e-regex/",
     "/tool/categories/tecnologia/validador-json/",
