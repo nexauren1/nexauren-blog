@@ -198,82 +198,96 @@ function userView(user, syncMessage = "") {
   const hasPasswordProvider = (user.providerData || []).some((p) => p.providerId === "password");
   root.classList.add("account-dashboard-host");
   root.innerHTML = `
-    <div class="account-dashboard">
-      <div class="account-dashboard-head">
-        <div class="account-profile-panel">
+    <div class="account-dashboard-v2">
+      <aside class="account-sidebar" aria-label="Definições da conta">
+        <div class="account-sidebar-profile">
           <div class="avatar">${user.photoURL ? '<img src="' + esc(user.photoURL) + '" alt="" referrerpolicy="no-referrer">': esc((user.displayName || user.email || "N").slice(0, 1).toUpperCase())}</div>
-          <div class="identity">
-            <div class="account-kicker">CONTA ATIVA</div>
-            <div class="user-name">${esc(user.displayName || "Utilizador Nexauren")}</div>
-            <div class="user-email">${esc(user.email || "")}</div>
-            <span class="status-pill">Conta ativa</span>
-          </div>
+          <div><strong>${esc(user.displayName || "Utilizador Nexauren")}</strong><span>${esc(user.email || "")}</span></div>
         </div>
-        <a class="account-plan-card" href="/account/upgrade/" aria-label="Gerir plano e faturação">
-          <span class="plan-copy">
-            <span class="plan-label">PLANO & FATURAÇÃO</span>
-            <strong>Gerir o seu plano</strong>
-            <small>Consulte, assine ou cancele o Nexauren Pro.</small>
-          </span>
-          <span class="plan-arrow" aria-hidden="true">→</span>
-        </a>
-      </div>
+        <nav class="account-side-nav">
+          <a class="active" href="#account-overview">Visão geral</a>
+          <a href="#account-profile">Perfil</a>
+          <a href="#account-security">Segurança</a>
+          <a href="/account/upgrade/">Plano Pro</a>
+        </nav>
+        <div class="account-side-footer">
+          <a href="/tool/">Ferramentas</a>
+          <a href="/legal/privacidade/">Privacidade</a>
+        </div>
+      </aside>
 
-      ${syncMessage ? messageBox("success", syncMessage) : ""}
-      ${verificationPanel(user)}
+      <div class="account-main">
+        <header class="account-main-head" id="account-overview">
+          <div>
+            <div class="account-kicker">CONTA NEXAUREN</div>
+            <h2>Definições da conta</h2>
+            <p>Gira o seu perfil, segurança e acesso aos recursos Nexauren.</p>
+          </div>
+          <span class="account-state"><i></i> Ativa</span>
+        </header>
 
-      <div class="account-dashboard-grid">
-        <section class="account-panel">
-          <div class="section-title"><strong>Perfil</strong><span>Informações básicas</span></div>
-          <form id="profile-form" class="mini-form" novalidate>
-            <label>Nome de apresentação<input id="display-name" type="text" maxlength="80" value="${esc(user.displayName || "")}" autocomplete="name" required></label>
-            <button class="secondary" type="submit">Guardar alterações</button>
-            <div class="inline-feedback" id="profile-feedback" aria-live="polite"></div>
-          </form>
+        ${syncMessage ? messageBox("success", syncMessage) : ""}
+        ${verificationPanel(user)}
+
+        <section class="account-block">
+          <div class="account-block-head">
+            <div><h3>Plano e faturação</h3><p>Gerir assinatura e recursos Pro.</p></div>
+            <a href="/account/upgrade/" class="account-text-link">Abrir gestão →</a>
+          </div>
+          <a class="account-pro-card" href="/account/upgrade/">
+            <span class="pro-icon">N</span>
+            <span><strong>Nexauren Pro</strong><small>Consulte o seu plano, pagamento e benefícios.</small></span>
+            <b>Gerir →</b>
+          </a>
         </section>
 
-        <section class="account-panel">
-          <div class="section-title">
-            <div><strong>Segurança</strong><span>Proteja o acesso à conta</span></div>
-            ${hasPasswordProvider ? '<button type="button" class="section-toggle" aria-expanded="false">Alterar palavra-passe</button>' : ""}
+        <div class="account-two-col">
+          <section class="account-block" id="account-profile">
+            <div class="account-block-head"><div><h3>Perfil</h3><p>Informações visíveis na sua conta.</p></div></div>
+            <form id="profile-form" class="mini-form" novalidate>
+              <label>Nome de apresentação<input id="display-name" type="text" maxlength="80" value="${esc(user.displayName || "")}" autocomplete="name" required></label>
+              <button class="secondary" type="submit">Guardar alterações</button>
+              <div class="inline-feedback" id="profile-feedback" aria-live="polite"></div>
+            </form>
+          </section>
+
+          <section class="account-block" id="account-security">
+            <div class="account-block-head">
+              <div><h3>Segurança</h3><p>Proteja o acesso à sua conta.</p></div>
+              ${hasPasswordProvider ? '<button type="button" class="section-toggle" aria-expanded="false">Alterar</button>' : ""}
+            </div>
+            ${hasPasswordProvider ? `
+            <form id="password-form" class="mini-form password-form-shell" novalidate hidden>
+              <label>Palavra-passe atual<input id="current-password" type="password" autocomplete="current-password" required></label>
+              <label>Nova palavra-passe<input id="new-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+              <div class="password-rules" id="change-password-rules">12+ caracteres, maiúscula, minúscula, número e símbolo.</div>
+              <label>Confirmar nova palavra-passe<input id="new-password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+              <button class="secondary" type="submit">Atualizar palavra-passe</button>
+              <div class="inline-feedback" id="password-feedback" aria-live="polite"></div>
+            </form>
+            ` : '<div class="security-note"><span>✓</span><div><strong>Autenticação Google</strong><p>A palavra-passe é gerida pela sua conta Google.</p></div></div>'}
+          </section>
+        </div>
+
+        <section class="account-block account-resources">
+          <div class="account-block-head"><div><h3>Recursos</h3><p>Aceda rapidamente ao ecossistema.</p></div></div>
+          <div class="resource-links">
+            <a href="/tool/"><span><b>Ferramentas</b><small>Utilize as ferramentas Nexauren.</small></span><b>→</b></a>
+            <a href="/account/upgrade/"><span><b>Plano Pro</b><small>Recursos e assinatura.</small></span><b>→</b></a>
+            <a href="/legal/privacidade/"><span><b>Privacidade</b><small>Consulte os seus direitos e dados.</small></span><b>→</b></a>
           </div>
-          ${hasPasswordProvider ? `
-          <form id="password-form" class="mini-form password-form-shell" novalidate hidden>
-            <label>Palavra-passe atual<input id="current-password" type="password" autocomplete="current-password" required></label>
-            <label>Nova palavra-passe<input id="new-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-            <div class="password-rules" id="change-password-rules">12+ caracteres, maiúscula, minúscula, número e símbolo.</div>
-            <label>Confirmar nova palavra-passe<input id="new-password-confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-            <button class="secondary" type="submit">Atualizar palavra-passe</button>
-            <div class="inline-feedback" id="password-feedback" aria-live="polite"></div>
-          </form>
-          ` : `
-          <p class="hint">Esta conta usa o Google para autenticação. A palavra-passe é gerida diretamente pela sua conta Google.</p>
-          `}
         </section>
-      </div>
 
-      <section class="account-panel account-shortcuts">
-        <div class="section-title"><strong>Acesso rápido</strong><span>Continue no ecossistema Nexauren</span></div>
-        <div class="shortcut-grid">
-          <a href="/tool/"><span>Ferramentas</span><span aria-hidden="true">→</span></a>
-          <a href="/account/upgrade/"><span>Plano Pro</span><span aria-hidden="true">→</span></a>
-          <a href="/legal/privacidade/"><span>Privacidade</span><span aria-hidden="true">→</span></a>
-        </div>
-      </section>
-
-      <div class="account-danger">
-        <div class="account-danger-copy">
-          <strong>Sessão atual</strong>
-          <span>Termine a sessão neste dispositivo quando concluir.</span>
-        </div>
-        <button class="logout" id="logout">Terminar sessão</button>
+        <section class="account-session">
+          <div><strong>Sessão</strong><span>Terminar a sessão neste dispositivo.</span></div>
+          <button class="logout" id="logout">Terminar sessão</button>
+        </section>
       </div>
     </div>
   `;
 
   $("#logout").onclick = async () => {
-    try { await signOut(auth); }
-    catch (err) { alert(friendlyError(err)); }
+    try { await signOut(auth); } catch (err) { alert(friendlyError(err)); }
   };
 
   $("#profile-form").addEventListener("submit", async (event) => {
@@ -300,48 +314,36 @@ function userView(user, syncMessage = "") {
   });
 
   const resend = $("#resend-verification");
-  if (resend) {
-    resend.onclick = async () => {
-      const feedback = $("#verification-feedback");
-      feedback.textContent = "";
-      try {
-        await sendEmailVerification(auth.currentUser);
-        feedback.className = "inline-feedback success-text";
-        feedback.textContent = "Email de verificação reenviado.";
-      } catch (err) {
-        feedback.className = "inline-feedback error-text";
-        feedback.textContent = friendlyError(err);
-      }
-    };
-  }
+  if (resend) resend.onclick = async () => {
+    const feedback = $("#verification-feedback");
+    feedback.textContent = "";
+    try {
+      await sendEmailVerification(auth.currentUser);
+      feedback.className = "inline-feedback success-text";
+      feedback.textContent = "Email de verificação reenviado.";
+    } catch (err) {
+      feedback.className = "inline-feedback error-text";
+      feedback.textContent = friendlyError(err);
+    }
+  };
 
   const refresh = $("#refresh-verification");
-  if (refresh) {
-    refresh.onclick = async () => {
-      const feedback = $("#verification-feedback");
-      feedback.textContent = "";
-      try {
-        await auth.currentUser.reload();
-        userView(auth.currentUser);
-      } catch (err) {
-        feedback.className = "inline-feedback error-text";
-        feedback.textContent = friendlyError(err);
-      }
-    };
-  }
+  if (refresh) refresh.onclick = async () => {
+    const feedback = $("#verification-feedback");
+    feedback.textContent = "";
+    try { await auth.currentUser.reload(); userView(auth.currentUser); }
+    catch (err) { feedback.className = "inline-feedback error-text"; feedback.textContent = friendlyError(err); }
+  };
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
-    const sectionTitle = passwordForm.closest(".account-panel")?.querySelector(".section-title");
-    const toggle = sectionTitle?.querySelector(".section-toggle");
-    if (toggle) {
-      toggle.onclick = () => {
-        const open = !passwordForm.hidden;
-        passwordForm.hidden = open;
-        toggle.setAttribute("aria-expanded", String(!open));
-        toggle.textContent = open ? "Alterar palavra-passe" : "Fechar";
-      };
-    }
+    const toggle = passwordForm.closest(".account-block")?.querySelector(".section-toggle");
+    if (toggle) toggle.onclick = () => {
+      const open = !passwordForm.hidden;
+      passwordForm.hidden = open;
+      toggle.setAttribute("aria-expanded", String(!open));
+      toggle.textContent = open ? "Alterar" : "Fechar";
+    };
     const newPasswordInput = $("#new-password");
     newPasswordInput.addEventListener("input", () => {
       const missing = passwordPolicy(newPasswordInput.value);
@@ -349,7 +351,6 @@ function userView(user, syncMessage = "") {
       rules.textContent = missing.length ? "Falta: " + missing.join(", ") + "." : "✓ Palavra-passe forte.";
       rules.className = "password-rules " + (missing.length ? "" : "valid");
     });
-
     passwordForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const feedback = $("#password-feedback");
@@ -378,7 +379,7 @@ function userView(user, syncMessage = "") {
         passwordForm.reset();
         passwordForm.hidden = true;
         toggle?.setAttribute("aria-expanded", "false");
-        if (toggle) toggle.textContent = "Alterar palavra-passe";
+        if (toggle) toggle.textContent = "Alterar";
       } catch (err) {
         feedback.className = "inline-feedback error-text";
         feedback.textContent = friendlyError(err);
