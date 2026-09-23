@@ -614,8 +614,16 @@ async function loadToolRegistry(env,request){
   const dbActiveTools=dbRegistry.tools.filter(t=>t.status==="active");
   const assetActiveTools=assetRegistry?.tools?.filter(t=>t.status==="active")||[];
   if(!dbActiveTools.length && assetActiveTools.length)return assetRegistry;
-  if(!dbRegistry.categories.length && assetRegistry?.categories?.length)return {...dbRegistry,categories:assetRegistry.categories};
-  return dbRegistry;
+  if(!assetRegistry)return dbRegistry;
+  const mergedTools=[...dbRegistry.tools];
+  for(const tool of assetActiveTools){
+    if(!mergedTools.some(existing=>existing.id===tool.id))mergedTools.push(tool);
+  }
+  const mergedCategories=[...dbRegistry.categories];
+  for(const category of assetRegistry.categories||[]){
+    if(!mergedCategories.some(existing=>existing.id===category.id))mergedCategories.push(category);
+  }
+  return {...dbRegistry,tools:mergedTools,categories:mergedCategories};
 }
 async function ensureToolUsageTable(env){
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS tool_usage (tool_id TEXT NOT NULL,bucket TEXT NOT NULL,visitor_hash TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tool_id,bucket,visitor_hash))").run();
