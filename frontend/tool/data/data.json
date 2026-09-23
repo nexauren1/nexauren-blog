@@ -2,7 +2,7 @@
   "version": 3,
   "site": "Nexauren Story",
   "basePath": "/tool/",
-  "registry": {"updatedAt":"2026-09-23T11:20:00.000Z","source":"data/data.json"},
+  "registry": {"updatedAt":"2026-09-23T11:41:00.000Z","source":"data/data.json"},
   "categories": [
     {"id":"produtividade","name":"Produtividade","description":"Organização, cálculo e tarefas do dia a dia.","icon":"◷","sortOrder":10,"path":"/tool/categories/produtividade/"},
     {"id":"texto","name":"Texto","description":"Ferramentas para escrever, transformar e trabalhar com texto.","icon":"Aa","sortOrder":20,"path":"/tool/categories/texto/"},
@@ -17,6 +17,7 @@
     {"id":"gerador-de-codigo-de-barras","name":"Gerador de Código de Barras","description":"Gere códigos EAN-13, EAN-8, UPC-A, Code 128 e Code 39 com validação e saída para impressão.","category":"tecnologia","group":"qr-codigos","icon":"▥","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/gerador-de-codigo-de-barras/","tags":["barcode","EAN-13","EAN-8","UPC","Code 128","Code 39","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":30},
     {"id":"gerador-de-uuid","name":"Gerador de UUID","description":"Gere UUID v4 seguros, em múltiplas quantidades, com cópia rápida diretamente no navegador.","category":"tecnologia","group":"desenvolvimento","icon":"◇","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/gerador-de-uuid/","tags":["UUID","UUID v4","identificador","desenvolvimento","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":40},
     {"id":"gerador-de-hash","name":"Gerador de Hash","description":"Gere hashes SHA-256, SHA-384, SHA-512 e algoritmos legados localmente no navegador.","category":"tecnologia","group":"desenvolvimento","icon":"#","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/gerador-de-hash/","tags":["hash","SHA-256","SHA-512","criptografia","desenvolvimento","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":50},
-    {"id":"base64-encoder-decoder","name":"Codificador / Descodificador Base64","description":"Converta texto para Base64 e descodifique Base64 para texto com suporte UTF-8.","category":"tecnologia","group":"desenvolvimento","icon":"⇄","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/base64-encoder-decoder/","tags":["Base64","UTF-8","codificador","descodificador","desenvolvimento","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":60}
+    {"id":"base64-encoder-decoder","name":"Codificador / Descodificador Base64","description":"Converta texto para Base64 e descodifique Base64 para texto com suporte UTF-8.","category":"tecnologia","group":"desenvolvimento","icon":"⇄","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/base64-encoder-decoder/","tags":["Base64","UTF-8","codificador","descodificador","desenvolvimento","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":60},
+    {"id":"jwt-decoder","name":"JWT Decoder","description":"Visualize Header, Payload e Signature de tokens JWT com JSON formatado e timestamps legíveis.","category":"tecnologia","group":"desenvolvimento","icon":"🔐","version":"1.0.0","status":"active","path":"/tool/categories/tecnologia/jwt-decoder/","tags":["JWT","token","JSON","desenvolvimento","tecnologia"],"featured":false,"popular":false,"access":"public","sortOrder":70}
   ]
 }
