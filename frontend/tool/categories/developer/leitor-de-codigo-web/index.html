@@ -4,13 +4,13 @@
 <body>
 <main class="app">
 <a class="back" href="/tool/">← Ferramentas</a>
-<header><div class="eyebrow">NEXAUREN / DEVELOPER</div><div class="hero"><div><h1>Leitor de Código Web</h1><p>Leia, organize e inspecione HTML, CSS e JavaScript numa única ferramenta. Cole código ou abra um ficheiro local.</p></div><div class="badge">LOCAL · 3 LINGUAGENS</div></div></header>
+<header><div class="eyebrow">NEXAUREN / DEVELOPER</div><div class="hero"><div><h1>Leitor de Código Web</h1><p>Leia, organize e inspecione HTML, CSS e JavaScript numa única ferramenta. Cole código ou abra um ficheiro local.</p></div><div class="badge">LOCAL · HTML + CSS + JS</div></div></header>
 <section class="workspace">
 <div class="toolbar"><div class="tabs" role="tablist"><button class="tab active" data-lang="html">HTML</button><button class="tab" data-lang="css">CSS</button><button class="tab" data-lang="javascript">JavaScript</button></div><div class="actions"><label class="file">Abrir ficheiro<input id="file" type="file" accept=".html,.htm,.css,.js,.mjs,.cjs,text/html,text/css,application/javascript"></label><button id="sample">Exemplo</button><button id="clear">Limpar</button></div></div>
 <div class="meta"><span id="language">HTML</span><span id="stats">0 linhas · 0 caracteres</span></div>
 <div class="editor"><div id="lines" class="lines">1</div><textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="Cole o seu código HTML aqui..."></textarea><pre id="highlight" aria-hidden="true"></pre></div>
-<div class="bottom"><div><strong id="status">Pronto</strong><span id="hint">Processamento local no navegador.</span></div><button id="copy" class="primary">Copiar código</button></div>
+<div class="bottom"><div><strong id="status">Pronto</strong><span id="hint">Processamento local no navegador.</span></div><div class="bottom-actions"><button id="copy" class="primary">Copiar código</button><button id="test" class="test">Testar página ↗</button></div></div>
 </section>
-<section class="info"><span>COMO FUNCIONA</span><p>HTML, CSS e JavaScript são apenas três modos da mesma ferramenta. O conteúdo permanece no navegador e não é enviado para um servidor.</p></section>
-<footer>NEXAUREN TOOLS · Developer · Leitura local</footer>
+<section class="info"><span>TESTAR PÁGINA</span><p>Escreva uma página completa com HTML, CSS e JavaScript nos três separadores. Ao tocar em <strong>Testar página</strong>, a ferramenta monta os três códigos e abre uma nova página de pré-visualização no navegador. O código é executado localmente.</p></section>
+<footer>NEXAUREN TOOLS · Developer · Processamento local</footer>
 </main><script src="./script.js"></script></body></html>
