@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gerador de Secret Pro · Nexauren Tools</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="secret-app">
+<a class="back" href="/tool/">← Ferramentas</a>
+<header>
+<div class="topline"><span>NEXAUREN PRO</span><span>PRIVATE MATERIAL GENERATOR</span></div>
+<div class="hero">
+<div><h1>Gerador de Secret</h1><p>Crie valores secretos aleatórios para sessões, aplicações e configurações com fontes criptograficamente seguras do navegador.</p></div>
+<div class="core"><i></i><i></i><i></i><i></i></div>
+</div>
+</header>
+
+<section id="gate" class="gate">
+<div class="shield">●</div>
+<div><strong id="gateTitle">Verificando plano Pro</strong><p id="gateText">O Nexauren está a confirmar a sessão, a subscrição e a autorização desta ferramenta.</p></div>
+</section>
+
+<section id="workspace" class="workspace" hidden>
+<div class="control-panel">
+<label>FORMATO<select id="format"><option value="hex">Hexadecimal</option><option value="base64url">Base64 URL-safe</option><option value="base64">Base64</option><option value="alnum">Alfanumérico</option></select></label>
+<label>TAMANHO<select id="length"><option value="32">32 bytes</option><option value="16">16 bytes</option><option value="24">24 bytes</option><option value="48">48 bytes</option><option value="64">64 bytes</option><option value="96">96 bytes</option></select></label>
+<label>QUANTIDADE<input id="quantity" type="number" value="1" min="1" max="20" inputmode="numeric"></label>
+<button id="generate" class="primary">Gerar secret</button>
+</div>
+<div class="warning"><b>SEGURANÇA</b><span>Geração local. O conteúdo não é enviado nem guardado pelo Nexauren.</span></div>
+<section class="output">
+<div class="head"><span>02 · MATERIAL GERADO</span><span id="status">READY</span></div>
+<div id="secrets" class="secrets"><div class="empty">Nenhum secret gerado.</div></div>
+</section>
+<p id="message" class="message">Acesso Pro confirmado.</p>
+</section>
+<footer>NEXAUREN TOOLS · Private Material Generator · Pro</footer>
+</main>
+<script type="module">
+import {auth,onAuthStateChanged,getPlanState,verifyToolAccess,upgradeUrl} from "/tool/frontend/tool-access.js?v=20260923";
+const TOOL_ID="gerador-de-secret";
+const gate=document.querySelector("#gate"),workspace=document.querySelector("#workspace"),title=document.querySelector("#gateTitle"),text=document.querySelector("#gateText");
+async function verify(){
+ gate.hidden=false;workspace.hidden=true;title.textContent="Verificando plano Pro";text.textContent="A confirmar sessão, plano e autorização no backend.";
+ const user=auth.currentUser;
+ if(!user){title.textContent="Entre para usar esta ferramenta.";text.textContent="O Gerador de Secret é exclusivo do plano Pro.";return}
+ const [plan,unlock]=await Promise.all([getPlanState({force:true}),verifyToolAccess(TOOL_ID)]);
+ const activePro=plan.pro===true&&String(plan.plan).toLowerCase()==="pro"&&String(plan.status).toUpperCase()==="ACTIVE";
+ if(activePro&&unlock.unlocked===true&&!unlock.error){gate.hidden=true;workspace.hidden=false;return}
+ if(plan.pro===false){
+  title.textContent="Acesso exclusivo Pro";text.textContent="O plano atual não inclui esta ferramenta. Faça upgrade para desbloquear.";
+  if(!gate.querySelector(".upgrade")){const a=document.createElement("a");a.href=upgradeUrl();a.className="upgrade";a.textContent="Abrir Pro";gate.firstElementChild.nextElementSibling.appendChild(a)}
+  return
+ }
+ title.textContent="Acesso não confirmado";text.textContent="O backend não confirmou um plano Pro ativo. O gerador permanece bloqueado.";
+}
+onAuthStateChanged(auth,verify);
+</script>
+<script src="./script.js"></script>
+</body>
+</html>
