@@ -1,7 +1,7 @@
 import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
-const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2";
+const DEFAULT_SOCIAL_IMAGE = DEFAULT_SOCIAL_IMAGE;
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
@@ -37,6 +37,7 @@ async function hashPassword(password,saltB64=null){
   const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:100000,hash:"SHA-256"},key,256);
   return "pbkdf2$100000$"+b64(salt)+"$"+b64(new Uint8Array(bits));
 }
+const DUMMY_PASSWORD_HASH="pbkdf2$100000$bmV4YXVyZW4tZHVtbXkhIQ==$U9sMbP6gZ3gM76yZKWit5js74oHgAbqewfMqFO9livQ=";
 async function verifyPassword(password,stored){
   try{
     const [scheme,it,saltB64,expectedB64]=String(stored||"").split("$");
@@ -645,7 +646,6 @@ async function ensureToolUsageTable(env){
 async function toolRegistryWithUsage(env,request){
   const registry=await loadToolRegistry(env,request);
   try{
-    await ensureToolUsageTable(env);
     const usage=await env.DB.prepare("SELECT tool_id,COUNT(*) count FROM tool_usage WHERE bucket>=? GROUP BY tool_id").bind(new Date(Date.now()-30*86400000).toISOString().slice(0,10)).all();
     const counts=new Map((usage.results||[]).map(x=>[x.tool_id,Number(x.count||0)]));
     registry.tools=registry.tools.map(t=>({...t,usageCount:counts.get(t.id)||0}));
@@ -681,7 +681,6 @@ async function adminUsers(env){
   return {admins:admins.results||[],accounts};
 }
 async function adminStats(env,request){
-  try{await ensureToolUsageTable(env)}catch{}
   const [posts,published,drafts,scheduled,media,categories,tags,adminUsers,activeSessions,registry,toolViews]=await Promise.all([
     env.DB.prepare("SELECT COUNT(*) n FROM posts").first(),
     env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='published'").first(),
@@ -923,7 +922,6 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/tool/unlock"&&m==="GET"){
-    await ensureToolUnlockSchema(env);
     try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");const toolId=text(url.searchParams.get("tool_id")||"",120);if(!toolId)return fail("Ferramenta não especificada.",400,"TOOL_REQUIRED");return json({ok:true,unlocked:!!(await toolUnlockExists(env,a.account.id,toolId))});}
     catch(error){return fail(error?.message||"Não foi possível verificar o acesso.",500,error?.code||"TOOL_UNLOCK_ERROR");}
   }
@@ -964,7 +962,6 @@ async function api(env,request,url,ctx){
   }
 
   if(p==="/api/account/billing"&&m==="GET"){
-    await ensureBillingSchema(env);
     try{
       const a=await firebaseAccountAuth(env,request,false);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
@@ -986,7 +983,6 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/account/paypal/create"&&m==="POST"){
-    await ensureBillingSchema(env);
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{
       const a=await firebaseAccountAuth(env,request,true);
@@ -1024,7 +1020,6 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/account/paypal/confirm"&&m==="POST"){
-    await ensureBillingSchema(env);
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{
       const a=await firebaseAccountAuth(env,request,true);
@@ -1044,7 +1039,6 @@ async function api(env,request,url,ctx){
     }
   }
   if(p==="/api/account/paypal/cancel"&&m==="POST"){
-    await ensureBillingSchema(env);
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{
       const a=await firebaseAccountAuth(env,request,true);
@@ -1068,7 +1062,7 @@ async function api(env,request,url,ctx){
   if(p==="/api/auth/login"&&m==="POST"){
     try{
     if(!sameOrigin(request))return fail("Origem não autorizada.",403);const d=await bodyJson(request),email=normalizeEmail(d?.email),pw=String(d?.password||"");
-    if(!email||!pw||pw.length>200)return fail("Email e senha são obrigatórios.",422);const identifier=email+"|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
+    if(!email||!pw||pw.length<12||pw.length>200)return fail("Email e senha são obrigatórios; a senha deve ter pelo menos 12 caracteres.",422);const identifier=email+"|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
     const recent=await env.DB.prepare("SELECT COUNT(*) n FROM login_attempts WHERE identifier=? AND success=0 AND created_at>=?").bind(identifier,new Date(Date.now()-900000).toISOString()).first();
     if(Number(recent?.n||0)>=8)return fail("Muitas tentativas. Tente novamente mais tarde.",429,"RATE_LIMIT");
     let u=await env.DB.prepare("SELECT * FROM users WHERE email=? LIMIT 1").bind(email).first();
@@ -1076,7 +1070,7 @@ async function api(env,request,url,ctx){
       const count=await env.DB.prepare("SELECT COUNT(*) n FROM users").first(),be=normalizeEmail(env.ADMIN_EMAIL),bp=String(env.ADMIN_PASSWORD||"");
       if(Number(count?.n||0)===0&&be&&bp&&email===be&&pw===bp){const id=crypto.randomUUID(),ts=nowIso();await env.DB.prepare("INSERT INTO users (id,email,password_hash,display_name,role,status,email_verified,last_login_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)").bind(id,email,await hashPassword(pw),"Nexauren Owner","owner","active",1,ts,ts,ts).run();u=await env.DB.prepare("SELECT * FROM users WHERE id=?").bind(id).first();await audit(env,id,"auth.bootstrap","user",id,{});}
     }
-    const ok=u&&u.status==="active"&&await verifyPassword(pw,u.password_hash);await env.DB.prepare("INSERT INTO login_attempts (id,identifier,success,created_at) VALUES (?,?,?,?)").bind(crypto.randomUUID(),identifier,ok?1:0,nowIso()).run();
+    const ok=(u?.status==="active")&&await verifyPassword(pw,u?.password_hash||DUMMY_PASSWORD_HASH);await env.DB.prepare("INSERT INTO login_attempts (id,identifier,success,created_at) VALUES (?,?,?,?)").bind(crypto.randomUUID(),identifier,ok?1:0,nowIso()).run();
     if(!ok)return fail("Email ou senha inválidos.",401,"INVALID_CREDENTIALS");const ts=nowIso();await env.DB.prepare("UPDATE users SET last_login_at=?,updated_at=? WHERE id=?").bind(ts,ts,u.id).run();const s=await createSession(env,u.id,request);await audit(env,u.id,"auth.login","user",u.id,{});
     return json({ok:true,user:{id:u.id,email:u.email,display_name:u.display_name,role:u.role}},200,{"set-cookie":cookie(COOKIE,s.token,{maxAge:SESSION_SECONDS})});
     }catch(e){console.error("auth.login",e);return fail("Falha ao autenticar no D1. " + String(e?.message||"Verifique o schema.sql e a configuração do D1."),500,"AUTH_DB_ERROR");}
@@ -1097,7 +1091,6 @@ async function api(env,request,url,ctx){
     try{
       const d=await bodyJson(request),toolId=slugify(d?.tool_id||""),registry=await loadToolRegistry(env,request),tool=registry.tools.find(t=>t.id===toolId&&t.status==="active");
       if(!tool)return fail("Ferramenta não encontrada.",404,"TOOL_NOT_FOUND");
-      await ensureToolUsageTable(env);
       const bucket=nowIso().slice(0,10),ip=request.headers.get("CF-Connecting-IP")||"",ua=(request.headers.get("User-Agent")||"").slice(0,180);
       const visitorHash=await sha256(ip+"|"+ua);
       await env.DB.prepare("INSERT OR IGNORE INTO tool_usage (tool_id,bucket,visitor_hash,created_at) VALUES (?,?,?,?)").bind(toolId,bucket,visitorHash,nowIso()).run();
@@ -1214,7 +1207,7 @@ async function page(env,request,url){
   const publicPath=blogPublicPath(path);
   const cookieLang=getCookie(request,"ns_lang")||"pt";
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
-  const image="https://nexaurenstory.com/social-preview.png?v=20260922-1";
+  const image=DEFAULT_SOCIAL_IMAGE;
   let title=lang==="en"?"Nexauren Story — Official stories and updates":"Nexauren Story — Histórias e novidades oficiais";
   let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
   let type="website",articleMeta="";
@@ -1270,5 +1263,10 @@ async function page(env,request,url){
 }
 export default{
   async fetch(request,env,ctx){try{const url=new URL(request.url);if(url.pathname.startsWith("/api/"))return await api(env,request,url,ctx);return await page(env,request,url);}catch(e){console.error(e);return fail("Erro interno do servidor.",500,"INTERNAL_ERROR");}},
-  async scheduled(_controller,env){try{await publishDue(env);await cleanup(env);}catch(e){console.error(e);}}
+  async scheduled(_controller,env){
+    try{await publishDue(env);await cleanup(env);}catch(e){console.error("maintenance",e);}
+    try{await ensureBillingSchema(env);}catch(e){console.error("billing schema",e);}
+    try{await ensureToolUnlockSchema(env);}catch(e){console.error("tool unlock schema",e);}
+    try{await ensureToolUsageTable(env);}catch(e){console.error("tool usage schema",e);}
+  }
 };
