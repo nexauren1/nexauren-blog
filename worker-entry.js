@@ -1,7 +1,7 @@
 import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
-const DEFAULT_SOCIAL_IMAGE = DEFAULT_SOCIAL_IMAGE;
+const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2";
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
