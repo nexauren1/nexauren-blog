@@ -51,7 +51,8 @@
     try{
       if(window.NexaurenToolRegistry?.loadRegistry){
         const registry=await getRegistry();
-        if(registry?.tools?.length && registry?.categories?.length)return registry;
+        const active=Array.isArray(registry?.tools)?registry.tools.filter(t=>t.status==="active"):[];
+        if(active.length && registry?.categories?.length)return registry;
       }
     }catch{}
     return directRegistry();
