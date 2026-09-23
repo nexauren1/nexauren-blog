@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T16:29:35.250Z",
+    "updatedAt": "2026-09-23T16:40:53.504Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -501,6 +501,55 @@
       "popular": false,
       "access": "public",
       "sortOrder": 180
+    },
+    {
+      "id": "conversor-de-timestamp",
+      "name": "Conversor de Timestamp",
+      "description": "Converta Unix timestamps em datas legíveis e transforme datas e horas em timestamps em segundos ou milissegundos.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "◷",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/conversor-de-timestamp/",
+      "tags": [
+        "timestamp",
+        "Unix",
+        "data",
+        "hora",
+        "epoch",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 190
+    },
+    {
+      "id": "formatador-html",
+      "name": "Formatador HTML",
+      "description": "Formate, compacte e valide HTML diretamente no navegador com indentação configurável.",
+      "category": "tecnologia",
+      "group": "desenvolvimento",
+      "icon": "</>",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tecnologia/formatador-html/",
+      "tags": [
+        "HTML",
+        "formatter",
+        "formatar",
+        "compactar",
+        "validação",
+        "markup",
+        "desenvolvimento",
+        "tecnologia"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 200
     }
   ]
 }
