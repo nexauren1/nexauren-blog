@@ -128,6 +128,14 @@ CREATE TABLE IF NOT EXISTS tool_usage (
   PRIMARY KEY (tool_id,bucket,visitor_hash)
 );
 CREATE INDEX IF NOT EXISTS idx_tool_usage_bucket ON tool_usage(bucket,tool_id);
+CREATE TABLE IF NOT EXISTS tool_usage (
+  tool_id TEXT NOT NULL,
+  bucket TEXT NOT NULL,
+  visitor_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (tool_id,bucket,visitor_hash)
+);
+CREATE INDEX IF NOT EXISTS idx_tool_usage_bucket ON tool_usage(bucket,tool_id);
 
 CREATE TABLE IF NOT EXISTS navigation (
   id TEXT PRIMARY KEY,
