@@ -1,0 +1,3 @@
+const input=document.querySelector('#input');const algorithm=document.querySelector('#algorithm');const output=document.querySelector('#output');
+async function hash(){const data=new TextEncoder().encode(input.value);const buffer=await crypto.subtle.digest(algorithm.value,data);output.textContent=[...new Uint8Array(buffer)].map(x=>x.toString(16).padStart(2,'0')).join('')||'Nenhum hash gerado.'}
+document.querySelector('#generate').onclick=hash;document.querySelector('#copy').onclick=()=>navigator.clipboard.writeText(output.textContent);document.querySelector('#clear').onclick=()=>{input.value='';output.textContent='Nenhum hash gerado.'};
