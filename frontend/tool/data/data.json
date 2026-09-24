@@ -1,9 +1,9 @@
 {
-  "version": 3,
+  "version": 4,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-23T18:26:53.464Z",
+    "updatedAt": "2026-09-24T18:20:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -785,6 +785,198 @@
       "popular": true,
       "access": "public",
       "sortOrder": 10
+    },
+    {
+      "id": "image-compressor",
+      "name": "Compressor de Imagem",
+      "description": "Reduza o tamanho de JPG, PNG e WebP com controlo de qualidade e processamento local.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-compressor/",
+      "tags": [
+        "imagem",
+        "image",
+        "compressor",
+        "Compressor de Imagem"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 10
+    },
+    {
+      "id": "image-resizer",
+      "name": "Redimensionador de Imagem",
+      "description": "Altere dimensões por pixels mantendo a proporção quando necessário.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-resizer/",
+      "tags": [
+        "imagem",
+        "image",
+        "resizer",
+        "Redimensionador de Imagem"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 20
+    },
+    {
+      "id": "image-converter",
+      "name": "Conversor de Formato de Imagem",
+      "description": "Converta para PNG, JPG, WebP ou AVIF diretamente no navegador.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-converter/",
+      "tags": [
+        "imagem",
+        "image",
+        "converter",
+        "Conversor de Formato de Imagem"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 30
+    },
+    {
+      "id": "image-cropper",
+      "name": "Cortador de Imagem",
+      "description": "Corte imagens com proporções prontas para posts, stories e miniaturas.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-cropper/",
+      "tags": [
+        "imagem",
+        "image",
+        "cropper",
+        "Cortador de Imagem"
+      ],
+      "featured": false,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 40
+    },
+    {
+      "id": "image-watermark",
+      "name": "Marca-d'água de Imagem",
+      "description": "Adicione texto sobre a imagem com tamanho, posição, cor e opacidade ajustáveis.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-watermark/",
+      "tags": [
+        "imagem",
+        "image",
+        "watermark",
+        "Marca-d'água de Imagem"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 50
+    },
+    {
+      "id": "image-metadata-cleaner",
+      "name": "Limpador de Metadados",
+      "description": "Reexporte uma imagem para remover os metadados que não são preservados pelo Canvas.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-metadata-cleaner/",
+      "tags": [
+        "imagem",
+        "image",
+        "metadata",
+        "cleaner",
+        "Limpador de Metadados"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 60
+    },
+    {
+      "id": "image-palette-extractor",
+      "name": "Extrator de Paleta de Cores",
+      "description": "Extraia cores dominantes de uma imagem e copie HEX ou tokens CSS.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/image-palette-extractor/",
+      "tags": [
+        "imagem",
+        "image",
+        "palette",
+        "extractor",
+        "Extrator de Paleta de Cores"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 70
+    },
+    {
+      "id": "social-image-resizer",
+      "name": "Redimensionador para Redes Sociais",
+      "description": "Prepare imagens para formatos comuns de Instagram, stories, YouTube, Open Graph, X e LinkedIn.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/social-image-resizer/",
+      "tags": [
+        "imagem",
+        "social",
+        "image",
+        "resizer",
+        "Redimensionador para Redes Sociais"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 80
+    },
+    {
+      "id": "favicon-generator",
+      "name": "Gerador de Favicon e Ícones",
+      "description": "Gere PNGs em tamanhos úteis para favicon, Apple Touch Icon e PWA a partir de uma imagem.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "▧",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/favicon-generator/",
+      "tags": [
+        "imagem",
+        "favicon",
+        "generator",
+        "Gerador de Favicon e Ícones"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 90
     }
   ]
 }
