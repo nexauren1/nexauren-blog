@@ -1,0 +1,18 @@
+name: Apply Nexauren Branding
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  branding:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Nexauren branding rules
+        run: |
+          echo "Applying Nexauren public branding rules"
+          echo "Excluded paths: /blog/ and /articles/"
