@@ -12,7 +12,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Nexauren branding rules
+      - name: Validate Nexauren assets
         run: |
-          echo "Applying Nexauren public branding rules"
-          echo "Excluded paths: /blog/ and /articles/"
+          set -e
+          test -s frontend/assets/nexauren-brand.png
+          test -s frontend/assets/favicon-nexauren.png
+          test -s frontend/assets/social-preview-nexauren.png
+          echo "Nexauren branding assets are present."
+
+      - name: Protect excluded paths
+        run: |
+          set -e
+          changed="$(git diff --name-only HEAD^ HEAD || true)"
+          if printf '%s
+' "$changed" | grep -E '(^|/)(blog|articles)(/|$)'; then
+            echo "ERROR: /blog/ and /articles/ are excluded from branding changes."
+            exit 1
+          fi
+          echo "Excluded paths verified."
