@@ -27,7 +27,6 @@ export default {
       path === "/articles" || path.startsWith("/articles/") ||
       path === "/article" || path.startsWith("/article/") ||
       path === "/blog/post" || path.startsWith("/blog/post/") ||
-      path === "/blog/posts" || path.startsWith("/blog/posts/") ||
       path === "/post" || path.startsWith("/post/") ||
       path === "/admin" || path.startsWith("/admin/")
     ) {
