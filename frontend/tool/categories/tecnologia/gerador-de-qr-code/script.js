@@ -111,5 +111,16 @@ $("year").textContent=new Date().getFullYear();
 
 onAuthStateChanged(auth,user=>{
   showGate(!user);
-  if(user){generate();setStatus("Pronto para gerar.");}
+  if(user){
+    generate();
+    setStatus("Pronto para gerar.");
+    requestAnimationFrame(()=>{
+      const top=document.querySelector("#qr-ad-top");
+      const bottom=document.querySelector("#qr-ad-bottom");
+      if(window.NexaurenAds){
+        window.NexaurenAds.loadBanner(top);
+        window.NexaurenAds.loadResponsive(bottom);
+      }
+    });
+  }
 });
