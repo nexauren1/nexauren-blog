@@ -3,29 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Teste Adsterra | Nexauren Story</title>
-  <meta name="description" content="Página isolada para testar os códigos de publicidade Adsterra no Nexauren Story.">
+  <title>Teste de anúncios | Nexauren Story</title>
+  <meta name="description" content="Página isolada para testar anúncios e Smartlink fornecidos pelo Adsterra.">
   <link rel="canonical" href="https://nexaurenstory.com/ad-test/">
 
-  <script src="https://pl31493326.profitableratecpmnetwork.com/0c/e3/cd/0ce3cd856b873069ded05e6dd5ad71ac.js"></script>
-  <script src="https://pl31493324.profitableratecpmnetwork.com/c7/29/a2/c729a2c53f3647ef5a4f5a3d356724d3.js"></script>
+  <style>
+    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:680px;margin:0 auto;padding:32px 20px;line-height:1.5}
+    h1{margin-bottom:8px}
+    .muted{color:#666}
+    .actions{display:grid;gap:12px;margin-top:24px}
+    button,.smartlink{display:block;width:100%;box-sizing:border-box;padding:14px 18px;border:0;border-radius:10px;background:#111;color:#fff;text-align:center;text-decoration:none;font-size:16px;font-weight:600;cursor:pointer}
+    button:hover,.smartlink:hover{opacity:.9}
+    .status{margin-top:18px;padding:12px;border-radius:10px;background:#f4f4f4;min-height:24px}
+    .banner{margin-top:28px;min-height:50px}
+  </style>
 </head>
 <body>
 
-<h1>Teste Adsterra</h1>
+<h1>Teste de anúncios</h1>
+<p class="muted">Use os botões abaixo para testar os dois scripts e o Smartlink. O banner 320×50 permanece visível para comparação.</p>
 
-<p>Teste dos scripts Adsterra e do banner 320x50.</p>
+<div class="actions">
+  <button type="button" id="ad-one">Testar anúncio 1</button>
+  <button type="button" id="ad-two">Testar anúncio 2</button>
+  <a class="smartlink" href="https://www.profitableratecpmnetwork.com/gi287ge7m?key=cdb96538ae14c42bfc64366ad89c2b97" target="_blank" rel="noopener noreferrer">Testar Smartlink</a>
+</div>
+
+<div class="status" id="status" aria-live="polite">Nenhum teste executado.</div>
+
+<div class="banner" aria-label="Banner 320x50">
+  <script>
+    atOptions = {
+      'key' : '1af283f4fc2f1dae8f8b26e113ae4469',
+      'format' : 'iframe',
+      'height' : 50,
+      'width' : 320,
+      'params' : {}
+    };
+  </script>
+  <script src="https://www.highrevenueformat.com/1af283f4fc2f1dae8f8b26e113ae4469/invoke.js"></script>
+</div>
 
 <script>
-  atOptions = {
-    'key' : '1af283f4fc2f1dae8f8b26e113ae4469',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
+  const status = document.getElementById("status");
+
+  function loadExternalScript(src, label) {
+    status.textContent = "A carregar " + label + "…";
+    const old = document.querySelector('script[data-ad-test="' + label + '"]');
+    if (old) old.remove();
+
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = false;
+    s.dataset.adTest = label;
+    s.onload = () => {
+      status.textContent = label + " carregado.";
+    };
+    s.onerror = () => {
+      status.textContent = "Não foi possível carregar " + label + ".";
+    };
+    document.head.appendChild(s);
+  }
+
+  document.getElementById("ad-one").addEventListener("click", () => {
+    loadExternalScript(
+      "https://pl31493326.profitableratecpmnetwork.com/0c/e3/cd/0ce3cd856b873069ded05e6dd5ad71ac.js",
+      "anúncio 1"
+    );
+  });
+
+  document.getElementById("ad-two").addEventListener("click", () => {
+    loadExternalScript(
+      "https://pl31493324.profitableratecpmnetwork.com/c7/29/a2/c729a2c53f3647ef5a4f5a3d356724d3.js",
+      "anúncio 2"
+    );
+  });
 </script>
-<script src="https://www.highrevenueformat.com/1af283f4fc2f1dae8f8b26e113ae4469/invoke.js"></script>
 
 </body>
 </html>
