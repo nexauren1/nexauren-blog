@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "nexauren-blog",
-  "main": "worker-entry.js",
+  "main": "branding-worker.js",
   "compatibility_date": "2026-09-17",
   "ai": {
     "binding": "AI"
