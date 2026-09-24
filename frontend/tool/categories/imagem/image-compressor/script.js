@@ -72,11 +72,13 @@ async function queryPolicy() {
     getPlanState({ force: true }),
     verifyToolAccess("image-compressor")
   ]);
-  const authenticated = !!plan?.authenticated && plan?.pro !== null && plan?.status !== "UNKNOWN";
-  if (!authenticated) {
+  if (!plan?.authenticated || plan?.pro === null || plan?.status === "UNKNOWN") {
     throw Object.assign(new Error("Não foi possível confirmar o seu plano."), { code: "PLAN_UNAVAILABLE" });
   }
-  if (plan.pro === true && plan.plan?.toLowerCase() === "pro" && plan.status?.toUpperCase() === "ACTIVE" && unlock?.unlocked === true && !unlock?.error) {
+  if (plan.pro === true) {
+    if (plan.plan?.toLowerCase() !== "pro" || plan.status?.toUpperCase() !== "ACTIVE" || unlock?.unlocked !== true || unlock?.error) {
+      throw Object.assign(new Error("Não foi possível confirmar o acesso aos recursos Pro."), { code: "PRO_UNAVAILABLE" });
+    }
     state.policy = {
       plan: "pro",
       limits: { maxFilesPerBatch: null },
