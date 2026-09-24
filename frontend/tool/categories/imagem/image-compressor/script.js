@@ -55,7 +55,7 @@ function setPlanUI(policy) {
     badge.textContent = "CONTA";
     stateEl.textContent = "A consultar…";
     stateEl.className = "nx-plan-state";
-    copy.textContent = "A consultar Firebase e D1 para determinar o limite deste lote.";
+    copy.textContent = "A verificar os recursos disponíveis para a sua conta…";
     return;
   }
   const pro = policy.plan === "pro";
@@ -63,7 +63,7 @@ function setPlanUI(policy) {
   stateEl.textContent = pro ? "Ilimitado" : "3 imagens";
   stateEl.className = "nx-plan-state " + (pro ? "pro" : "free");
   copy.textContent = pro
-    ? "Lotes sem limite de imagens. O servidor continua a validar a sua assinatura antes do processamento."
+    ? "Lotes sem limite de imagens."
     : "Até 3 imagens por lote. Entre no Pro para desbloquear lotes ilimitados.";
 }
 
