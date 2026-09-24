@@ -1,4 +1,5 @@
 import { auth, onAuthStateChanged, workerFetch } from "/account/account-client.js?v=20260923-tool-access-2";
+import { getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260923";
 
 const $ = (s) => document.querySelector(s);
 const state = {
@@ -54,7 +55,7 @@ function setPlanUI(policy) {
     badge.textContent = "CONTA";
     stateEl.textContent = "A consultar…";
     stateEl.className = "nx-plan-state";
-    copy.textContent = "A consultar Firebase e D1 para determinar o limite deste lote.";
+    copy.textContent = "A verificar os recursos disponíveis para a sua conta…";
     return;
   }
   const pro = policy.plan === "pro";
@@ -62,13 +63,34 @@ function setPlanUI(policy) {
   stateEl.textContent = pro ? "Ilimitado" : "3 imagens";
   stateEl.className = "nx-plan-state " + (pro ? "pro" : "free");
   copy.textContent = pro
-    ? "Lotes sem limite de imagens. O servidor continua a validar a sua assinatura antes do processamento."
+    ? "Lotes sem limite de imagens."
     : "Até 3 imagens por lote. Entre no Pro para desbloquear lotes ilimitados.";
 }
 
 async function queryPolicy() {
-  const data = await workerFetch("/api/tools/image-compressor/query", { method: "GET", cache: "no-store" });
-  state.policy = data.policy;
+  const [plan, unlock] = await Promise.all([
+    getPlanState({ force: true }),
+    verifyToolAccess("image-compressor")
+  ]);
+  if (!plan?.authenticated || plan?.pro === null || plan?.status === "UNKNOWN") {
+    throw Object.assign(new Error("Não foi possível confirmar o seu plano."), { code: "PLAN_UNAVAILABLE" });
+  }
+  if (plan.pro === true) {
+    if (plan.plan?.toLowerCase() !== "pro" || plan.status?.toUpperCase() !== "ACTIVE" || unlock?.unlocked !== true || unlock?.error) {
+      throw Object.assign(new Error("Não foi possível confirmar o acesso aos recursos Pro."), { code: "PRO_UNAVAILABLE" });
+    }
+    state.policy = {
+      plan: "pro",
+      limits: { maxFilesPerBatch: null },
+      usage: null
+    };
+  } else {
+    state.policy = {
+      plan: "free",
+      limits: { maxFilesPerBatch: 3 },
+      usage: null
+    };
+  }
   setPlanUI(state.policy);
   return state.policy;
 }

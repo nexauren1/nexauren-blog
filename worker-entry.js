@@ -871,13 +871,25 @@ async function ensureToolAccountUsageSchema(env){
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_tool_account_usage_account ON tool_account_usage(account_id,tool_id,bucket)").run();
 }
 
+async function resolvedBillingRow(env,accountId){
+  let row=await billingEnsureRow(env,accountId);
+  if(row?.paypal_subscription_id&&["ACTIVE","APPROVED","SUSPENDED","CANCELLED","EXPIRED"].includes(row.status)){
+    const remote=await paypalRequest(env,"/v1/billing/subscriptions/"+encodeURIComponent(row.paypal_subscription_id)+"?fields=plan", {method:"GET"});
+    if(remote?.plan_id===row.paypal_plan_id||!row.paypal_plan_id){
+      row=await billingSyncFromPaypal(env,row,remote);
+    }
+  }
+  return row;
+}
+
 async function imageCompressorContext(env,request){
   const a=await firebaseAccountAuth(env,request,false);
   if(!a)return {error:fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED")};
   const registry=await loadToolRegistry(env,request);
   const tool=registry?.tools?.find(t=>t.id===IMAGE_COMPRESSOR_TOOL_ID&&t.status==="active");
   if(!tool)return {error:fail("Ferramenta não encontrada.",404,"TOOL_NOT_FOUND")};
-  const pro=await proToolAccess(env,a.account.id);
+  const billing=await resolvedBillingRow(env,a.account.id);
+  const pro=String(billing?.plan||"").toLowerCase()==="pro"&&String(billing?.status||"").toUpperCase()==="ACTIVE";
   const rawLimit=Number(tool.freeBatchLimit);
   const freeLimit=Number.isFinite(rawLimit)?Math.max(1,Math.min(1000,rawLimit)):IMAGE_COMPRESSOR_DEFAULT_FREE_BATCH;
   return {a,tool,pro,freeLimit};
@@ -1019,15 +1031,12 @@ async function api(env,request,url,ctx){
     try{
       const a=await firebaseAccountAuth(env,request,false);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
-      let row=await billingEnsureRow(env,a.account.id);
-      if(row.paypal_subscription_id&&["ACTIVE","APPROVED","SUSPENDED","CANCELLED","EXPIRED"].includes(row.status)){
-        try{
-          const remote=await paypalRequest(env,"/v1/billing/subscriptions/"+encodeURIComponent(row.paypal_subscription_id)+"?fields=plan", {method:"GET"});
-          if(remote?.plan_id===row.paypal_plan_id||!row.paypal_plan_id)row=await billingSyncFromPaypal(env,row,remote);
-        }catch(error){
-          console.error("billing.remote_sync",String(error?.message||error));
-          return fail("Não foi possível validar o estado atual da assinatura.",503,"BILLING_SYNC_UNAVAILABLE");
-        }
+      let row;
+      try{
+        row=await resolvedBillingRow(env,a.account.id);
+      }catch(error){
+        console.error("billing.remote_sync",String(error?.message||error));
+        return fail("Não foi possível validar o estado atual da assinatura.",503,"BILLING_SYNC_UNAVAILABLE");
       }
       return json({ok:true,billing:billingPublic(row)});
     }catch(error){
