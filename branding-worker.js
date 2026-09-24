@@ -11,29 +11,20 @@ export default {
     if (!response.ok || !type.toLowerCase().includes("text/html")) return response;
 
     const path = new URL(request.url).pathname.toLowerCase();
-    if (path === "/blog" || path.startsWith("/blog/") || path === "/articles" || path.startsWith("/articles/") || path === "/admin" || path.startsWith("/admin/")) {
-      return response;
-    }
+    if (path === "/blog" || path.startsWith("/blog/") || path === "/articles" || path.startsWith("/articles/") || path === "/admin" || path.startsWith("/admin/")) return response;
 
     let html = await response.text();
+    html = html.replace(/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*>/gi, iconTag);
+    html = html.replace(/<meta[^>]*property=["']og:image["'][^>]*>/gi, ogTag);
+    html = html.replace(/<meta[^>]*name=["']twitter:image["'][^>]*>/gi, twitterTag);
 
-    const oldIcon = '<link rel="icon" href="/nexauren-story-favicon.ico?v=20260922-6"><link rel="icon" type="image/svg+xml" href="/nexauren-story-favicon.svg?v=20260922-6"><link rel="icon" type="image/png" sizes="32x32" href="/nexauren-story-favicon.png?v=20260922-6">';
-    html = html.replace(oldIcon, iconTag);
-
-    const oldOg = '<meta property="og:image" content="https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2">';
-    html = html.replace(oldOg, ogTag);
-
-    const oldTwitter = '<meta name="twitter:image" content="https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2">';
-    html = html.replace(oldTwitter, twitterTag);
+    if (!/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*>/i.test(html)) html = html.replace(/<\/head>/i, iconTag + "\n</head>");
+    if (!/<meta[^>]*property=["']og:image["'][^>]*>/i.test(html)) html = html.replace(/<\/head>/i, ogTag + "\n</head>");
+    if (!/<meta[^>]*name=["']twitter:image["'][^>]*>/i.test(html)) html = html.replace(/<\/head>/i, twitterTag + "\n</head>");
 
     const headers = new Headers(response.headers);
     headers.delete("content-length");
-
-    return new Response(html, {
-      status: response.status,
-      statusText: response.statusText,
-      headers
-    });
+    return new Response(html, { status: response.status, statusText: response.statusText, headers });
   },
   async scheduled(controller, env, ctx) {
     if (typeof app.scheduled === "function") return app.scheduled(controller, env, ctx);
