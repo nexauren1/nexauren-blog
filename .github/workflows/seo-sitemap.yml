@@ -48,7 +48,7 @@ jobs:
           grep -q 'application/ld+json' frontend/index.html
           grep -q 'defer' frontend/index.html
           grep -q 'NexaurenAds?.apply' frontend/assets/app.js
-          grep -q '11183778' frontend/assets/ads.js
+          grep -q '842be0a485a66000fcf7e5d24ee7b149' frontend/assets/ads.js
           ! grep -q '11177602' frontend/assets/ads.js
           ! grep -q 'vignette.min.js' frontend/assets/ads.js
 

@@ -26,7 +26,7 @@ jobs:
           grep -q 'name="twitter:card"' frontend/index.html
           grep -q 'nexauren-structured-data' frontend/index.html
           grep -q 'src="/assets/ads.js"' frontend/assets/app.js
-          grep -q '11183778' frontend/assets/ads.js
+          grep -q '842be0a485a66000fcf7e5d24ee7b149' frontend/assets/ads.js
           ! grep -q '11177602' frontend/assets/ads.js
           ! grep -q 'vignette.min.js' frontend/assets/ads.js
           grep -q 'function sitemap' worker-entry.js

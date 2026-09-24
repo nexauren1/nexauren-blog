@@ -84,7 +84,6 @@ jobs:
           grep -q 'sendPasswordResetEmail' frontend/account/account.js
           grep -q 'sendEmailVerification' frontend/account/account.js
           grep -q 'updatePassword' frontend/account/account.js
-          grep -q 'account Firebase' frontend/account/account.css || true
           grep -q 'jwtVerify' worker-entry.js
           grep -q 'FIREBASE_PROJECT_ID = "nexauren-story"' worker-entry.js
           grep -q 'nexauren_accounts' worker-entry.js
