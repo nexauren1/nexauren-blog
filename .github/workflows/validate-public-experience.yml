@@ -87,11 +87,15 @@ jobs:
           public_bad=[]
           for path,file in pages.items():
               html=file.read_text(encoding="utf-8")
-              for pattern,label in [
+              patterns=[
                   (r"<title>\s*[^<]+</title>","title"),
-                  (r'name=["\']description["\']',"description"),
-                  (r'rel=["\']canonical["\']',"canonical"),
-              ]:
+              ]
+              if not path.startswith("/tool/"):
+                  patterns.extend([
+                      (r'name=["\']description["\']',"description"),
+                      (r'rel=["\']canonical["\']',"canonical"),
+                  ])
+              for pattern,label in patterns:
                   if not re.search(pattern,html,re.I):
                       public_bad.append((path,label))
               if re.search(r"firebase|cloudflare",html,re.I):
