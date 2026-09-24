@@ -909,7 +909,7 @@ async function imageCompressorConsume(env,request){
   const imageCount=Number(data?.image_count);
   if(!Number.isInteger(imageCount)||imageCount<1||imageCount>10000)return fail("Quantidade de imagens inválida.",422,"IMAGE_COUNT_INVALID");
   if(!ctx.pro&&imageCount>ctx.freeLimit){
-    return fail("O plano Free permite até "+ctx.freeLimit+" imagens por lote. Atualize para o Pro para remover este limite.",429,"TOOL_BATCH_LIMIT",{max_files:ctx.freeLimit,plan:"free"});
+    return fail("O plano Free permite até "+ctx.freeLimit+" imagens por lote. Atualize para o Pro para remover este limite.",429,"TOOL_BATCH_LIMIT",String(ctx.freeLimit));
   }
   await ensureToolAccountUsageSchema(env);
   const bucket=nowIso().slice(0,10);
