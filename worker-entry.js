@@ -623,7 +623,9 @@ function normalizeToolRegistry(raw){
       tags:Array.isArray(t?.tags)?t.tags.map(x=>text(x,50).trim()).filter(Boolean).slice(0,12):[],
       featured:!!t?.featured,
       popular:!!t?.popular,
-      sortOrder:Number.isFinite(Number(t?.sortOrder))?Number(t.sortOrder):(i+1)*10
+      sortOrder:Number.isFinite(Number(t?.sortOrder))?Number(t.sortOrder):(i+1)*10,
+      freeBatchLimit:Number.isFinite(Number(t?.freeBatchLimit))?Math.max(1,Math.min(1000,Number(t.freeBatchLimit))):null,
+      proBatchLimit:t?.proBatchLimit==null?null:(Number.isFinite(Number(t.proBatchLimit))?Math.max(1,Math.min(10000,Number(t.proBatchLimit))):null)
     };
   }).filter(t=>t.id&&t.name&&t.path&&t.status&&t.access):[];
   return {version:Number(raw?.version||1)||1,site:"Nexauren Story",basePath:"/tool/",registry:{updatedAt:nowIso(),source:"nexauren-admin"},categories,tools};
@@ -853,6 +855,70 @@ async function proToolAccess(env,accountId){
   return !!row;
 }
 
+const IMAGE_COMPRESSOR_TOOL_ID = "image-compressor";
+const IMAGE_COMPRESSOR_DEFAULT_FREE_BATCH = 3;
+
+async function ensureToolAccountUsageSchema(env){
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS tool_account_usage (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    tool_id TEXT NOT NULL,
+    bucket TEXT NOT NULL,
+    batch_id TEXT NOT NULL UNIQUE,
+    image_count INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`).run();
+  await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_tool_account_usage_account ON tool_account_usage(account_id,tool_id,bucket)").run();
+}
+
+async function imageCompressorContext(env,request){
+  const a=await firebaseAccountAuth(env,request,false);
+  if(!a)return {error:fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED")};
+  const registry=await loadToolRegistry(env,request);
+  const tool=registry?.tools?.find(t=>t.id===IMAGE_COMPRESSOR_TOOL_ID&&t.status==="active");
+  if(!tool)return {error:fail("Ferramenta não encontrada.",404,"TOOL_NOT_FOUND")};
+  const pro=await proToolAccess(env,a.account.id);
+  const rawLimit=Number(tool.freeBatchLimit);
+  const freeLimit=Number.isFinite(rawLimit)?Math.max(1,Math.min(1000,rawLimit)):IMAGE_COMPRESSOR_DEFAULT_FREE_BATCH;
+  return {a,tool,pro,freeLimit};
+}
+
+async function imageCompressorQuery(env,request){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const ctx=await imageCompressorContext(env,request);
+  if(ctx.error)return ctx.error;
+  await ensureToolAccountUsageSchema(env);
+  const bucket=nowIso().slice(0,10);
+  const usage=await env.DB.prepare("SELECT COUNT(*) batches,COALESCE(SUM(image_count),0) images FROM tool_account_usage WHERE account_id=? AND tool_id=? AND bucket=?").bind(ctx.a.account.id,IMAGE_COMPRESSOR_TOOL_ID,bucket).first();
+  const maxFiles=ctx.pro?null:ctx.freeLimit;
+  return json({
+    ok:true,
+    provider:"firebase",
+    tool:{id:ctx.tool.id,name:ctx.tool.name,version:ctx.tool.version},
+    plan:ctx.pro?"pro":"free",
+    limits:{maxFilesPerBatch:maxFiles},
+    usage:{todayBatches:Number(usage?.batches||0),todayImages:Number(usage?.images||0)}
+  });
+}
+
+async function imageCompressorConsume(env,request){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const ctx=await imageCompressorContext(env,request);
+  if(ctx.error)return ctx.error;
+  const data=await bodyJson(request);
+  const imageCount=Number(data?.image_count);
+  if(!Number.isInteger(imageCount)||imageCount<1||imageCount>10000)return fail("Quantidade de imagens inválida.",422,"IMAGE_COUNT_INVALID");
+  if(!ctx.pro&&imageCount>ctx.freeLimit){
+    return fail("O plano Free permite até "+ctx.freeLimit+" imagens por lote. Atualize para o Pro para remover este limite.",429,"TOOL_BATCH_LIMIT",{max_files:ctx.freeLimit,plan:"free"});
+  }
+  await ensureToolAccountUsageSchema(env);
+  const bucket=nowIso().slice(0,10);
+  const batchId=text(data?.batch_id||crypto.randomUUID(),120);
+  await env.DB.prepare("INSERT INTO tool_account_usage (id,account_id,tool_id,bucket,batch_id,image_count,created_at) VALUES (?,?,?,?,?,?,?)")
+    .bind(crypto.randomUUID(),ctx.a.account.id,IMAGE_COMPRESSOR_TOOL_ID,bucket,batchId,imageCount,nowIso()).run();
+  return json({ok:true,batch_id:batchId,plan:ctx.pro?"pro":"free",limits:{maxFilesPerBatch:ctx.pro?null:ctx.freeLimit}});
+}
+
 async function verifyPaypalWebhook(env,request,rawBody){
   const webhookId=String(env.PAYPAL_WEBHOOK_ID||"").trim();
   if(!webhookId)throw Object.assign(new Error("PAYPAL_WEBHOOK_ID não está configurado."),{code:"PAYPAL_WEBHOOK_NOT_CONFIGURED"});
@@ -907,6 +973,20 @@ async function api(env,request,url,ctx){
       return json({ok:true,unlocked:activePro,requires_pro:requiresPro});
     }catch(error){
       return fail(error?.message||"Não foi possível verificar o acesso.",500,error?.code||"TOOL_ACCESS_ERROR");
+    }
+  }
+
+  if(p==="/api/tools/image-compressor/query"&&m==="GET"){
+    try{return await imageCompressorQuery(env,request);}
+    catch(error){return fail(error?.message||"Não foi possível consultar os limites do compressor.",503,error?.code||"IMAGE_COMPRESSOR_QUERY_ERROR");}
+  }
+
+  if(p==="/api/tools/image-compressor/consume"&&m==="POST"){
+    try{return await imageCompressorConsume(env,request);}
+    catch(error){
+      const code=error?.code||"IMAGE_COMPRESSOR_CONSUME_ERROR";
+      const status=code==="TOOL_BATCH_LIMIT"?429:503;
+      return fail(error?.message||"Não foi possível validar o lote.",status,code,error?.details||null);
     }
   }
 
