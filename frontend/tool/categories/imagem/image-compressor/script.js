@@ -1,4 +1,5 @@
 import { auth, onAuthStateChanged, workerFetch } from "/account/account-client.js?v=20260923-tool-access-2";
+import { getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260923";
 
 const $ = (s) => document.querySelector(s);
 const state = {
@@ -67,8 +68,27 @@ function setPlanUI(policy) {
 }
 
 async function queryPolicy() {
-  const data = await workerFetch("/api/tools/image-compressor/query", { method: "GET", cache: "no-store" });
-  state.policy = data.policy;
+  const [plan, unlock] = await Promise.all([
+    getPlanState({ force: true }),
+    verifyToolAccess("image-compressor")
+  ]);
+  const authenticated = !!plan?.authenticated && plan?.pro !== null && plan?.status !== "UNKNOWN";
+  if (!authenticated) {
+    throw Object.assign(new Error("Não foi possível confirmar o seu plano."), { code: "PLAN_UNAVAILABLE" });
+  }
+  if (plan.pro === true && plan.plan?.toLowerCase() === "pro" && plan.status?.toUpperCase() === "ACTIVE" && unlock?.unlocked === true && !unlock?.error) {
+    state.policy = {
+      plan: "pro",
+      limits: { maxFilesPerBatch: null },
+      usage: null
+    };
+  } else {
+    state.policy = {
+      plan: "free",
+      limits: { maxFilesPerBatch: 3 },
+      usage: null
+    };
+  }
   setPlanUI(state.policy);
   return state.policy;
 }
