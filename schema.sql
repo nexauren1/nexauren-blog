@@ -129,6 +129,17 @@ CREATE TABLE IF NOT EXISTS tool_usage (
 );
 CREATE INDEX IF NOT EXISTS idx_tool_usage_bucket ON tool_usage(bucket,tool_id);
 
+CREATE TABLE IF NOT EXISTS tool_account_usage (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  tool_id TEXT NOT NULL,
+  bucket TEXT NOT NULL,
+  batch_id TEXT NOT NULL UNIQUE,
+  image_count INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_tool_account_usage_account ON tool_account_usage(account_id,tool_id,bucket);
+
 CREATE TABLE IF NOT EXISTS navigation (
   id TEXT PRIMARY KEY,
   location TEXT NOT NULL DEFAULT 'header',
