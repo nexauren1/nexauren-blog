@@ -13,13 +13,15 @@ const sizeValue=document.querySelector("#size-value");
 const level=document.querySelector("#level");
 let type="url";
 let lastPayload="";
+let adsReady=false;
 
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=v=>String(v??"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;"}[c]));
 
 function showGate(show){
   accountGate.hidden=!show;
   app.hidden=show;
+  if(!show) loadToolAds();
 }
 function value(id){return $(id)?.value?.trim()||""}
 function wifiEscape(v){return String(v??"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/:/g,"\\:")}
@@ -67,6 +69,30 @@ function reset(){
   $("wifi-ssid").value="";$("wifi-password").value="";$("wifi-security").value="WPA";$("wifi-hidden").checked=false;
   $("contact-name").value="";$("contact-phone").value="";$("contact-email").value="";$("contact-company").value="";
   size.value="320";sizeValue.textContent="320 px";level.value="M";activateType("url");
+}
+function createAdSlot(position){
+  const slot=document.createElement("div");
+  slot.dataset.adsterraSlot=position;
+  slot.style.cssText="width:100%;min-height:60px;margin:18px auto;display:flex;justify-content:center;align-items:center;overflow:hidden;border-radius:12px;";
+  return slot;
+}
+function loadToolAds(){
+  if(adsReady)return;
+  adsReady=true;
+  const loader=document.createElement("script");
+  loader.src="/assets/ads.js?v=20260924-qr-test";
+  loader.onload=()=>{
+    const workspace=app.querySelector(".qr-workspace");
+    const note=app.querySelector(".qr-note");
+    if(!workspace)return;
+    const top=createAdSlot("top");
+    const bottom=createAdSlot("bottom");
+    app.insertBefore(top,workspace);
+    note?.parentNode?.insertBefore(bottom,note);
+    window.NexaurenAds?.loadBanner(top);
+    window.NexaurenAds?.loadResponsive(bottom);
+  };
+  document.head.appendChild(loader);
 }
 size.addEventListener("input",()=>{sizeValue.textContent=size.value+" px"});
 document.querySelectorAll(".qr-type").forEach(button=>button.addEventListener("click",()=>activateType(button.dataset.type)));
