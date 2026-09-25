@@ -782,8 +782,142 @@ const PT=
   "Leitor de QR Code": "QR Code Reader",
   "Leia um QR Code": "Read a QR code",
   "Transforme dados em barras.": "Turn data into barcodes.",
-  "← Ferramentas": "← Tools"
-
+  "← Ferramentas": "← Tools",
+  "Formatador CSS / Minifier · Nexauren Tools": "CSS Formatter / Minifier · Nexauren Tools",
+  "Organize regras CSS, compacte a saída e visualize rapidamente o tamanho antes e depois.": "Organize CSS rules, minify the output, and quickly compare the size before and after.",
+  "Formatar CSS": "Format CSS",
+  "Copiar saída": "Copy output",
+  "manter comentários": "keep comments",
+  "PRONTO": "READY",
+  "regras": "rules",
+  "redução": "reduction",
+  "declarações": "declarations",
+  "Cole o CSS e escolha uma operação.": "Paste the CSS and choose an operation.",
+  "Insira CSS para processar.": "Enter CSS to process.",
+  "CSS compactado com sucesso.": "CSS minified successfully.",
+  "CSS formatado com sucesso.": "CSS formatted successfully.",
+  "Não foi possível processar o CSS:": "Could not process CSS:",
+  "ERRO": "ERROR",
+  "Não há saída para copiar.": "There is no output to copy.",
+  "CSS copiado para a área de transferência.": "CSS copied to the clipboard.",
+  "NEXAUREN TOOLS · Style Engine · Processamento local": "NEXAUREN TOOLS · Style Engine · Local processing",
+  "Formatador JS / Minifier · Nexauren Tools": "JS Formatter / Minifier · Nexauren Tools",
+  "Reorganize JavaScript, compacte o código e mantenha strings, comentários e blocos sensíveis intactos.": "Reformat JavaScript, minify the code, and keep strings, comments, and sensitive blocks intact.",
+  "Validar": "Validate",
+  "Aguardando código.": "Waiting for code.",
+  "Insira JavaScript para processar.": "Enter JavaScript to process.",
+  "JavaScript compactado com sucesso.": "JavaScript minified successfully.",
+  "JavaScript formatado com sucesso.": "JavaScript formatted successfully.",
+  "Insira JavaScript para validar.": "Enter JavaScript to validate.",
+  "Sintaxe JavaScript analisada sem erros.": "JavaScript syntax analyzed without errors.",
+  "Possível erro de sintaxe:": "Possible syntax error:",
+  "JavaScript copiado.": "JavaScript copied.",
+  "Não foi possível copiar neste navegador.": "Could not copy in this browser.",
+  "NEXAUREN TOOLS · Script Lab · Processamento local": "NEXAUREN TOOLS · Script Lab · Local processing",
+  "Diff Checker · Nexauren Tools": "Diff Checker · Nexauren Tools",
+  "Compare dois textos linha a linha e encontre rapidamente adições, remoções e trechos iguais.": "Compare two texts line by line and quickly find additions, removals, and unchanged sections.",
+  "Comparar": "Compare",
+  "Trocar lados": "Swap sides",
+  "VERSÃO A": "VERSION A",
+  "VERSÃO B": "VERSION B",
+  "adicionadas": "added",
+  "removidas": "removed",
+  "iguais": "unchanged",
+  "alterações": "changes",
+  "Compare dois textos para ver as diferenças.": "Compare two texts to see the differences.",
+  "O resultado é processado localmente.": "The result is processed locally.",
+  "Introduza conteúdo nos dois lados.": "Enter content on both sides.",
+  "Diferenças encontradas.": "Differences found.",
+  "Os conteúdos são idênticos.": "The contents are identical.",
+  "Não foi possível copiar.": "Could not copy.",
+  "Não há resultado para copiar.": "There is no result to copy.",
+  "NEXAUREN TOOLS · Difference Matrix · Processamento local": "NEXAUREN TOOLS · Difference Matrix · Local processing",
+  "Conversor de Cores · Nexauren Tools": "Color Converter · Nexauren Tools",
+  "Converta uma cor entre HEX, RGB, HSL, HSV e CMYK e veja a amostra em tempo real.": "Convert a color between HEX, RGB, HSL, HSV, and CMYK and see the preview in real time.",
+  "COR DE ENTRADA": "INPUT COLOR",
+  "Violeta": "Purple",
+  "Verde": "Green",
+  "Laranja": "Orange",
+  "Azul": "Blue",
+  "Amostra da cor": "Color preview",
+  "Contraste sobre branco": "Contrast on white",
+  "Contraste sobre preto": "Contrast on black",
+  "Introduza uma cor CSS válida.": "Enter a valid CSS color.",
+  "Cor inválida. Use #RRGGBB, rgb(...) ou hsl(...).": "Invalid color. Use #RRGGBB, rgb(...), or hsl(...).",
+  "Valor HEX copiado.": "HEX value copied.",
+  "NEXAUREN TOOLS · Color Lab · Processamento local": "NEXAUREN TOOLS · Color Lab · Local processing",
+  "Gerador de Cores e Paletas · Nexauren Tools": "Color & Palette Generator · Nexauren Tools",
+  "Gerador de Cores / Paletas": "Color / Palette Generator",
+  "Gere paletas harmoniosas a partir de uma cor-base, ajuste a família visual e copie os valores para o seu projeto.": "Generate harmonious palettes from a base color, adjust the visual family, and copy the values into your project.",
+  "COR-BASE": "BASE COLOR",
+  "MODO": "MODE",
+  "Complementar": "Complementary",
+  "Análoga": "Analogous",
+  "Triádica": "Triadic",
+  "Complementar dividida": "Split complementary",
+  "Monocromática": "Monochromatic",
+  "QUANTIDADE": "QUANTITY",
+  "Gerar paleta": "Generate palette",
+  "Cor aleatória": "Random color",
+  "Copiar CSS": "Copy CSS",
+  "CORES": "COLORS",
+  "A paleta é processada localmente.": "The palette is processed locally.",
+  "Paleta gerada localmente.": "Palette generated locally.",
+  "Tokens CSS copiados.": "CSS tokens copied.",
+  "Use uma cor HEX válida, por exemplo #7C5CFC.": "Use a valid HEX color, for example #7C5CFC.",
+  "/* Gere uma paleta para criar tokens CSS. */": "/* Generate a palette to create CSS tokens. */",
+  "NEXAUREN TOOLS · Palette Studio · Processamento local": "NEXAUREN TOOLS · Palette Studio · Local processing",
+  "Conversor de Dados / Bytes · Nexauren Tools": "Data / Byte Converter · Nexauren Tools",
+  "Converta rapidamente bytes entre unidades SI e binárias, confira o valor exato e compare escalas.": "Quickly convert bytes between SI and binary units, check the exact value, and compare scales.",
+  "VALOR": "VALUE",
+  "UNIDADE DE ENTRADA": "INPUT UNIT",
+  "ESCALA DE SAÍDA": "OUTPUT SCALE",
+  "BYTES EXATOS": "EXACT BYTES",
+  "Valor exato copiado.": "Exact value copied.",
+  "NEXAUREN TOOLS · Data Scale · Processamento local": "NEXAUREN TOOLS · Data Scale · Local processing",
+  "Gerador de API Key Pro · Nexauren Tools": "Pro API Key Generator · Nexauren Tools",
+  "Gerador de API Key": "API Key Generator",
+  "Gere chaves aleatórias fortes para projetos e ambientes de desenvolvimento, com formato e comprimento configuráveis.": "Generate strong random keys for projects and development environments, with configurable format and length.",
+  "A verificar acesso Pro…": "Checking Pro access…",
+  "A ferramenta consulta a sua sessão e o estado do plano antes de liberar qualquer geração.": "The tool checks your session and plan status before allowing any generation.",
+  "A confirmar autenticação, plano e autorização desta ferramenta.": "Confirming authentication, plan, and authorization for this tool.",
+  "Esta é uma ferramenta Pro e exige uma conta autenticada.": "This is a Pro tool and requires an authenticated account.",
+  "Ferramenta exclusiva Pro": "Pro-only tool",
+  "O seu plano atual não tem acesso a esta ferramenta. Faça upgrade para desbloquear.": "Your current plan does not include this tool. Upgrade to unlock it.",
+  "Acesso Pro não confirmado": "Pro access not confirmed",
+  "O sistema não confirmou um plano Pro ativo para esta ferramenta. A geração permanece bloqueada.": "The system did not confirm an active Pro plan for this tool. Generation remains locked.",
+  "COMPRIMENTO": "LENGTH",
+  "FORMATO": "FORMAT",
+  "PREFIXO": "PREFIX",
+  "Gerar chave": "Generate key",
+  "As chaves são geradas localmente com": "Keys are generated locally using",
+  "AGUARDANDO": "WAITING",
+  "Nenhuma chave gerada.": "No keys generated.",
+  "Acesso confirmado pelo sistema Pro.": "Access confirmed by the Pro system.",
+  "Chave copiada.": "Key copied.",
+  "Geração concluída localmente.": "Generation completed locally.",
+  "NEXAUREN TOOLS · Pro Security Lab · API Key": "NEXAUREN TOOLS · Pro Security Lab · API Key",
+  "Gerador de Secret Pro · Nexauren Tools": "Pro Secret Generator · Nexauren Tools",
+  "Gerador de Secret": "Secret Generator",
+  "Verificando plano Pro": "Checking Pro plan",
+  "O Nexauren está a confirmar a sessão, a subscrição e a autorização desta ferramenta.": "Nexauren is confirming the session, subscription, and authorization for this tool.",
+  "A confirmar sessão, plano e autorização no backend.": "Confirming session, plan, and authorization on the backend.",
+  "O Gerador de Secret é exclusivo do plano Pro.": "The Secret Generator is exclusive to the Pro plan.",
+  "Acesso exclusivo Pro": "Pro-only access",
+  "O plano atual não inclui esta ferramenta. Faça upgrade para desbloquear.": "The current plan does not include this tool. Upgrade to unlock it.",
+  "Abrir Pro": "Open Pro",
+  "Acesso não confirmado": "Access not confirmed",
+  "O backend não confirmou um plano Pro ativo. O gerador permanece bloqueado.": "The backend did not confirm an active Pro plan. The generator remains locked.",
+  "TAMANHO": "SIZE",
+  "Gerar secret": "Generate secret",
+  "SEGURANÇA": "SECURITY",
+  "Geração local. O conteúdo não é enviado nem guardado pelo Nexauren.": "Local generation. The content is not sent to or stored by Nexauren.",
+  "MATERIAL GERADO": "GENERATED MATERIAL",
+  "Nenhum secret gerado.": "No secret generated.",
+  "Acesso Pro confirmado.": "Pro access confirmed.",
+  "Secret copiado.": "Secret copied.",
+  "Secret(s) gerado(s) localmente.": "Secret(s) generated locally.",
+  "NEXAUREN TOOLS · Private Material Generator · Pro": "NEXAUREN TOOLS · Private Material Generator · Pro",
 };
 const ATTR_MAP={
   "Navegação principal":"Main navigation",
@@ -835,6 +969,14 @@ function translateDynamicText(raw){
   if(m=raw.match(/^Posição (\d+)$/i))return "Position "+m[1];
   if(m=raw.match(/^(\d+) encontradas?$/i))return m[1]+" found";
   if(m=raw.match(/^(\d+) caracteres$/i))return m[1]+" characters";
+  if(m=raw.match(/^(\d+) linhas?$/i))return m[1]+(m[1]==="1"?" line":" lines");
+  if(m=raw.match(/^(\d+) alterações$/i))return m[1]+" "+(m[1]==="1"?"change":"changes");
+  if(m=raw.match(/^(\d+) CHAVES? · (.+)$/i))return m[1]+" "+(m[1]==="1"?"KEY":"KEYS")+" · "+m[2];
+  if(m=raw.match(/^(\d+) CORES$/i))return m[1]+" COLORS";
+  if(m=raw.match(/^COR (\d+)$/i))return "COLOR "+m[1];
+  if(m=raw.match(/^(#[0-9a-f]{6}) copiado\.$/i))return m[1]+" copied.";
+  if(m=raw.match(/^Valor (HEX|RGB|HSL|HSV|CMYK) copiado\.$/i))return m[1]+" value copied.";
+  if(m=raw.match(/^Secret\(s\) gerado\(s\) localmente\.$/i))return "Secret(s) generated locally.";
   if(m=raw.match(/^(\d+) linhas · (\d+) caracteres$/i))return m[1]+" lines · "+m[2]+" characters";
   if(m=raw.match(/^(\d+) linha · (\d+) caracteres$/i))return m[1]+" line · "+m[2]+" characters";
   return null;
@@ -875,6 +1017,8 @@ function translateToolFragments(){
     const span=readerTitle.querySelector("span");
     if(span){readerTitle.firstChild&& (readerTitle.firstChild.nodeValue="Read a ");span.textContent="QR code.";}
   }
+  const paletteOutput=document.querySelector(".palette-app #cssOutput");
+  if(paletteOutput&&paletteOutput.textContent.trim()==="/* Gere uma paleta para criar tokens CSS. */")paletteOutput.textContent="/* Generate a palette to create CSS tokens. */";
   const barcodeTitle=document.querySelector(".barcode-page .hero h1");
   if(barcodeTitle&&barcodeTitle.textContent.trim()==="Transforme dados em barras."){
     const span=barcodeTitle.querySelector("em");
@@ -888,7 +1032,8 @@ function translateAttrs(){
     for(const attr of ["placeholder","aria-label","title"]){
       if(!el.hasAttribute(attr))continue;
       const value=el.getAttribute(attr)||"";
-      const translated=ATTR_MAP[value]||PT[value]||null;
+      const dynamicCopy=value.match(/^Copiar (#[0-9a-f]{6})$/i);
+      const translated=dynamicCopy ? "Copy "+dynamicCopy[1] : (ATTR_MAP[value]||PT[value]||null);
       if(translated&&translated!==value)el.setAttribute(attr,translated);
     }
   });
