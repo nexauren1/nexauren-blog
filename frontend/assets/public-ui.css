@@ -471,6 +471,25 @@ textarea{resize:vertical}
 .tool-account-gate-inline .primary{margin-top:17px}
 
 
+/* Blog mobile route must stay responsive in both PT and EN. */
+html.nx-blog-route,body.nx-blog-route{width:100%;max-width:100%;overflow-x:hidden}
+html.nx-blog-route body,body.nx-blog-route{width:100%;max-width:100%;overflow-x:hidden}
+@media(max-width:960px){
+  html.nx-blog-route .wrap,body.nx-blog-route .wrap,
+  html.nx-blog-route .container,body.nx-blog-route .container{width:calc(100% - 24px);max-width:none}
+  html.nx-blog-route .nav,body.nx-blog-route .nav{min-width:0}
+  html.nx-blog-route .brand,body.nx-blog-route .brand{min-width:0;max-width:calc(100% - 54px)}
+  html.nx-blog-route .brand-copy,body.nx-blog-route .brand-copy{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  html.nx-blog-route .nav-links,body.nx-blog-route .nav-links{display:none}
+  html.nx-blog-route .menu-toggle,body.nx-blog-route .menu-toggle{display:inline-flex;flex:0 0 44px}
+  html.nx-blog-route main,body.nx-blog-route main{width:100%;min-width:0;max-width:100%}
+  html.nx-blog-route .article,body.nx-blog-route .article,
+  html.nx-blog-route .listing-head,body.nx-blog-route .listing-head,
+  html.nx-blog-route .section,body.nx-blog-route .section{min-width:0;max-width:100%}
+  html.nx-blog-route .article-content,body.nx-blog-route .article-content{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+  html.nx-blog-route .article-content table,body.nx-blog-route .article-content table{display:block;max-width:100%;overflow-x:auto}
+  html.nx-blog-route .article-content iframe,body.nx-blog-route .article-content iframe{max-width:100%}
+}
 /* Blog mobile-first layout: scoped to Blog routes only */
 .nx-blog-route{overflow-x:hidden}
 .nx-blog-route .home-main,.nx-blog-route .article,.nx-blog-route .listing-head,.nx-blog-route .section{min-width:0}
