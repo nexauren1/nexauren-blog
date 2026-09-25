@@ -114,6 +114,7 @@ function updatePageSeo(path){
 }
 function setLanguage(next,persist=true){
   lang=next==="en"?"en":"pt";
+  setBlogRouteClass();
   document.documentElement.lang=lang;
   document.cookie="ns_lang="+lang+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
   if(persist)localStorage.setItem("ns_lang",lang);
