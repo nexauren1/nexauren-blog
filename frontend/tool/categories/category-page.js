@@ -10,13 +10,17 @@
     ? '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 17 4-10h2l4 10M8 13.5h6M16 17l1.8-4.5L20 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
     : '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.9 2.9M15.5 15.5l2.9 2.9M18.4 5.6l-2.9 2.9M8.5 15.5l-2.9 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>';
 
+  const language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="en")return "en";try{return localStorage.getItem("ns_lang")==="en"?"en":"pt"}catch{return "pt"}})();
+  const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
+  const tags=v=>language==="en"?(Array.isArray(v?.tags_en)&&v.tags_en.length?v.tags_en:(v?.tags||[])):(v?.tags||[]);
+
   let state={tools:[],query:"",tag:"",access:"all",sort:"relevance"};
   let isPro=null,user=null,accessApi=null;
 
   const scoreTool=(tool,query)=>{
     const q=normalize(query),tokens=q.split(/\s+/).filter(Boolean);
     if(!tokens.length)return 0;
-    const name=normalize(tool.name),desc=normalize(tool.description),tags=(tool.tags||[]).map(normalize);
+    const name=normalize(label(tool,"name")),desc=normalize(label(tool,"description")),tags=tags(tool).map(normalize);
     let score=0;
     tokens.forEach(token=>{
       if(name===token)score+=120;else if(name.startsWith(token))score+=80;else if(name.includes(token))score+=55;
@@ -34,7 +38,7 @@
     return '<a class="tool-card cat-'+esc(t.category||slug)+' nx-spotlight nx-reveal'+(locked?" tool-card-locked":"")+'" data-tool-id="'+esc(t.id)+'" data-tool-access="'+esc(t.access||"public")+'" data-tool-path="'+esc(t.path)+'" href="'+esc(t.path)+'">'+
       '<span class="tool-card-icon">'+iconSvg(t.icon)+'</span><span class="tool-arrow">→</span>'+
       '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
-      '<small>'+esc((t.tags||[]).slice(0,4).join(" · "))+'</small>'+
+      '<small>'+esc(tags(t).slice(0,4).join(" · "))+'</small>'+
       (locked?'<b class="tool-search-premium">PRO</b><span class="tool-lock" aria-hidden="true">🔒</span>':"")+
       '</a>';
   };
@@ -79,7 +83,7 @@
     const empty=root.querySelector("[data-category-empty]");
     if(!grid||!count||!empty)return;
     const results=toolResults();
-    count.textContent=results.length+" de "+state.tools.length+(state.tools.length===1?" ferramenta":" ferramentas");
+    count.textContent=results.length+" "+(language==="en"?"of ":"de ")+state.tools.length+(state.tools.length===1?(language==="en"?" tool":" ferramenta"):(language==="en"?" tools":" ferramentas"));
     grid.innerHTML=results.map(card).join("");
     empty.hidden=results.length>0;
     empty.innerHTML=state.query||state.tag||state.access!=="all"
@@ -90,7 +94,7 @@
   }
 
   function buildSearch(){
-    const tags=[...new Set(state.tools.flatMap(t=>t.tags||[]))].sort((a,b)=>normalize(a).localeCompare(normalize(b),"pt"));
+    const tags=[...new Set(state.tools.flatMap(t=>tags(t)||[]))].sort((a,b)=>normalize(a).localeCompare(normalize(b),language));
     const params=new URLSearchParams(location.search);
     state.query=params.get("q")||"";
     state.tag=params.get("tag")||"";
