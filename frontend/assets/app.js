@@ -208,7 +208,7 @@ async function post(slug){
     const description=p.meta_description||p.excerpt||excerpt(p);
     const canonical=new URL(location.pathname,location.origin);if(lang==="en")canonical.searchParams.set("lang","en");
     const canonicalUrl=(lang==="en"&&!p.translation_available)?new URL(location.pathname,location.origin).href:canonical.href;
-    updateSeo({title:p.meta_title||p.title,description,type:"article",image:new URL(p.social_image||p.cover_url||"/assets/social-preview-nexauren.png?v=20260926-2",location.origin).href,url:canonicalUrl,hasEnglish:p.translation_available,robots:(lang==="en"&&!p.translation_available)?"noindex,follow":undefined});
+    updateSeo({title:p.meta_title||p.title,description,type:"article",image:new URL(p.cover_url||p.social_image||"/assets/social-preview-nexauren.png?v=20260926-2",location.origin).href,url:canonicalUrl,hasEnglish:p.translation_available,robots:(lang==="en"&&!p.translation_available)?"noindex,follow":undefined});
     const translationNotice=(lang==="en"&&!p.translation_available)?'<div class="translation-note">'+t("translationFallback")+"</div>":"";
     const words=String(p.content||"").replace(/https?:\/\/\S+|[#*_\x60>\[\](){}/!-]/g," ").trim().split(/\s+/).filter(Boolean).length;
     const reading=Math.max(1,Math.round(words/200));
