@@ -212,7 +212,8 @@ async function post(slug){
     const translationNotice=(lang==="en"&&!p.translation_available)?'<div class="translation-note">'+t("translationFallback")+"</div>":"";
     const words=String(p.content||"").replace(/https?:\/\/\S+|[#*_\x60>\[\](){}/!-]/g," ").trim().split(/\s+/).filter(Boolean).length;
     const reading=Math.max(1,Math.round(words/200));
-    const cover=p.cover_url?'<img class="article-cover" loading="eager" fetchpriority="high" decoding="async" src="'+esc(p.cover_url)+'" alt="'+esc(p.cover_alt||p.title)+'"'+(p.cover_width?' width="'+esc(p.cover_width)+'"':'')+(p.cover_height?' height="'+esc(p.cover_height)+'"':'')+'>':"";
+    const coverSource=(p.cover_url&&p.cover_url!==DEFAULT_SOCIAL_IMAGE)?p.cover_url:((p.social_image&&p.social_image!==DEFAULT_SOCIAL_IMAGE)?p.social_image:"");
+    const cover=coverSource?'<img class="article-cover" loading="eager" fetchpriority="high" decoding="async" src="'+esc(coverSource)+'" alt="'+esc(p.cover_alt||p.title)+'"'+(p.cover_width?' width="'+esc(p.cover_width)+'"':'')+(p.cover_height?' height="'+esc(p.cover_height)+'"':'')+'>':"";
     const shareUrl=canonical.href;
     const encodedShareUrl=encodeURIComponent(shareUrl);
     const encodedTitle=encodeURIComponent(p.title||"Nexauren Story");
