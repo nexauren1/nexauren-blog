@@ -684,6 +684,10 @@ const PT=
   "NEXAUREN TOOLS · Text Foundry · Processamento local": "NEXAUREN TOOLS · Text Foundry · Local processing",
   "NEXAUREN TOOLS · Head Builder · Geração local no navegador": "NEXAUREN TOOLS · Head Builder · Local generation in the browser",
   "NEXAUREN TOOLS · Site Map Studio · Execução local": "NEXAUREN TOOLS · Site Map Studio · Local execution",
+  "Aguardando": "Waiting",
+  "encontradas": "found",
+  "Entre ou crie uma conta Nexauren para usar esta ferramenta.": "Sign in or create a Nexauren account to use this tool.",
+  "Introduza um JSON para validar.": "Enter JSON to validate.",
   "← Ferramentas": "← Tools"
 
 };
