@@ -39,8 +39,7 @@ jobs:
               if legacy.search(text):
                   text = legacy.sub(icon, text, count=1)
               elif "</head>" in text.lower():
-                  text = re.sub(r"</head>", icon + "
-</head>", text, count=1, flags=re.I)
+                  text = re.sub(r"</head>", icon + "\n</head>", text, count=1, flags=re.I)
               path.write_text(text, encoding="utf-8")
           PY
 
