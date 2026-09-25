@@ -821,6 +821,20 @@ function shouldSkip(node){
   return !!p.closest("script,style,noscript,template,pre,code,textarea,input,select,option,[data-i18n-skip]");
 }
 
+function translateDynamicText(raw){
+  if(lang!=="en")return null;
+  let m;
+  if(m=raw.match(/^JSON inválido:\s+/i))return raw.replace(m[0],"Invalid JSON: ");
+  if(m=raw.match(/^Linha (\d+)$/i))return "Line "+m[1];
+  if(m=raw.match(/^Coluna (\d+)$/i))return "Column "+m[1];
+  if(m=raw.match(/^Posição (\d+)$/i))return "Position "+m[1];
+  if(m=raw.match(/^(\d+) encontradas?$/i))return m[1]+" found";
+  if(m=raw.match(/^(\d+) caracteres$/i))return m[1]+" characters";
+  if(m=raw.match(/^(\d+) linhas · (\d+) caracteres$/i))return m[1]+" lines · "+m[2]+" characters";
+  if(m=raw.match(/^(\d+) linha · (\d+) caracteres$/i))return m[1]+" line · "+m[2]+" characters";
+  return null;
+}
+
 function translateTextNodes(){
   if(lang!=="en")return;
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
