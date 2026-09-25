@@ -1,5 +1,6 @@
 (()=>{
   const DATA_URL="/api/tool-registry";
+  const requestedLanguage=(()=>{const q=new URLSearchParams(location.search).get("lang");return q==="en"?"en":"pt"})();
   const FALLBACK_DATA_URL="/tool/data/data.json";
   const CACHE_KEY="nexauren:tool-registry:v5";
   const REQUEST_TIMEOUT=5000;
@@ -39,7 +40,7 @@
     if(refreshPromise)return refreshPromise;
     refreshPromise=(async()=>{
       try{
-        const registry=await fetchFresh(DATA_URL);
+        const registry=await fetchFresh(DATA_URL+"?lang="+encodeURIComponent(requestedLanguage));
         if(!registry.categories.length||!registry.tools.some(t=>t.status==="active"))throw new Error("Catálogo incompleto");
         saveCache(registry);
         window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
