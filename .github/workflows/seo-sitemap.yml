@@ -14,10 +14,9 @@ on:
       - "frontend/assets/style.css"
       - "frontend/assets/ads.js"
       - "frontend/manifest.json"
-      - "frontend/favicon.svg"
-      - "frontend/favicon.png"
+      - "frontend/assets/favicon-nexauren.png"
+      - "frontend/assets/social-preview-nexauren.png"
       - "frontend/apple-touch-icon.png"
-      - "frontend/og-image.jpg"
       - ".github/workflows/seo-sitemap.yml"
   schedule:
     - cron: "17 2 * * *"
@@ -35,10 +34,13 @@ jobs:
         run: |
           node --check worker-entry.js
           node --check frontend/assets/app.js
-          test -f frontend/favicon.svg
-          test -f frontend/favicon.png
+          test -s frontend/assets/favicon-nexauren.png
+          test -s frontend/assets/social-preview-nexauren.png
           test -f frontend/apple-touch-icon.png
-          test -f frontend/og-image.jpg
+          grep -Fq '/assets/favicon-nexauren.png' frontend/blog/index.html
+          grep -Fq '/assets/social-preview-nexauren.png' frontend/blog/index.html
+          ! grep -Eq 'nexauren-story-favicon\.svg|rel="(?:icon|shortcut icon)"[^>]+image/svg\+xml' frontend/blog/index.html
+          grep -Fq 'assets/social-preview-nexauren.png' worker-entry.js
           test -f frontend/manifest.json
           grep -q 'rel="canonical"' frontend/index.html
           grep -q 'hreflang="pt"' frontend/index.html

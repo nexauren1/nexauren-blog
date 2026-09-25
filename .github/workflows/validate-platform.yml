@@ -125,9 +125,12 @@ jobs:
           test -f frontend/assets/public-ui.js
           grep -q 'decoratePublicHtmlResponse' worker-entry.js
           grep -q 'DEFAULT_SOCIAL_IMAGE' worker-entry.js
-          grep -q 'nexauren-story-social-preview.png' worker-entry.js
+          grep -q 'assets/social-preview-nexauren.png' worker-entry.js
           grep -q 'social-preview.png' worker-entry.js
           grep -q 'favicon-nexauren.png' worker-entry.js
+          grep -Fq '/assets/favicon-nexauren.png' frontend/blog/index.html
+          grep -Fq '/assets/social-preview-nexauren.png' frontend/blog/index.html
+          ! grep -Eq 'nexauren-story-favicon\.svg|rel="(?:icon|shortcut icon)"[^>]+image/svg\+xml' frontend/blog/index.html
           grep -Eq 'public-ui\.css\?v=[0-9-]+' worker-entry.js
           grep -Eq 'public-ui\.js\?v=[0-9-]+' worker-entry.js
           grep -q '@view-transition' frontend/assets/public-ui.css
