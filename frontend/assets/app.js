@@ -241,8 +241,8 @@ async function post(slug){
       articleEl.insertBefore(topAd,articleEl.firstElementChild||null);
       const related=articleEl.querySelector(".related-section");
       articleEl.insertBefore(bottomAd,related||null);
-      window.NexaurenAds.loadResponsive(topAd);
-      window.NexaurenAds.loadBanner(bottomAd);
+      window.NexaurenAds.loadBanner(topAd);
+      window.NexaurenAds.loadResponsive(bottomAd);
     }
     const related=(await api(langQuery("/api/posts?category="+encodeURIComponent(p.category_slug||"")+"&limit=6"))).posts||[];
     document.getElementById("related").innerHTML=related.filter(x=>x.slug!==p.slug).slice(0,3).map(card).join("")||'<div class="empty">'+t("nothing")+"</div>";
