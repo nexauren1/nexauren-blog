@@ -30,3 +30,18 @@ jobs:
             exit 1
           fi
           echo "Excluded paths verified."
+
+
+      - name: Enforce official PNG favicon
+        run: |
+          set -e
+          test -s frontend/assets/favicon-nexauren.png
+          if test -e frontend/nexauren-story-favicon.svg; then
+            echo "ERROR: legacy generated SVG favicon must not exist."
+            exit 1
+          fi
+          if grep -RIl --exclude-dir=blog --exclude-dir=articles 'nexauren-story-favicon.svg' frontend | grep .; then
+            echo "ERROR: legacy SVG favicon reference found outside protected content."
+            exit 1
+          fi
+          echo "Official PNG favicon enforced."
