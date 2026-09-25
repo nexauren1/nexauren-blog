@@ -594,7 +594,7 @@ async function createPost(env,a,d,ctx){
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts));
   await env.DB.batch(statements);
-  if(ctx?.waitUntil)ctx.waitUntil((env.TRANSLATION_WORKFLOW?startTranslationWorkflow(env,{scope:"post",postId:id,targetLanguages:["en"]}):autoTranslatePost(env,id)).catch?.(e=>console.error("translation workflow",e)));await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
+  if(ctx?.waitUntil)ctx.waitUntil((async()=>{try{if(env.TRANSLATION_WORKFLOW)await startTranslationWorkflow(env,{scope:"post",postId:id,targetLanguages:["en"]});else await autoTranslatePost(env,id);}catch(e){console.error("translation workflow",e);}})());await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
 }
 async function updatePost(env,a,id,d,ctx){
   const old=await getPost(env,id);if(!old)return fail("Artigo não encontrado.",404,"NOT_FOUND");const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);
@@ -617,7 +617,7 @@ async function updatePost(env,a,id,d,ctx){
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
   await env.DB.batch(statements);
-  if(ctx?.waitUntil)ctx.waitUntil((env.TRANSLATION_WORKFLOW?startTranslationWorkflow(env,{scope:"post",postId:id,targetLanguages:["en"]}):autoTranslatePost(env,id)).catch?.(e=>console.error("translation workflow",e)));await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
+  if(ctx?.waitUntil)ctx.waitUntil((async()=>{try{if(env.TRANSLATION_WORKFLOW)await startTranslationWorkflow(env,{scope:"post",postId:id,targetLanguages:["en"]});else await autoTranslatePost(env,id);}catch(e){console.error("translation workflow",e);}})());await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
 }
 
 async function uploadAuth(env,request){
@@ -635,14 +635,21 @@ function decoratePublicHtmlResponse(request,response){
   const url=new URL(request.url);
   const path=url.pathname;
   const lowerPath=path.toLowerCase();if(lowerPath==="/blog"||lowerPath.startsWith("/blog/")||lowerPath==="/admin"||lowerPath.startsWith("/admin/"))return response;
+  const requestedLang=url.searchParams.get("lang")==="en"?"en":"pt";
   return response.text().then(html=>{
     html=html.replace(/<body(\s[^>]*)?>/i,(match,attrs="")=>{if(/\bclass\s*=/.test(attrs)){return match.replace(/class\s*=\s*(['"])(.*?)\1/i,(m,q,v)=>/\bnx-page\b/.test(v)?m:'class='+q+'nx-page '+v+q);}return '<body class="nx-page"'+attrs+'>';});
+    html=html.replace(/<html\b([^>]*)>/i,(match,attrs="")=>{if(/\blang\s*=/.test(attrs))return match.replace(/lang\s*=\s*(['"])[^'"]*\1/i,'lang="'+requestedLang+'"');return '<html lang="'+requestedLang+'"'+attrs+'>';});
     const titleMatch=html.match(/<title>\s*([\s\S]*?)\s*<\/title>/i);
     const descMatch=html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i);
-    const title=(titleMatch?.[1]||"Nexauren Story").replace(/<[^>]*>/g,"").trim().slice(0,180)||"Nexauren Story";
-    const desc=(descMatch?.[1]||"Nexauren Story — conteúdo, ferramentas e experiências do ecossistema Nexauren.").trim().slice(0,300);
+    let title=(titleMatch?.[1]||"Nexauren Story").replace(/<[^>]*>/g,"").trim().slice(0,180)||"Nexauren Story";
+    let desc=(descMatch?.[1]||"Nexauren Story — conteúdo, ferramentas e experiências do ecossistema Nexauren.").trim().slice(0,300);
+    if(requestedLang==="en"){
+      const metaMap={"/tool/":["Tools | Nexauren Story","Online tools from Nexauren Story, organized by category."],"/account":["Account — Nexauren Story","Your Nexauren account for tools and experiences across the ecosystem."],"/legal/privacidade/":["Privacy Policy — Nexauren Story","Nexauren Story Privacy Policy."],"/legal/termos/":["Terms of Use — Nexauren Story","Terms of Use for Nexauren Story."],"/legal/cookies/":["Cookie Policy — Nexauren Story","Information about cookies and similar technologies on Nexauren Story."]};
+      const known=metaMap[path];if(known){title=known[0];desc=known[1];}
+    }
     const existingCanonical=(html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["'][^>]*>/i)||[])[1];
-    const canonical=existingCanonical||new URL(path||"/",url.origin).href;
+    const canonicalUrl=new URL(existingCanonical||path||"/",url.origin);if(requestedLang==="en")canonicalUrl.searchParams.set("lang","en");else canonicalUrl.searchParams.delete("lang");
+    const canonical=canonicalUrl.href;
     const robots=(html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']*)["'][^>]*>/i)||[])[1]||"index,follow,max-image-preview:large";
     const criticalStyle='<style id="nexauren-mobile-critical">html,body{width:100%;max-width:none;min-width:0;margin:0}body{overflow-x:hidden}body.nx-page,body.nx-page main,body.nx-page header,body.nx-page footer{max-width:100vw}body.nx-page .home-main,body.nx-page .tool-header,body.nx-page .site-header,body.nx-page .tool-footer,body.nx-page .site-footer{width:100%}@media(max-width:760px){body.nx-page .wrap,body.nx-page .tool-wrap{width:calc(100% - 28px)!important;max-width:none!important;min-width:0!important;margin-inline:auto!important}body.nx-page .site-header .wrap,body.nx-page .tool-header .tool-wrap{width:100%!important;max-width:none!important;padding-inline:14px!important}body.nx-page .home-grid,body.nx-page .tool-grid{width:100%!important;max-width:100%!important}body.nx-page .home-card,body.nx-page .tool-card{width:100%!important;max-width:100%!important}body.nx-page .home-actions .primary{color:#fff!important;text-decoration:none!important}body.nx-page a{text-decoration:none}}</style>';    html=html.replace(/<\/head>/i,criticalStyle+"\n</head>");
     const tags=[
@@ -670,7 +677,10 @@ function decoratePublicHtmlResponse(request,response){
       ['twimage',/<meta[^>]+name=["']twitter:image["']/i,'<meta name="twitter:image" content="'+DEFAULT_SOCIAL_IMAGE+'">'],
       ['twalt',/<meta[^>]+name=["']twitter:image:alt["']/i,'<meta name="twitter:image:alt" content="'+esc(title)+'">'],
       ['robots',/<meta[^>]+name=["']robots["']/i,'<meta name="robots" content="'+esc(robots)+'">'],
-      ['canonical',/<link[^>]+rel=["']canonical["']/i,'<link rel="canonical" href="'+esc(canonical)+'">']
+      ['canonical',/<link[^>]+rel=["']canonical["']/i,'<link rel="canonical" href="'+esc(canonical)+'">'],
+      ['altpt',/<link[^>]+rel=["']alternate["'][^>]+hreflang=["']pt["']/i,'<link rel="alternate" hreflang="pt" href="'+esc(new URL(path||"/",url.origin).href)+'">'],
+      ['alten',/<link[^>]+rel=["']alternate["'][^>]+hreflang=["']en["']/i,'<link rel="alternate" hreflang="en" href="'+esc(new URL((path||"/")+"?lang=en",url.origin).href)+'">'],
+      ['altd',/<link[^>]+rel=["']alternate["'][^>]+hreflang=["']x-default["']/i,'<link rel="alternate" hreflang="x-default" href="'+esc(new URL(path||"/",url.origin).href)+'">']
     ];
     let out=html;
     for(const [,probe,tag] of tags)out=addHeadTag(out,probe,tag);
@@ -680,6 +690,7 @@ function decoratePublicHtmlResponse(request,response){
     }
     if(!/<meta[^>]+name=["']description["']/i.test(out))out=addHeadTag(out,/__never_description__/,'<meta name="description" content="'+esc(desc)+'">');
     if(!/<script[^>]+src=["']\/assets\/site\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/site.js?v=20260922-1" defer></script>\n</body>');
+    if(!/<script[^>]+src=["']\/assets\/i18n\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/i18n.js?v=20260925-i18n-1" defer></script>\n</body>');
     if(!/<script[^>]+src=["']\/assets\/public-ui\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/public-ui.js?v=20260922-6" defer></script>\n</body>');
     if(!/<script[^>]+id=["']nexauren-public-structured-data["']/i.test(out)){
       const structured={ "@context":"https://schema.org", "@type":"WebPage", "name":title, "url":canonical, "description":desc, "isPartOf":{"@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/"} };
