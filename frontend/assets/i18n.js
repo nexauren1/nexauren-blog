@@ -119,9 +119,13 @@ function setState(next,write=true){
   document.documentElement.lang=lang;
   try{localStorage.setItem("ns_lang",lang)}catch{}
   document.cookie="ns_lang="+lang+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
-  if(write){const u=new URL(location.href);if(lang==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search?"?"+u.searchParams.toString():""))}
+  if(write){
+    const u=new URL(location.href);
+    if(lang==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");
+    location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"");
+    return;
+  }
   apply();
-  if(write&&lang!==readLang())location.reload();
 }
 function t(k,fallback=k){if(lang==="pt")return fallback;return serverMap.get(k)||PT[k]||fallback}
 function shouldSkip(node){const p=node.parentElement;if(!p)return true;return !!p.closest("script,style,noscript,template,pre,code,textarea,input,select,option,[data-i18n-skip]")}
