@@ -18,11 +18,11 @@
 
   function toolCard(t){
     const locked=t.access==="premium"&&isPro!==true;
-    const badges=(t.featured?'<span class="tool-card-badge featured">Destaque</span>':"")+(t.popular?'<span class="tool-card-badge popular">Popular</span>':"")+(locked?'<span class="tool-card-badge pro">PRO</span>':"");
-    return `<a class="tool-card cat-${esc(t.category||"geral")}${locked?" tool-card-locked":""} nx-spotlight nx-reveal" data-tool-id="${esc(t.id)}" data-tool-access="${esc(t.access||"public")}" data-tool-path="${esc(t.path)}" href="${esc(t.path)}"><div class="tool-card-top"><span class="tool-card-icon">${iconSvg(t.category)}</span><span class="tool-arrow">→</span></div><div class="tool-card-badges">${badges}</div><h2>${esc(t.name)}</h2><p>${esc(t.description||"")}</p><small>${esc((t.tags||[]).slice(0,4).join(" · "))}</small>${locked?'<span class="tool-lock" aria-hidden="true">🔒</span>':""}</a>`;
-  const categoryCard=c=>'<a class="tool-card category-card cat-'+esc(c.id)+' nx-spotlight nx-reveal" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'"><div class="tool-card-top"><span class="tool-card-icon">'+iconSvg(c.id)+'</span><span class="tool-arrow">→</span></div><h2>'+esc(label(c,"name"))+"</h2><p>"+esc(label(c,"description"))+"</p><small>"+Number(c.count||0)+" "+(language==="en"?(Number(c.count||0)===1?"tool":"tools"):(Number(c.count||0)===1?"ferramenta":"ferramentas"))+"</small></a>';
+    const badges=(t.featured?'<span class="tool-card-badge featured">'+(language==="en"?"Featured":"Destaque")+'</span>':"")+(t.popular?'<span class="tool-card-badge popular">Popular</span>':"")+(locked?'<span class="tool-card-badge pro">PRO</span>':"");
+    return `<a class="tool-card cat-${esc(t.category||"geral")}${locked?" tool-card-locked":""} nx-spotlight nx-reveal" data-tool-id="${esc(t.id)}" data-tool-access="${esc(t.access||"public")}" data-tool-path="${esc(t.path)}" href="${esc(t.path)}"><div class="tool-card-top"><span class="tool-card-icon">${iconSvg(t.category)}</span><span class="tool-arrow">→</span></div><div class="tool-card-badges">${badges}</div><h2>${esc(label(t,"name"))}</h2><p>${esc(label(t,"description"))}</p><small>${esc(tags(t).slice(0,4).join(" · "))}</small>${locked?'<span class="tool-lock" aria-hidden="true">🔒</span>':""}</a>`;
+  }
 
-  const categoryCard=c=>'<a class="tool-card category-card cat-'+esc(c.id)+' nx-spotlight nx-reveal" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'"><div class="tool-card-top"><span class="tool-card-icon">'+iconSvg(c.id)+'</span><span class="tool-arrow">→</span></div><h2>'+esc(c.name)+"</h2><p>"+esc(c.description||"")+"</p><small>"+Number(c.count||0)+" ferramenta(s)</small></a>";
+  const categoryCard=c=>'<a class="tool-card category-card cat-'+esc(c.id)+' nx-spotlight nx-reveal" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'"><div class="tool-card-top"><span class="tool-card-icon">'+iconSvg(c.id)+'</span><span class="tool-arrow">→</span></div><h2>'+esc(label(c,"name"))+"</h2><p>"+esc(label(c,"description"))+"</p><small>"+Number(c.count||0)+" "+(language==="en"?(Number(c.count||0)===1?"tool":"tools"):(Number(c.count||0)===1?"ferramenta":"ferramentas"))+"</small></a>";
 
   function renderCategories(list=categories){
     if(!grid)return;
@@ -32,9 +32,9 @@
   }
 
   function renderResults(list){
-    if(resultCount)resultCount.textContent=list.length+(list.length===1?(language==="en"?" tool found":" ferramenta encontrada"):(language==="en"?" tools found":" ferramentas encontradas"));
+    if(!liveSection||!resultsGrid)return;
     liveSection.hidden=!list.length;
-    if(resultCount)resultCount.textContent=list.length+(list.length===1?" ferramenta encontrada":" ferramentas encontradas");
+    if(resultCount)resultCount.textContent=list.length+(list.length===1?(language==="en"?" tool found":" ferramenta encontrada"):(language==="en"?" tools found":" ferramentas encontradas"));
     resultsGrid.innerHTML=list.slice(0,24).map(toolCard).join("");
     window.NexaurenUI?.refresh?.();
   }
@@ -68,8 +68,8 @@
     if(q)localStorage.setItem("nexauren-tool-search",String(search.value).slice(0,100));
     renderCategories(categories.filter(c=>norm(label(c,"name")+" "+(label(c,"description")||"")).includes(q)));
     renderResults(tools.filter(t=>norm([label(t,"name"),label(t,"description"),tags(t).join(" "),t.category].join(" ")).includes(q)));
-    renderCategories(categories.filter(c=>norm(c.name+" "+(c.description||"")).includes(q)));
-    renderResults(tools.filter(t=>norm([t.name,t.description,(t.tags||[]).join(" "),t.category].join(" ")).includes(q)));
+    renderCategories(categories.filter(c=>norm(label(c,"name")+" "+(label(c,"description")||"")).includes(q)));
+    renderResults(tools.filter(t=>norm([label(t,"name"),label(t,"description"),tags(t).join(" "),t.category].join(" ")).includes(q)));
   }
 
   async function handleToolClick(event){
