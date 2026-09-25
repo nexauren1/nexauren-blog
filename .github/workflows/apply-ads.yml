@@ -61,31 +61,31 @@ jobs:
 
           def remove_blocks(text):
               text = re.sub(
-                  r'\\s*<!-- NEXAUREN-AUTO-ADS:START -->.*?<!-- NEXAUREN-AUTO-ADS:END -->\\s*',
+                  r'\s*<!-- NEXAUREN-AUTO-ADS:START -->.*?<!-- NEXAUREN-AUTO-ADS:END -->\\s*',
                   '',
                   text,
                   flags=re.S,
               )
               text = re.sub(
-                  r'\\s*<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->.*?<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->\\s*',
+                  r'\s*<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->.*?<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->\\s*',
                   '',
                   text,
                   flags=re.S,
               )
               text = re.sub(
-                  r'\\s*<section class="forge-ad-area[^>]*>.*?</section>\\s*',
+                  r'\s*<section class="forge-ad-area[^>]*>.*?</section>\\s*',
                   '',
                   text,
                   flags=re.S,
               )
               text = re.sub(
-                  r'<script[^>]+src="/assets/ads\\.js(?:\\?[^"]*)?"[^>]*></script>',
+                  r'<script[^>]+src="/assets/ads\.js(?:\\?[^"]*)?"[^>]*></script>',
                   '',
                   text,
                   flags=re.S,
               )
               text = re.sub(
-                  r'\\s*<script>window\\.NexaurenAds\\?\\.load(?:Banner|Responsive)\\(document\\.getElementById\\("nexauren-ad-(?:test|top|bottom)"\\)\\);</script>',
+                  r'\s*<script>window\\.NexaurenAds\?\.load(?:Banner|Responsive)\\(document\\.getElementById\\("nexauren-ad-(?:test|top|bottom)"\\)\\);</script>',
                   '',
                   text,
                   flags=re.S,
@@ -126,7 +126,7 @@ jobs:
               insert_at = body_open.end()
               text = text[:insert_at] + '\\n' + top + text[insert_at:]
 
-              footer = re.search(r'<footer\\b', text, flags=re.I)
+              footer = re.search(r'<footer\b', text, flags=re.I)
               if footer:
                   text = text[:footer.start()] + bottom + '\\n' + text[footer.start():]
               elif '</body>' in text:
