@@ -25,6 +25,7 @@ jobs:
           set -euo pipefail
           node --check worker-entry.js
           node --check frontend/assets/public-ui.js
+          node --check frontend/assets/i18n.js
           node --check frontend/tool/categories/category.js
           node --check frontend/tool/categories/category-page.js
           node --check frontend/tool/frontend/tool.js
@@ -82,7 +83,7 @@ jobs:
           for marker in required_markers[:2]:
               assert marker in worker, f"Worker public decoration missing: {marker}"
           assert "og:image" in worker and "twitter:image" in worker, "Worker social preview injection missing."
-          assert "rel" in worker and "nexauren-story-favicon.svg" in worker, "Worker favicon injection missing."
+          assert "favicon-nexauren.png" in worker, "Worker official favicon injection missing."
 
           public_bad=[]
           for path,file in pages.items():
