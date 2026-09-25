@@ -46,6 +46,7 @@ jobs:
           node --check frontend/account/account.js
           node --check frontend/account/account-client.js
           node --check frontend/assets/public-ui.js
+          node --check frontend/assets/i18n.js
           node --check frontend/admin-assets/admin.js
       - name: Validate tool registry
         run: |
