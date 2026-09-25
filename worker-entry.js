@@ -289,7 +289,7 @@ async function postsAdmin(env,url){
   if(status){w.push("p.status=?");b.push(status)}
   if(type){w.push("p.type=?");b.push(type)}
   if(q){w.push("(p.title LIKE ? OR p.slug LIKE ? OR p.excerpt LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
-  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,m.url cover_url
+  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,COALESCE(NULLIF(m.url,''),NULLIF(p.social_image,'')) cover_url
     FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
   return json({ok:true,posts:(r.results||[]).map(x=>({...x,social_image:x.cover_url||DEFAULT_SOCIAL_IMAGE}))});
@@ -415,6 +415,32 @@ async function updatePost(env,a,id,d,ctx){
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
   await env.DB.batch(statements);
   await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:d.category_id||null,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}});
+}
+
+async function verifyImageKitFile(env,fileId,fileUrl){
+  if(!env.IMAGEKIT_PRIVATE_KEY||!fileId||!fileUrl)return false;
+  try{
+    const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");
+    const response=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(fileId),{
+      method:"GET",
+      headers:{Authorization:authHeader,Accept:"application/json"}
+    });
+    if(!response.ok)return false;
+    const remote=await response.json();
+    if(String(remote?.fileId||"")!==String(fileId))return false;
+    if(String(remote?.fileType||"").toLowerCase()!=="image")return false;
+    const normalizeUrl=value=>{
+      try{
+        const u=new URL(value);
+        return u.origin+u.pathname;
+      }catch{
+        return String(value||"").split("?")[0];
+      }
+    };
+    return normalizeUrl(remote?.url)===normalizeUrl(fileUrl);
+  }catch{
+    return false;
+  }
 }
 
 async function uploadAuth(env,request){
