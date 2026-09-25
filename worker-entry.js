@@ -331,6 +331,47 @@ function postRelationStatements(env,postId,tags,translations,includeTagReset=tru
   }
   return statements;
 }
+
+async function getPost(env,id){
+  const row=await env.DB.prepare(`SELECT
+    p.id,p.author_id,p.title,p.slug,p.excerpt,p.content,p.content_format,p.type,p.status,
+    p.category_id,p.cover_media_id,p.social_image,p.published_at,p.scheduled_at,
+    p.featured,p.allow_comments,p.meta_title,p.meta_description,p.created_at,p.updated_at,
+    c.name category_name,c.slug category_slug,
+    m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,m.caption cover_caption,
+    u.display_name author_name
+    FROM posts p
+    LEFT JOIN categories c ON c.id=p.category_id
+    LEFT JOIN media m ON m.id=p.cover_media_id
+    LEFT JOIN users u ON u.id=p.author_id
+    WHERE p.id=? LIMIT 1`).bind(id).first();
+  if(!row)return null;
+  const [tr,tags]=await Promise.all([
+    env.DB.prepare(`SELECT language,title,excerpt,content,meta_title,meta_description
+      FROM post_translations WHERE post_id=? ORDER BY language`).bind(id).all(),
+    env.DB.prepare(`SELECT t.id,t.name,t.slug
+      FROM tags t JOIN post_tags pt ON pt.tag_id=t.id
+      WHERE pt.post_id=? ORDER BY t.name`).bind(id).all()
+  ]);
+  const translations={};
+  for(const t of (tr.results||[])){
+    translations[t.language]={
+      title:t.title||"",
+      excerpt:t.excerpt||"",
+      content:t.content||"",
+      meta_title:t.meta_title||"",
+      meta_description:t.meta_description||""
+    };
+  }
+  return {
+    ...row,
+    cover_alt:row.cover_alt||"",
+    cover_caption:row.cover_caption||"",
+    tags:tags.results||[],
+    translations
+  };
+}
+
 async function createPost(env,a,d,ctx){
   const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);
   let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:"draft";const type=["article","news","guide","tutorial","announcement","release","update","story"].includes(d.type)?d.type:"article";
