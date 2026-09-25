@@ -433,3 +433,5 @@ window.NexaurenI18n=Object.freeze({
 });
 
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+
+})();
