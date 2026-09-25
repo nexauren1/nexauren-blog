@@ -1073,7 +1073,7 @@ async function api(env,request,url,ctx){
   if(p==="/api/auth/login"&&m==="POST"){
     try{
     if(!sameOrigin(request))return fail("Origem não autorizada.",403);const d=await bodyJson(request),email=normalizeEmail(d?.email),pw=String(d?.password||"");
-    if(!email||!pw||pw.length<12||pw.length>200)return fail("Email e senha são obrigatórios; a senha deve ter pelo menos 12 caracteres.",422);const identifier=email+"|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
+    if(!email||!pw||pw.length>200)return fail("Email e senha são obrigatórios.",422);const identifier=email+"|"+await sha256(request.headers.get("CF-Connecting-IP")||"");
     const recent=await env.DB.prepare("SELECT COUNT(*) n FROM login_attempts WHERE identifier=? AND success=0 AND created_at>=?").bind(identifier,new Date(Date.now()-900000).toISOString()).first();
     if(Number(recent?.n||0)>=8)return fail("Muitas tentativas. Tente novamente mais tarde.",429,"RATE_LIMIT");
     let u=await env.DB.prepare("SELECT * FROM users WHERE email=? LIMIT 1").bind(email).first();
