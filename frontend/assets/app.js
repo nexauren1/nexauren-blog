@@ -223,7 +223,27 @@ async function post(slug){
       }catch{}
     });
     await loadPostAds();
-    window.NexaurenAds?.apply?.(document.querySelector(".article"));
+    const articleEl=document.querySelector(".article");
+    if(articleEl&&window.NexaurenAds){
+      articleEl.querySelector('[data-nx-ad-position="top"]')?.remove();
+      articleEl.querySelector('[data-nx-ad-position="bottom"]')?.remove();
+      const makeAdSlot=position=>{
+        const el=document.createElement("div");
+        el.dataset.nxAdPosition=position;
+        el.className="nx-ad-slot nx-ad-"+position;
+        el.setAttribute("aria-label","Advertisement");
+        el.setAttribute("role","complementary");
+        el.style.cssText="width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;margin:18px 0;overflow:hidden;clear:both";
+        return el;
+      };
+      const topAd=makeAdSlot("top");
+      const bottomAd=makeAdSlot("bottom");
+      articleEl.insertBefore(topAd,articleEl.firstElementChild||null);
+      const related=articleEl.querySelector(".related-section");
+      articleEl.insertBefore(bottomAd,related||null);
+      window.NexaurenAds.loadResponsive(topAd);
+      window.NexaurenAds.loadBanner(bottomAd);
+    }
     const related=(await api(langQuery("/api/posts?category="+encodeURIComponent(p.category_slug||"")+"&limit=6"))).posts||[];
     document.getElementById("related").innerHTML=related.filter(x=>x.slug!==p.slug).slice(0,3).map(card).join("")||'<div class="empty">'+t("nothing")+"</div>";
   }catch(e){
