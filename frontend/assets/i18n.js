@@ -505,6 +505,69 @@ const PT=
   "Publicidade": "Advertisement",
   "Saltar para o conteúdo": "Skip to content",
   "← Produtividade": "← Productivity",
+  "Formatador JSON · Nexauren Tools": "JSON Formatter · Nexauren Tools",
+  "Formatador JSON": "JSON Formatter",
+  "Formate, compacte e valide JSON com controlo de indentação.": "Format, minify, and validate JSON with configurable indentation.",
+  "NEXAUREN / DATA LAB": "NEXAUREN / DATA LAB",
+  "Indentação": "Indentation",
+  "2 espaços": "2 spaces",
+  "4 espaços": "4 spaces",
+  "1 espaço": "1 space",
+  "Formatar": "Format",
+  "Compactar": "Minify",
+  "Cole o JSON aqui...": "Paste JSON here...",
+  "JSON válido · formatado com sucesso.": "Valid JSON · formatted successfully.",
+  "JSON válido · compactado com sucesso.": "Valid JSON · minified successfully.",
+  "JSON inválido:": "Invalid JSON:",
+  "Introduza um JSON para continuar.": "Enter JSON to continue.",
+  "Resultado copiado.": "Result copied.",
+  "Não foi possível copiar automaticamente.": "Could not copy automatically.",
+  "Formatador XML · Nexauren Tools": "XML Formatter · Nexauren Tools",
+  "Formatador XML": "XML Formatter",
+  "Organize, compacte e valide documentos XML no navegador.": "Format, minify, and validate XML documents in your browser.",
+  "NEXAUREN / XML WORKBENCH": "NEXAUREN / XML WORKBENCH",
+  "Cole o XML aqui...": "Paste XML here...",
+  "XML válido · compactado com sucesso.": "Valid XML · minified successfully.",
+  "XML válido · formatado com sucesso.": "Valid XML · formatted successfully.",
+  "XML inválido:": "Invalid XML:",
+  "Introduza um XML para continuar.": "Enter XML to continue.",
+  "Validador JSON · Nexauren Tools": "JSON Validator · Nexauren Tools",
+  "Validador JSON": "JSON Validator",
+  "NEXAUREN / JSON INSPECTOR": "NEXAUREN / JSON INSPECTOR",
+  "Cole o JSON, valide a estrutura e encontre rapidamente o ponto do erro.": "Paste JSON, validate the structure, and quickly find the error.",
+  "Validador JSON": "JSON Validator",
+  "LOCAL": "LOCAL",
+  "Entrada": "Input",
+  "linha": "line",
+  "linhas": "lines",
+  "caracteres": "characters",
+  "Validar JSON": "Validate JSON",
+  "Inserir exemplo": "Insert example",
+  "Diagnóstico": "Diagnostics",
+  "Aguardando validação": "Waiting for validation",
+  "Pronto para analisar": "Ready to analyze",
+  "O resultado da validação aparecerá aqui.": "The validation result will appear here.",
+  "STATUS": "STATUS",
+  "Erro encontrado": "Error found",
+  "Linha —": "Line —",
+  "Coluna —": "Column —",
+  "Posição —": "Position —",
+  "Objetos": "Objects",
+  "Arrays": "Arrays",
+  "Chaves": "Keys",
+  "Valores": "Values",
+  "Copiar JSON": "Copy JSON",
+  "Abrir no Formatador": "Open in Formatter",
+  "Entre para usar esta ferramenta.": "Sign in to use this tool.",
+  "JSON válido": "Valid JSON",
+  "A estrutura foi reconhecida sem erros de sintaxe.": "The structure was recognized without syntax errors.",
+  "Válido": "Valid",
+  "JSON inválido": "Invalid JSON",
+  "Foi encontrado um problema de sintaxe.": "A syntax problem was found.",
+  "Erro": "Error",
+  "Posição": "Position",
+  "Copiado ✓": "Copied ✓",
+  "Copie manualmente": "Copy manually"
   "← Ferramentas": "← Tools"
 
 };
@@ -561,6 +624,15 @@ function translateTextNodes(){
     const translated=PT[key]||null;
     if(translated&&translated!==key)n.nodeValue=raw.replace(key,translated);
   }
+}
+
+function translateOptions(){
+  if(lang!=="en")return;
+  document.querySelectorAll("select option").forEach(el=>{
+    const value=(el.textContent||"").trim();
+    const translated=PT[value]||null;
+    if(translated&&translated!==value)el.textContent=translated;
+  });
 }
 
 function translateAttrs(){
@@ -623,6 +695,7 @@ function apply(){
     document.documentElement.lang=lang;
     ensureLanguageButton();
     translateTextNodes();
+    translateOptions();
     translateAttrs();
     translateHead();
     document.querySelectorAll("a[href]").forEach(a=>{
