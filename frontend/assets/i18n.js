@@ -463,6 +463,13 @@ const PT=
   "Gerar UUID": "Generate UUID",
   "Nenhum UUID gerado.": "No UUID generated.",
   "Copiar": "Copy"
+  "Código de Barras": "Barcode",
+  "Ex.: NEXAUREN-2026": "e.g. NEXAUREN-2026",
+  "Code 128 gerado.": "Code 128 generated.",
+  "EAN-13 gerado.": "EAN-13 generated.",
+  "EAN-8 gerado.": "EAN-8 generated.",
+  "UPC-A gerado.": "UPC-A generated.",
+  "Code 39 gerado.": "Code 39 generated."
   "Navegação": "Navigation",
   "Publicidade": "Advertisement",
   "Saltar para o conteúdo": "Skip to content",
