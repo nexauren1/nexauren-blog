@@ -837,11 +837,11 @@
     {
       "id": "image-converter",
       "name": "Conversor de Formato de Imagem",
-      "description": "Converta para PNG, JPG, WebP ou AVIF diretamente no navegador.",
+      "description": "Converta imagens em lote para PNG, JPG, WebP ou AVIF, com redimensionamento, rotação, espelho e acabamento diretamente no navegador.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-converter/",
       "tags": [
