@@ -2,22 +2,30 @@ import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2";
+function isSvgUrl(value){
+  try{
+    const u=new URL(String(value||""), "https://nexaurenstory.com");
+    const p=u.pathname.toLowerCase();
+    const tr=(u.searchParams.get("tr")||"").toLowerCase();
+    return p.endsWith(".svg") || /(^|,)f-svg(,|$)/.test(tr);
+  }catch{return false;}
+}
 function isFaviconUrl(value){
   try{
     const u=new URL(String(value||""), "https://nexaurenstory.com");
     const p=u.pathname.toLowerCase();
-    return p.endsWith("/favicon-nexauren.png") || p.endsWith("/nexauren-brand.png") || p.endsWith("/nexauren-story-favicon.svg");
+    return p.endsWith("/favicon-nexauren.png") || p.endsWith("/nexauren-brand.png");
   }catch{return false;}
 }
 function cleanCoverUrl(value){
   const v=String(value||"").trim();
-  if(!v || isFaviconUrl(v))return null;
+  if(!v || isSvgUrl(v) || isFaviconUrl(v))return null;
   return v;
 }
 function preferredImage(...values){
   for(const value of values){
     const v=String(value||"").trim();
-    if(v && !isFaviconUrl(v))return v;
+    if(v && !isSvgUrl(v) && !isFaviconUrl(v))return v;
   }
   return DEFAULT_SOCIAL_IMAGE;
 }
@@ -37,7 +45,7 @@ function imageMime(value){
 }
 function socialImageForCover(value){
   const v=String(value||"").trim();
-  if(!v || isFaviconUrl(v))return DEFAULT_SOCIAL_IMAGE;
+  if(!v || isSvgUrl(v) || isFaviconUrl(v))return DEFAULT_SOCIAL_IMAGE;
   try{
     const u=new URL(v);
     if(/(^|\.)ik\.imagekit\.io$/i.test(u.hostname)){
@@ -504,7 +512,7 @@ async function verifyImageKitFile(env,fileId,fileUrl){
   if(!fileId||!fileUrl)return false;
   try{
     const u=new URL(fileUrl);
-    if(u.protocol!=="https:")return false;
+    if(u.protocol!=="https:" || isSvgUrl(u.toString()))return false;
     const endpoint=String(env.IMAGEKIT_URL_ENDPOINT||"").trim();
     if(endpoint){
       const e=new URL(endpoint);
@@ -1249,8 +1257,8 @@ async function api(env,request,url,ctx){
   if(p==="/api/auth/me"&&m==="GET"){const u=await auth(env,request);return u?json({ok:true,user:{id:u.id,email:u.email,display_name:u.display_name,role:u.role}}):json({ok:false,user:null},401);}
   if(p==="/api/auth/password"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;const d=await bodyJson(request),cur=String(d?.current_password||""),next=String(d?.new_password||"");if(next.length<12)return fail("A nova senha precisa ter pelo menos 12 caracteres.",422);const u=await env.DB.prepare("SELECT password_hash FROM users WHERE id=?").bind(g.auth.id).first();if(!u||!(await verifyPassword(cur,u.password_hash)))return fail("Senha atual inválida.",401);await env.DB.prepare("UPDATE users SET password_hash=?,updated_at=? WHERE id=?").bind(await hashPassword(next),nowIso(),g.auth.id).run();await env.DB.prepare("DELETE FROM sessions WHERE user_id=? AND id<>?").bind(g.auth.id,g.auth.session_id).run();await audit(env,g.auth.id,"auth.password_changed","user",g.auth.id,{});return json({ok:true});}
   if(p==="/api/media/auth"&&m==="GET")return uploadAuth(env,request);
-  if(p==="/api/media"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const r=await env.DB.prepare("SELECT * FROM media ORDER BY created_at DESC LIMIT 100").all();return json({ok:true,media:r.results});}
-  if(p==="/api/media"&&m==="POST"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");if(!await verifyImageKitFile(env,text(d.fileId,255).trim(),text(d.url,2000).trim()))return fail("O arquivo ImageKit não pôde ser validado.",422,"IMAGEKIT_FILE_INVALID");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
+  if(p==="/api/media"&&m==="GET"){const g=await guard(env,request);if(g.error)return g.error;const r=await env.DB.prepare("SELECT * FROM media ORDER BY created_at DESC LIMIT 100").all();return json({ok:true,media:(r.results||[]).filter(x=>!isSvgUrl(x.url)&&!String(x.mime_type||"").toLowerCase().includes("svg"))});}
+  if(p==="/api/media"&&m==="POST"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");if(isSvgUrl(d.url)||/svg/i.test(String(d.mime||"")))return fail("Imagens SVG não são permitidas.",415,"UNSUPPORTED_MEDIA");if(!await verifyImageKitFile(env,text(d.fileId,255).trim(),text(d.url,2000).trim()))return fail("O arquivo ImageKit não pôde ser validado.",422,"IMAGEKIT_FILE_INVALID");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
   const mm=p.match(/^\/api\/media\/([^/]+)$/);if(mm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=mm[1],row=await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first();if(!row)return fail("Mídia não encontrada.",404);if(env.IMAGEKIT_PRIVATE_KEY&&row.imagekit_file_id){const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");const ir=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(row.imagekit_file_id),{method:"DELETE",headers:{Authorization:authHeader,Accept:"application/json"}});if(!ir.ok&&ir.status!==404)return fail("O arquivo não pôde ser removido do ImageKit.",502,"IMAGEKIT_DELETE_FAILED");}await env.DB.prepare("UPDATE posts SET cover_media_id=NULL,social_image=? WHERE cover_media_id=?").bind(DEFAULT_SOCIAL_IMAGE,id).run();await env.DB.prepare("DELETE FROM media WHERE id=?").bind(id).run();await audit(env,g.auth.id,"media.deleted","media",id,{filename:row.filename});return json({ok:true});}
 
   if(p==="/api/tool-registry"&&m==="GET"){
