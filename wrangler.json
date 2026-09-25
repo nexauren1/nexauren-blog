@@ -44,5 +44,12 @@
     "crons": [
       "*/5 * * * *"
     ]
-  }
+  },
+  "workflows": [
+    {
+      "name": "nexauren-translation",
+      "binding": "TRANSLATION_WORKFLOW",
+      "class_name": "NexaurenTranslationWorkflow"
+    }
+  ]
 }
