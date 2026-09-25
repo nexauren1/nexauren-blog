@@ -2,12 +2,12 @@ import app from "./worker-entry.js";
 
 
 const ICON = '<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">';
-const OG = '<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-png">';
-const OG_SECURE = '<meta property="og:image:secure_url" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-png">';
+const OG = '<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
+const OG_SECURE = '<meta property="og:image:secure_url" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
 const OG_WIDTH = '<meta property="og:image:width" content="1200">';
 const OG_HEIGHT = '<meta property="og:image:height" content="630">';
 const OG_TYPE = '<meta property="og:image:type" content="image/png">';
-const TW = '<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-png">';
+const TW = '<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
 
 function upsert(html, regex, tag) {
   return regex.test(html)
