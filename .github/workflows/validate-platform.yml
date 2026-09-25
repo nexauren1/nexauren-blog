@@ -69,33 +69,55 @@ jobs:
       - name: Validate account isolation and Firebase wiring
         run: |
           set -euo pipefail
-          ! grep -q 'Firebase Authentication' frontend/account/index.html
-          ! grep -qi 'Cloudflare' frontend/account/index.html
-          ! grep -qi 'administração editorial' frontend/account/index.html
-          grep -q 'firebaseConfig' frontend/account/firebase-config.js
-          grep -q 'authDomain: "nexaurenstory.com"' frontend/account/firebase-config.js
-          grep -Fq '"/__/auth/*"' wrangler.json
-          grep -q 'firebaseAuthProxy' worker-entry.js
-          grep -q 'initializeAuth' frontend/account/account-client.js
-          grep -q 'browserPopupRedirectResolver' frontend/account/account-client.js
-          grep -q 'createUserWithEmailAndPassword' frontend/account/account.js
-          grep -q 'signInWithEmailAndPassword' frontend/account/account.js
-          grep -q 'signInWithPopup' frontend/account/account.js
-          ! grep -q 'await signInWithRedirect' frontend/account/account.js
-          grep -q 'sendPasswordResetEmail' frontend/account/account.js
-          grep -q 'sendEmailVerification' frontend/account/account.js
-          grep -q 'updatePassword' frontend/account/account.js
-          grep -q 'jwtVerify' worker-entry.js
-          grep -q 'FIREBASE_PROJECT_ID = "nexauren-story"' worker-entry.js
-          grep -q 'nexauren_accounts' worker-entry.js
-          grep -q 'nexauren_account_preferences' worker-entry.js
-          grep -q 'ACCOUNTS_DB' worker-entry.js
-          grep -q '"binding": "ACCOUNTS_DB"' wrangler.json
-          ! grep -q 'CREATE TABLE IF NOT EXISTS nexauren_accounts' schema.sql
-          test -f database/accounts-upgrade.sql
-          ! grep -q 'INSERT INTO account_profiles' worker-entry.js
-          ! grep -q 'INSERT INTO users.*register' worker-entry.js
-          echo "Firebase account isolation checks passed."
+          node <<'NODE'
+          const fs=require("fs");
+          const read=p=>fs.readFileSync(p,"utf8");
+          const account=read("frontend/account/index.html");
+          const config=read("frontend/account/firebase-config.js");
+          const client=read("frontend/account/account-client.js");
+          const app=read("frontend/account/account.js");
+          const worker=read("worker-entry.js");
+          const wr=read("wrangler.json");
+          const schema=read("schema.sql");
+          const required=[
+            [config,"firebaseConfig"],
+            [config,'authDomain: "nexaurenstory.com"'],
+            [wr,'"/__/auth/*"'],
+            [worker,"firebaseAuthProxy"],
+            [client,"initializeAuth"],
+            [client,"browserPopupRedirectResolver"],
+            [app,"createUserWithEmailAndPassword"],
+            [app,"signInWithEmailAndPassword"],
+            [app,"signInWithPopup"],
+            [app,"sendPasswordResetEmail"],
+            [app,"sendEmailVerification"],
+            [app,"updatePassword"],
+            [worker,"jwtVerify"],
+            [worker,'FIREBASE_PROJECT_ID = "nexauren-story"'],
+            [worker,"nexauren_accounts"],
+            [worker,"nexauren_account_preferences"],
+            [worker,"ACCOUNTS_DB"],
+            [wr,'"binding": "ACCOUNTS_DB"'],
+          ];
+          for(const [source,marker] of required){
+            if(!source.includes(marker))throw new Error("Missing account marker: "+marker);
+          }
+          const forbidden=[
+            [account,/Firebase Authentication/i,"Firebase Authentication"],
+            [account,/Cloudflare/i,"Cloudflare"],
+            [account,/administração editorial/i,"administração editorial"],
+            [app,/await signInWithRedirect/,"await signInWithRedirect"],
+            [schema,/CREATE TABLE IF NOT EXISTS nexauren_accounts/,"account schema in main DB"],
+            [worker,/INSERT INTO account_profiles/,"account_profiles insert"],
+            [worker,/INSERT INTO users.*register/,"legacy register insert"],
+          ];
+          for(const [source,pattern,label] of forbidden){
+            if(pattern.test(source))throw new Error("Forbidden account marker found: "+label);
+          }
+          if(!fs.existsSync("database/accounts-upgrade.sql"))throw new Error("database/accounts-upgrade.sql missing");
+          console.log("Firebase account isolation checks passed.");
+          NODE
+
       - name: Validate public experience and SEO safeguards
         run: |
           set -euo pipefail
