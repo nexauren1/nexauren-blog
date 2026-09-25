@@ -3,6 +3,7 @@
   const requestedLanguage=(()=>{const q=new URLSearchParams(location.search).get("lang");return q==="en"?"en":"pt"})();
   const FALLBACK_DATA_URL="/tool/data/data.json";
   const CACHE_KEY="nexauren:tool-registry:v5";
+  const CACHE_SCOPE=requestedLanguage;
   const REQUEST_TIMEOUT=5000;
   let registryPromise=null;
   let refreshPromise=null;
@@ -22,7 +23,7 @@
     }catch{return null}
   }
   function saveCache(registry){
-    try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),registry}))}catch{}
+    try{localStorage.setItem(CACHE_KEY+":"+CACHE_SCOPE,JSON.stringify({savedAt:Date.now(),registry}))}catch{}
   }
   async function fetchFresh(url,options={}){
     const controller=new AbortController();
