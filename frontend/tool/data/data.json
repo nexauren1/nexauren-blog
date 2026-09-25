@@ -13,7 +13,9 @@
       "description": "Organização, cálculo e tarefas do dia a dia.",
       "icon": "◷",
       "sortOrder": 10,
-      "path": "/tool/categories/produtividade/"
+      "path": "/tool/categories/produtividade/",
+      "name_en": "Productivity",
+      "description_en": "Organization, calculations, and everyday tasks."
     },
     {
       "id": "texto",
@@ -21,7 +23,9 @@
       "description": "Ferramentas para escrever, transformar e trabalhar com texto.",
       "icon": "Aa",
       "sortOrder": 20,
-      "path": "/tool/categories/texto/"
+      "path": "/tool/categories/texto/",
+      "name_en": "Text",
+      "description_en": "Tools for writing, transforming, and working with text."
     },
     {
       "id": "imagem",
@@ -29,7 +33,9 @@
       "description": "Ferramentas para imagens, formatos e conteúdos visuais.",
       "icon": "▧",
       "sortOrder": 30,
-      "path": "/tool/categories/imagem/"
+      "path": "/tool/categories/imagem/",
+      "name_en": "Image",
+      "description_en": "Tools for images, formats, and visual content."
     },
     {
       "id": "tecnologia",
@@ -37,7 +43,9 @@
       "description": "Ferramentas para desenvolvimento e tarefas técnicas.",
       "icon": "⌘",
       "sortOrder": 40,
-      "path": "/tool/categories/tecnologia/"
+      "path": "/tool/categories/tecnologia/",
+      "name_en": "Technology",
+      "description_en": "Tools for development and technical tasks."
     },
     {
       "id": "marketplace",
@@ -45,7 +53,9 @@
       "description": "Ferramentas para vendedores, lojas e comércio online.",
       "icon": "🛒",
       "sortOrder": 50,
-      "path": "/tool/categories/marketplace/"
+      "path": "/tool/categories/marketplace/",
+      "name_en": "Marketplace",
+      "description_en": "Tools for sellers, stores, and online commerce."
     }
   ],
   "tools": [
@@ -66,7 +76,14 @@
       "featured": true,
       "popular": true,
       "access": "public",
-      "sortOrder": 10
+      "sortOrder": 10,
+      "name_en": "Word Counter",
+      "description_en": "Count words, characters, lines, and reading time instantly.",
+      "tags_en": [
+        "text",
+        "counting",
+        "productivity"
+      ]
     },
     {
       "id": "gerador-de-orcamentos",
@@ -86,7 +103,15 @@
       "featured": true,
       "popular": false,
       "access": "premium",
-      "sortOrder": 5
+      "sortOrder": 5,
+      "name_en": "Pro Quote Generator",
+      "description_en": "Create professional quotes with items, taxes, discounts, validity, and print-ready PDF output.",
+      "tags_en": [
+        "quotes",
+        "business",
+        "PDF",
+        "professional"
+      ]
     },
     {
       "id": "gerador-de-qr-code",
@@ -109,7 +134,17 @@
       "featured": true,
       "popular": true,
       "access": "public",
-      "sortOrder": 10
+      "sortOrder": 10,
+      "name_en": "QR Code Generator",
+      "description_en": "Create QR Codes for URLs, text, Wi-Fi networks, and contacts directly in your browser.",
+      "tags_en": [
+        "QR Code",
+        "QR",
+        "URL",
+        "Wi-Fi",
+        "contact",
+        "technology"
+      ]
     },
     {
       "id": "leitor-de-qr-code",
@@ -132,7 +167,17 @@
       "featured": false,
       "popular": true,
       "access": "public",
-      "sortOrder": 20
+      "sortOrder": 20,
+      "name_en": "QR Code Reader",
+      "description_en": "Scan QR Codes with your phone camera or from an image, directly in your browser.",
+      "tags_en": [
+        "QR Code",
+        "QR",
+        "scanner",
+        "camera",
+        "image",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-codigo-de-barras",
@@ -156,7 +201,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 30
+      "sortOrder": 30,
+      "name_en": "Barcode Generator",
+      "description_en": "Generate EAN-13, EAN-8, UPC-A, Code 128, and Code 39 barcodes with validation and print-ready output.",
+      "tags_en": [
+        "barcode",
+        "EAN-13",
+        "EAN-8",
+        "UPC",
+        "Code 128",
+        "Code 39",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-uuid",
@@ -178,7 +234,16 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 40
+      "sortOrder": 40,
+      "name_en": "UUID Generator",
+      "description_en": "Generate secure UUID v4 values in multiple quantities, with quick copying directly in your browser.",
+      "tags_en": [
+        "UUID",
+        "UUID v4",
+        "identifier",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-hash",
@@ -201,7 +266,17 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 50
+      "sortOrder": 50,
+      "name_en": "Hash Generator",
+      "description_en": "Generate SHA-256, SHA-384, SHA-512, and legacy hashes locally in your browser.",
+      "tags_en": [
+        "hash",
+        "SHA-256",
+        "SHA-512",
+        "cryptography",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "base64-encoder-decoder",
@@ -224,7 +299,17 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 60
+      "sortOrder": 60,
+      "name_en": "Base64 Encoder / Decoder",
+      "description_en": "Encode text to Base64 and decode Base64 back to text with UTF-8 support.",
+      "tags_en": [
+        "Base64",
+        "UTF-8",
+        "encoder",
+        "decoder",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "jwt-decoder",
@@ -246,7 +331,16 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 70
+      "sortOrder": 70,
+      "name_en": "JWT Decoder",
+      "description_en": "View JWT Header, Payload, and Signature with formatted JSON and readable timestamps.",
+      "tags_en": [
+        "JWT",
+        "token",
+        "JSON",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "formatador-json",
@@ -270,7 +364,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 80
+      "sortOrder": 80,
+      "name_en": "JSON Formatter",
+      "description_en": "Format, minify, and validate JSON with configurable indentation directly in your browser.",
+      "tags_en": [
+        "JSON",
+        "formatter",
+        "format",
+        "minify",
+        "validation",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "formatador-xml",
@@ -294,7 +399,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 90
+      "sortOrder": 90,
+      "name_en": "XML Formatter",
+      "description_en": "Format, minify, and validate XML documents directly in your browser.",
+      "tags_en": [
+        "XML",
+        "formatter",
+        "format",
+        "minify",
+        "validation",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "validador-json",
@@ -317,7 +433,17 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 100
+      "sortOrder": 100,
+      "name_en": "JSON Validator",
+      "description_en": "Validate JSON, locate syntax errors, and view line, column, and structure statistics.",
+      "tags_en": [
+        "JSON",
+        "validator",
+        "validation",
+        "error",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "testador-de-regex",
@@ -341,7 +467,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 110
+      "sortOrder": 110,
+      "name_en": "Regex Tester",
+      "description_en": "Test regular expressions, find matches, inspect groups, and simulate replacements directly in your browser.",
+      "tags_en": [
+        "Regex",
+        "regular expression",
+        "matches",
+        "groups",
+        "replacement",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "json-csv",
@@ -364,7 +501,17 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 120
+      "sortOrder": 120,
+      "name_en": "JSON ↔ CSV",
+      "description_en": "Convert data between JSON and CSV in both directions, with headers, delimiters, and formatted JSON support.",
+      "tags_en": [
+        "JSON",
+        "CSV",
+        "converter",
+        "data",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-lorem-ipsum",
@@ -387,7 +534,17 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 130
+      "sortOrder": 130,
+      "name_en": "Lorem Ipsum Generator",
+      "description_en": "Generate placeholder text in paragraphs, sentences, or words for prototypes, interfaces, and layout tests.",
+      "tags_en": [
+        "Lorem Ipsum",
+        "text",
+        "generator",
+        "prototype",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-meta-tags",
@@ -411,7 +568,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 140
+      "sortOrder": 140,
+      "name_en": "Meta Tag Generator",
+      "description_en": "Create description, robots, canonical, Open Graph, and Twitter Card meta tags and copy ready-to-use HTML.",
+      "tags_en": [
+        "Meta Tags",
+        "SEO",
+        "Open Graph",
+        "Twitter Card",
+        "HTML",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-sitemap",
@@ -435,7 +603,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 150
+      "sortOrder": 150,
+      "name_en": "Sitemap Generator",
+      "description_en": "Generate sitemap.xml from a list of URLs with frequency, priority, and last-update settings.",
+      "tags_en": [
+        "sitemap",
+        "XML",
+        "SEO",
+        "URLs",
+        "web",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-robots-txt",
@@ -460,7 +639,19 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 160
+      "sortOrder": 160,
+      "name_en": "Robots.txt Generator",
+      "description_en": "Create Allow and Disallow rules by user-agent and generate a ready-to-publish robots.txt file.",
+      "tags_en": [
+        "robots.txt",
+        "crawler",
+        "bot",
+        "SEO",
+        "Allow",
+        "Disallow",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "analisador-de-url",
@@ -484,7 +675,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 170
+      "sortOrder": 170,
+      "name_en": "URL Analyzer",
+      "description_en": "Analyze a URL by components, including protocol, domain, port, path, query, and fragment.",
+      "tags_en": [
+        "URL",
+        "analyzer",
+        "query",
+        "domain",
+        "web",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "encoder-decoder-url",
@@ -508,7 +710,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 180
+      "sortOrder": 180,
+      "name_en": "URL Encoder / Decoder",
+      "description_en": "Encode and decode text for use in URLs, parameters, and queries with UTF-8 support.",
+      "tags_en": [
+        "URL",
+        "encode",
+        "decode",
+        "URI",
+        "UTF-8",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "conversor-de-timestamp",
@@ -532,7 +745,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 190
+      "sortOrder": 190,
+      "name_en": "Timestamp Converter",
+      "description_en": "Convert Unix timestamps to readable dates and transform dates and times into timestamps in seconds or milliseconds.",
+      "tags_en": [
+        "timestamp",
+        "Unix",
+        "date",
+        "time",
+        "epoch",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "formatador-html",
@@ -557,7 +781,19 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 200
+      "sortOrder": 200,
+      "name_en": "HTML Formatter",
+      "description_en": "Format, minify, and validate HTML directly in your browser with configurable indentation.",
+      "tags_en": [
+        "HTML",
+        "formatter",
+        "format",
+        "minify",
+        "validation",
+        "markup",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "formatador-css-minifier",
@@ -581,7 +817,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 210
+      "sortOrder": 210,
+      "name_en": "CSS Formatter / Minifier",
+      "description_en": "Format, minify, and organize CSS with configurable indentation and local processing.",
+      "tags_en": [
+        "CSS",
+        "formatter",
+        "minifier",
+        "format",
+        "minify",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "formatador-js-minifier",
@@ -605,7 +852,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 220
+      "sortOrder": 220,
+      "name_en": "JS Formatter / Minifier",
+      "description_en": "Format, minify, and validate JavaScript locally while preserving strings and comments.",
+      "tags_en": [
+        "JavaScript",
+        "JS",
+        "formatter",
+        "minifier",
+        "validation",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "diff-checker",
@@ -629,7 +887,18 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 230
+      "sortOrder": 230,
+      "name_en": "Diff Checker",
+      "description_en": "Compare two texts line by line and identify additions, removals, and unchanged content.",
+      "tags_en": [
+        "Diff",
+        "comparison",
+        "text",
+        "differences",
+        "code",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "conversor-de-cores",
@@ -655,7 +924,20 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 240
+      "sortOrder": 240,
+      "name_en": "Color Converter",
+      "description_en": "Convert colors between HEX, RGB, HSL, HSV, and CMYK with visual preview and contrast.",
+      "tags_en": [
+        "colors",
+        "HEX",
+        "RGB",
+        "HSL",
+        "HSV",
+        "CMYK",
+        "CSS",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-paleta-de-cores",
@@ -680,7 +962,19 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 250
+      "sortOrder": 250,
+      "name_en": "Color / Palette Generator",
+      "description_en": "Generate harmonious color palettes from a base color and copy CSS tokens for your project.",
+      "tags_en": [
+        "colors",
+        "palette",
+        "color",
+        "design",
+        "CSS",
+        "HEX",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "conversor-de-dados-e-bytes",
@@ -708,7 +1002,22 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 260
+      "sortOrder": 260,
+      "name_en": "Data / Byte Converter",
+      "description_en": "Convert values between bytes, SI units, and IEC binary units and see the exact value in bytes.",
+      "tags_en": [
+        "bytes",
+        "data",
+        "KB",
+        "MB",
+        "GB",
+        "KiB",
+        "MiB",
+        "GiB",
+        "converter",
+        "development",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-api-key",
@@ -732,7 +1041,18 @@
       "featured": false,
       "popular": false,
       "access": "premium",
-      "sortOrder": 270
+      "sortOrder": 270,
+      "name_en": "Pro API Key Generator",
+      "description_en": "Generate random API keys with configurable format, prefix, and length. Pro-only tool.",
+      "tags_en": [
+        "API Key",
+        "API",
+        "key",
+        "security",
+        "cryptography",
+        "Pro",
+        "technology"
+      ]
     },
     {
       "id": "gerador-de-secret",
@@ -757,7 +1077,18 @@
       "featured": false,
       "popular": false,
       "access": "premium",
-      "sortOrder": 280
+      "sortOrder": 280,
+      "name_en": "Pro Secret Generator",
+      "description_en": "Generate cryptographically strong random secrets in Hex, Base64, Base64 URL-safe, or alphanumeric formats. Pro-only tool.",
+      "tags_en": [
+        "secret",
+        "security",
+        "cryptography",
+        "Base64",
+        "Hex",
+        "Pro",
+        "technology"
+      ]
     },
     {
       "id": "marketplace-fee-calculator",
@@ -784,7 +1115,21 @@
       "featured": true,
       "popular": true,
       "access": "public",
-      "sortOrder": 10
+      "sortOrder": 10,
+      "name_en": "Marketplace Fee Calculator",
+      "description_en": "Calculate marketplace fees, costs, net profit, and margin for an online sale.",
+      "tags_en": [
+        "Marketplace Fee Calculator",
+        "marketplace fees",
+        "seller fees",
+        "profit calculator",
+        "selling price",
+        "ecommerce",
+        "seller",
+        "fees",
+        "profit",
+        "margin"
+      ]
     },
     {
       "id": "image-compressor",
@@ -811,7 +1156,18 @@
       "access": "public",
       "freeBatchLimit": 3,
       "proBatchLimit": null,
-      "sortOrder": 10
+      "sortOrder": 10,
+      "name_en": "Image Compressor",
+      "description_en": "Compress images in batches with quality, format, dimensions, and target size controls, using local processing.",
+      "tags_en": [
+        "image",
+        "compressor",
+        "compression",
+        "batch",
+        "WebP",
+        "JPG",
+        "PNG"
+      ]
     },
     {
       "id": "image-resizer",
@@ -832,7 +1188,14 @@
       "featured": true,
       "popular": true,
       "access": "public",
-      "sortOrder": 20
+      "sortOrder": 20,
+      "name_en": "Image Resizer",
+      "description_en": "Resize images by pixels while preserving aspect ratio when needed.",
+      "tags_en": [
+        "image",
+        "resizer",
+        "image resizing"
+      ]
     },
     {
       "id": "image-converter",
@@ -853,7 +1216,15 @@
       "featured": true,
       "popular": true,
       "access": "public",
-      "sortOrder": 30
+      "sortOrder": 30,
+      "name_en": "Image Format Converter",
+      "description_en": "Convert images in batches to PNG, JPG, WebP, or AVIF, with resizing, rotation, mirroring, and finishing directly in your browser.",
+      "tags_en": [
+        "image",
+        "converter",
+        "format",
+        "image conversion"
+      ]
     },
     {
       "id": "image-cropper",
@@ -874,7 +1245,14 @@
       "featured": false,
       "popular": true,
       "access": "public",
-      "sortOrder": 40
+      "sortOrder": 40,
+      "name_en": "Image Cropper",
+      "description_en": "Crop images with ready-made proportions for posts, stories, and thumbnails.",
+      "tags_en": [
+        "image",
+        "cropper",
+        "cropping"
+      ]
     },
     {
       "id": "image-watermark",
@@ -895,7 +1273,13 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 50
+      "sortOrder": 50,
+      "name_en": "Image Watermark",
+      "description_en": "Add text over an image with adjustable size, position, color, and opacity.",
+      "tags_en": [
+        "image",
+        "watermark"
+      ]
     },
     {
       "id": "image-metadata-cleaner",
@@ -917,7 +1301,14 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 60
+      "sortOrder": 60,
+      "name_en": "Metadata Cleaner",
+      "description_en": "Re-export an image to remove metadata that is not preserved by Canvas.",
+      "tags_en": [
+        "image",
+        "metadata",
+        "cleaner"
+      ]
     },
     {
       "id": "image-palette-extractor",
@@ -939,7 +1330,14 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 70
+      "sortOrder": 70,
+      "name_en": "Color Palette Extractor",
+      "description_en": "Extract dominant colors from an image and copy HEX values or CSS tokens.",
+      "tags_en": [
+        "image",
+        "palette",
+        "extractor"
+      ]
     },
     {
       "id": "social-image-resizer",
@@ -961,7 +1359,14 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 80
+      "sortOrder": 80,
+      "name_en": "Social Media Image Resizer",
+      "description_en": "Prepare images for common Instagram, Stories, YouTube, Open Graph, X, and LinkedIn formats.",
+      "tags_en": [
+        "image",
+        "social",
+        "resizer"
+      ]
     },
     {
       "id": "favicon-generator",
@@ -982,7 +1387,14 @@
       "featured": false,
       "popular": false,
       "access": "public",
-      "sortOrder": 90
+      "sortOrder": 90,
+      "name_en": "Favicon & Icon Generator",
+      "description_en": "Generate PNGs in useful sizes for favicons, Apple Touch Icons, and PWA icons from an image.",
+      "tags_en": [
+        "image",
+        "favicon",
+        "generator"
+      ]
     }
   ]
 }
