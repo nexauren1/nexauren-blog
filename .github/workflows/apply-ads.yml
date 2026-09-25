@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Apply ads automatically to tools
+      - name: Apply ads automatically to all tools
         run: |
           set -e
           test -s frontend/assets/ads.js
@@ -26,16 +26,15 @@ jobs:
           import re
 
           root = Path("frontend/tool/categories")
-          excluded = {"frontend/blog", "frontend/articles"}
 
           style = '''<style id="nexauren-auto-ads-style">
-          .nx-auto-ad{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+          .nx-auto-ad{width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
           .nx-auto-ad.top{min-height:60px;margin:0 auto 22px;padding:10px 6px}
           .nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
-          .nx-auto-ad .nx-auto-ad-inner{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+          .nx-auto-ad .nx-auto-ad-inner{width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+          .nx-auto-ad.bottom .nx-auto-ad-inner{min-height:90px}
           .nx-auto-ad iframe{max-width:100%;border:0}
           .nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
-          .nx-auto-ad.top,.nx-auto-ad.bottom{flex-direction:column}
           @media(max-width:520px){
             .nx-auto-ad.top{margin-bottom:18px;padding:8px 2px}
             .nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}
@@ -58,53 +57,74 @@ jobs:
           <script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
           <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->'''
 
-          loader = '<script src="/assets/ads.js?v=20260925-auto1"></script>'
+          loader = '<script src="/assets/ads.js?v=20260925-auto2"></script>'
+
+          def remove_blocks(text):
+              text = re.sub(
+                  r'\\s*<!-- NEXAUREN-AUTO-ADS:START -->.*?<!-- NEXAUREN-AUTO-ADS:END -->\\s*',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              text = re.sub(
+                  r'\\s*<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->.*?<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->\\s*',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              text = re.sub(
+                  r'\\s*<section class="forge-ad-area[^>]*>.*?</section>\\s*',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              text = re.sub(
+                  r'<script[^>]+src="/assets/ads\\.js(?:\\?[^"]*)?"[^>]*></script>',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              text = re.sub(
+                  r'\\s*<script>window\\.NexaurenAds\\?\\.load(?:Banner|Responsive)\\(document\\.getElementById\\("nexauren-ad-(?:test|top|bottom)"\\)\\);</script>',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              return text
+
+          def add_style(text):
+              text = re.sub(
+                  r'<style id="nexauren-auto-ads-style">.*?</style>',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              if '</head>' in text:
+                  return text.replace('</head>', style + '\\n</head>', 1)
+              return style + '\\n' + text
 
           for path in sorted(root.rglob("*.html")):
               rel = path.relative_to(root)
+              # Only actual tool pages: frontend/tool/categories/<category>/<tool>/...
               if len(rel.parts) < 3:
-                  continue
-              if any(str(path).startswith(prefix) for prefix in excluded):
                   continue
 
               text = path.read_text(encoding="utf-8")
+              text = remove_blocks(text)
+              text = add_style(text)
 
-              if "NEXAUREN-AUTO-ADS:START" in text and "NEXAUREN-AUTO-ADS:START-BOTTOM" in text:
-                  continue
-
-              # Remove the previous manual Image Forge ad blocks before standardizing it.
-              text = re.sub(
-                  r'<section class="forge-ad-area[^"]*"[^>]*>.*?</section>\\s*<script[^>]*ads\\.js[^>]*>.*?</script>',
-                  '',
-                  text,
-                  flags=re.S
-              )
-              text = re.sub(
-                  r'<section class="forge-ad-area[^"]*"[^>]*>.*?</section>',
-                  '',
-                  text,
-                  flags=re.S
-              )
-
-              # Remove any old standalone auto loader left by earlier experiments.
-              if 'id="nexauren-ad-test"' in text or 'id="nexauren-ad-top"' in text:
-                  text = re.sub(r'<script src="/assets/ads\\.js[^>]*></script>', '', text)
-
-              if '</head>' in text and 'id="nexauren-auto-ads-style"' not in text:
-                  text = text.replace('</head>', style + '\\n</head>', 1)
-
-              if '/assets/ads.js' not in text:
-                  if '</body>' in text:
-                      text = text.replace('</body>', loader + '\\n</body>', 1)
-                  elif '<body' in text:
-                      text = text + '\\n' + loader
-              elif 'ads.js?v=20260925-auto1' not in text:
+              # One shared loader per tool page, loaded before any ad initializer.
+              if '</head>' in text:
                   text = text.replace('</head>', loader + '\\n</head>', 1)
+              else:
+                  text = loader + '\\n' + text
 
               body_open = re.search(r'<body[^>]*>', text, flags=re.I)
-              if body_open:
-                  insert_at = body_open.end()
-                  text = text[:insert_at] + '\\n' + top + text[insert_at:]
+              if not body_open:
+                  raise SystemExit(f"Could not find <body> in {path}")
+
+              insert_at = body_open.end()
+              text = text[:insert_at] + '\\n' + top + text[insert_at:]
 
               footer = re.search(r'<footer\\b', text, flags=re.I)
               if footer:
@@ -112,42 +132,44 @@ jobs:
               elif '</body>' in text:
                   text = text.replace('</body>', bottom + '\\n</body>', 1)
               else:
-                  text += '\\n' + bottom
+                  raise SystemExit(f"Could not find footer/body end in {path}")
 
               path.write_text(text, encoding="utf-8")
-              print(f"Ads applied: {path}")
+              print(f"Ads standardized: {path}")
 
           PY
 
-      - name: Verify automatic ads coverage
+      - name: Verify ads on all tool pages
         run: |
           set -e
           test -s frontend/assets/ads.js
+
           python3 - <<'PY'
           from pathlib import Path
 
           root = Path("frontend/tool/categories")
           tools = []
+
           for path in sorted(root.rglob("*.html")):
               if len(path.relative_to(root).parts) < 3:
                   continue
+              tools.append(path)
               text = path.read_text(encoding="utf-8")
-              if "NEXAUREN-AUTO-ADS:START" in text and "NEXAUREN-AUTO-ADS:START-BOTTOM" in text:
-                  tools.append(path)
+
+              if text.count('data-nx-auto-ad="top"') != 1:
+                  raise SystemExit(f"Top ad missing/duplicated: {path}")
+              if text.count('data-nx-auto-ad="bottom"') != 1:
+                  raise SystemExit(f"Bottom ad missing/duplicated: {path}")
+              if text.count('ads.js?v=20260925-auto2') != 1:
+                  raise SystemExit(f"Ads loader missing/duplicated: {path}")
+              if text.count('id="nexauren-auto-ads-style"') != 1:
+                  raise SystemExit(f"Ads style missing/duplicated: {path}")
 
           if not tools:
-              raise SystemExit("No tool pages contain the automatic ads markers.")
+              raise SystemExit("No tool pages found under frontend/tool/categories.")
 
-          for path in tools:
-              text = path.read_text(encoding="utf-8")
-              if text.count("data-nx-auto-ad=\"top\"") != 1:
-                  raise SystemExit(f"Invalid top ad count: {path}")
-              if text.count("data-nx-auto-ad=\"bottom\"") != 1:
-                  raise SystemExit(f"Invalid bottom ad count: {path}")
-              if text.count("ads.js?v=20260925-auto1") != 1:
-                  raise SystemExit(f"Invalid ads loader count: {path}")
-
-          print(f"Verified {len(tools)} tool page(s). Blog and articles are outside the scan root.")
+          print(f"Verified {len(tools)} tool page(s).")
+          print("Blog is untouched because the workflow scans only frontend/tool/categories.")
           PY
 
       - name: Commit automatic ads updates
@@ -163,5 +185,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: apply Nexauren ads automatically to tools [skip ci]"
+          git commit -m "chore: standardize automatic ads on all tools [skip ci]"
           git push
