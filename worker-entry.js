@@ -285,6 +285,18 @@ async function dbCheck(env){
 async function dbReady(env){return (await dbCheck(env)).ready;}
 
 
+async function saveTranslations(env,postId,translations){
+  for(const lang of ["pt","en"]){
+    const t=translations?.[lang];
+    if(!t)continue;
+    const title=text(t.title,180).trim(),excerpt=text(t.excerpt,500).trim(),content=text(t.content,2000000);
+    if(!title&&!excerpt&&!content)continue;
+    const ts=nowIso();
+    await env.DB.prepare(`INSERT INTO post_translations (id,post_id,language,title,excerpt,content,meta_title,meta_description,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(post_id,language) DO UPDATE SET title=excluded.title,excerpt=excluded.excerpt,content=excluded.content,meta_title=excluded.meta_title,meta_description=excluded.meta_description,updated_at=excluded.updated_at`)
+      .bind(crypto.randomUUID(),postId,lang,title,excerpt,content,text(t.meta_title,180).trim(),text(t.meta_description,300).trim(),ts,ts).run();
+  }
+}
 async function autoTranslatePost(env,postId){
   if(!env.AI)return;
   const p=await env.DB.prepare("SELECT title,excerpt,content,meta_title,meta_description FROM posts WHERE id=? LIMIT 1").bind(postId).first();
@@ -296,7 +308,7 @@ async function autoTranslatePost(env,postId){
 
   let state=null;
   try{
-    state=await env.DB.prepare("SELECT source_hash,status FROM translation_state WHERE entity_type='post' AND entity_id=? AND language='en' LIMIT 1").bind(postId).first();
+    state=await env.ACCOUNTS_DB.prepare("SELECT source_hash,status FROM translation_state WHERE entity_type='post' AND entity_id=? AND language='en' LIMIT 1").bind(postId).first();
   }catch{}
 
   const tr=await env.DB.prepare("SELECT language,title,excerpt,content,meta_title,meta_description FROM post_translations WHERE post_id=? AND language='en' LIMIT 1").bind(postId).first();
@@ -306,7 +318,7 @@ async function autoTranslatePost(env,postId){
   const needsEnMeta=!!tr&&(!String(tr.meta_title||"").trim()||!String(tr.meta_description||"").trim());
 
   if(!needsTranslation&&!needsPtMeta&&!needsEnMeta){
-    try{await env.DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status=excluded.status,error_message='',updated_at=excluded.updated_at")
+    try{await env.ACCOUNTS_DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status=excluded.status,error_message='',updated_at=excluded.updated_at")
       .bind(crypto.randomUUID(),"post",postId,"en",sourceHash,"translated","",nowIso()).run();}catch{}
     return;
   }
@@ -383,17 +395,96 @@ async function autoTranslatePost(env,postId){
     const done=await env.DB.prepare("SELECT id FROM post_translations WHERE post_id=? AND language='en' AND title<>'' AND content<>'' LIMIT 1").bind(postId).first();
     if(!done)return;
     try{
-      await env.DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status=excluded.status,error_message='',updated_at=excluded.updated_at")
+      await env.ACCOUNTS_DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status=excluded.status,error_message='',updated_at=excluded.updated_at")
         .bind(crypto.randomUUID(),"post",postId,"en",sourceHash,"translated","",nowIso()).run();
     }catch{}
   }catch(e){
     try{
-      await env.DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status='error',error_message=excluded.error_message,updated_at=excluded.updated_at")
+      await env.ACCOUNTS_DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status='error',error_message=excluded.error_message,updated_at=excluded.updated_at")
         .bind(crypto.randomUUID(),"post",postId,"en",sourceHash,"error",String(e?.message||e).slice(0,500),nowIso()).run();
     }catch{}
     throw e;
   }
 }
+async function translateRuntimeBatch(env,sourceTexts){
+  const unique=[...new Set((Array.isArray(sourceTexts)?sourceTexts:[]).map(v=>String(v??"").trim()).filter(v=>v&&v.length<=2000))].slice(0,40);
+  if(!unique.length)return {};
+  const items=[];
+  for(const source_text of unique){
+    items.push({source_text,translation_key:"runtime."+await sha256(source_text)});
+  }
+
+  let existing=[];
+  try{
+    const keys=items.map(x=>x.translation_key);
+    const marks=keys.map(()=>"?").join(",");
+    const r=await env.ACCOUNTS_DB.prepare(
+      "SELECT translation_key,source_text,translated_text,status FROM translations WHERE scope='runtime' AND language='en' AND translation_key IN ("+marks+")"
+    ).bind(...keys).all();
+    existing=r.results||[];
+  }catch(error){
+    throw Object.assign(new Error("Armazenamento de traduções não está disponível. Execute database/i18n.sql no D1 nexauren."),{code:"I18N_DB_NOT_READY",cause:error});
+  }
+
+  const existingMap=new Map(existing.map(x=>[String(x.translation_key),x]));
+  const output={};
+  const pending=[];
+  for(const item of items){
+    const old=existingMap.get(item.translation_key);
+    if(old?.translated_text&&old.status!=="error"){
+      output[item.source_text]=String(old.translated_text);
+    }else{
+      pending.push({...item,source_hash:item.translation_key.slice(8)});
+    }
+  }
+
+  for(let i=0;i<pending.length;i+=20){
+    const batch=pending.slice(i,i+20);
+    const prompt=[
+      "You are Nexauren's universal Portuguese-to-English UI translation engine.",
+      "Translate each provided text into natural international English.",
+      "This is runtime web UI text, so translate short labels, buttons, headings, descriptions, messages, status text, placeholders, accessibility labels and dynamic text.",
+      "Detect Portuguese even when accents are absent. If a text is already English, a product name, a URL, a code fragment, an email, a number, a symbol-only value, or another non-translatable technical value, return it unchanged.",
+      "Preserve placeholders, variables, HTML/XML tags, Markdown syntax, URLs, email addresses, numbers, units, emojis and keyboard symbols exactly where possible.",
+      "Do not explain anything. Return ONLY a JSON array with one object for every input, using exactly the keys \"translation_key\" and \"translated_text\".",
+      "Items:\n"+batch.map(x=>JSON.stringify({translation_key:x.translation_key,source_text:x.source_text})).join("\n")
+    ].join("\n");
+
+    const response=await env.AI.run(env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",{
+      messages:[
+        {role:"system",content:"You are a precise production translation engine. Return only valid JSON."},
+        {role:"user",content:prompt}
+      ],
+      temperature:0.1,
+      max_tokens:7000
+    });
+
+    let raw=String(response?.response||response||"").trim()
+      .replace(/^\x60\x60\x60(?:json)?\s*/i,"")
+      .replace(/\s*\x60\x60\x60$/,"").trim();
+    const a=raw.indexOf("["),b=raw.lastIndexOf("]");
+    if(a<0||b<=a)throw Object.assign(new Error("Resposta de tradução universal inválida."),{code:"I18N_AI_INVALID"});
+    const result=JSON.parse(raw.slice(a,b+1));
+    const byKey=new Map((Array.isArray(result)?result:[]).map(x=>[
+      String(x.translation_key||""),
+      String(x.translated_text??"").trim()
+    ]));
+
+    for(const item of batch){
+      const translated=byKey.get(item.translation_key)||item.source_text;
+      output[item.source_text]=translated;
+      const ts=nowIso();
+      await env.ACCOUNTS_DB.prepare(
+        "INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at"
+      ).bind(
+        crypto.randomUUID(),"runtime","runtime",item.translation_key,"en",
+        item.source_text,translated,item.source_hash,"translated","",ts,ts
+      ).run();
+    }
+  }
+  return output;
+}
+
 async function readTranslations(env,language,scope=null){
   const lang=["pt","en"].includes(language)?language:"pt";
   try{
@@ -1309,6 +1400,22 @@ async function api(env,request,url,ctx){
   }
 
   if(p.startsWith("/api/account/")) return fail("Endpoint de conta não disponível.",410,"ACCOUNT_ENDPOINT_DISABLED");
+  if(p==="/api/i18n/runtime"&&m==="POST"){
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+    try{
+      if(!env.AI)return fail("Cloudflare AI não está configurado.",503,"I18N_AI_UNAVAILABLE");
+      if(!env.ACCOUNTS_DB)return fail("D1 Nexauren não está configurado.",503,"I18N_DB_UNAVAILABLE");
+      const d=await bodyJson(request)||{};
+      const raw=Array.isArray(d.texts)?d.texts:[];
+      const texts=[...new Set(raw.map(v=>String(v??"").trim()).filter(v=>v.length>=2&&v.length<=2000))].slice(0,40);
+      const total=texts.reduce((n,v)=>n+v.length,0);
+      if(total>30000)return fail("Lote de tradução demasiado grande.",413,"I18N_BATCH_TOO_LARGE");
+      const translations=await translateRuntimeBatch(env,texts);
+      return json({ok:true,language:"en",translations});
+    }catch(error){
+      return fail(error?.message||"Não foi possível traduzir o texto.",503,error?.code||"I18N_RUNTIME_ERROR");
+    }
+  }
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
