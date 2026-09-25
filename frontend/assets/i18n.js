@@ -335,7 +335,10 @@ const PT=
   "Não foi possível verificar o acesso.": "Could not verify access.",
   "Não conseguimos confirmar o estado do seu plano agora. Tente novamente.": "We couldn't confirm your plan status right now. Please try again.",
   "PUBLICIDADE": "ADVERTISEMENT",
-  "Navegação": "Navigation"
+  "Navegação": "Navigation",
+  "Publicidade": "Advertisement",
+  "← Produtividade": "← Productivity",
+  "← Ferramentas": "← Tools"
 
 };
 const ATTR_MAP={
