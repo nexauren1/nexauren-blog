@@ -372,7 +372,7 @@ const PT=
   "O motor QR não ficou disponível. Verifique a ligação e tente novamente.": "The QR engine is unavailable. Check your connection and try again.",
   "QR Code atualizado.": "QR Code updated.",
   "Não foi possível gerar este QR Code. Reduza o conteúdo e tente novamente.": "Could not generate this QR Code. Reduce the content and try again.",
-  "Pronto para gerar.": "Ready to generate."
+  "Pronto para gerar.": "Ready to generate.",
   "Navegação": "Navigation",
   "Publicidade": "Advertisement",
   "Saltar para o conteúdo": "Skip to content",
