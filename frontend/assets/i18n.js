@@ -308,105 +308,164 @@ function setState(next,write=true){
 }
 function t(k,fallback=k){if(lang==="pt")return fallback;return serverMap.get(k)||PT[k]||fallback}
 function shouldSkip(node){const p=node.parentElement;if(!p)return true;return !!p.closest("script,style,noscript,template,pre,code,textarea,input,select,option,[data-i18n-skip]")}
-function translateTextNodes(){
- if(lang!=="en")return;
- const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
- const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
- for(const n of nodes){if(shouldSkip(n))continue;const raw=n.nodeValue||"",key=raw.trim();if(!key)continue;const translated=serverMap.get(key)||PT[key]||translateDynamicPatterns(key);if(translated&&translated!==key){n.nodeValue=raw.replace(key,translated)}}
+const runtimeQueue=new Map();
+const runtimeInFlight=new Set();
+let runtimeTimer=0;
+function runtimeCandidate(value){
+  const s=String(value||"").trim();
+  if(s.length<2||s.length>2000)return false;
+  if(!/[A-Za-zÀ-ÿ]/.test(s))return false;
+  if(/^https?:\/\//i.test(s)||/^mailto:/i.test(s))return false;
+  return true;
 }
-function translateAttrs(){
- if(lang!=="en")return;
- document.querySelectorAll("input[placeholder],textarea[placeholder],[aria-label],title").forEach(el=>{
-   for(const attr of ["placeholder","aria-label","title"]){
-     if(!el.hasAttribute(attr))continue;
-     const v=el.getAttribute(attr)||"",tr=serverMap.get(v)||ATTR_MAP[v]||PT[v];
-     if(tr&&tr!==v)el.setAttribute(attr,tr);
-   }
- });
+function queueRuntimeTranslation(value){
+  if(lang!=="en")return;
+  const key=String(value||"").trim();
+  if(!runtimeCandidate(key)||serverMap.has(key)||PT[key]||translateDynamicPatterns(key))return;
+  if(runtimeInFlight.has(key))return;
+  runtimeQueue.set(key,key);
+  if(runtimeTimer)return;
+  runtimeTimer=setTimeout(()=>{runtimeTimer=0;flushRuntimeTranslations()},80);
 }
-function translateHead(){
- if(lang!=="en")return;
- const textTargets=["title"];
- for(const sel of ["meta[name=\"description\"]","meta[property=\"og:title\"]","meta[property=\"og:description\"]","meta[name=\"twitter:title\"]","meta[name=\"twitter:description\"]"]){
-   document.querySelectorAll(sel).forEach(el=>{
-     const v=el.getAttribute("content")||"",tr=serverMap.get(v)||PT[v];
-     if(tr&&tr!==v)el.setAttribute("content",tr);
-   });
- }
- document.querySelectorAll('meta[property="og:image:alt"],meta[name="twitter:image:alt"]').forEach(el=>{
-   const v=el.getAttribute("content")||"",tr=serverMap.get(v)||PT[v];
-   if(tr&&tr!==v)el.setAttribute("content",tr);
- });
+async function flushRuntimeTranslations(){
+  if(lang!=="en"||runtimeInFlight.size)return;
+  const batch=[...runtimeQueue.keys()].slice(0,40);
+  if(!batch.length)return;
+  for(const item of batch){runtimeQueue.delete(item);runtimeInFlight.add(item);}
+  try{
+    const r=await fetch("/api/i18n/runtime",{
+      method:"POST",
+      credentials:"same-origin",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({texts:batch})
+    });
+    if(!r.ok)throw new Error("runtime translation failed");
+    const d=await r.json();
+    for(const [source,translated] of Object.entries(d.translations||{})){
+      if(source&&translated){serverMap.set(source,String(translated));}
+    }
+    try{
+      const cache={savedAt:Date.now(),translations:Object.fromEntries(serverMap)};
+      localStorage.setItem("ns:i18n:v2:en",JSON.stringify(cache));
+    }catch{}
+    apply();
+  }catch{}finally{
+    for(const item of batch)runtimeInFlight.delete(item);
+    if(runtimeQueue.size&&!runtimeTimer)runtimeTimer=setTimeout(()=>{runtimeTimer=0;flushRuntimeTranslations()},120);
+  }
+}
+function translateTextNodes(missing){
+  if(lang!=="en")return;
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+  for(const n of nodes){
+    if(shouldSkip(n))continue;
+    const raw=n.nodeValue||"",key=raw.trim();if(!key)continue;
+    const translated=serverMap.get(key)||PT[key]||translateDynamicPatterns(key);
+    if(translated&&translated!==key)n.nodeValue=raw.replace(key,translated);
+    else if(missing)queueRuntimeTranslation(key);
+  }
+}
+function translateAttrs(missing){
+  if(lang!=="en")return;
+  document.querySelectorAll("input[placeholder],textarea[placeholder],[aria-label],title").forEach(el=>{
+    for(const attr of ["placeholder","aria-label","title"]){
+      if(!el.hasAttribute(attr))continue;
+      const v=el.getAttribute(attr)||"",tr=serverMap.get(v)||ATTR_MAP[v]||PT[v];
+      if(tr&&tr!==v)el.setAttribute(attr,tr);
+      else if(missing)queueRuntimeTranslation(v);
+    }
+  });
+}
+function translateHead(missing){
+  if(lang!=="en")return;
+  for(const sel of ["title","meta[name="description"]","meta[property="og:title"]","meta[property="og:description"]","meta[name="twitter:title"]","meta[name="twitter:description"]","meta[property="og:image:alt"]","meta[name="twitter:image:alt"]"]){
+    document.querySelectorAll(sel).forEach(el=>{
+      const isMeta=el.tagName==="META";
+      const attr=isMeta?"content":"textContent";
+      const v=isMeta?(el.getAttribute("content")||""):(el.textContent||"");
+      const tr=serverMap.get(v)||PT[v];
+      if(tr&&tr!==v){
+        if(isMeta)el.setAttribute("content",tr);else el.textContent=tr;
+      }else if(missing)queueRuntimeTranslation(v);
+    });
+  }
 }
 function translateDynamicPatterns(value){
- const s=String(value||"");
- let m=s.match(/^(\d+) ferramentas? disponíveis$/i);
- if(m)return m[1]+" tool"+(m[1]==="1"?"":"s")+" available";
- m=s.match(/^(\d+) ferramentas? encontradas$/i);
- if(m)return m[1]+" tool"+(m[1]==="1"?"":"s")+" found";
- m=s.match(/^(\d+) de (\d+) ferramentas?$/i);
- if(m)return m[1]+" of "+m[2]+" tool"+(m[2]==="1"?"":"s");
- m=s.match(/^(\d+) ferramenta\(s\)$/i);
- if(m)return m[1]+" tool(s)";
- m=s.match(/^Próxima cobrança:\s*(.+)$/i);
- if(m)return "Next charge: "+m[1];
- m=s.match(/^Falta:\s*(.+)$/i);
- if(m)return "Missing: "+m[1];
- m=s.match(/^A palavra-passe precisa de (.+)\.$/i);
- if(m)return "The password needs "+m[1]+".";
- m=s.match(/^Erro ao carregar assinatura:\s*(.*)$/i);
- if(m)return "Error loading subscription: "+m[1];
- m=s.match(/^Sincronização:\s*(.*)$/i);
- if(m)return "Synchronization: "+m[1];
- return null;
+  const s=String(value||"");
+  let m=s.match(/^(\\d+) ferramentas? disponíveis$/i);
+  if(m)return m[1]+" tool"+(m[1]==="1"?"":"s")+" available";
+  m=s.match(/^(\\d+) ferramentas? encontradas$/i);
+  if(m)return m[1]+" tool"+(m[1]==="1"?"":"s")+" found";
+  m=s.match(/^(\\d+) de (\\d+) ferramentas?$/i);
+  if(m)return m[1]+" of "+m[2]+" tool"+(m[2]==="1"?"":"s");
+  m=s.match(/^(\\d+) ferramenta\\(s\\)$/i);
+  if(m)return m[1]+" tool(s)";
+  m=s.match(/^Próxima cobrança:\\s*(.+)$/i);
+  if(m)return "Next charge: "+m[1];
+  m=s.match(/^Falta:\\s*(.+)$/i);
+  if(m)return "Missing: "+m[1];
+  m=s.match(/^A palavra-passe precisa de (.+)\\.$/i);
+  if(m)return "The password needs "+m[1]+".";
+  m=s.match(/^Erro ao carregar assinatura:\\s*(.*)$/i);
+  if(m)return "Error loading subscription: "+m[1];
+  m=s.match(/^Sincronização:\\s*(.*)$/i);
+  if(m)return "Synchronization: "+m[1];
+  return null;
 }
 function translateLinks(){
- document.querySelectorAll("a[href]").forEach(a=>{
-   const h=a.getAttribute("href");if(!h||!h.startsWith("/"))return;
-   const next=localizeUrl(h);if(next!==h)a.setAttribute("href",next);
- });
+  document.querySelectorAll("a[href]").forEach(a=>{
+    const h=a.getAttribute("href");if(!h||!h.startsWith("/"))return;
+    const next=localizeUrl(h);if(next!==h)a.setAttribute("href",next);
+  });
 }
 function ensureLanguageButton(){
- const header=document.querySelector("header");if(!header)return;
- let b=header.querySelector("[data-nx-language]");
- if(!b){b=document.createElement("button");b.type="button";b.dataset.nxLanguage="1";b.className="nx-language-switch";b.addEventListener("click",()=>{const next=lang==="en"?"pt":"en";const u=new URL(location.href);if(next==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");try{localStorage.setItem("ns_lang",next)}catch{}document.cookie="ns_lang="+next+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"")});const target=header.querySelector(".menu-toggle,.tool-menu");if(target)target.before(b);else header.firstElementChild?.appendChild(b)}
- const nextLabel=lang==="en"?"PT":"EN";
- const nextAria=lang==="en"?"Switch to Portuguese":"Switch to English";
- const nextTitle=lang==="en"?"Português":"English";
- if(b.textContent!==nextLabel)b.textContent=nextLabel;
- if(b.getAttribute("aria-label")!==nextAria)b.setAttribute("aria-label",nextAria);
- if(b.title!==nextTitle)b.title=nextTitle;
+  const header=document.querySelector("header");if(!header)return;
+  let b=header.querySelector("[data-nx-language]");
+  if(!b){b=document.createElement("button");b.type="button";b.dataset.nxLanguage="1";b.className="nx-language-switch";b.addEventListener("click",()=>{const next=lang==="en"?"pt":"en";const u=new URL(location.href);if(next==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");try{localStorage.setItem("ns_lang",next)}catch{}document.cookie="ns_lang="+next+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"")});const target=header.querySelector(".menu-toggle,.tool-menu");if(target)target.before(b);else header.firstElementChild?.appendChild(b)}
+  const nextLabel=lang==="en"?"PT":"EN";
+  const nextAria=lang==="en"?"Switch to Portuguese":"Switch to English";
+  const nextTitle=lang==="en"?"Português":"English";
+  if(b.textContent!==nextLabel)b.textContent=nextLabel;
+  if(b.getAttribute("aria-label")!==nextAria)b.setAttribute("aria-label",nextAria);
+  if(b.title!==nextTitle)b.title=nextTitle;
 }
 async function loadServer(){
- if(lang!=="en")return;
- const key="ns:i18n:v1:"+path();
- try{const cached=JSON.parse(localStorage.getItem(key)||"null");if(cached?.translations)serverMap=new Map(Object.entries(cached.translations));}catch{}
- try{
-   const u="/api/i18n?lang=en&page="+encodeURIComponent(path());
-   const r=await fetch(u,{credentials:"same-origin",cache:"no-store"});if(!r.ok)return;
-   const d=await r.json();const map={...(d.translations||{})};if(Object.keys(map).length){serverMap=new Map(Object.entries(map));try{localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),translations:map}))}catch{}}
-   apply();
- }catch{}
+  if(lang!=="en")return;
+  const key="ns:i18n:v2:en";
+  try{const cached=JSON.parse(localStorage.getItem(key)||"null");if(cached?.translations)serverMap=new Map(Object.entries(cached.translations));}catch{}
+  try{
+    const u="/api/i18n?lang=en";
+    const r=await fetch(u,{credentials:"same-origin",cache:"no-store"});if(!r.ok)return;
+    const d=await r.json();const map={...(d.translations||{})};
+    if(Object.keys(map).length){
+      for(const [source,translated] of Object.entries(map))serverMap.set(source,translated);
+      try{localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),translations:Object.fromEntries(serverMap)}))}catch{}
+    }
+    apply();
+    await flushRuntimeTranslations();
+  }catch{}
 }
 
 let applyRunning=false,applyScheduled=false,observer=null;
 function apply(){
- if(applyRunning)return;
- applyRunning=true;
- try{
-   document.documentElement.lang=lang;
-   ensureLanguageButton();
-   translateTextNodes();
-   translateAttrs();
-   translateHead();
-   translateLinks();
- }finally{applyRunning=false;}
+  if(applyRunning)return;
+  applyRunning=true;
+  try{
+    document.documentElement.lang=lang;
+    ensureLanguageButton();
+    const missing=true;
+    translateTextNodes(missing);
+    translateAttrs(missing);
+    translateHead(missing);
+    translateLinks();
+  }finally{applyRunning=false;}
 }
 function scheduleApply(){
- if(lang!=="en"||applyScheduled)return;
- applyScheduled=true;
- const run=()=>{applyScheduled=false;if(lang==="en")apply()};
- if(typeof requestAnimationFrame==="function")requestAnimationFrame(run);else setTimeout(run,0);
+  if(lang!=="en"||applyScheduled)return;
+  applyScheduled=true;
+  const run=()=>{applyScheduled=false;if(lang==="en")apply()};
+  if(typeof requestAnimationFrame==="function")requestAnimationFrame(run);else setTimeout(run,0);
 }
 function init(){
  lang=readLang();
