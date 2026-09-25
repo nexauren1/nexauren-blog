@@ -17,7 +17,7 @@
   function valid(raw){return !!raw&&Array.isArray(raw.categories)&&Array.isArray(raw.tools)}
   function readCache(){
     try{
-      const saved=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
+      const saved=JSON.parse(localStorage.getItem(CACHE_KEY+":"+CACHE_SCOPE)||"null");
       const registry=normalize(saved?.registry);
       return valid(registry)?registry:null;
     }catch{return null}
