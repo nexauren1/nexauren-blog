@@ -145,9 +145,9 @@
   function render(registry){
     const cat=window.NexaurenToolRegistry.getCategory(registry,slug);
     if(!cat){root.innerHTML='<section class="tool-results"><div class="tool-empty"><strong>Categoria não encontrada.</strong></div></section>';return}
-    document.title=cat.name+" — Ferramentas — Nexauren Story";
+    document.title=label(cat,"name")+" — "+(language==="en"?"Tools":"Ferramentas")+" — Nexauren Story";
     state.tools=window.NexaurenToolRegistry.getTools(registry,cat.id);
-    root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/">← Todas as categorias</a><div class="tool-eyebrow">CATEGORIA</div><h1>'+esc(cat.name)+'</h1><p>'+esc(cat.description||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?" ferramenta disponível":" ferramentas disponíveis")+'</span></section><section class="tool-category-search" data-category-search aria-label="Pesquisa avançada de ferramentas"></section><section class="tool-results" aria-label="Ferramentas da categoria"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section>';
+    root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/">← '+(language==="en"?"All categories":"Todas as categorias")+'</a><div class="tool-eyebrow">'+(language==="en"?"CATEGORY":"CATEGORIA")+'</div><h1>'+esc(label(cat,"name"))+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" tool available":" ferramenta disponível"):(language==="en"?" tools available":" ferramentas disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+(language==="en"?"Advanced tool search":"Pesquisa avançada de ferramentas")+'"></section><section class="tool-results" aria-label="'+(language==="en"?"Category tools":"Ferramentas da categoria")+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section>';
     buildSearch();
   }
 
