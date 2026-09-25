@@ -12,6 +12,11 @@
   const language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="en")return "en";try{return localStorage.getItem("ns_lang")==="en"?"en":"pt"}catch{return "pt"}})();
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const tags=v=>language==="en"?(Array.isArray(v?.tags_en)&&v.tags_en.length?v.tags_en:(v?.tags||[])):(v?.tags||[]);
+  const pageTitle=language==="en"?"Tools | Nexauren Story":"Ferramentas | Nexauren Story";
+  const pageDescription=language==="en"?"Online tools from Nexauren Story, organized by category.":"Ferramentas online do Nexauren Story, organizadas por categorias.";
+  document.title=pageTitle;
+  const descriptionMeta=document.querySelector('meta[name="description"]');
+  if(descriptionMeta)descriptionMeta.setAttribute("content",pageDescription);
 
   const iconSvg=id=>({produtividade:"◷",texto:"Aa",imagem:"▧",tecnologia:"⌘"}[id]||"✦");
   let categories=[],tools=[],isPro=false,user=null,accessApi=null,registryReady=false;
