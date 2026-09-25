@@ -1,4 +1,4 @@
-import { getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260925";
+import { auth, onAuthStateChanged, getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260925";
 
 const $=s=>document.querySelector(s);
 const state={files:[],results:[],pro:false,planReady:false,objectUrls:[]};
@@ -86,4 +86,22 @@ $("#preset").addEventListener("change",()=>{$("#preset").value!=="custom"&&apply
 $("#quality").addEventListener("input",e=>{$("#qualityOut").textContent=e.target.value+"%";$("#preset").value="custom";syncStats();});
 ["format","maxWidth","maxHeight","background","naming","fit"].forEach(id=>$("#"+id).addEventListener("change",()=>{if(id!=="format")$("#preset").value="custom";syncStats();}));
 $("#convert").onclick=convert;$("#downloadAll").onclick=()=>{state.results.forEach((r,i)=>setTimeout(()=>downloadResult(r),i*180));};$("#clear").onclick=clearAll;
-window.addEventListener("beforeunload",revokeUrls);syncStats();applyPreset();initPlan();
+window.addEventListener("beforeunload",revokeUrls);
+syncStats();
+applyPreset();
+
+let authReady=false;
+onAuthStateChanged(auth,async user=>{
+  if(authReady&& !user){state.planReady=false;state.pro=false;setPlanUI();$("#convert").disabled=true;toast("A sessão terminou. Entre novamente para continuar.");return;}
+  authReady=true;
+  if(!user){
+    state.planReady=false;state.pro=false;
+    $("#planName").textContent="Conta";
+    $("#planLimit").textContent="Entre para continuar";
+    $("#limitStat").textContent="—";
+    $("#convert").disabled=true;
+    toast("Entre na sua conta para usar o Image Forge.");
+    return;
+  }
+  await initPlan();
+});
