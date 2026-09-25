@@ -500,7 +500,7 @@ const PT=
   "Payload": "Payload",
   "Signature": "Signature",
   "Não foi possível interpretar": "Could not interpret",
-  "JWT inválido": "Invalid JWT"
+  "JWT inválido": "Invalid JWT",
   "Navegação": "Navigation",
   "Publicidade": "Advertisement",
   "Saltar para o conteúdo": "Skip to content",
