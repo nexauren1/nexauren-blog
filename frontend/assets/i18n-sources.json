@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "language": "pt",
   "targets": [
     "en"
@@ -8,170 +8,32 @@
     {
       "scope": "ui",
       "entity_id": "global",
-      "translation_key": "home",
-      "source_text": "Início"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "blog",
-      "source_text": "Blog"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "tools",
-      "source_text": "Ferramentas"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
       "translation_key": "account",
       "source_text": "Conta"
     },
     {
       "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "plans",
-      "source_text": "Planos"
+      "entity_id": "category",
+      "translation_key": "accountGateBody",
+      "source_text": "As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados."
     },
     {
       "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "legal",
-      "source_text": "Legal"
+      "entity_id": "category",
+      "translation_key": "accountGateTitle",
+      "source_text": "Crie uma conta para usar as ferramentas"
     },
     {
       "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "privacy",
-      "source_text": "Privacidade"
+      "entity_id": "category",
+      "translation_key": "allAccess",
+      "source_text": "Todos os acessos"
     },
     {
       "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "terms",
-      "source_text": "Termos"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "cookies",
-      "source_text": "Cookies"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "menu",
-      "source_text": "Menu"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "search",
-      "source_text": "Pesquisar"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "back",
-      "source_text": "Voltar"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "clear",
-      "source_text": "Limpar"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "close",
-      "source_text": "Fechar"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "save",
-      "source_text": "Guardar alterações"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "continue",
-      "source_text": "Continuar"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "tryAgain",
-      "source_text": "Tentar novamente"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "nowNot",
-      "source_text": "Agora não"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "featured",
-      "source_text": "Destaque"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "popular",
-      "source_text": "Popular"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "free",
-      "source_text": "Grátis"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "global",
-      "translation_key": "pro",
-      "source_text": "PRO"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "title",
-      "source_text": "Ferramentas que acompanham o seu trabalho."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "lead",
-      "source_text": "Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "searchPlaceholder",
-      "source_text": "Pesquisar ferramentas ou categorias…"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "highlights",
-      "source_text": "Destaques"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "mostPopular",
-      "source_text": "Populares"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "catalog",
-      "source_text": "Catálogo Nexauren"
+      "entity_id": "category",
+      "translation_key": "allKeywords",
+      "source_text": "Todas as palavras-chave"
     },
     {
       "scope": "ui",
@@ -187,15 +49,27 @@
     },
     {
       "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "results",
-      "source_text": "Resultados"
+      "entity_id": "global",
+      "translation_key": "back",
+      "source_text": "Voltar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "billing",
+      "source_text": "Plano e faturação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "blog",
+      "source_text": "Blog"
     },
     {
       "scope": "ui",
       "entity_id": "tools",
-      "translation_key": "explore",
-      "source_text": "EXPLORAR"
+      "translation_key": "catalog",
+      "source_text": "Catálogo Nexauren"
     },
     {
       "scope": "ui",
@@ -205,9 +79,9 @@
     },
     {
       "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "growing",
-      "source_text": "Sempre a crescer"
+      "entity_id": "category",
+      "translation_key": "categoryReady",
+      "source_text": "A categoria está pronta."
     },
     {
       "scope": "ui",
@@ -217,87 +91,9 @@
     },
     {
       "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "noCategory",
-      "source_text": "Nenhuma categoria encontrada."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "foundOne",
-      "source_text": "1 ferramenta encontrada"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "foundMany",
-      "source_text": "ferramentas encontradas"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "tools",
-      "translation_key": "noTools",
-      "source_text": "Não foi possível carregar o catálogo."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "searchPlaceholder",
-      "source_text": "Pesquisar por nome, função, descrição ou palavra-chave…"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "allKeywords",
-      "source_text": "Todas as palavras-chave"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "allAccess",
-      "source_text": "Todos os acessos"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "freeAccess",
-      "source_text": "Grátis"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "proAccess",
-      "source_text": "Pro"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "relevance",
-      "source_text": "Mais relevantes"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "featured",
-      "source_text": "Em destaque"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "popular",
-      "source_text": "Mais populares"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "name",
-      "source_text": "Nome A–Z"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "clearSearch",
-      "source_text": "Limpar pesquisa"
+      "entity_id": "global",
+      "translation_key": "clear",
+      "source_text": "Limpar"
     },
     {
       "scope": "ui",
@@ -308,134 +104,14 @@
     {
       "scope": "ui",
       "entity_id": "category",
-      "translation_key": "noResults",
-      "source_text": "Nenhuma ferramenta encontrada."
+      "translation_key": "clearSearch",
+      "source_text": "Limpar pesquisa"
     },
     {
       "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "categoryReady",
-      "source_text": "A categoria está pronta."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "noPublishedTools",
-      "source_text": "Ainda não existem ferramentas publicadas aqui."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "accountGateTitle",
-      "source_text": "Crie uma conta para usar as ferramentas"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "accountGateBody",
-      "source_text": "As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "category",
-      "translation_key": "enterCreate",
-      "source_text": "Entrar ou criar conta"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "loading",
-      "source_text": "A carregar…"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "createAccount",
-      "source_text": "Criar conta"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "forgot",
-      "source_text": "Esqueci a minha palavra-passe"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "emailVerified",
-      "source_text": "Email verificado"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "resend",
-      "source_text": "Reenviar email"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "confirmed",
-      "source_text": "Já confirmei"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "overview",
-      "source_text": "Visão geral"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "profile",
-      "source_text": "Perfil"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "security",
-      "source_text": "Segurança"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "billing",
-      "source_text": "Plano e faturação"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "manage",
-      "source_text": "Gerir assinatura e recursos Pro."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "openManage",
-      "source_text": "Abrir gestão →"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "updatePassword",
-      "source_text": "Atualizar palavra-passe"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "nameUpdated",
-      "source_text": "Nome atualizado."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "passwordUpdated",
-      "source_text": "Palavra-passe atualizada com sucesso."
-    },
-    {
-      "scope": "ui",
-      "entity_id": "account",
-      "translation_key": "logout",
-      "source_text": "Terminar sessão"
+      "entity_id": "global",
+      "translation_key": "close",
+      "source_text": "Fechar"
     },
     {
       "scope": "ui",
@@ -445,99 +121,27 @@
     },
     {
       "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyTitle",
-      "source_text": "Política de Privacidade"
+      "entity_id": "account",
+      "translation_key": "confirmed",
+      "source_text": "Já confirmei"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "continue",
+      "source_text": "Continuar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "cookies",
+      "source_text": "Cookies"
     },
     {
       "scope": "ui",
       "entity_id": "legal",
-      "translation_key": "privacyUpdated",
-      "source_text": "Atualizada em 22 de setembro de 2026"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyOverview",
-      "source_text": "Visão geral"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyData",
-      "source_text": "Dados"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyUse",
-      "source_text": "Utilização"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyServices",
-      "source_text": "Serviços técnicos"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyRights",
-      "source_text": "Direitos"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "privacyChanges",
-      "source_text": "Alterações"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "termsTitle",
-      "source_text": "Termos de Utilização"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "termsAccepted",
-      "source_text": "Aceitação"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "termsTools",
-      "source_text": "Ferramentas"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "termsAccount",
-      "source_text": "Conta"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "termsForbidden",
-      "source_text": "Uso proibido"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "termsAvailability",
-      "source_text": "Disponibilidade"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "cookiesTitle",
-      "source_text": "Política de Cookies"
-    },
-    {
-      "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "cookiesWhat",
-      "source_text": "O que são cookies?"
+      "translation_key": "cookiesControl",
+      "source_text": "Controlo"
     },
     {
       "scope": "ui",
@@ -554,14 +158,266 @@
     {
       "scope": "ui",
       "entity_id": "legal",
-      "translation_key": "cookiesControl",
-      "source_text": "Controlo"
+      "translation_key": "cookiesP1",
+      "source_text": "Cookies e tecnologias semelhantes podem manter sessões, guardar preferências e medir o funcionamento das páginas."
     },
     {
       "scope": "ui",
       "entity_id": "legal",
-      "translation_key": "updated",
-      "source_text": "Atualizada em 22 de setembro de 2026"
+      "translation_key": "cookiesP2",
+      "source_text": "Alguns são necessários para autenticação e segurança."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesP3",
+      "source_text": "Algumas páginas públicas podem utilizar ferramentas de medição para compreender visitas e melhorar a experiência."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesP4",
+      "source_text": "Pode controlar ou eliminar cookies através das definições do seu navegador. Desativar cookies essenciais pode impedir algumas funcionalidades."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesTitle",
+      "source_text": "Política de Cookies"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesWhat",
+      "source_text": "O que são cookies?"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "createAccount",
+      "source_text": "Criar conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "emailVerified",
+      "source_text": "Email verificado"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "enterCreate",
+      "source_text": "Entrar ou criar conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "explore",
+      "source_text": "EXPLORAR"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "featured",
+      "source_text": "Destaque"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "featured",
+      "source_text": "Em destaque"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "forgot",
+      "source_text": "Esqueci a minha palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "foundMany",
+      "source_text": "ferramentas encontradas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "foundOne",
+      "source_text": "1 ferramenta encontrada"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "free",
+      "source_text": "Grátis"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "freeAccess",
+      "source_text": "Grátis"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "growing",
+      "source_text": "Sempre a crescer"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "highlights",
+      "source_text": "Destaques"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "home",
+      "source_text": "Início"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "lead",
+      "source_text": "Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "legal",
+      "source_text": "Legal"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "loading",
+      "source_text": "A carregar…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "logout",
+      "source_text": "Terminar sessão"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "manage",
+      "source_text": "Gerir assinatura e recursos Pro."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "menu",
+      "source_text": "Menu"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "mostPopular",
+      "source_text": "Populares"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "name",
+      "source_text": "Nome A–Z"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "nameUpdated",
+      "source_text": "Nome atualizado."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "noCategory",
+      "source_text": "Nenhuma categoria encontrada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "noPublishedTools",
+      "source_text": "Ainda não existem ferramentas publicadas aqui."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "noResults",
+      "source_text": "Nenhuma ferramenta encontrada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "noTools",
+      "source_text": "Não foi possível carregar o catálogo."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "nowNot",
+      "source_text": "Agora não"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "openManage",
+      "source_text": "Abrir gestão →"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "overview",
+      "source_text": "Visão geral"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "passwordUpdated",
+      "source_text": "Palavra-passe atualizada com sucesso."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "plans",
+      "source_text": "Planos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "popular",
+      "source_text": "Popular"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "popular",
+      "source_text": "Mais populares"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "privacy",
+      "source_text": "Privacidade"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyChanges",
+      "source_text": "Alterações"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyData",
+      "source_text": "Dados"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyOverview",
+      "source_text": "Visão geral"
     },
     {
       "scope": "ui",
@@ -602,6 +458,1116 @@
     {
       "scope": "ui",
       "entity_id": "legal",
+      "translation_key": "privacyRights",
+      "source_text": "Direitos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyServices",
+      "source_text": "Serviços técnicos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyTitle",
+      "source_text": "Política de Privacidade"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyUpdated",
+      "source_text": "Atualizada em 22 de setembro de 2026"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyUse",
+      "source_text": "Utilização"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "pro",
+      "source_text": "PRO"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "proAccess",
+      "source_text": "Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "profile",
+      "source_text": "Perfil"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "relevance",
+      "source_text": "Mais relevantes"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "resend",
+      "source_text": "Reenviar email"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "results",
+      "source_text": "Resultados"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.12-caracteres-maiuscula-minuscula-numero-e-simbolo",
+      "source_text": "12+ caracteres, maiúscula, minúscula, número e símbolo."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-aguardar-aprovacao",
+      "source_text": "A aguardar aprovação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-aguardar-ativacao",
+      "source_text": "A aguardar ativação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-autenticacao-foi-cancelada",
+      "source_text": "A autenticação foi cancelada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-cancelar",
+      "source_text": "A cancelar…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-carregar-os-planos",
+      "source_text": "A carregar os planos…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-confirmar-a-sua-assinatura-paypal",
+      "source_text": "A confirmar a sua assinatura PayPal…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-entrar",
+      "source_text": "A entrar…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-janela-de-autenticacao-do-google-foi-fechada",
+      "source_text": "A janela de autenticação do Google foi fechada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-ligar",
+      "source_text": "A ligar…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-palavra-passe-e-gerida-pela-sua-conta-google",
+      "source_text": "A palavra-passe é gerida pela sua conta Google."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-palavra-passe-nao-cumpre-os-requisitos",
+      "source_text": "A palavra-passe não cumpre os requisitos."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-preparar-paypal",
+      "source_text": "A preparar PayPal…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-sua-conta-nexauren",
+      "source_text": "A sua conta Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-sua-conta-nexauren-funciona-em-todo-o-ecossistema-de-ferramentas",
+      "source_text": "A sua conta Nexauren funciona em todo o ecossistema de ferramentas."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.a-sua-identidade-de-email-foi-confirmada",
+      "source_text": "A sua identidade de email foi confirmada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.abrir-blog",
+      "source_text": "Abrir Blog"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.abrir-conta",
+      "source_text": "Abrir conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.abrir-conta-nexauren",
+      "source_text": "Abrir Conta Nexauren"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.abrir-ferramentas",
+      "source_text": "Abrir ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.aceda-rapidamente-ao-ecossistema",
+      "source_text": "Aceda rapidamente ao ecossistema."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.acesso-as-ferramentas-gratuitas",
+      "source_text": "Acesso às ferramentas gratuitas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.alterar",
+      "source_text": "Alterar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.artigos-lancamentos-guias-atualizacoes-e-conteudo-editorial-do-nexauren",
+      "source_text": "Artigos, lançamentos, guias, atualizações e conteúdo editorial do Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.as-palavras-passe-nao-coincidem",
+      "source_text": "As palavras-passe não coincidem."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.assinar-pro-por-5",
+      "source_text": "Assinar Pro por $5"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.assinatura-pro-ativada-com-sucesso",
+      "source_text": "Assinatura Pro ativada com sucesso."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ativa",
+      "source_text": "Ativa"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.atual",
+      "source_text": "ATUAL"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.autenticacao-google",
+      "source_text": "Autenticação Google"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.autenticacao-nexauren",
+      "source_text": "Autenticação Nexauren"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.bem-vindo-de-volta",
+      "source_text": "Bem-vindo de volta."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.cancelado",
+      "source_text": "Cancelado"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.cancelar-a-assinatura-pro-agora",
+      "source_text": "Cancelar a assinatura Pro agora?"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.cancelar-pro",
+      "source_text": "Cancelar Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.categoria",
+      "source_text": "CATEGORIA"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.categoria-nao-encontrada",
+      "source_text": "Categoria não encontrada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.comece-gratis-ou-desbloqueie-os-recursos-pro-por-5-mes",
+      "source_text": "Comece grátis ou desbloqueie os recursos Pro por $5/mês."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.confirmar-nova-palavra-passe",
+      "source_text": "Confirmar nova palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.confirmar-palavra-passe",
+      "source_text": "Confirmar palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.confirme-o-seu-email",
+      "source_text": "Confirme o seu email"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.consulte-o-seu-plano-pagamento-e-beneficios",
+      "source_text": "Consulte o seu plano, pagamento e benefícios."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.consulte-os-seus-direitos-e-dados",
+      "source_text": "Consulte os seus direitos e dados."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.conta-criada-com-sucesso",
+      "source_text": "Conta criada com sucesso."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.conta-nexauren",
+      "source_text": "Conta Nexauren"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.conteudo-ferramentas-e-novas-experiencias",
+      "source_text": "Conteúdo, ferramentas e novas experiências."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.conteudo-ferramentas-e-novas-experiencias-num-unico-ecossistema-publico",
+      "source_text": "Conteúdo, ferramentas e novas experiências num único ecossistema público."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.continuar-com-google",
+      "source_text": "Continuar com Google"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.continue-dentro-do-nexauren",
+      "source_text": "Continue dentro do Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.criar-com-google",
+      "source_text": "Criar com Google"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.criar-conta",
+      "source_text": "CRIAR CONTA"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.crie-o-seu-acesso-nexauren",
+      "source_text": "Crie o seu acesso Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.crie-uma-conta-ou-entre-na-sua-conta-nexauren-para-usar-as-ferramentas",
+      "source_text": "Crie uma conta ou entre na sua conta Nexauren para usar as ferramentas."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.definicoes-da-conta",
+      "source_text": "Definições da conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.e-necessaria-uma-conta",
+      "source_text": "É necessária uma conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ecossistema-nexauren",
+      "source_text": "Ecossistema Nexauren"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.em-evolucao",
+      "source_text": "Em evolução"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.email-de-verificacao-reenviado",
+      "source_text": "Email de verificação reenviado."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.email-e-palavra-passe-sao-obrigatorios",
+      "source_text": "Email e palavra-passe são obrigatórios."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.email-ou-palavra-passe-invalidos",
+      "source_text": "Email ou palavra-passe inválidos."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.entrar",
+      "source_text": "ENTRAR"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.entrar-no-blog",
+      "source_text": "Entrar no Blog"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.entre-no-blog-para-acompanhar-novidades-ou-abra-as-ferramentas-para-reso",
+      "source_text": "Entre no Blog para acompanhar novidades ou abra as Ferramentas para resolver uma tarefa agora."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.enviamos-uma-mensagem-de-verificacao-para",
+      "source_text": "Enviámos uma mensagem de verificação para"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.enviar-recuperacao",
+      "source_text": "Enviar recuperação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.erro-ao-carregar-assinatura",
+      "source_text": "Erro ao carregar assinatura:"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.erro-desconhecido",
+      "source_text": "erro desconhecido"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.escolha-o-que-precisa-agora",
+      "source_text": "Escolha o que precisa agora."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.escolha-o-seu-plano",
+      "source_text": "Escolha o seu plano"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.escolha-o-seu-plano-2",
+      "source_text": "Escolha o seu plano."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.esqueceu-a-palavra-passe",
+      "source_text": "Esqueceu a palavra-passe?"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.esta-conta-esta-desativada",
+      "source_text": "Esta conta está desativada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.esta-pagina-saiu-do-mapa",
+      "source_text": "Esta página saiu do mapa."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.este-email-ja-esta-associado-a-uma-conta",
+      "source_text": "Este email já está associado a uma conta."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.este-metodo-de-acesso-nao-esta-disponivel-neste-momento",
+      "source_text": "Este método de acesso não está disponível neste momento."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.este-navegador-nao-conseguiu-abrir-a-janela-de-acesso-vamos-tentar-uma-a",
+      "source_text": "Este navegador não conseguiu abrir a janela de acesso. Vamos tentar uma alternativa."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.experiencias-pro",
+      "source_text": "Experiências Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.explorar",
+      "source_text": "Explorar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.explorar-ferramentas",
+      "source_text": "Explorar ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.explorar-selecoes",
+      "source_text": "Explorar seleções"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.falta",
+      "source_text": "Falta:"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ferramenta-disponivel",
+      "source_text": "ferramenta disponível"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ferramenta-exclusiva-do-pro",
+      "source_text": "Ferramenta exclusiva do Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ferramentas-da-categoria",
+      "source_text": "Ferramentas da categoria"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ferramentas-online",
+      "source_text": "Ferramentas online"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.foram-detetadas-muitas-tentativas-tente-novamente-mais-tarde",
+      "source_text": "Foram detetadas muitas tentativas. Tente novamente mais tarde."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.gerir",
+      "source_text": "Gerir →"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.gira-o-seu-perfil-seguranca-e-acesso-aos-recursos-nexauren",
+      "source_text": "Gira o seu perfil, segurança e acesso aos recursos Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.informacoes-visiveis-na-sua-conta",
+      "source_text": "Informações visíveis na sua conta."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.introduza-o-email-da-sua-conta-e-enviaremos-as-instrucoes-para-criar-uma",
+      "source_text": "Introduza o email da sua conta e enviaremos as instruções para criar uma nova palavra-passe."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.introduza-um-email-valido",
+      "source_text": "Introduza um email válido."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ir-para-o-plano-pro",
+      "source_text": "Ir para o plano Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ja-existe-uma-conta-com-este-email-entre-com-o-metodo-usado-anteriorment",
+      "source_text": "Já existe uma conta com este email. Entre com o método usado anteriormente para continuar."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ja-existe-uma-conta-nexauren-com-este-email-entre-com-email-e-palavra-pa",
+      "source_text": "Já existe uma conta Nexauren com este email. Entre com email e palavra-passe para associar o Google."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.ja-existe-uma-conta-nexauren-com-este-email-entre-primeiro-com-o-metodo-",
+      "source_text": "Já existe uma conta Nexauren com este email. Entre primeiro com o método usado anteriormente."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.mais-recursos-e-funcionalidades-pro-a-medida-que-forem-disponibilizados",
+      "source_text": "Mais recursos e funcionalidades Pro à medida que forem disponibilizados."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-conseguimos-confirmar-o-estado-do-seu-plano-agora-tente-novamente",
+      "source_text": "Não conseguimos confirmar o estado do seu plano agora. Tente novamente."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-foi-possivel-abrir-o-paypal",
+      "source_text": "Não foi possível abrir o PayPal."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-foi-possivel-cancelar",
+      "source_text": "Não foi possível cancelar."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-foi-possivel-concluir-o-acesso-tente-novamente",
+      "source_text": "Não foi possível concluir o acesso. Tente novamente."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-foi-possivel-contactar-o-servico-verifique-a-ligacao-a-internet",
+      "source_text": "Não foi possível contactar o serviço. Verifique a ligação à internet."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-foi-possivel-iniciar-o-pagamento",
+      "source_text": "Não foi possível iniciar o pagamento."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nao-foi-possivel-verificar-o-acesso",
+      "source_text": "Não foi possível verificar o acesso"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.navegacao-principal",
+      "source_text": "Navegação principal"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nome",
+      "source_text": "Nome"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nome-de-apresentacao",
+      "source_text": "Nome de apresentação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.nova-palavra-passe",
+      "source_text": "Nova palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.novas-ferramentas-e-experiencias-podem-entrar-sem-mudar-a-estrutura-prin",
+      "source_text": "Novas ferramentas e experiências podem entrar sem mudar a estrutura principal."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.novas-historias",
+      "source_text": "Novas histórias"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-acesso-com-google-ainda-nao-esta-disponivel-neste-dominio",
+      "source_text": "O acesso com Google ainda não está disponível neste domínio."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-armazenamento-do-navegador-nao-esta-disponivel-abra-o-nexauren-story-n",
+      "source_text": "O armazenamento do navegador não está disponível. Abra o Nexauren Story num navegador normal, não numa janela privada bloqueada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-endereco-pode-estar-incorreto-ter-sido-movido-ou-ja-nao-existir-volte-",
+      "source_text": "O endereço pode estar incorreto, ter sido movido ou já não existir. Volte ao início ou continue a explorar o ecossistema Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-google-nao-conseguiu-abrir-a-janela-de-acesso-toque-novamente-para-ten",
+      "source_text": "O Google não conseguiu abrir a janela de acesso. Toque novamente para tentar."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-navegador-bloqueou-a-janela-do-google-tente-novamente-ou-permita-pop-u",
+      "source_text": "O navegador bloqueou a janela do Google. Tente novamente ou permita pop-ups para este site."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-nome-precisa-de-pelo-menos-2-caracteres",
+      "source_text": "O nome precisa de pelo menos 2 caracteres."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-paypal-recebeu-a-aprovacao-a-ativacao-sera-concluida-assim-que-o-estad",
+      "source_text": "O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-ponto-de-entrada-do-ecossistema-nexauren-leia-o-blog-use-ferramentas-o",
+      "source_text": "O ponto de entrada do ecossistema Nexauren: leia o Blog, use ferramentas online e acompanhe o que estamos a construir."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-processo-paypal-foi-cancelado-a-sua-conta-continua-no-plano-free",
+      "source_text": "O processo PayPal foi cancelado. A sua conta continua no plano Free."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.o-seu-plano-atual-nao-inclui-esta-ferramenta-atualize-para-o-nexauren-pr",
+      "source_text": "O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.organizado",
+      "source_text": "Organizado"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.pagamento-recorrente-seguro-via-paypal",
+      "source_text": "Pagamento recorrente seguro via PayPal"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.pagamento-recorrente-seguro-via-paypal-pode-cancelar-a-assinatura-a-qual",
+      "source_text": "Pagamento recorrente seguro via PayPal. Pode cancelar a assinatura a qualquer momento."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.pagamento-suspenso",
+      "source_text": "Pagamento suspenso"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.paginas-leves-e-responsivas-desenhadas-para-telemovel-e-computador",
+      "source_text": "Páginas leves e responsivas, desenhadas para telemóvel e computador."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.palavra-passe",
+      "source_text": "Palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.palavra-passe-atual",
+      "source_text": "Palavra-passe atual"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.palavra-passe-forte",
+      "source_text": "✓ Palavra-passe forte."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.para-sempre",
+      "source_text": "para sempre"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.pedido-enviado",
+      "source_text": "PEDIDO ENVIADO"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.pesquisa-avancada-de-ferramentas",
+      "source_text": "Pesquisa avançada de ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.plano-atual",
+      "source_text": "Plano atual"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.plano-pro",
+      "source_text": "Plano Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.por-seguranca-esta-pagina-nao-confirma-se-o-email-esta-registado",
+      "source_text": "Por segurança, esta página não confirma se o email está registado."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.por-seguranca-volte-a-entrar-e-tente-novamente",
+      "source_text": "Por segurança, volte a entrar e tente novamente."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.pro-ativo",
+      "source_text": "Pro ativo"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.proteja-o-acesso-a-sua-conta",
+      "source_text": "Proteja o acesso à sua conta."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.proxima-cobranca",
+      "source_text": "Próxima cobrança:"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.rapido",
+      "source_text": "Rápido"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.recuperacao",
+      "source_text": "RECUPERAÇÃO"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.recursos",
+      "source_text": "Recursos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.recursos-e-assinatura",
+      "source_text": "Recursos e assinatura."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.recursos-essenciais",
+      "source_text": "Recursos essenciais"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.recursos-premium",
+      "source_text": "Recursos premium"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.resumo-do-catalogo",
+      "source_text": "Resumo do catálogo"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.se-o-endereco-estiver-associado-a-uma-conta-nexauren-recebera-as-instruc",
+      "source_text": "Se o endereço estiver associado a uma conta Nexauren, receberá as instruções de recuperação."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.sessao",
+      "source_text": "Sessão"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.sincronizacao",
+      "source_text": "Sincronização:"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.tente-outro-termo-remova-um-filtro-ou-pesquise-por-uma-funcionalidade",
+      "source_text": "Tente outro termo, remova um filtro ou pesquise por uma funcionalidade."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.terminar-a-sessao-neste-dispositivo",
+      "source_text": "Terminar a sessão neste dispositivo."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.todas-as-categorias",
+      "source_text": "← Todas as categorias"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.um-so-espaco",
+      "source_text": "Um só espaço."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.um-unico-acesso-para-ferramentas-experiencias-e-recursos-do-ecossistema-",
+      "source_text": "Um único acesso para ferramentas, experiências e recursos do ecossistema Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.um-unico-acesso-para-guardar-preferencias-e-preparar-novas-experiencias-",
+      "source_text": "Um único acesso para guardar preferências e preparar novas experiências do ecossistema."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.uma-experiencia-nexauren",
+      "source_text": "Uma experiência Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.uma-identidade-para-usar-ferramentas-preferencias-e-recursos-personaliza",
+      "source_text": "Uma identidade para usar ferramentas, preferências e recursos personalizados."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.uma-identidade-visual-unica-para-navegar-entre-as-areas-publicas",
+      "source_text": "Uma identidade visual única para navegar entre as áreas públicas."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.uma-navegacao-clara-para-o-ecossistema-inteiro",
+      "source_text": "Uma navegação clara para o ecossistema inteiro."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.use-12-caracteres-incluindo-maiuscula-minuscula-numero-e-simbolo",
+      "source_text": "Use 12+ caracteres, incluindo maiúscula, minúscula, número e símbolo."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.utilitarios-rapidos-para-escrever-organizar-calcular-e-resolver-tarefas-",
+      "source_text": "Utilitários rápidos para escrever, organizar, calcular e resolver tarefas no navegador."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.utilize-as-ferramentas-nexauren",
+      "source_text": "Utilize as ferramentas Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.vamos-enviar-uma-mensagem-para-confirmar-o-seu-email-a-conta-fica-dispon",
+      "source_text": "Vamos enviar uma mensagem para confirmar o seu email. A conta fica disponível no ecossistema Nexauren."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.verifique-o-seu-email",
+      "source_text": "Verifique o seu email."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.voltar-a-conta",
+      "source_text": "Voltar à conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "runtime",
+      "translation_key": "runtime.voltar-ao-inicio",
+      "source_text": "Voltar ao início"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "save",
+      "source_text": "Guardar alterações"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "search",
+      "source_text": "Pesquisar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "searchPlaceholder",
+      "source_text": "Pesquisar ferramentas ou categorias…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "searchPlaceholder",
+      "source_text": "Pesquisar por nome, função, descrição ou palavra-chave…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "security",
+      "source_text": "Segurança"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "terms",
+      "source_text": "Termos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsAccepted",
+      "source_text": "Aceitação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsAccount",
+      "source_text": "Conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsAvailability",
+      "source_text": "Disponibilidade"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsForbidden",
+      "source_text": "Uso proibido"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
       "translation_key": "termsP1",
       "source_text": "Ao utilizar a Nexauren Story, concorda em utilizar os serviços de forma legal, responsável e respeitosa."
     },
@@ -638,26 +1604,44 @@
     {
       "scope": "ui",
       "entity_id": "legal",
-      "translation_key": "cookiesP1",
-      "source_text": "Cookies e tecnologias semelhantes podem manter sessões, guardar preferências e medir o funcionamento das páginas."
+      "translation_key": "termsTitle",
+      "source_text": "Termos de Utilização"
     },
     {
       "scope": "ui",
       "entity_id": "legal",
-      "translation_key": "cookiesP2",
-      "source_text": "Alguns são necessários para autenticação e segurança."
+      "translation_key": "termsTools",
+      "source_text": "Ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "title",
+      "source_text": "Ferramentas que acompanham o seu trabalho."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "tools",
+      "source_text": "Ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "tryAgain",
+      "source_text": "Tentar novamente"
     },
     {
       "scope": "ui",
       "entity_id": "legal",
-      "translation_key": "cookiesP3",
-      "source_text": "Algumas páginas públicas podem utilizar ferramentas de medição para compreender visitas e melhorar a experiência."
+      "translation_key": "updated",
+      "source_text": "Atualizada em 22 de setembro de 2026"
     },
     {
       "scope": "ui",
-      "entity_id": "legal",
-      "translation_key": "cookiesP4",
-      "source_text": "Pode controlar ou eliminar cookies através das definições do seu navegador. Desativar cookies essenciais pode impedir algumas funcionalidades."
+      "entity_id": "account",
+      "translation_key": "updatePassword",
+      "source_text": "Atualizar palavra-passe"
     }
   ]
 }
