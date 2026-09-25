@@ -635,7 +635,7 @@ async function robots(request){
 
 function seoHead(html,o){
   const set=(re,val)=>{html=html.replace(re,val);};
-  html=html.replace(/<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*type=["']image\\/svg\\+xml["'][^>]*>/gi,"");
+  html=html.replace(/<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*type=["']image\/svg\+xml["'][^>]*>/gi,"");
   html=html.replace(/<link[^>]+href=["'][^"']*nexauren-story-favicon\.svg(?:\?[^"']*)?["'][^>]*>/gi,"");
   if(!/<link[^>]+rel=["']icon["'][^>]+href=["'][^"']*favicon-nexauren\.png/i.test(html)){
     html=html.replace(/<\/head>/i,'<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-nexauren.png?v=20260925-brand">\n</head>');
