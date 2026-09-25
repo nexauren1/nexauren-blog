@@ -7,7 +7,7 @@ import {auth,onAuthStateChanged,verifyToolAccess,upgradeUrl} from "/tool/fronten
   const els={words:document.querySelector("#words"),chars:document.querySelector("#chars"),charsNoSpace:document.querySelector("#charsNoSpace"),lines:document.querySelector("#lines"),read:document.querySelector("#read")};
 
   function update(){
-    const v=text.value,words=v.trim()?v.trim().split(/\s+/).length,lines=v?v.split(/\n/).length:0,minutes=words?Math.max(1,Math.ceil(words/200)):0;
+    const v=text.value;\n    const words=v.trim()?v.trim().split(/\s+/).length:0;\n    const lines=v?v.split(/\n/).length:0;\n    const minutes=words?Math.max(1,Math.ceil(words/200)):0;
     els.words.textContent=words.toLocaleString("pt-PT");
     els.chars.textContent=v.length.toLocaleString("pt-PT");
     els.charsNoSpace.textContent=v.replace(/\s/g,"").length.toLocaleString("pt-PT");
