@@ -1,7 +1,7 @@
 import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
-const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-png";
+const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2";
 function isFaviconUrl(value){
   try{
     const u=new URL(String(value||""), "https://nexaurenstory.com");
@@ -18,13 +18,30 @@ function preferredImage(...values){
 }
 function imageMime(value){
   try{
-    const p=new URL(String(value||""), "https://nexaurenstory.com").pathname.toLowerCase();
+    const u=new URL(String(value||""), "https://nexaurenstory.com");
+    const p=u.pathname.toLowerCase();
+    const tr=(u.searchParams.get("tr")||"").toLowerCase();
+    if(/(^|,)f-(?:jpg|jpeg)(,|$)/.test(tr))return "image/jpeg";
+    if(/(^|,)f-png(,|$)/.test(tr))return "image/png";
     if(/\.jpe?g$/.test(p))return "image/jpeg";
     if(/\.webp$/.test(p))return "image/webp";
     if(/\.gif$/.test(p))return "image/gif";
     if(/\.avif$/.test(p))return "image/avif";
   }catch{}
   return "image/png";
+}
+function socialImageForCover(value){
+  const v=String(value||"").trim();
+  if(!v || isFaviconUrl(v))return DEFAULT_SOCIAL_IMAGE;
+  try{
+    const u=new URL(v);
+    if(/(^|\.)ik\.imagekit\.io$/i.test(u.hostname)){
+      const tr=(u.searchParams.get("tr")||"").trim();
+      if(!/(^|,)f-(?:jpg|jpeg)(,|$)/i.test(tr))u.searchParams.set("tr",tr?tr+",f-jpg,q-85":"f-jpg,q-85");
+      return u.toString();
+    }
+  }catch{}
+  return v;
 }
 
 function json(data, status = 200, headers = {}) {
@@ -338,7 +355,7 @@ async function publicPosts(env,url){
   const result=await env.DB.prepare(sql).bind(...params).all();
   return json({ok:true,language:lang,posts:(result.results||[]).map(x=>{
     const image=preferredImage(x.cover_url,x.social_image);
-    return {...x,cover_url:image===DEFAULT_SOCIAL_IMAGE?null:image};
+    return {...x,cover_url:image===DEFAULT_SOCIAL_IMAGE?null:image,social_image:image===DEFAULT_SOCIAL_IMAGE?DEFAULT_SOCIAL_IMAGE:socialImageForCover(image)};
   })});
 }
 
@@ -419,7 +436,7 @@ async function createPost(env,a,d,ctx){
   if(coverMediaId){
     const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();
     if(!cm)return fail("A mídia de capa não existe.",422,"MEDIA_NOT_FOUND");
-    socialImage=preferredImage(text(cm.url,2000).trim());
+    socialImage=socialImageForCover(text(cm.url,2000).trim());
   }
   try{
     await env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,social_image,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
@@ -452,7 +469,7 @@ async function updatePost(env,a,id,d,ctx){
   if(coverMediaId){
     const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();
     if(!cm)return fail("A mídia de capa não existe.",422,"MEDIA_NOT_FOUND");
-    socialImage=preferredImage(text(cm.url,2000).trim());
+    socialImage=socialImageForCover(text(cm.url,2000).trim());
   }
   try{
     await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,social_image=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
@@ -1288,7 +1305,7 @@ async function api(env,request,url,ctx){
   const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guardPostEditor(env,request,idm[1]);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
   if(idm&&m==="PUT"){const g=await guardPostEditor(env,request,idm[1]);if(g.error)return g.error;return updatePost(env,g.auth,idm[1],(await bodyJson(request))||{},ctx);}
   if(idm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const row=await env.DB.prepare("SELECT title FROM posts WHERE id=?").bind(idm[1]).first();if(!row)return fail("Artigo não encontrado.",404);await env.DB.prepare("DELETE FROM posts WHERE id=?").bind(idm[1]).run();await audit(env,g.auth.id,"post.deleted","post",idm[1],{title:row.title});return json({ok:true});}
-  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,m.url cover_url,p.social_image,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;post.social_image=preferredImage(post.cover_url,post.social_image);
+  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,m.url cover_url,p.social_image,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;post.social_image=socialImageForCover(preferredImage(post.cover_url,post.social_image));
     if(post.cover_url&&isFaviconUrl(post.cover_url))post.cover_url=null;
     return json({ok:true,language:lang,post});}
   if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim(),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";if(q.length<2)return json({ok:true,language:lang,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url,p.social_image FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (COALESCE(NULLIF(t.title,''),p.title) LIKE ? OR COALESCE(NULLIF(t.excerpt,''),p.excerpt) LIKE ? OR COALESCE(NULLIF(t.content,''),p.content) LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(lang,s,s,s).all();return json({ok:true,language:lang,posts:r.results});}
@@ -1372,13 +1389,14 @@ async function page(env,request,url){
     const p=await env.DB.prepare("SELECT p.title,p.slug,p.excerpt,p.content,p.meta_title,p.meta_description,m.url cover_url,p.social_image,p.published_at,p.updated_at,p.type,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
     if(!p)return asset;
     const coverImage=preferredImage(p.cover_url,p.social_image);
+    const socialImage= socialImageForCover(coverImage);
     const localizedTitle=lang==="en"?(p.translation_title||p.title):p.title;
     const localizedMetaTitle=lang==="en"?(p.translation_meta_title||""):(p.meta_title||"");
     const localizedDesc=lang==="en"?(p.translation_meta_description||p.translation_excerpt||p.excerpt||"Nexauren Story"):(p.meta_description||p.excerpt||"Nexauren Story");
     title=(localizedMetaTitle||localizedTitle)+" — Nexauren Story";
     desc=localizedDesc.slice(0,300);
     type="article";
-    const imgRaw=coverImage||image,img=imgRaw.startsWith("http")?imgRaw:new URL(imgRaw,"https://nexaurenstory.com").href,section=p.category_name||"Posts",sectionEn={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"}[p.category_slug]||section;
+    const imgRaw=coverImage||image,img=socialImage||imgRaw.startsWith("http")?imgRaw:new URL(imgRaw,"https://nexaurenstory.com").href,section=p.category_name||"Posts",sectionEn={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"}[p.category_slug]||section;
     articleMeta='<meta property="article:published_time" content="'+esc(p.published_at||"")+'"><meta property="article:modified_time" content="'+esc(p.updated_at||p.published_at||"")+'"><meta property="article:section" content="'+esc(section)+'">';
     structured={"@context":"https://schema.org","@graph":[{"@type":p.type==="news"?"NewsArticle":"Article","@id":canonical+"#article","headline":localizedTitle.slice(0,180),"description":desc,"url":canonical,"image":[img],"datePublished":p.published_at,"dateModified":p.updated_at||p.published_at,"wordCount":String(p.content||"").trim().split(/\s+/).filter(Boolean).length,"isAccessibleForFree":true,"author":{"@type":"Person","name":p.author_name||"Nexauren Story","url":"https://nexaurenstory.com/about"},"publisher":{"@type":"Organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/assets/favicon-nexauren.png?v=20260925-1"}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":lang,"articleSection":lang==="en"?sectionEn:section},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Nexauren Story","item":"https://nexaurenstory.com/"},{"@type":"ListItem","position":2,"name":lang==="en"?sectionEn:section,"item":publicUrl("/"+(p.category_slug||"posts"),lang)},{"@type":"ListItem","position":3,"name":localizedTitle,"item":canonical}]}]};
     structured['@graph'][0].image=[img];
