@@ -44,5 +44,8 @@
     "crons": [
       "*/5 * * * *"
     ]
+  },
+  "vars": {
+    "PAYPAL_ENV": "live"
   }
 }
