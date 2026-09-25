@@ -1,0 +1,75 @@
+name: Apply Nexauren Ads
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ads:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply experimental ads target
+        run: |
+          set -e
+          test -s frontend/assets/ads.js
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("frontend/tool/categories/imagem/image-converter/index.html")
+          text = path.read_text(encoding="utf-8")
+          if "/assets/ads.js" in text:
+              print("Ads already installed on Image Forge.")
+              raise SystemExit(0)
+          style = '''<style id="nexauren-ads-style">
+          .nx-ad-slot{width:100%;display:flex;justify-content:center;align-items:center;overflow:hidden;box-sizing:border-box}
+          .nx-ad-banner{min-height:60px;margin:14px auto 18px;padding:0}
+          .nx-ad-banner iframe{max-width:100%;border:0}
+          .nx-ad-responsive{min-height:90px;margin:18px auto 12px;padding:4px}
+          .nx-ad-inner{width:100%;display:flex;justify-content:center;align-items:center}
+          @media(max-width:520px){.nx-ad-banner,.nx-ad-responsive{margin-left:0;margin-right:0}.nx-ad-banner{min-height:60px}.nx-ad-responsive{min-height:90px}}
+          </style>'''
+          banner = '<div class="nx-ad-slot nx-ad-banner" data-nx-ad="banner" aria-label="Publicidade"></div>'
+          responsive = '<div class="nx-ad-slot nx-ad-responsive" data-nx-ad="responsive" aria-label="Publicidade"></div>'
+          loader = '<script src="/assets/ads.js?v=20260925-ads1"></script>'
+          text = text.replace("</head>", style + "\n</head>", 1)
+          anchor = '<section class="forge-workspace">'
+          inject = banner + "\n" + loader + "\n<script>window.NexaurenAds?.loadBanner(document.querySelector('[data-nx-ad="banner"]'));</script>\n" + anchor
+          if anchor not in text:
+              raise SystemExit("Image Forge workspace anchor not found.")
+          text = text.replace(anchor, inject, 1)
+          anchor2 = '<div id="results" class="forge-card forge-results">'
+          inject2 = anchor2 + "\n" + responsive + "\n<script>window.NexaurenAds?.loadResponsive(document.querySelector('[data-nx-ad="responsive"]'));</script>\n"
+          if anchor2 not in text:
+              raise SystemExit("Image Forge results anchor not found.")
+          text = text.replace(anchor2, inject2, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify experimental ads
+        run: |
+          set -e
+          test -s frontend/assets/ads.js
+          grep -q '/assets/ads.js' frontend/tool/categories/imagem/image-converter/index.html
+          grep -q 'data-nx-ad="banner"' frontend/tool/categories/imagem/image-converter/index.html
+          grep -q 'data-nx-ad="responsive"' frontend/tool/categories/imagem/image-converter/index.html
+          echo "Experimental ads are isolated to Image Forge."
+
+      - name: Commit
+        run: |
+          set -e
+          if git diff --quiet; then
+            echo "No ads changes needed."
+            exit 0
+          fi
+          git config user.name "nexauren-ads[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/assets/ads.js frontend/tool/categories/imagem/image-converter/index.html
+          git commit -m "chore: add experimental ads loader to Image Forge [skip ci]"
+          git push
