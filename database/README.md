@@ -3,7 +3,7 @@
 O Worker usa **dois bancos D1 independentes**:
 
 1. **Primary D1 (`DB`)** — conteúdo editorial, administração, sessões, auditoria, mídia, redirects, configurações e uso das ferramentas.
-2. **Nexauren D1 (`ACCOUNTS_DB`)** — contas Firebase, preferências, assinaturas PayPal, desbloqueios de ferramentas e traduções da interface/catálogo Nexauren.
+2. **Nexauren D1 (`ACCOUNTS_DB`)** — contas Firebase, preferências, assinaturas PayPal e desbloqueios de ferramentas.
 
 ## Instalação
 
@@ -19,13 +19,6 @@ No D1 ligado ao binding `ACCOUNTS_DB`, execute **todo** o conteúdo de:
 
 `database/accounts-complete.sql`
 
-Para ativar o armazenamento das traduções da interface e das ferramentas, execute também **manualmente**:
-
-`database/i18n.sql`
-
-Esse SQL de i18n pertence ao D1 **nexauren**. Não execute o `i18n.sql` no D1 `nexauren-blog`.
-
-As traduções dos artigos/posts continuam no D1 principal através de `post_translations`.
 
 **Não misture os dois SQLs.** O SQL do Primary não deve ser executado no Accounts D1 e vice-versa.
 
