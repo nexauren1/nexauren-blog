@@ -142,13 +142,21 @@ function translateAttrs(){
  });
 }
 function translateLinks(){
- document.querySelectorAll("a[href]").forEach(a=>{const h=a.getAttribute("href");if(!h||!h.startsWith("/"))return;a.setAttribute("href",localizeUrl(h))});
+ document.querySelectorAll("a[href]").forEach(a=>{
+   const h=a.getAttribute("href");if(!h||!h.startsWith("/"))return;
+   const next=localizeUrl(h);if(next!==h)a.setAttribute("href",next);
+ });
 }
 function ensureLanguageButton(){
  const header=document.querySelector("header");if(!header)return;
  let b=header.querySelector("[data-nx-language]");
  if(!b){b=document.createElement("button");b.type="button";b.dataset.nxLanguage="1";b.className="nx-language-switch";b.addEventListener("click",()=>{const next=lang==="en"?"pt":"en";const u=new URL(location.href);if(next==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");try{localStorage.setItem("ns_lang",next)}catch{}document.cookie="ns_lang="+next+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"")});const target=header.querySelector(".menu-toggle,.tool-menu");if(target)target.before(b);else header.firstElementChild?.appendChild(b)}
- b.textContent=lang==="en"?"PT":"EN";b.setAttribute("aria-label",lang==="en"?"Switch to Portuguese":"Switch to English");b.title=lang==="en"?"Português":"English";
+ const nextLabel=lang==="en"?"PT":"EN";
+ const nextAria=lang==="en"?"Switch to Portuguese":"Switch to English";
+ const nextTitle=lang==="en"?"Português":"English";
+ if(b.textContent!==nextLabel)b.textContent=nextLabel;
+ if(b.getAttribute("aria-label")!==nextAria)b.setAttribute("aria-label",nextAria);
+ if(b.title!==nextTitle)b.title=nextTitle;
 }
 async function loadServer(){
  if(lang!=="en")return;
@@ -161,8 +169,33 @@ async function loadServer(){
    apply();
  }catch{}
 }
-function apply(){document.documentElement.lang=lang;ensureLanguageButton();translateTextNodes();translateAttrs();translateLinks()}
-function init(){lang=readLang();apply();loadServer();const target=document.body;new MutationObserver(()=>{if(lang==="en"){ensureLanguageButton();translateTextNodes();translateAttrs();translateLinks()}}).observe(target,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title"]})}
+
+let applyRunning=false,applyScheduled=false,observer=null;
+function apply(){
+ if(applyRunning)return;
+ applyRunning=true;
+ try{
+   document.documentElement.lang=lang;
+   ensureLanguageButton();
+   translateTextNodes();
+   translateAttrs();
+   translateLinks();
+ }finally{applyRunning=false;}
+}
+function scheduleApply(){
+ if(lang!=="en"||applyScheduled)return;
+ applyScheduled=true;
+ const run=()=>{applyScheduled=false;if(lang==="en")apply()};
+ if(typeof requestAnimationFrame==="function")requestAnimationFrame(run);else setTimeout(run,0);
+}
+function init(){
+ lang=readLang();
+ apply();
+ loadServer();
+ const target=document.body;
+ observer=new MutationObserver(()=>{if(lang==="en"&&!applyRunning)scheduleApply()});
+ observer.observe(target,{subtree:true,childList:true,characterData:true});
+}
 window.NexaurenI18n=Object.freeze({getLanguage:()=>lang,t,setLanguage:(next)=>setState(next,true),localizeUrl,apply,refresh:loadServer});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
