@@ -540,3 +540,18 @@ html.nx-blog-route body,body.nx-blog-route{width:100%;max-width:100%;overflow-x:
   .nx-blog-route .nx-footer-grid{grid-template-columns:1fr}
   .nx-blog-route .hero h1,.nx-blog-route .listing-head h1{font-size:clamp(32px,10.5vw,42px)}
 }
+
+
+/* Global Nexauren language switch — non-Blog pages only. */
+.nx-language-switch{
+  appearance:none;border:1px solid rgba(125,140,160,.32);background:rgba(255,255,255,.72);color:inherit;
+  min-width:44px;height:40px;padding:0 11px;border-radius:12px;font:600 13px/1 inherit;letter-spacing:.04em;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease;
+}
+.nx-language-switch:hover{transform:translateY(-1px);border-color:rgba(125,140,160,.55)}
+.nx-language-switch:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@media(max-width:760px){
+  .nx-language-switch{height:42px;min-width:44px}
+  header .nx-language-switch{order:2}
+}
