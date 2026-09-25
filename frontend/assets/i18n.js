@@ -279,8 +279,7 @@ const PT=
     "Voltar ao início": "Back to home",
     "Abrir ferramentas": "Open tools",
     "Esta página saiu do mapa.": "This page is off the map.",
-    "O endereço pode estar incorreto, ter sido movido ou já não existir. Volte ao início ou continue a explorar o ecossistema Nexauren.": "The address may be incorrect, moved, or no longer exist. Return home or continue exploring the Nexauren ecosystem."
-
+    "O endereço pode estar incorreto, ter sido movido ou já não existir. Volte ao início ou continue a explorar o ecossistema Nexauren.": "The address may be incorrect, moved, or no longer exist. Return home or continue exploring the Nexauren ecosystem.",
 
   "NEXAUREN TOOL · PRODUTIVIDADE": "NEXAUREN TOOL · PRODUCTIVITY",
   "NEXAUREN PRO · PRODUTIVIDADE": "NEXAUREN PRO · PRODUCTIVITY",
