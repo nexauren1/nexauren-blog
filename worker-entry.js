@@ -1055,22 +1055,6 @@ async function api(env,request,url,ctx){
   }
 
   if(p.startsWith("/api/account/")) return fail("Endpoint de conta não disponível.",410,"ACCOUNT_ENDPOINT_DISABLED");
-  if(p==="/api/i18n/runtime"&&m==="POST"){
-    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-    try{
-      if(!env.AI)return fail("Cloudflare AI não está configurado.",503,"I18N_AI_UNAVAILABLE");
-      if(!env.ACCOUNTS_DB)return fail("D1 Nexauren não está configurado.",503,"I18N_DB_UNAVAILABLE");
-      const d=await bodyJson(request)||{};
-      const raw=Array.isArray(d.texts)?d.texts:[];
-      const texts=[...new Set(raw.map(v=>String(v??"").trim()).filter(v=>v.length>=2&&v.length<=2000))].slice(0,40);
-      const total=texts.reduce((n,v)=>n+v.length,0);
-      if(total>30000)return fail("Lote de tradução demasiado grande.",413,"I18N_BATCH_TOO_LARGE");
-      const translations=await translateRuntimeBatch(env,texts);
-      return json({ok:true,language:"en",translations});
-    }catch(error){
-      return fail(error?.message||"Não foi possível traduzir o texto.",503,error?.code||"I18N_RUNTIME_ERROR");
-    }
-  }
   if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
   try{await publishDue(env);}catch(e){console.error("publishDue",e);}
   if(p==="/api/auth/login"&&m==="POST"){
@@ -1099,26 +1083,9 @@ async function api(env,request,url,ctx){
 
   if(p==="/api/tool-registry"&&m==="GET"){
     try{
-      const language=url.searchParams.get("lang")==="en"?"en":"pt";
-      if(language==="en"&&env.TRANSLATION_WORKFLOW&&ctx?.waitUntil){
-        const toolRows=await readTranslations(env,"en","tool");
-        const categoryRows=await readTranslations(env,"en","category");
-        if(!toolRows.length||!categoryRows.length){
-          ctx.waitUntil(startTranslationWorkflow(env,{scope:"tools",targetLanguages:["en"]}).catch(e=>console.error("translation tools warmup",e)));
-        }
-      }
       const registry=await toolRegistryWithUsage(env,request);
-      return json(await localizeToolRegistry(env,registry,language));
+      return json(registry);
     }catch(e){return fail("Não foi possível carregar o catálogo de ferramentas.",503,"TOOLS_UNAVAILABLE");}
-  }
-  if(p==="/api/admin/translations/start"&&m==="POST"){
-    const g=await guard(env,request,["owner","admin"]);if(g.error)return g.error;
-    if(!env.TRANSLATION_WORKFLOW)return fail("Workflow de tradução não está configurado.",503,"TRANSLATION_WORKFLOW_UNAVAILABLE");
-    const d=await bodyJson(request)||{},scope=["all","ui","tools","posts","post"].includes(d.scope)?d.scope:"all";
-    const payload={scope,targetLanguages:Array.isArray(d.targetLanguages)?d.targetLanguages.filter(x=>x==="en").slice(0,1):["en"],postId:text(d.postId||"",120).trim()};
-    const instance=await startTranslationWorkflow(env,payload);
-    await audit(env,g.auth.id,"translation.workflow_started","translation",instance?.id||null,{scope,targetLanguages:payload.targetLanguages,postId:payload.postId||null});
-    return json({ok:true,instance_id:instance?.id||null,scope});
   }
   if(p==="/api/tools/events"&&m==="POST"){
     if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
