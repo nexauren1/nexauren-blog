@@ -102,7 +102,7 @@ const PT=
   "Alguns são necessários para autenticação e segurança.": "Some are necessary for authentication and security.",
   "Algumas páginas públicas podem utilizar ferramentas de medição para compreender visitas e melhorar a experiência.": "Some public pages may use measurement tools to understand visits and improve the experience.",
   "Pode controlar ou eliminar cookies através das definições do seu navegador. Desativar cookies essenciais pode impedir algumas funcionalidades.": "You can control or delete cookies through your browser settings. Disabling essential cookies may prevent some features."
-}};
+};
 const ATTR_MAP={"Pesquisar":"Search","Abrir menu":"Open menu","Fechar":"Close","Limpar pesquisa":"Clear search","Limpar filtros":"Clear filters"};
 let lang="pt",serverMap=new Map();
 const path=()=>location.pathname;
