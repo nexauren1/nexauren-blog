@@ -1,5 +1,12 @@
 const app=document.getElementById("app"),nav=document.getElementById("main-nav"),searchPanel=document.getElementById("search-panel"),searchForm=document.getElementById("search-form"),searchInput=document.getElementById("search-input");
 const BLOG_BASE="/blog";
+function setBlogRouteClass(){
+  const rawPath=location.pathname;
+  const isBlog=rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"||rawPath.startsWith(BLOG_BASE+"/");
+  document.documentElement.classList.toggle("nx-blog-route",isBlog);
+  document.body?.classList.toggle("nx-blog-route",isBlog);
+}
+setBlogRouteClass();
 const FALLBACK_CATS=[
   ["breaking-news","Breaking News","⚡","Notícias de última hora e acontecimentos recentes."],
   ["tecnologia","Tecnologia","💻","Tecnologia, inovação, software e dispositivos."],
@@ -258,7 +265,7 @@ async function route(){
   await loadCategories();
   setup();
   const rawPath=location.pathname;
-  document.body.classList.toggle("nx-blog-route",rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"||rawPath.startsWith(BLOG_BASE+"/"));
+  setBlogRouteClass();
   const p=rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"?"/":(rawPath.startsWith(BLOG_BASE+"/")?rawPath.slice(BLOG_BASE.length):rawPath);
   let result;
   if(p.startsWith("/post/"))result=await post(decodeURIComponent(p.slice(6)));
