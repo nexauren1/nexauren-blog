@@ -39,7 +39,7 @@ jobs:
           test -f frontend/apple-touch-icon.png
           grep -Fq '/assets/favicon-nexauren.png' frontend/blog/index.html
           grep -Fq '/assets/social-preview-nexauren.png' frontend/blog/index.html
-          ! grep -Eq 'nexauren-story-favicon\.svg|rel="(?:icon|shortcut icon)"[^>]+image/svg\+xml' frontend/blog/index.html
+          ! grep -Eq 'nexauren-story-favicon[.]svg|rel="(icon|shortcut icon)"[^>]+image/svg[+]xml' frontend/blog/index.html
           grep -Fq 'assets/social-preview-nexauren.png' worker-entry.js
           test -f frontend/manifest.json
           grep -q 'rel="canonical"' frontend/index.html
@@ -49,7 +49,7 @@ jobs:
           grep -q 'twitter:card' frontend/index.html
           grep -q 'application/ld+json' frontend/index.html
           grep -q 'defer' frontend/index.html
-          grep -q 'NexaurenAds?.apply' frontend/assets/app.js
+          grep -Fq 'NexaurenAds?.apply' frontend/assets/app.js
           grep -q '842be0a485a66000fcf7e5d24ee7b149' frontend/assets/ads.js
           ! grep -q '11177602' frontend/assets/ads.js
           ! grep -q 'vignette.min.js' frontend/assets/ads.js

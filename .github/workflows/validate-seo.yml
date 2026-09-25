@@ -24,7 +24,7 @@ jobs:
           test -f frontend/manifest.json
           grep -Fq '/assets/favicon-nexauren.png' frontend/blog/index.html
           grep -Fq '/assets/social-preview-nexauren.png' frontend/blog/index.html
-          ! grep -Eq 'nexauren-story-favicon\.svg|rel="(?:icon|shortcut icon)"[^>]+image/svg\+xml' frontend/blog/index.html
+          ! grep -Eq 'nexauren-story-favicon[.]svg|rel="(icon|shortcut icon)"[^>]+image/svg[+]xml' frontend/blog/index.html
           grep -q 'rel="canonical"' frontend/index.html
           grep -q 'property="og:title"' frontend/index.html
           grep -q 'name="twitter:card"' frontend/index.html
