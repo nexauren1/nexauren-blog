@@ -258,6 +258,7 @@ async function route(){
   await loadCategories();
   setup();
   const rawPath=location.pathname;
+  document.body.classList.toggle("nx-blog-route",rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"||rawPath.startsWith(BLOG_BASE+"/"));
   const p=rawPath===BLOG_BASE||rawPath===BLOG_BASE+"/"?"/":(rawPath.startsWith(BLOG_BASE+"/")?rawPath.slice(BLOG_BASE.length):rawPath);
   let result;
   if(p.startsWith("/post/"))result=await post(decodeURIComponent(p.slice(6)));
