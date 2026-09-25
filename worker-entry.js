@@ -436,7 +436,7 @@ function decoratePublicHtmlResponse(request,response){
     }
     if(!/<meta[^>]+name=["']description["']/i.test(out))out=addHeadTag(out,/__never_description__/,'<meta name="description" content="'+esc(desc)+'">');
     if(!/<script[^>]+src=["']\/assets\/site\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/site.js?v=20260922-1" defer></script>\n</body>');
-    if(!/<script[^>]+src=["']\/assets\/i18n\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/i18n.js?v=20260925-i18n-5" defer></script>\n</body>');
+    if(!/<script[^>]+src=["']\/assets\/i18n\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/i18n.js?v=20260925-static-1" defer></script>\n</body>');
     if(!/<script[^>]+src=["']\/assets\/public-ui\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/public-ui.js?v=20260922-6" defer></script>\n</body>');
     if(!/<script[^>]+id=["']nexauren-public-structured-data["']/i.test(out)){
       const structured={ "@context":"https://schema.org", "@type":"WebPage", "name":title, "url":canonical, "description":desc, "isPartOf":{"@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/"} };
