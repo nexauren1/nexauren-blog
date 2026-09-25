@@ -337,7 +337,7 @@ async function postsAdmin(env,url){
     WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
   return json({ok:true,posts:(r.results||[]).map(x=>{
     const image=preferredImage(x.cover_url,x.social_image);
-    return {...x,cover_url:image===DEFAULT_SOCIAL_IMAGE?null:image,social_image:image};
+    return {...x,cover_url:x.cover_url&&!isFaviconUrl(x.cover_url)?x.cover_url:null,social_image:socialImageForCover(image)};
   })});
 }
 async function publicPosts(env,url){
@@ -412,8 +412,11 @@ async function getPost(env,id){
       meta_description:t.meta_description||""
     };
   }
+  const cover=preferredImage(row.cover_url,row.social_image);
   return {
     ...row,
+    cover_url:row.cover_url&&!isFaviconUrl(row.cover_url)?row.cover_url:null,
+    social_image:socialImageForCover(cover),
     cover_alt:row.cover_alt||"",
     cover_caption:row.cover_caption||"",
     tags:tags.results||[],
