@@ -535,7 +535,9 @@ function normalizeToolRegistry(raw){
   const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
     id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
     name:text(c?.name||"Categoria",100).trim(),
+    name_en:text(c?.name_en||c?.nameEn||"",140).trim(),
     description:text(c?.description||"",500).trim(),
+    description_en:text(c?.description_en||c?.descriptionEn||"",500).trim(),
     icon:text(c?.icon||"✦",20).trim(),
     sortOrder:Number.isFinite(Number(c?.sortOrder))?Number(c.sortOrder):(i+1)*10,
     path:text(c?.path||"",500).trim()||("/tool/categories/"+slugify(c?.id||c?.name||("categoria-"+(i+1)))+"/")
@@ -546,7 +548,9 @@ function normalizeToolRegistry(raw){
     const category=categoryIds.has(t?.category)?t.category:(categories[0]?.id||"");
     return {
       id,name:text(t?.name||"Ferramenta",140).trim(),
+      name_en:text(t?.name_en||t?.nameEn||"",140).trim(),
       description:text(t?.description||"",600).trim(),
+      description_en:text(t?.description_en||t?.descriptionEn||"",600).trim(),
       category,
       icon:text(t?.icon||"✦",20).trim(),
       version:text(t?.version||"1.0.0",30).trim(),
@@ -556,6 +560,7 @@ function normalizeToolRegistry(raw){
       currency:text(t?.currency||"USD",8).trim().toUpperCase(),
       path:text(t?.path||"",700).trim(),
       tags:Array.isArray(t?.tags)?t.tags.map(x=>text(x,50).trim()).filter(Boolean).slice(0,12):[],
+      tags_en:Array.isArray(t?.tags_en)?t.tags_en.map(x=>text(x,50).trim()).filter(Boolean).slice(0,12):[],
       featured:!!t?.featured,
       popular:!!t?.popular,
       sortOrder:Number.isFinite(Number(t?.sortOrder))?Number(t.sortOrder):(i+1)*10,
@@ -583,11 +588,19 @@ async function loadToolRegistry(env,request){
   const assetActiveTools=assetRegistry?.tools?.filter(t=>t.status==="active")||[];
   if(!dbActiveTools.length && assetActiveTools.length)return assetRegistry;
   if(!assetRegistry)return dbRegistry;
-  const mergedTools=[...dbRegistry.tools];
+  const assetToolMap=new Map((assetRegistry?.tools||[]).map(tool=>[tool.id,tool]));
+  const mergedTools=dbRegistry.tools.map(tool=>{
+    const asset=assetToolMap.get(tool.id);
+    return asset ? {...tool,name_en:tool.name_en||asset.name_en||"",description_en:tool.description_en||asset.description_en||"",tags_en:tool.tags_en?.length?tool.tags_en:(asset.tags_en||[])} : tool;
+  });
   for(const tool of assetActiveTools){
     if(!mergedTools.some(existing=>existing.id===tool.id))mergedTools.push(tool);
   }
-  const mergedCategories=[...dbRegistry.categories];
+  const assetCategoryMap=new Map((assetRegistry?.categories||[]).map(category=>[category.id,category]));
+  const mergedCategories=dbRegistry.categories.map(category=>{
+    const asset=assetCategoryMap.get(category.id);
+    return asset ? {...category,name_en:category.name_en||asset.name_en||"",description_en:category.description_en||asset.description_en||""} : category;
+  });
   for(const category of assetRegistry.categories||[]){
     if(!mergedCategories.some(existing=>existing.id===category.id))mergedCategories.push(category);
   }
