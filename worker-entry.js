@@ -1,5 +1,4 @@
 import { jwtVerify, importX509 } from "jose";
-import { WorkflowEntrypoint } from "cloudflare:workers";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2";
@@ -285,351 +284,6 @@ async function dbCheck(env){
 async function dbReady(env){return (await dbCheck(env)).ready;}
 
 
-async function saveTranslations(env,postId,translations){
-  for(const lang of ["pt","en"]){
-    const t=translations?.[lang];
-    if(!t)continue;
-    const title=text(t.title,180).trim(),excerpt=text(t.excerpt,500).trim(),content=text(t.content,2000000);
-    if(!title&&!excerpt&&!content)continue;
-    const ts=nowIso();
-    await env.DB.prepare(`INSERT INTO post_translations (id,post_id,language,title,excerpt,content,meta_title,meta_description,created_at,updated_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(post_id,language) DO UPDATE SET title=excluded.title,excerpt=excluded.excerpt,content=excluded.content,meta_title=excluded.meta_title,meta_description=excluded.meta_description,updated_at=excluded.updated_at`)
-      .bind(crypto.randomUUID(),postId,lang,title,excerpt,content,text(t.meta_title,180).trim(),text(t.meta_description,300).trim(),ts,ts).run();
-  }
-}
-async function autoTranslatePost(env,postId){
-  if(!env.AI)return;
-  const p=await env.DB.prepare("SELECT title,excerpt,content,meta_title,meta_description FROM posts WHERE id=? LIMIT 1").bind(postId).first();
-  if(!p?.title)return;
-
-  const sourceHash=await sha256(JSON.stringify({
-    title:p.title||"",excerpt:p.excerpt||"",content:p.content||"",meta_title:p.meta_title||"",meta_description:p.meta_description||""
-  }));
-
-  let state=null;
-  try{
-    state=await env.ACCOUNTS_DB.prepare("SELECT source_hash,status FROM translation_state WHERE entity_type='post' AND entity_id=? AND language='en' LIMIT 1").bind(postId).first();
-  }catch{}
-
-  const tr=await env.DB.prepare("SELECT language,title,excerpt,content,meta_title,meta_description FROM post_translations WHERE post_id=? AND language='en' LIMIT 1").bind(postId).first();
-  const sourceChanged=state?.source_hash!==sourceHash;
-  const needsTranslation=!tr||(!state&&!!tr?false:sourceChanged);
-  const needsPtMeta=!String(p.meta_title||"").trim()||!String(p.meta_description||"").trim();
-  const needsEnMeta=!!tr&&(!String(tr.meta_title||"").trim()||!String(tr.meta_description||"").trim());
-
-  if(!needsTranslation&&!needsPtMeta&&!needsEnMeta){
-    try{await env.ACCOUNTS_DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status=excluded.status,error_message='',updated_at=excluded.updated_at")
-      .bind(crypto.randomUUID(),"post",postId,"en",sourceHash,"translated","",nowIso()).run();}catch{}
-    return;
-  }
-
-  const model=env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it";
-  const prompt=needsTranslation
-    ? [
-        "You are the SEO editor and translator for Nexauren Story.",
-        "Source language: Portuguese (pt). Target language: natural international English (en).",
-        "Do not invent facts. Preserve names, URLs, Markdown structure, code, numbers and meaning.",
-        'Return ONLY valid JSON with this exact shape: {"pt_meta_title":"","pt_meta_description":"","en":{"title":"","excerpt":"","content":"","meta_title":"","meta_description":""}}',
-        "",
-        "PT TITLE:\n"+p.title,
-        "PT EXCERPT:\n"+(p.excerpt||""),
-        "PT CONTENT:\n"+String(p.content||"").slice(0,115000),
-        "EXISTING PT META TITLE:\n"+(p.meta_title||""),
-        "EXISTING PT META DESCRIPTION:\n"+(p.meta_description||"")
-      ].join("\n")
-    : [
-        "You are the SEO editor for Nexauren Story.",
-        "Generate missing metadata only; do not invent facts or change the article.",
-        'Return ONLY valid JSON with this exact shape: {"pt_meta_title":"","pt_meta_description":"","en_meta_title":"","en_meta_description":""}',
-        "",
-        "PT TITLE:\n"+p.title,
-        "PT EXCERPT:\n"+(p.excerpt||""),
-        "PT CONTENT:\n"+String(p.content||"").slice(0,18000),
-        "CURRENT PT META TITLE:\n"+(p.meta_title||""),
-        "CURRENT PT META DESCRIPTION:\n"+(p.meta_description||""),
-        "EN TITLE:\n"+(tr?.title||""),
-        "EN EXCERPT:\n"+(tr?.excerpt||""),
-        "CURRENT EN META TITLE:\n"+(tr?.meta_title||""),
-        "CURRENT EN META DESCRIPTION:\n"+(tr?.meta_description||"")
-      ].join("\n");
-
-  try{
-    const response=await env.AI.run(model,{
-      messages:[
-        {role:"system",content:"Return only valid JSON. No markdown fences. Keep facts unchanged."},
-        {role:"user",content:prompt}
-      ],
-      temperature:0.2,
-      max_tokens:needsTranslation?7000:900
-    });
-    let raw=String(response?.response||response||"").trim();
-    raw=raw.replace(/^\x60\x60\x60(?:json)?\s*/i,"").replace(/\s*\x60\x60\x60$/,"").trim();
-    const first=raw.indexOf("{"),last=raw.lastIndexOf("}");
-    if(first>=0&&last>first)raw=raw.slice(first,last+1);
-    const ai=JSON.parse(raw);
-
-    if(needsTranslation&&ai?.en?.title&&ai?.en?.content){
-      await saveTranslations(env,postId,{en:{
-        title:String(ai.en.title).trim(),
-        excerpt:String(ai.en.excerpt||"").trim(),
-        content:String(ai.en.content),
-        meta_title:String(ai.en.meta_title||"").trim(),
-        meta_description:String(ai.en.meta_description||"").trim()
-      }});
-    }
-
-    if(needsPtMeta){
-      const ptTitle=String(ai.pt_meta_title||"").trim().slice(0,180);
-      const ptDesc=String(ai.pt_meta_description||"").trim().slice(0,300);
-      const nextTitle=String(p.meta_title||"").trim()||ptTitle;
-      const nextDesc=String(p.meta_description||"").trim()||ptDesc;
-      if(nextTitle||nextDesc)await env.DB.prepare("UPDATE posts SET meta_title=?,meta_description=?,updated_at=? WHERE id=?").bind(nextTitle,nextDesc,nowIso(),postId).run();
-    }
-
-    if(tr){
-      const enTitle=String(tr.meta_title||"").trim()||String(ai.en_meta_title||"").trim();
-      const enDesc=String(tr.meta_description||"").trim()||String(ai.en_meta_description||"").trim();
-      if(enTitle||enDesc)await env.DB.prepare("UPDATE post_translations SET meta_title=?,meta_description=?,updated_at=? WHERE post_id=? AND language='en'").bind(enTitle.slice(0,180),enDesc.slice(0,300),nowIso(),postId).run();
-    }
-
-    const done=await env.DB.prepare("SELECT id FROM post_translations WHERE post_id=? AND language='en' AND title<>'' AND content<>'' LIMIT 1").bind(postId).first();
-    if(!done)return;
-    try{
-      await env.ACCOUNTS_DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status=excluded.status,error_message='',updated_at=excluded.updated_at")
-        .bind(crypto.randomUUID(),"post",postId,"en",sourceHash,"translated","",nowIso()).run();
-    }catch{}
-  }catch(e){
-    try{
-      await env.ACCOUNTS_DB.prepare("INSERT INTO translation_state (id,entity_type,entity_id,language,source_hash,status,error_message,updated_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(entity_type,entity_id,language) DO UPDATE SET source_hash=excluded.source_hash,status='error',error_message=excluded.error_message,updated_at=excluded.updated_at")
-        .bind(crypto.randomUUID(),"post",postId,"en",sourceHash,"error",String(e?.message||e).slice(0,500),nowIso()).run();
-    }catch{}
-    throw e;
-  }
-}
-async function translateRuntimeBatch(env,sourceTexts){
-  const unique=[...new Set((Array.isArray(sourceTexts)?sourceTexts:[]).map(v=>String(v??"").trim()).filter(v=>v&&v.length<=2000))].slice(0,40);
-  if(!unique.length)return {};
-  const items=[];
-  for(const source_text of unique){
-    items.push({source_text,translation_key:"runtime."+await sha256(source_text)});
-  }
-
-  let existing=[];
-  try{
-    const keys=items.map(x=>x.translation_key);
-    const marks=keys.map(()=>"?").join(",");
-    const r=await env.ACCOUNTS_DB.prepare(
-      "SELECT translation_key,source_text,translated_text,status FROM translations WHERE scope='runtime' AND language='en' AND translation_key IN ("+marks+")"
-    ).bind(...keys).all();
-    existing=r.results||[];
-  }catch(error){
-    throw Object.assign(new Error("Armazenamento de traduções não está disponível. Execute database/i18n.sql no D1 nexauren."),{code:"I18N_DB_NOT_READY",cause:error});
-  }
-
-  const existingMap=new Map(existing.map(x=>[String(x.translation_key),x]));
-  const output={};
-  const pending=[];
-  for(const item of items){
-    const old=existingMap.get(item.translation_key);
-    if(old?.translated_text&&old.status!=="error"){
-      output[item.source_text]=String(old.translated_text);
-    }else{
-      pending.push({...item,source_hash:item.translation_key.slice(8)});
-    }
-  }
-
-  for(let i=0;i<pending.length;i+=20){
-    const batch=pending.slice(i,i+20);
-    const prompt=[
-      "You are Nexauren's universal Portuguese-to-English UI translation engine.",
-      "Translate each provided text into natural international English.",
-      "This is runtime web UI text, so translate short labels, buttons, headings, descriptions, messages, status text, placeholders, accessibility labels and dynamic text.",
-      "Detect Portuguese even when accents are absent. If a text is already English, a product name, a URL, a code fragment, an email, a number, a symbol-only value, or another non-translatable technical value, return it unchanged.",
-      "Preserve placeholders, variables, HTML/XML tags, Markdown syntax, URLs, email addresses, numbers, units, emojis and keyboard symbols exactly where possible.",
-      "Do not explain anything. Return ONLY a JSON array with one object for every input, using exactly the keys \"translation_key\" and \"translated_text\".",
-      "Items:\n"+batch.map(x=>JSON.stringify({translation_key:x.translation_key,source_text:x.source_text})).join("\n")
-    ].join("\n");
-
-    const response=await env.AI.run(env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",{
-      messages:[
-        {role:"system",content:"You are a precise production translation engine. Return only valid JSON."},
-        {role:"user",content:prompt}
-      ],
-      temperature:0.1,
-      max_tokens:7000
-    });
-
-    let raw=String(response?.response||response||"").trim()
-      .replace(/^\x60\x60\x60(?:json)?\s*/i,"")
-      .replace(/\s*\x60\x60\x60$/,"").trim();
-    const a=raw.indexOf("["),b=raw.lastIndexOf("]");
-    if(a<0||b<=a)throw Object.assign(new Error("Resposta de tradução universal inválida."),{code:"I18N_AI_INVALID"});
-    const result=JSON.parse(raw.slice(a,b+1));
-    const byKey=new Map((Array.isArray(result)?result:[]).map(x=>[
-      String(x.translation_key||""),
-      String(x.translated_text??"").trim()
-    ]));
-
-    for(const item of batch){
-      const translated=byKey.get(item.translation_key);
-      if(!translated)throw Object.assign(new Error("IA não devolveu a tradução para "+item.translation_key),{code:"I18N_AI_MISSING_ITEM"});
-      output[item.source_text]=translated;
-      const ts=nowIso();
-      await env.ACCOUNTS_DB.prepare(
-        "INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at"
-      ).bind(
-        crypto.randomUUID(),"runtime","runtime",item.translation_key,"en",
-        item.source_text,translated,item.source_hash,"translated","",ts,ts
-      ).run();
-    }
-  }
-  return output;
-}
-
-async function readTranslations(env,language,scope=null){
-  const lang=["pt","en"].includes(language)?language:"pt";
-  try{
-    let sql="SELECT source_text,translated_text,translation_key,scope,entity_id,updated_at FROM translations WHERE language=? AND status IN ('translated','approved') AND translated_text<>''";
-    const params=[lang];
-    if(scope){sql+=" AND scope=?";params.push(scope);}
-    sql+=" ORDER BY updated_at DESC LIMIT 5000";
-    const r=await env.ACCOUNTS_DB.prepare(sql).bind(...params).all();
-    return r.results||[];
-  }catch{return [];}
-}
-async function i18nReady(env){
-  try{await env.ACCOUNTS_DB.prepare("SELECT 1 FROM translations LIMIT 1").first();return true;}catch{return false;}
-}
-async function translationKeyMap(env,language,scope){
-  const rows=await readTranslations(env,language,scope),map=new Map();
-  for(const row of rows)if(row.translation_key)map.set(String(row.translation_key),String(row.translated_text||""));
-  return map;
-}
-async function localizeToolRegistry(env,registry,language){
-  if(language!=="en")return registry;
-  const map=await translationKeyMap(env,"en","tool");
-  const catMap=await translationKeyMap(env,"en","category");
-  if(!map.size&&!catMap.size)return registry;
-  return {
-    ...registry,
-    categories:registry.categories.map(c=>({...c,
-      name:catMap.get("category."+c.id+".name")||c.name,
-      description:catMap.get("category."+c.id+".description")||c.description
-    })),
-    tools:registry.tools.map(t=>({...t,
-      name:map.get("tool."+t.id+".name")||t.name,
-      description:map.get("tool."+t.id+".description")||t.description
-    }))
-  };
-}
-async function startTranslationWorkflow(env,payload){
-  if(!env.TRANSLATION_WORKFLOW)return null;
-  return await env.TRANSLATION_WORKFLOW.create({params:payload});
-}
-
-async function translateUiManifest(env,step){
-  const response=await env.ASSETS.fetch(new Request("https://nexaurenstory.com/assets/i18n-sources.json"));
-  if(!response.ok)throw new Error("Catálogo de fontes i18n indisponível.");
-  const manifest=await response.json();
-  const sources=Array.isArray(manifest.sources)?manifest.sources:[];
-  let existing=[];
-  try{existing=await env.ACCOUNTS_DB.prepare("SELECT translation_key,source_hash,translated_text,status FROM translations WHERE scope='ui' AND language='en'").all().then(r=>r.results||[])}catch{}
-  const existingMap=new Map(existing.map(x=>[x.translation_key,x]));
-  const pending=[];
-  for(const item of sources){
-    const source=String(item.source_text||"").trim();if(!source)continue;
-    const hash=await sha256(source),old=existingMap.get(item.translation_key);
-    if(old?.source_hash===hash&&old?.translated_text&&old.status!=="error")continue;
-    pending.push({...item,source_hash:hash});
-  }
-  const out={translated:0,skipped:sources.length-pending.length};
-  for(let i=0;i<pending.length;i+=20){
-    const batch=pending.slice(i,i+20);
-    const result=await step.do("translate-ui-"+Math.floor(i/20+1),{retries:{limit:4,delay:"5 seconds",backoff:"exponential"},timeout:"10 minutes"},async()=>{
-      const prompt=[
-        "Translate Portuguese user-interface strings for Nexauren Story into natural international English.",
-        "Keep product names, symbols and technical terms accurate. Do not add explanations.",
-        'Return ONLY a JSON array of objects with keys "translation_key" and "translated_text".',
-        "Items:\n"+batch.map(x=>JSON.stringify({translation_key:x.translation_key,source_text:x.source_text})).join("\n")
-      ].join("\n");
-      const resp=await env.AI.run(env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",{messages:[{role:"system",content:"Return only valid JSON."},{role:"user",content:prompt}],temperature:0.1,max_tokens:4500});
-      let raw=String(resp?.response||resp||"").trim().replace(/^\x60\x60\x60(?:json)?\s*/i,"").replace(/\s*\x60\x60\x60$/,"").trim();
-      const a=raw.indexOf("["),b=raw.lastIndexOf("]");if(a<0||b<=a)throw new Error("Resposta de tradução UI inválida.");
-      return JSON.parse(raw.slice(a,b+1));
-    });
-    const byKey=new Map(result.map(x=>[String(x.translation_key),String(x.translated_text||"").trim()]));
-    for(const item of batch){
-      const tr=byKey.get(item.translation_key);if(!tr)throw new Error("Tradução em falta para "+item.translation_key);
-      const ts=nowIso();
-      await env.ACCOUNTS_DB.prepare("INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at")
-        .bind(crypto.randomUUID(),"ui",item.entity_id||"",item.translation_key,"en",item.source_text,tr,item.source_hash,"translated","",ts,ts).run();
-      out.translated++;
-    }
-  }
-  return out;
-}
-
-async function translateToolManifest(env,step){
-  const response=await env.ASSETS.fetch(new Request("https://nexaurenstory.com/tool/data/data.json"));
-  if(!response.ok)throw new Error("Catálogo de ferramentas indisponível.");
-  const raw=await response.json(),items=[];
-  for(const c of (Array.isArray(raw.categories)?raw.categories:[])){
-    items.push({scope:"category",entity_id:String(c.id),translation_key:"category."+c.id+".name",source_text:String(c.name||"").trim()});
-    items.push({scope:"category",entity_id:String(c.id),translation_key:"category."+c.id+".description",source_text:String(c.description||"").trim()});
-  }
-  for(const t of (Array.isArray(raw.tools)?raw.tools:[])){
-    items.push({scope:"tool",entity_id:String(t.id),translation_key:"tool."+t.id+".name",source_text:String(t.name||"").trim()});
-    items.push({scope:"tool",entity_id:String(t.id),translation_key:"tool."+t.id+".description",source_text:String(t.description||"").trim()});
-  }
-  let existing=[];try{existing=(await env.ACCOUNTS_DB.prepare("SELECT translation_key,source_hash,translated_text,status FROM translations WHERE language='en' AND scope IN ('tool','category')").all()).results||[]}catch{}
-  const existingMap=new Map(existing.map(x=>[x.translation_key,x]));
-  const pending=[];
-  for(const item of items){
-    if(!item.source_text)continue;
-    item.source_hash=await sha256(item.source_text);
-    const old=existingMap.get(item.translation_key);
-    if(old?.source_hash===item.source_hash&&old?.translated_text&&old.status!=="error")continue;
-    pending.push(item);
-  }
-  const out={translated:0,skipped:items.length-pending.length};
-  for(let i=0;i<pending.length;i+=16){
-    const batch=pending.slice(i,i+16);
-    const result=await step.do("translate-tools-"+Math.floor(i/16+1),{retries:{limit:4,delay:"5 seconds",backoff:"exponential"},timeout:"10 minutes"},async()=>{
-      const prompt=[
-        "Translate Portuguese Nexauren tool catalog labels and descriptions into natural international English.",
-        "Preserve product names, technical names, units and meaning. Do not invent functionality.",
-        'Return ONLY a JSON array with "translation_key" and "translated_text".',
-        "Items:\n"+batch.map(x=>JSON.stringify({translation_key:x.translation_key,source_text:x.source_text})).join("\n")
-      ].join("\n");
-      const resp=await env.AI.run(env.TRANSLATION_AI_MODEL||"@cf/google/gemma-4-26b-a4b-it",{messages:[{role:"system",content:"Return only valid JSON."},{role:"user",content:prompt}],temperature:0.1,max_tokens:4500});
-      let raw=String(resp?.response||resp||"").trim().replace(/^\x60\x60\x60(?:json)?\s*/i,"").replace(/\s*\x60\x60\x60$/,"").trim();
-      const a=raw.indexOf("["),b=raw.lastIndexOf("]");if(a<0||b<=a)throw new Error("Resposta de tradução de ferramentas inválida.");
-      return JSON.parse(raw.slice(a,b+1));
-    });
-    const byKey=new Map(result.map(x=>[String(x.translation_key),String(x.translated_text||"").trim()]));
-    for(const item of batch){
-      const tr=byKey.get(item.translation_key);if(!tr)throw new Error("Tradução em falta para "+item.translation_key);
-      const ts=nowIso();
-      await env.ACCOUNTS_DB.prepare("INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at")
-        .bind(crypto.randomUUID(),item.scope,item.entity_id,item.translation_key,"en",item.source_text,tr,item.source_hash,"translated","",ts,ts).run();
-      out.translated++;
-    }
-  }
-  return out;
-}
-
-async function translatePostBatch(env,step,postIds){
-  let n=0;
-  for(const id of postIds){
-    await step.do("translate-post-"+id,{retries:{limit:3,delay:"5 seconds",backoff:"exponential"},timeout:"10 minutes"},async()=>{
-      await autoTranslatePost(env,id);
-      return true;
-    });
-    n++;
-  }
-  return n;
-}
-
 async function publicPosts(env,url){
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
   const requestedLimit=Number.parseInt(url.searchParams.get("limit")||"12",10);
@@ -686,7 +340,7 @@ async function createPost(env,a,d,ctx){
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts));
   await env.DB.batch(statements);
-  if(ctx?.waitUntil)ctx.waitUntil((async()=>{try{if(env.TRANSLATION_WORKFLOW)await startTranslationWorkflow(env,{scope:"post",postId:id,targetLanguages:["en"]});else await autoTranslatePost(env,id);}catch(e){console.error("translation workflow",e);}})());await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
+  await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
 }
 async function updatePost(env,a,id,d,ctx){
   const old=await getPost(env,id);if(!old)return fail("Artigo não encontrado.",404,"NOT_FOUND");const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);
@@ -709,7 +363,7 @@ async function updatePost(env,a,id,d,ctx){
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
   await env.DB.batch(statements);
-  if(ctx?.waitUntil)ctx.waitUntil((async()=>{try{if(env.TRANSLATION_WORKFLOW)await startTranslationWorkflow(env,{scope:"post",postId:id,targetLanguages:["en"]});else await autoTranslatePost(env,id);}catch(e){console.error("translation workflow",e);}})());await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
+  await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
 }
 
 async function uploadAuth(env,request){
@@ -1443,16 +1097,6 @@ async function api(env,request,url,ctx){
   if(p==="/api/media"&&m==="POST"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");if(!await verifyImageKitFile(env,text(d.fileId,255).trim(),text(d.url,2000).trim()))return fail("O arquivo ImageKit não pôde ser validado.",422,"IMAGEKIT_FILE_INVALID");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
   const mm=p.match(/^\/api\/media\/([^/]+)$/);if(mm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=mm[1],row=await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first();if(!row)return fail("Mídia não encontrada.",404);if(env.IMAGEKIT_PRIVATE_KEY&&row.imagekit_file_id){const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");const ir=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(row.imagekit_file_id),{method:"DELETE",headers:{Authorization:authHeader,Accept:"application/json"}});if(!ir.ok&&ir.status!==404)return fail("O arquivo não pôde ser removido do ImageKit.",502,"IMAGEKIT_DELETE_FAILED");}await env.DB.prepare("UPDATE posts SET cover_media_id=NULL,social_image=? WHERE cover_media_id=?").bind(DEFAULT_SOCIAL_IMAGE,id).run();await env.DB.prepare("DELETE FROM media WHERE id=?").bind(id).run();await audit(env,g.auth.id,"media.deleted","media",id,{filename:row.filename});return json({ok:true});}
 
-  if(p==="/api/i18n"&&m==="GET"){
-    const language=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
-    const rows=await readTranslations(env,language,null);
-    if(language==="en"&&!rows.length&&env.TRANSLATION_WORKFLOW&&ctx?.waitUntil){
-      ctx.waitUntil(startTranslationWorkflow(env,{scope:"ui",targetLanguages:["en"]}).catch(e=>console.error("translation ui warmup",e)));
-    }
-    const translations={};
-    for(const row of rows){if(row.source_text&&row.translated_text)translations[row.source_text]=row.translated_text;}
-    return json({ok:true,language,translations,updated_at:rows.reduce((m,r)=>r.updated_at>m?r.updated_at:m,"")});
-  }
   if(p==="/api/tool-registry"&&m==="GET"){
     try{
       const language=url.searchParams.get("lang")==="en"?"en":"pt";
@@ -1651,42 +1295,10 @@ async function page(env,request,url){
   const robotsValue=path==="/search"?"noindex,follow":"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
   return new Response(seoHead(h,{lang,title,desc,robots:robotsValue,canonical,ptUrl,enUrl,type,image,articleMeta,structured}),{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=300"}});
 }
-export class NexaurenTranslationWorkflow extends WorkflowEntrypoint{
-  async run(event,step){
-    const payload=event?.payload||{};
-    const scope=["all","ui","tools","posts","post"].includes(payload.scope)?payload.scope:"all";
-    const targetLanguages=Array.isArray(payload.targetLanguages)&&payload.targetLanguages.includes("en")?["en"]:["en"];
-    const result={scope,targetLanguages,ui:null,tools:null,posts:0};
-    if(scope==="ui"||scope==="all"){
-      result.ui=await translateUiManifest(this.env,step);
-    }
-    if(scope==="tools"||scope==="all"){
-      result.tools=await translateToolManifest(this.env,step);
-    }
-    if(scope==="post"){
-      const postId=text(payload.postId||"",120).trim();
-      if(!postId)throw new Error("postId é obrigatório para o escopo post.");
-      result.posts=await translatePostBatch(this.env,step,[postId]);
-    }
-    if(scope==="posts"||scope==="all"){
-      const rows=await step.do("discover-posts",{retries:{limit:3,delay:"5 seconds",backoff:"exponential"},timeout:"2 minutes"},async()=>{
-        const r=await this.env.DB.prepare("SELECT id FROM posts WHERE status='published' AND published_at IS NOT NULL ORDER BY published_at DESC LIMIT 120").all();
-        return (r.results||[]).map(x=>x.id).filter(Boolean);
-      });
-      result.posts=await translatePostBatch(this.env,step,rows);
-    }
-    return result;
-  }
-}
-
 export default{
   async fetch(request,env,ctx){try{const url=new URL(request.url);if(url.pathname.startsWith("/api/"))return await api(env,request,url,ctx);return await page(env,request,url);}catch(e){console.error(e);return fail("Erro interno do servidor.",500,"INTERNAL_ERROR");}},
   async scheduled(_controller,env){
     try{await publishDue(env);await cleanup(env);}catch(e){console.error("maintenance",e);}
-    try{
-      await startTranslationWorkflow(env,{scope:"ui",targetLanguages:["en"]});
-      await startTranslationWorkflow(env,{scope:"tools",targetLanguages:["en"]});
-    }catch(e){console.error("translation schedule",e);}
     try{}catch(e){console.error("billing schema",e);}
     try{}catch(e){console.error("tool unlock schema",e);}
     try{}catch(e){console.error("tool usage schema",e);}
