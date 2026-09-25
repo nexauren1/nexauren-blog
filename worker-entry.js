@@ -1338,6 +1338,9 @@ async function api(env,request,url,ctx){
   if(p==="/api/i18n"&&m==="GET"){
     const language=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
     const rows=await readTranslations(env,language,null);
+    if(language==="en"&&!rows.length&&env.TRANSLATION_WORKFLOW&&ctx?.waitUntil){
+      ctx.waitUntil(startTranslationWorkflow(env,{scope:"ui",targetLanguages:["en"]}).catch(e=>console.error("translation ui warmup",e)));
+    }
     const translations={};
     for(const row of rows){if(row.source_text&&row.translated_text)translations[row.source_text]=row.translated_text;}
     return json({ok:true,language,translations,updated_at:rows.reduce((m,r)=>r.updated_at>m?r.updated_at:m,"")});
@@ -1345,6 +1348,13 @@ async function api(env,request,url,ctx){
   if(p==="/api/tool-registry"&&m==="GET"){
     try{
       const language=url.searchParams.get("lang")==="en"?"en":"pt";
+      if(language==="en"&&env.TRANSLATION_WORKFLOW&&ctx?.waitUntil){
+        const toolRows=await readTranslations(env,"en","tool");
+        const categoryRows=await readTranslations(env,"en","category");
+        if(!toolRows.length||!categoryRows.length){
+          ctx.waitUntil(startTranslationWorkflow(env,{scope:"tools",targetLanguages:["en"]}).catch(e=>console.error("translation tools warmup",e)));
+        }
+      }
       const registry=await toolRegistryWithUsage(env,request);
       return json(await localizeToolRegistry(env,registry,language));
     }catch(e){return fail("Não foi possível carregar o catálogo de ferramentas.",503,"TOOLS_UNAVAILABLE");}
