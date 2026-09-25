@@ -770,6 +770,13 @@ const PT=
   "URL analisada com sucesso.": "URL analyzed successfully.",
   "Não foi possível analisar.": "Could not analyze.",
   "Todos os parâmetros": "All parameters",
+  "Nome completo": "Full name",
+  "Empresa": "Company",
+  "Guardado PNG": "Save PNG",
+  "Guardar PNG": "Save PNG",
+  "Leia um QR Code.": "Read a QR code.",
+  "01 · IDENTIDADE DIGITAL": "01 · DIGITAL IDENTITY",
+  "02 · CRYPTO TOOLS": "02 · CRYPTO TOOLS",
   "← Ferramentas": "← Tools"
 
 };
@@ -837,6 +844,25 @@ function translateOptions(){
   });
 }
 
+function translateToolFragments(){
+  if(lang!=="en")return;
+  const qrTitle=document.querySelector(".qr-tool-page .qr-hero h1");
+  if(qrTitle&&qrTitle.textContent.trim()==="Gerador de QR Code."){
+    const span=qrTitle.querySelector("span");
+    if(span){qrTitle.firstChild&& (qrTitle.firstChild.nodeValue="QR Code ");span.textContent="Generator";}
+  }
+  const readerTitle=document.querySelector(".qr-reader-page .reader-hero h1");
+  if(readerTitle&&readerTitle.textContent.trim()==="Leia um QR Code."){
+    const span=readerTitle.querySelector("span");
+    if(span){readerTitle.firstChild&& (readerTitle.firstChild.nodeValue="Read a ");span.textContent="QR code.";}
+  }
+  const barcodeTitle=document.querySelector(".barcode-page .hero h1");
+  if(barcodeTitle&&barcodeTitle.textContent.trim()==="Transforme dados em barras."){
+    const span=barcodeTitle.querySelector("em");
+    if(span){barcodeTitle.firstChild&&(barcodeTitle.firstChild.nodeValue="Turn data into ");span.textContent="barcodes.";}
+  }
+}
+
 function translateAttrs(){
   if(lang!=="en")return;
   document.querySelectorAll("input[placeholder],textarea[placeholder],[aria-label],title").forEach(el=>{
@@ -898,6 +924,7 @@ function apply(){
     ensureLanguageButton();
     translateTextNodes();
     translateOptions();
+    translateToolFragments();
     translateAttrs();
     translateHead();
     document.querySelectorAll("a[href]").forEach(a=>{
