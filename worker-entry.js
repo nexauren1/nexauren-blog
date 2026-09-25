@@ -841,9 +841,14 @@ async function adminStats(env,request){
 
 const PAYPAL_PRODUCT_KEY = "paypal_pro_product_id";
 const PAYPAL_PLAN_KEY = "paypal_pro_monthly_plan_id";
+const PAYPAL_ENV_KEY = "paypal_environment";
 
+function paypalEnvironment(env){
+  const value=String(env.PAYPAL_ENV||"sandbox").trim().toLowerCase();
+  return value==="live"||value==="production"||value==="prod" ? "live" : "sandbox";
+}
 function paypalBase(env){
-  return String(env.PAYPAL_ENV||"sandbox").toLowerCase()==="sandbox"
+  return paypalEnvironment(env)==="sandbox"
     ? "https://api-m.sandbox.paypal.com"
     : "https://api-m.paypal.com";
 }
@@ -884,13 +889,32 @@ async function billingConfigSet(env,key,value){
   await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_billing_config (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at").bind(key,String(value),nowIso()).run();
 }
 async function paypalEnsureProPlan(env){
+  const environment=paypalEnvironment(env);
+  const storedEnvironment=String(await billingConfigGet(env,PAYPAL_ENV_KEY)||"").trim().toLowerCase();
+
+  // A configuração antiga não guardava o ambiente. Como o padrão histórico era
+  // Sandbox, ao mudar diretamente para Live descartamos os IDs antigos para que
+  // o PayPal gere um novo Product/Plan no ambiente correto.
+  if(
+    (storedEnvironment && storedEnvironment!==environment) ||
+    (!storedEnvironment && environment==="live")
+  ){
+    await env.ACCOUNTS_DB.prepare(
+      "DELETE FROM nexauren_billing_config WHERE key IN (?,?)"
+    ).bind(PAYPAL_PRODUCT_KEY,PAYPAL_PLAN_KEY).run();
+  }
+
   let planId=await billingConfigGet(env,PAYPAL_PLAN_KEY);
-  if(planId)return planId;
+  if(planId){
+    await billingConfigSet(env,PAYPAL_ENV_KEY,environment);
+    return planId;
+  }
+
   let productId=await billingConfigGet(env,PAYPAL_PRODUCT_KEY);
   if(!productId){
     const product=await paypalRequest(env,"/v1/catalogs/products",{
       method:"POST",
-      headers:{"PayPal-Request-Id":"nexauren-pro-product-"+crypto.randomUUID()},
+      headers:{"PayPal-Request-Id":"nexauren-pro-product-"+environment+"-"+crypto.randomUUID()},
       body:JSON.stringify({
         name:"Nexauren Pro",
         description:"Acesso Pro às ferramentas e recursos premium da Nexauren.",
@@ -903,10 +927,11 @@ async function paypalEnsureProPlan(env){
     if(!productId)throw new Error("O PayPal não devolveu o ID do produto.");
     await billingConfigSet(env,PAYPAL_PRODUCT_KEY,productId);
   }
+
   const plan=await paypalRequest(env,"/v1/billing/plans",{
     method:"POST",
     headers:{
-      "PayPal-Request-Id":"nexauren-pro-plan-"+crypto.randomUUID(),
+      "PayPal-Request-Id":"nexauren-pro-plan-"+environment+"-"+crypto.randomUUID(),
       "Prefer":"return=representation"
     },
     body:JSON.stringify({
@@ -926,9 +951,11 @@ async function paypalEnsureProPlan(env){
       }
     })
   });
+
   planId=plan?.id;
   if(!planId)throw new Error("O PayPal não devolveu o ID do plano.");
   await billingConfigSet(env,PAYPAL_PLAN_KEY,planId);
+  await billingConfigSet(env,PAYPAL_ENV_KEY,environment);
   return planId;
 }
 async function billingRow(env,accountId){
