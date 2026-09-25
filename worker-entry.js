@@ -401,12 +401,12 @@ async function readTranslations(env,language,scope=null){
     const params=[lang];
     if(scope){sql+=" AND scope=?";params.push(scope);}
     sql+=" ORDER BY updated_at DESC LIMIT 5000";
-    const r=await env.DB.prepare(sql).bind(...params).all();
+    const r=await env.ACCOUNTS_DB.prepare(sql).bind(...params).all();
     return r.results||[];
   }catch{return [];}
 }
 async function i18nReady(env){
-  try{await env.DB.prepare("SELECT 1 FROM translations LIMIT 1").first();return true;}catch{return false;}
+  try{await env.ACCOUNTS_DB.prepare("SELECT 1 FROM translations LIMIT 1").first();return true;}catch{return false;}
 }
 async function translationKeyMap(env,language,scope){
   const rows=await readTranslations(env,language,scope),map=new Map();
@@ -441,7 +441,7 @@ async function translateUiManifest(env,step){
   const manifest=await response.json();
   const sources=Array.isArray(manifest.sources)?manifest.sources:[];
   let existing=[];
-  try{existing=await env.DB.prepare("SELECT translation_key,source_hash,translated_text,status FROM translations WHERE scope='ui' AND language='en'").all().then(r=>r.results||[])}catch{}
+  try{existing=await env.ACCOUNTS_DB.prepare("SELECT translation_key,source_hash,translated_text,status FROM translations WHERE scope='ui' AND language='en'").all().then(r=>r.results||[])}catch{}
   const existingMap=new Map(existing.map(x=>[x.translation_key,x]));
   const pending=[];
   for(const item of sources){
@@ -469,7 +469,7 @@ async function translateUiManifest(env,step){
     for(const item of batch){
       const tr=byKey.get(item.translation_key);if(!tr)throw new Error("Tradução em falta para "+item.translation_key);
       const ts=nowIso();
-      await env.DB.prepare("INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at")
+      await env.ACCOUNTS_DB.prepare("INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at")
         .bind(crypto.randomUUID(),"ui",item.entity_id||"",item.translation_key,"en",item.source_text,tr,item.source_hash,"translated","",ts,ts).run();
       out.translated++;
     }
@@ -489,7 +489,7 @@ async function translateToolManifest(env,step){
     items.push({scope:"tool",entity_id:String(t.id),translation_key:"tool."+t.id+".name",source_text:String(t.name||"").trim()});
     items.push({scope:"tool",entity_id:String(t.id),translation_key:"tool."+t.id+".description",source_text:String(t.description||"").trim()});
   }
-  let existing=[];try{existing=(await env.DB.prepare("SELECT translation_key,source_hash,translated_text,status FROM translations WHERE language='en' AND scope IN ('tool','category')").all()).results||[]}catch{}
+  let existing=[];try{existing=(await env.ACCOUNTS_DB.prepare("SELECT translation_key,source_hash,translated_text,status FROM translations WHERE language='en' AND scope IN ('tool','category')").all()).results||[]}catch{}
   const existingMap=new Map(existing.map(x=>[x.translation_key,x]));
   const pending=[];
   for(const item of items){
@@ -518,7 +518,7 @@ async function translateToolManifest(env,step){
     for(const item of batch){
       const tr=byKey.get(item.translation_key);if(!tr)throw new Error("Tradução em falta para "+item.translation_key);
       const ts=nowIso();
-      await env.DB.prepare("INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at")
+      await env.ACCOUNTS_DB.prepare("INSERT INTO translations (id,scope,entity_id,translation_key,language,source_text,translated_text,source_hash,status,error_message,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope,entity_id,translation_key,language) DO UPDATE SET source_text=excluded.source_text,translated_text=excluded.translated_text,source_hash=excluded.source_hash,status='translated',error_message='',updated_at=excluded.updated_at")
         .bind(crypto.randomUUID(),item.scope,item.entity_id,item.translation_key,"en",item.source_text,tr,item.source_hash,"translated","",ts,ts).run();
       out.translated++;
     }
