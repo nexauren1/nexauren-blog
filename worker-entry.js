@@ -1337,7 +1337,7 @@ async function api(env,request,url,ctx){
 
   if(p==="/api/i18n"&&m==="GET"){
     const language=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
-    const rows=await readTranslations(env,language,"ui");
+    const rows=await readTranslations(env,language,null);
     const translations={};
     for(const row of rows){if(row.source_text&&row.translated_text)translations[row.source_text]=row.translated_text;}
     return json({ok:true,language,translations,updated_at:rows.reduce((m,r)=>r.updated_at>m?r.updated_at:m,"")});
