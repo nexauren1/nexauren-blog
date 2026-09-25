@@ -498,7 +498,7 @@ async function verifyImageKitFile(env,fileId,fileUrl){
     if(endpoint){
       const e=new URL(endpoint);
       if(u.origin!==e.origin)return false;
-    }else if(!/(^|\\.)ik\.imagekit\.io$/i.test(u.hostname)){
+    }else if(!/(^|\.)ik\.imagekit\.io$/i.test(u.hostname)){
       return false;
     }
     const response=await fetch(fileUrl,{method:"HEAD"});
@@ -636,9 +636,9 @@ async function robots(request){
 function seoHead(html,o){
   const set=(re,val)=>{html=html.replace(re,val);};
   html=html.replace(/<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*type=["']image\\/svg\\+xml["'][^>]*>/gi,"");
-  html=html.replace(/<link[^>]+href=["'][^"']*nexauren-story-favicon\\.svg(?:\\?[^"']*)?["'][^>]*>/gi,"");
-  if(!/<link[^>]+rel=["']icon["'][^>]+href=["'][^"']*favicon-nexauren\\.png/i.test(html)){
-    html=html.replace(/<\/head>/i,'<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-nexauren.png?v=20260925-brand">\\n</head>');
+  html=html.replace(/<link[^>]+href=["'][^"']*nexauren-story-favicon\.svg(?:\?[^"']*)?["'][^>]*>/gi,"");
+  if(!/<link[^>]+rel=["']icon["'][^>]+href=["'][^"']*favicon-nexauren\.png/i.test(html)){
+    html=html.replace(/<\/head>/i,'<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-nexauren.png?v=20260925-brand">\n</head>');
   }
   set(/<html lang="[^"]*">/i,'<html lang="'+esc(o.lang)+'">');
   set(/<title>[\s\S]*?<\/title>/i,"<title>"+esc(o.title)+"</title>");
