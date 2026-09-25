@@ -390,7 +390,7 @@ async function createPost(env,a,d,ctx){
   if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))statements.push(env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId));
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts));
-  try{await env.DB.batch(statements);}catch(e){console.error("post.create",e);return fail("Não foi possível guardar a publicação.","500","POST_CREATE_FAILED");}
+  try{await env.DB.batch(statements);}catch(e){console.error("post.create",e);return fail("Não foi possível guardar a publicação.",500,"POST_CREATE_FAILED");}
   await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:d.category_id||null,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}},201);
 }
 async function updatePost(env,a,id,d,ctx){
@@ -413,7 +413,7 @@ async function updatePost(env,a,id,d,ctx){
   if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))statements.push(env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId));
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
-  try{await env.DB.batch(statements);}catch(e){console.error("post.update",e);return fail("Não foi possível atualizar a publicação.","500","POST_UPDATE_FAILED");}
+  try{await env.DB.batch(statements);}catch(e){console.error("post.update",e);return fail("Não foi possível atualizar a publicação.",500,"POST_UPDATE_FAILED");}
   await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:d.category_id||null,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}});
 }
 
