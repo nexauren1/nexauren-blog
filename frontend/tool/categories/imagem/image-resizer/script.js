@@ -1,4 +1,4 @@
-import { getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260923";
+import { auth, onAuthStateChanged, getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260925-resize-auth";
 
 const $=s=>document.querySelector(s);
 const state={files:[],results:[],pro:false,limit:10,ratio:null};
@@ -22,4 +22,38 @@ async function run(){if(!state.files.length)return setStatus("Adicione pelo meno
 els.run.onclick=run;
 els.download.onclick=()=>state.results.forEach((r,i)=>NexaurenImage.download(r.blob,`nexauren-${String(i+1).padStart(2,"0")}.${ext(r.blob.type)}`));
 els.clear.onclick=()=>{state.files=[];state.results=[];els.file.value="";els.queue.innerHTML="";els.count.textContent="0";els.done.textContent="0";els.before.textContent="—";els.after.textContent="—";els.saved.textContent="—";els.download.disabled=true;setStatus("Adicione imagens para começar.")};
-loadPlan().catch(e=>{els.plan.textContent="Conta não confirmada";setStatus(e.message||"Não foi possível confirmar o seu plano.",true);els.run.disabled=true});
+let authReady=false;
+onAuthStateChanged(auth,async user=>{
+  if(authReady&&!user){
+    state.pro=false;
+    state.limit=10;
+    els.plan.textContent="Sessão terminada";
+    els.limit.textContent="Entre para continuar";
+    els.run.disabled=true;
+    setStatus("A sessão terminou. Entre novamente para continuar.",true);
+    authReady=false;
+    return;
+  }
+  authReady=true;
+  if(!user){
+    state.pro=false;
+    state.limit=10;
+    els.plan.textContent="Entre para continuar";
+    els.limit.textContent="—";
+    els.run.disabled=true;
+    setStatus("Entre na sua conta para usar o Image Resize Studio.");
+    return;
+  }
+  try{
+    await loadPlan();
+    els.run.disabled=state.files.length===0;
+    setStatus(state.pro?"Pro ativo. Pode redimensionar até 50 imagens por lote.":"Pronto. Pode redimensionar até 10 imagens por lote.");
+  }catch(e){
+    state.pro=false;
+    state.limit=10;
+    els.plan.textContent="Conta não confirmada";
+    els.limit.textContent="—";
+    els.run.disabled=true;
+    setStatus(e.message||"Não foi possível confirmar o seu plano.",true);
+  }
+});
