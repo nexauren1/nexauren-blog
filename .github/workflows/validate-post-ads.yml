@@ -27,7 +27,7 @@ jobs:
           const app=fs.readFileSync('frontend/assets/app.js','utf8');
           const ads=fs.readFileSync('frontend/assets/ads.js','utf8');
           const html=fs.readFileSync('frontend/index.html','utf8');
-          if(!app.includes('NexaurenAds?.apply')) throw new Error('The post renderer is missing the automatic ads hook');
+          if(!app.includes('NexaurenAds?.apply')) throw new Error('The post renderer is missing the post ad loader hook');
           if(html.includes('/assets/ads.js')) throw new Error('ads.js must not load globally; it is injected only for posts');
           if(!ads.includes('11183778')) throw new Error('The Monetag In-Page Push zone 11183778 is missing');
           if(ads.includes('11177602') || ads.includes('vignette.min.js')) throw new Error('Vignette Banner must not be present');
