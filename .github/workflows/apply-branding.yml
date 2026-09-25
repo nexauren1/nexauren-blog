@@ -34,6 +34,9 @@ jobs:
                   continue
               text = path.read_text(encoding="utf-8")
               text = legacy_href.sub("", text)
+              text = re.sub(r'/nexauren-story-favicon\\.svg(?:\\?[^"\\']*)?', official, text, flags=re.I)
+              text = re.sub(r'/nexauren-story-favicon\\.png(?:\\?[^"\\']*)?', official, text, flags=re.I)
+              text = re.sub(r'/nexauren-story-apple-touch-icon[^"\\']*', '', text, flags=re.I)
 
               icon = f'<link rel="icon" type="image/png" href="{official}">'
               if legacy.search(text):
