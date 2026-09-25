@@ -19,7 +19,7 @@ jobs:
       - name: Validate SEO implementation
         run: |
           set -euo pipefail
-          test -f frontend/favicon.svg
+          test -s frontend/assets/favicon-nexauren.png
           test -f frontend/manifest.json
           grep -q 'rel="canonical"' frontend/index.html
           grep -q 'property="og:title"' frontend/index.html
