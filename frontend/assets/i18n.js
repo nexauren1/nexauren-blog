@@ -379,7 +379,7 @@ function translateAttrs(missing){
 }
 function translateHead(missing){
   if(lang!=="en")return;
-  for(const sel of ["title","meta[name="description"]","meta[property="og:title"]","meta[property="og:description"]","meta[name="twitter:title"]","meta[name="twitter:description"]","meta[property="og:image:alt"]","meta[name="twitter:image:alt"]"]){
+  for(const sel of ["title","meta[name=\"description\"]","meta[property=\"og:title\"]","meta[property=\"og:description\"]","meta[name=\"twitter:title\"]","meta[name=\"twitter:description\"]","meta[property=\"og:image:alt\"]","meta[name=\"twitter:image:alt\"]"]){
     document.querySelectorAll(sel).forEach(el=>{
       const isMeta=el.tagName==="META";
       const attr=isMeta?"content":"textContent";
