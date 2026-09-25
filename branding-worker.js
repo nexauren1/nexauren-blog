@@ -1,4 +1,6 @@
-import app from "./worker-entry.js";
+import app, { NexaurenTranslationWorkflow } from "./worker-entry.js";
+
+export { NexaurenTranslationWorkflow };
 
 const ICON = '<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">';
 const OG = '<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260924-1">';
