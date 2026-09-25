@@ -110,10 +110,10 @@ jobs:
                   continue
 
               text = path.read_text(encoding="utf-8")
-text = remove_blocks(text)
-              # Repair literal "\\n" sequences left by older runs only inside generated ad markup.
-              text = re.sub(r'(?:(?<=</style>)|(?<=</head>)|(?<=<body[^>]*>)|(?<=NEXAUREN-AUTO-ADS:START -->)|(?<=NEXAUREN-AUTO-ADS:END -->)|(?<=NEXAUREN-AUTO-ADS:START-BOTTOM -->)|(?<=NEXAUREN-AUTO-ADS:END-BOTTOM -->))\\\\n', "\\n", text)
-              text = re.sub(r'\\\\n(?=</head>|<!-- NEXAUREN-AUTO-ADS|<div class="nx-auto-ad|<script>window\\.NexaurenAds|</body>)', "\\n", text)
+              text = remove_blocks(text)
+              # Repair literal backslash-n sequences left by older runs.
+              # The old workflow accidentally wrote \\n into the HTML instead of real line breaks.
+              text = text.replace("\\n", "\n")
               text = add_style(text)
 
               # One shared loader per tool page, loaded before any ad initializer.
