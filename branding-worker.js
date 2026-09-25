@@ -1,6 +1,6 @@
 import app from "./worker-entry.js";
 
-const ICON = '<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260924-1">';
+const ICON = '<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">';
 const OG = '<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260924-1">';
 const OG_SECURE = '<meta property="og:image:secure_url" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260924-1">';
 const OG_WIDTH = '<meta property="og:image:width" content="1536">';
