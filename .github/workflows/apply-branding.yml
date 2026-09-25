@@ -5,32 +5,44 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   branding:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Validate Nexauren assets
+      - name: Apply official PNG branding to tool pages
         run: |
-          set -e
-          test -s frontend/assets/nexauren-brand.png
-          test -s frontend/assets/favicon-nexauren.png
-          test -s frontend/assets/social-preview-nexauren.png
-          echo "Nexauren branding assets are present."
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
 
-      - name: Protect excluded paths
-        run: |
-          set -e
-          changed="$(git diff --name-only HEAD^ HEAD || true)"
-          if printf '%s
-' "$changed" | grep -E '(^|/)(blog|articles)(/|$)'; then
-            echo "ERROR: /blog/ and /articles/ are excluded from branding changes."
-            exit 1
-          fi
-          echo "Excluded paths verified."
+          root = Path("frontend")
+          official = "/assets/favicon-nexauren.png?v=20260925-brand"
+          legacy = re.compile(r'(<link[^>]+rel=["\'](?:icon|shortcut icon)["\'][^>]*>)', re.I)
+          legacy_href = re.compile(r'(<link[^>]+href=["\'][^"\']*(?:nexauren-story-favicon|nexauren-story-apple-touch-icon|nexauren-story-favicon\.png)[^"\']*["\'][^>]*>)', re.I)
 
+          for path in root.rglob("*.html"):
+              rel = path.as_posix()
+              if rel.startswith("frontend/blog/") or rel.startswith("frontend/articles/"):
+                  continue
+              text = path.read_text(encoding="utf-8")
+              text = legacy_href.sub("", text)
+
+              icon = f'<link rel="icon" type="image/png" href="{official}">'
+              if legacy.search(text):
+                  text = legacy.sub(icon, text, count=1)
+              elif "</head>" in text.lower():
+                  text = re.sub(r"</head>", icon + "
+</head>", text, count=1, flags=re.I)
+              path.write_text(text, encoding="utf-8")
+          PY
 
       - name: Enforce official PNG favicon
         run: |
@@ -44,4 +56,21 @@ jobs:
             echo "ERROR: legacy SVG favicon reference found outside protected content."
             exit 1
           fi
+          if grep -RIl --exclude-dir=blog --exclude-dir=articles 'nexauren-story-favicon.png\|nexauren-story-apple-touch-icon' frontend | grep .; then
+            echo "ERROR: legacy favicon PNG reference found outside protected content."
+            exit 1
+          fi
           echo "Official PNG favicon enforced."
+
+      - name: Commit branding changes
+        run: |
+          set -e
+          if git diff --quiet; then
+            echo "No branding changes needed."
+            exit 0
+          fi
+          git config user.name "nexauren-branding[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend
+          git commit -m "chore: apply official Nexauren PNG branding [skip ci]"
+          git push
