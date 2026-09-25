@@ -348,6 +348,16 @@ function translateDynamicPatterns(value){
  if(m)return m[1]+" of "+m[2]+" tool"+(m[2]==="1"?"":"s");
  m=s.match(/^(\d+) ferramenta\(s\)$/i);
  if(m)return m[1]+" tool(s)";
+ m=s.match(/^Próxima cobrança:\s*(.+)$/i);
+ if(m)return "Next charge: "+m[1];
+ m=s.match(/^Falta:\s*(.+)$/i);
+ if(m)return "Missing: "+m[1];
+ m=s.match(/^A palavra-passe precisa de (.+)\.$/i);
+ if(m)return "The password needs "+m[1]+".";
+ m=s.match(/^Erro ao carregar assinatura:\s*(.*)$/i);
+ if(m)return "Error loading subscription: "+m[1];
+ m=s.match(/^Sincronização:\s*(.*)$/i);
+ if(m)return "Synchronization: "+m[1];
  return null;
 }
 function translateLinks(){
