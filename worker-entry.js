@@ -284,6 +284,16 @@ async function dbCheck(env){
 async function dbReady(env){return (await dbCheck(env)).ready;}
 
 
+async function postsAdmin(env,url){
+  const w=["1=1"],b=[],status=url.searchParams.get("status"),type=url.searchParams.get("type"),q=url.searchParams.get("search");
+  if(status){w.push("p.status=?");b.push(status)}
+  if(type){w.push("p.type=?");b.push(type)}
+  if(q){w.push("(p.title LIKE ? OR p.slug LIKE ? OR p.excerpt LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
+  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,m.url cover_url
+    FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
+    WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
+  return json({ok:true,posts:(r.results||[]).map(x=>({...x,social_image:x.cover_url||DEFAULT_SOCIAL_IMAGE}))});
+}
 async function publicPosts(env,url){
   const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
   const requestedLimit=Number.parseInt(url.searchParams.get("limit")||"12",10);
