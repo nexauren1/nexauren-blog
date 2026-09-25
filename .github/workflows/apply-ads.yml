@@ -16,60 +16,152 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Apply experimental ads target
+      - name: Apply ads automatically to tools
+        run: |
+          set -e
+          test -s frontend/assets/ads.js
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path("frontend/tool/categories")
+          excluded = {"frontend/blog", "frontend/articles"}
+
+          style = '''<style id="nexauren-auto-ads-style">
+          .nx-auto-ad{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+          .nx-auto-ad.top{min-height:60px;margin:0 auto 22px;padding:10px 6px}
+          .nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
+          .nx-auto-ad .nx-auto-ad-inner{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+          .nx-auto-ad iframe{max-width:100%;border:0}
+          .nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
+          .nx-auto-ad.top,.nx-auto-ad.bottom{flex-direction:column}
+          @media(max-width:520px){
+            .nx-auto-ad.top{margin-bottom:18px;padding:8px 2px}
+            .nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}
+          }
+          </style>'''
+
+          top = '''<!-- NEXAUREN-AUTO-ADS:START -->
+          <div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
+            <div class="nx-auto-ad-label">PUBLICIDADE</div>
+            <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
+          </div>
+          <script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+          <!-- NEXAUREN-AUTO-ADS:END -->'''
+
+          bottom = '''<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+          <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
+            <div class="nx-auto-ad-label">PUBLICIDADE</div>
+            <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
+          </div>
+          <script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+          <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->'''
+
+          loader = '<script src="/assets/ads.js?v=20260925-auto1"></script>'
+
+          for path in sorted(root.rglob("*.html")):
+              rel = path.relative_to(root)
+              if len(rel.parts) < 3:
+                  continue
+              if any(str(path).startswith(prefix) for prefix in excluded):
+                  continue
+
+              text = path.read_text(encoding="utf-8")
+
+              if "NEXAUREN-AUTO-ADS:START" in text and "NEXAUREN-AUTO-ADS:START-BOTTOM" in text:
+                  continue
+
+              # Remove the previous manual Image Forge ad blocks before standardizing it.
+              text = re.sub(
+                  r'<section class="forge-ad-area[^"]*"[^>]*>.*?</section>\\s*<script[^>]*ads\\.js[^>]*>.*?</script>',
+                  '',
+                  text,
+                  flags=re.S
+              )
+              text = re.sub(
+                  r'<section class="forge-ad-area[^"]*"[^>]*>.*?</section>',
+                  '',
+                  text,
+                  flags=re.S
+              )
+
+              # Remove any old standalone auto loader left by earlier experiments.
+              if 'id="nexauren-ad-test"' in text or 'id="nexauren-ad-top"' in text:
+                  text = re.sub(r'<script src="/assets/ads\\.js[^>]*></script>', '', text)
+
+              if '</head>' in text and 'id="nexauren-auto-ads-style"' not in text:
+                  text = text.replace('</head>', style + '\\n</head>', 1)
+
+              if '/assets/ads.js' not in text:
+                  if '</body>' in text:
+                      text = text.replace('</body>', loader + '\\n</body>', 1)
+                  elif '<body' in text:
+                      text = text + '\\n' + loader
+              elif 'ads.js?v=20260925-auto1' not in text:
+                  text = text.replace('</head>', loader + '\\n</head>', 1)
+
+              body_open = re.search(r'<body[^>]*>', text, flags=re.I)
+              if body_open:
+                  insert_at = body_open.end()
+                  text = text[:insert_at] + '\\n' + top + text[insert_at:]
+
+              footer = re.search(r'<footer\\b', text, flags=re.I)
+              if footer:
+                  text = text[:footer.start()] + bottom + '\\n' + text[footer.start():]
+              elif '</body>' in text:
+                  text = text.replace('</body>', bottom + '\\n</body>', 1)
+              else:
+                  text += '\\n' + bottom
+
+              path.write_text(text, encoding="utf-8")
+              print(f"Ads applied: {path}")
+
+          PY
+
+      - name: Verify automatic ads coverage
         run: |
           set -e
           test -s frontend/assets/ads.js
           python3 - <<'PY'
           from pathlib import Path
-          path = Path("frontend/tool/categories/imagem/image-converter/index.html")
-          text = path.read_text(encoding="utf-8")
-          if "/assets/ads.js" in text:
-              print("Ads already installed on Image Forge.")
-              raise SystemExit(0)
-          style = '''<style id="nexauren-ads-style">
-          .nx-ad-slot{width:100%;display:flex;justify-content:center;align-items:center;overflow:hidden;box-sizing:border-box}
-          .nx-ad-banner{min-height:60px;margin:14px auto 18px;padding:0}
-          .nx-ad-banner iframe{max-width:100%;border:0}
-          .nx-ad-responsive{min-height:90px;margin:18px auto 12px;padding:4px}
-          .nx-ad-inner{width:100%;display:flex;justify-content:center;align-items:center}
-          @media(max-width:520px){.nx-ad-banner,.nx-ad-responsive{margin-left:0;margin-right:0}.nx-ad-banner{min-height:60px}.nx-ad-responsive{min-height:90px}}
-          </style>'''
-          banner = '<div class="nx-ad-slot nx-ad-banner" data-nx-ad="banner" aria-label="Publicidade"></div>'
-          responsive = '<div class="nx-ad-slot nx-ad-responsive" data-nx-ad="responsive" aria-label="Publicidade"></div>'
-          loader = '<script src="/assets/ads.js?v=20260925-ads1"></script>'
-          text = text.replace("</head>", style + "\n</head>", 1)
-          anchor = '<section class="forge-workspace">'
-          inject = banner + "\n" + loader + "\n<script>window.NexaurenAds?.loadBanner(document.querySelector('[data-nx-ad="banner"]'));</script>\n" + anchor
-          if anchor not in text:
-              raise SystemExit("Image Forge workspace anchor not found.")
-          text = text.replace(anchor, inject, 1)
-          anchor2 = '<div id="results" class="forge-card forge-results">'
-          inject2 = anchor2 + "\n" + responsive + "\n<script>window.NexaurenAds?.loadResponsive(document.querySelector('[data-nx-ad="responsive"]'));</script>\n"
-          if anchor2 not in text:
-              raise SystemExit("Image Forge results anchor not found.")
-          text = text.replace(anchor2, inject2, 1)
-          path.write_text(text, encoding="utf-8")
+
+          root = Path("frontend/tool/categories")
+          tools = []
+          for path in sorted(root.rglob("*.html")):
+              if len(path.relative_to(root).parts) < 3:
+                  continue
+              text = path.read_text(encoding="utf-8")
+              if "NEXAUREN-AUTO-ADS:START" in text and "NEXAUREN-AUTO-ADS:START-BOTTOM" in text:
+                  tools.append(path)
+
+          if not tools:
+              raise SystemExit("No tool pages contain the automatic ads markers.")
+
+          for path in tools:
+              text = path.read_text(encoding="utf-8")
+              if text.count("data-nx-auto-ad=\"top\"") != 1:
+                  raise SystemExit(f"Invalid top ad count: {path}")
+              if text.count("data-nx-auto-ad=\"bottom\"") != 1:
+                  raise SystemExit(f"Invalid bottom ad count: {path}")
+              if text.count("ads.js?v=20260925-auto1") != 1:
+                  raise SystemExit(f"Invalid ads loader count: {path}")
+
+          print(f"Verified {len(tools)} tool page(s). Blog and articles are outside the scan root.")
           PY
 
-      - name: Verify experimental ads
+      - name: Commit automatic ads updates
         run: |
           set -e
-          test -s frontend/assets/ads.js
-          grep -q '/assets/ads.js' frontend/tool/categories/imagem/image-converter/index.html
-          grep -q 'data-nx-ad="banner"' frontend/tool/categories/imagem/image-converter/index.html
-          grep -q 'data-nx-ad="responsive"' frontend/tool/categories/imagem/image-converter/index.html
-          echo "Experimental ads are isolated to Image Forge."
+          git config user.name "nexauren-ads[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit
-        run: |
-          set -e
-          if git diff --quiet; then
+          git add frontend/tool/categories
+
+          if git diff --cached --quiet; then
             echo "No ads changes needed."
             exit 0
           fi
-          git config user.name "nexauren-ads[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/assets/ads.js frontend/tool/categories/imagem/image-converter/index.html
-          git commit -m "chore: add experimental ads loader to Image Forge [skip ci]"
+
+          git commit -m "chore: apply Nexauren ads automatically to tools [skip ci]"
           git push
