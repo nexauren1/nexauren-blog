@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260925-resize-auth4";
+import { auth, onAuthStateChanged, getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260925-resize-auth5";
 
 const $=s=>document.querySelector(s);
 const state={files:[],results:[],pro:false,limit:10,ratio:null,authReady:false,planReady:false};
@@ -10,31 +10,30 @@ function refreshButtons(){els.run.disabled=!canRun();els.download.disabled=state
 function revoke(url){try{URL.revokeObjectURL(url)}catch{}}
 async function loadImage(file){
   if(!file)throw new Error("Selecione uma imagem.");
-  const objectUrl=URL.createObjectURL(file);
-  try{
-    const img=new Image();
-    img.decoding="async";
-    img.src=objectUrl;
-    if(typeof img.decode==="function"){
-      try{await img.decode()}catch{}
-    }
-    if(img.naturalWidth>0&&img.naturalHeight>0)return img;
-  }catch{}
-  finally{revoke(objectUrl)}
-  if("createImageBitmap" in window){
+  // Prefer ImageBitmap with imageOrientation handling for phone JPEGs.
+  if(typeof createImageBitmap==="function"){
+    try{return await createImageBitmap(file,{imageOrientation:"from-image",premultiplyAlpha:"default",colorSpaceConversion:"default"})}catch{}
     try{return await createImageBitmap(file)}catch{}
   }
+  // Use a fresh blob URL and wait for the actual load event. This avoids
+  // relying on decode(), which is inconsistent for some mobile JPEGs.
   return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onerror=()=>reject(new Error("O navegador não conseguiu abrir este ficheiro de imagem. Tente JPG, PNG ou WebP."));
-    reader.onload=()=>{
-      const img=new Image();
-      img.decoding="async";
-      img.onload=()=>resolve(img);
-      img.onerror=()=>reject(new Error("O formato desta imagem não pôde ser descodificado pelo navegador. Tente JPG, PNG ou WebP."));
-      img.src=reader.result;
-    };
-    try{reader.readAsDataURL(file)}catch{reject(new Error("Não foi possível carregar esta imagem."))}
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{revoke(url);resolve(img)};
+    img.onerror=()=>{revoke(url);fallbackDataUrl()};
+    img.src=url;
+    function fallbackDataUrl(){
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const fallback=new Image();
+        fallback.onload=()=>resolve(fallback);
+        fallback.onerror=()=>reject(new Error("O navegador não conseguiu descodificar esta imagem JPEG. O ficheiro pode estar corrompido ou usar uma codificação JPEG não suportada pelo dispositivo."));
+        fallback.src=reader.result;
+      };
+      reader.onerror=()=>reject(new Error("Não foi possível ler o ficheiro de imagem no dispositivo."));
+      try{reader.readAsDataURL(file)}catch{reject(new Error("Não foi possível carregar esta imagem."))}
+    }
   });
 }
 function imageWidth(image){return image.width||image.naturalWidth||0}
