@@ -20,11 +20,13 @@ import {auth,onAuthStateChanged,verifyToolAccess,upgradeUrl} from "/tool/fronten
 
   function setGate(title,body,action,href){
     gate.hidden=false;app.hidden=true;
+    gate.style.display="flex";app.style.display="none";
     gateTitle.textContent=title;gateBody.textContent=body;gateLink.textContent=action;gateLink.href=href;
   }
 
   function openApp(){
-    gate.hidden=true;app.hidden=false;update();
+    gate.hidden=true;app.hidden=false;
+    gate.style.display="none";app.style.display="block";update();
     setTimeout(()=>text.focus(),0);
   }
 
