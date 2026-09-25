@@ -10,16 +10,28 @@ function refreshButtons(){els.run.disabled=!canRun();els.download.disabled=state
 function revoke(url){try{URL.revokeObjectURL(url)}catch{}}
 async function loadImage(file){
   if(!file)throw new Error("Selecione uma imagem.");
+  const objectUrl=URL.createObjectURL(file);
+  try{
+    const img=new Image();
+    img.decoding="async";
+    img.src=objectUrl;
+    if(typeof img.decode==="function"){
+      try{await img.decode()}catch{}
+    }
+    if(img.naturalWidth>0&&img.naturalHeight>0)return img;
+  }catch{}
+  finally{revoke(objectUrl)}
   if("createImageBitmap" in window){
     try{return await createImageBitmap(file)}catch{}
   }
   return new Promise((resolve,reject)=>{
     const reader=new FileReader();
-    reader.onerror=()=>reject(new Error("O navegador não conseguiu abrir este ficheiro de imagem."));
+    reader.onerror=()=>reject(new Error("O navegador não conseguiu abrir este ficheiro de imagem. Tente JPG, PNG ou WebP."));
     reader.onload=()=>{
       const img=new Image();
+      img.decoding="async";
       img.onload=()=>resolve(img);
-      img.onerror=()=>reject(new Error("O formato desta imagem não pôde ser descodificado pelo navegador."));
+      img.onerror=()=>reject(new Error("O formato desta imagem não pôde ser descodificado pelo navegador. Tente JPG, PNG ou WebP."));
       img.src=reader.result;
     };
     try{reader.readAsDataURL(file)}catch{reject(new Error("Não foi possível carregar esta imagem."))}
@@ -30,12 +42,12 @@ function imageHeight(image){return image.height||image.naturalHeight||0}
 function canvas(width,height){const c=document.createElement("canvas");c.width=Math.max(1,Math.round(width));c.height=Math.max(1,Math.round(height));return c}
 function toBlob(c,type,quality){return new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(new Error("Falha ao exportar a imagem neste formato.")),type,quality))}
 function downloadBlob(blob,name){if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.rel="noopener";a.style.display="none";document.body.appendChild(a);try{a.click()}finally{a.remove();setTimeout(()=>revoke(url),1500)}}
-function renderQueue(){els.count.textContent=String(state.files.length);els.queue.replaceChildren();state.files.forEach((file,index)=>{const row=document.createElement("div");row.className="item";const img=document.createElement("img");img.className="thumb";img.alt="";img.src=URL.createObjectURL(file);img.onload=()=>revoke(img.src);const info=document.createElement("div");const name=document.createElement("b");name.textContent=file.name;const br=document.createElement("br");const small=document.createElement("small");small.textContent=bytes(file.size);info.append(name,br,small);const btn=document.createElement("button");btn.type="button";btn.className="preset remove";btn.textContent="Remover";btn.addEventListener("click",()=>{state.files.splice(index,1);renderQueue();refreshButtons();if(!state.files.length)setStatus("Adicione imagens para começar.")});row.append(img,info,btn);els.queue.append(row)})}
+function renderQueue(){els.count.textContent=String(state.files.length);els.queue.replaceChildren();state.files.forEach((file,index)=>{const row=document.createElement("div");row.className="item";const img=document.createElement("img");img.className="thumb";img.alt="";const thumbUrl=URL.createObjectURL(file);img.src=thumbUrl;img.onload=()=>revoke(thumbUrl);img.onerror=()=>revoke(thumbUrl);const info=document.createElement("div");const name=document.createElement("b");name.textContent=file.name;const br=document.createElement("br");const small=document.createElement("small");small.textContent=bytes(file.size);info.append(name,br,small);const btn=document.createElement("button");btn.type="button";btn.className="preset remove";btn.textContent="Remover";btn.addEventListener("click",()=>{state.files.splice(index,1);renderQueue();refreshButtons();if(!state.files.length)setStatus("Adicione imagens para começar.")});row.append(img,info,btn);els.queue.append(row)})}
 function setPlanUI(){els.plan.textContent=state.pro?"NEXAUREN PRO · 50/lote":"NEXAUREN FREE · 10/lote";els.limit.textContent=String(state.limit)}
 async function loadPlan(){const [plan,access]=await Promise.all([getPlanState({force:true}),verifyToolAccess("image-resizer")]);if(!plan?.authenticated)throw new Error("Entre na sua conta para continuar.");if(plan.pro===null||String(plan.status||"").toUpperCase()==="UNKNOWN")throw new Error("Não foi possível confirmar o seu plano.");if(plan.pro===true){if(String(plan.plan||"").toLowerCase()!=="pro"||String(plan.status||"").toUpperCase()!=="ACTIVE"||access?.unlocked!==true||access?.error)throw new Error("Não foi possível confirmar os recursos Pro.");state.pro=true;state.limit=50}else{state.pro=false;state.limit=10}state.planReady=true;setPlanUI();refreshButtons()}
-async function addFiles(list){const incoming=[...list].filter(file=>file&&file.type&&file.type.startsWith("image/"));if(!incoming.length){setStatus("Selecione ficheiros de imagem válidos.",true);return}const maxSize=state.pro?50:20,room=Math.max(0,state.limit-state.files.length);if(!room){setStatus(`O seu plano permite até ${state.limit} imagens por lote.`,true);return}const accepted=incoming.slice(0,room).filter(file=>file.size<=maxSize*1024*1024);const sizeRejected=incoming.filter(file=>file.size>maxSize*1024*1024).length;const countRejected=Math.max(0,incoming.length-Math.min(incoming.length,room));state.files.push(...accepted);renderQueue();refreshButtons();if(sizeRejected||countRejected){const parts=[];if(countRejected)parts.push(`${countRejected} ultrapassaram o limite do lote`);if(sizeRejected)parts.push(`${sizeRejected} ultrapassaram ${maxSize} MB`);setStatus(parts.join(" · ")+".",true)}else setStatus(`${state.files.length} imagem(ns) na fila.`)}
+async function addFiles(list){const incoming=[...list].filter(file=>{if(!file)return false;if(file.type&&file.type.startsWith("image/"))return true;return /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif|tiff?)$/i.test(file.name||"")});if(!incoming.length){setStatus("Selecione ficheiros de imagem válidos.",true);return}const maxSize=state.pro?50:20,room=Math.max(0,state.limit-state.files.length);if(!room){setStatus(`O seu plano permite até ${state.limit} imagens por lote.`,true);return}const accepted=incoming.slice(0,room).filter(file=>file.size<=maxSize*1024*1024);const sizeRejected=incoming.filter(file=>file.size>maxSize*1024*1024).length;const countRejected=Math.max(0,incoming.length-Math.min(incoming.length,room));state.files.push(...accepted);renderQueue();refreshButtons();if(sizeRejected||countRejected){const parts=[];if(countRejected)parts.push(`${countRejected} ultrapassaram o limite do lote`);if(sizeRejected)parts.push(`${sizeRejected} ultrapassaram ${maxSize} MB`);setStatus(parts.join(" · ")+".",true)}else setStatus(`${state.files.length} imagem(ns) na fila.`)}
 els.drop.addEventListener("click",()=>els.file.click());
-els.file.addEventListener("change",async e=>{await addFiles(e.target.files);const first=state.files[0];if(first){try{const image=await loadImage(first);state.ratio=imageWidth(image)/imageHeight(image);els.w.value=imageWidth(image);els.h.value=imageHeight(image);image.close?.()}catch{}}e.target.value=""});
+els.file.addEventListener("change",async e=>{await addFiles(e.target.files);const first=state.files[0];if(first){try{const image=await loadImage(first);state.ratio=imageWidth(image)/imageHeight(image);els.w.value=imageWidth(image);els.h.value=imageHeight(image);image.close?.()}catch(error){setStatus(error?.message||"Não foi possível ler esta imagem.",true)}}e.target.value=""});
 ["dragenter","dragover"].forEach(type=>els.drop.addEventListener(type,e=>{e.preventDefault();els.drop.classList.add("drag")}));["dragleave","drop"].forEach(type=>els.drop.addEventListener(type,e=>{e.preventDefault();els.drop.classList.remove("drag")}));els.drop.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
 els.quality.addEventListener("input",()=>els.qv.textContent=`${els.quality.value}%`);els.fit.addEventListener("change",()=>els.mode.textContent=els.fit.value==="cover"?"Preencher":els.fit.value==="stretch"?"Esticar":"Proporção");els.w.addEventListener("input",()=>{if(els.lock.checked&&state.ratio&&Number(els.w.value)>0)els.h.value=Math.max(1,Math.round(Number(els.w.value)/state.ratio))});els.h.addEventListener("input",()=>{if(els.lock.checked&&state.ratio&&Number(els.h.value)>0)els.w.value=Math.max(1,Math.round(Number(els.h.value)*state.ratio))});
 document.querySelectorAll(".preset").forEach(button=>{if(!button.dataset.w)return;button.addEventListener("click",e=>{e.preventDefault();els.w.value=button.dataset.w;els.h.value=button.dataset.h;els.lock.checked=false})});
