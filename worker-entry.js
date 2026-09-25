@@ -418,26 +418,19 @@ async function updatePost(env,a,id,d,ctx){
 }
 
 async function verifyImageKitFile(env,fileId,fileUrl){
-  if(!env.IMAGEKIT_PRIVATE_KEY||!fileId||!fileUrl)return false;
+  if(!fileId||!fileUrl)return false;
   try{
-    const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");
-    const response=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(fileId),{
-      method:"GET",
-      headers:{Authorization:authHeader,Accept:"application/json"}
-    });
-    if(!response.ok)return false;
-    const remote=await response.json();
-    if(String(remote?.fileId||"")!==String(fileId))return false;
-    if(String(remote?.fileType||"").toLowerCase()!=="image")return false;
-    const normalizeUrl=value=>{
-      try{
-        const u=new URL(value);
-        return u.origin+u.pathname;
-      }catch{
-        return String(value||"").split("?")[0];
-      }
-    };
-    return normalizeUrl(remote?.url)===normalizeUrl(fileUrl);
+    const u=new URL(fileUrl);
+    if(u.protocol!=="https:")return false;
+    const endpoint=String(env.IMAGEKIT_URL_ENDPOINT||"").trim();
+    if(endpoint){
+      const e=new URL(endpoint);
+      if(u.origin!==e.origin)return false;
+    }else if(!/(^|\\.)ik\.imagekit\.io$/i.test(u.hostname)){
+      return false;
+    }
+    const response=await fetch(fileUrl,{method:"HEAD"});
+    return response.ok;
   }catch{
     return false;
   }
