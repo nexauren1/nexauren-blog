@@ -71,10 +71,26 @@
   function updateSearch(){
     const q=norm(search?.value||"").trim();
     if(q)localStorage.setItem("nexauren-tool-search",String(search.value).slice(0,100));
-    renderCategories(categories.filter(c=>norm(label(c,"name")+" "+(label(c,"description")||"")).includes(q)));
-    renderResults(tools.filter(t=>norm([label(t,"name"),label(t,"description"),tags(t).join(" "),t.category].join(" ")).includes(q)));
-    renderCategories(categories.filter(c=>norm(label(c,"name")+" "+(label(c,"description")||"")).includes(q)));
-    renderResults(tools.filter(t=>norm([label(t,"name"),label(t,"description"),tags(t).join(" "),t.category].join(" ")).includes(q)));
+    else localStorage.removeItem("nexauren-tool-search");
+
+    if(!q){
+      renderCategories(categories);
+      renderResults([]);
+      return;
+    }
+
+    const matchedCategoryIds=new Set(
+      categories
+        .filter(c=>norm(label(c,"name")+" "+(label(c,"description")||"")).includes(q))
+        .map(c=>c.id)
+    );
+    for(const tool of tools){
+      const haystack=norm([label(tool,"name"),label(tool,"description"),tags(tool).join(" "),tool.category].join(" "));
+      if(haystack.includes(q))matchedCategoryIds.add(tool.category);
+    }
+
+    renderCategories(categories.filter(c=>matchedCategoryIds.has(c.id)));
+    renderResults([]);
   }
 
   async function handleToolClick(event){
