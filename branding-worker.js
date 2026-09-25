@@ -35,6 +35,8 @@ export default {
 
     let html = await response.text();
 
+    html = html.replace(/<link[^>]+href=["\'][^"\']*nexauren-story-favicon\.svg(?:\?[^"\']*)?["\'][^>]*>/gi, "");
+
     html = upsert(html, /<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*>/i, ICON);
     html = upsert(html, /<meta[^>]+property=["']og:image["'][^>]*>/i, OG);
     html = upsert(html, /<meta[^>]+property=["']og:image:secure_url["'][^>]*>/i, OG_SECURE);
