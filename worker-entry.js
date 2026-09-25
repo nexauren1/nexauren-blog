@@ -1,7 +1,7 @@
 import { jwtVerify, importX509 } from "jose";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
-const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/nexauren-story-social-preview.png?v=20260922-2";
+const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-png";
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
@@ -1263,7 +1263,7 @@ async function page(env,request,url){
   if(url.pathname==="/sitemap-posts.xml")return sitemapPosts(env);
   if(url.pathname==="/robots.txt")return robots(request);
   if(url.pathname==="/rss.xml")return rss(env,request);
-  if(url.pathname==="/social-preview.png"){const target=new URL("/assets/social-preview-nexauren.png",request.url);return env.ASSETS.fetch(new Request(target,request));} if(url.pathname==="/social-preview.svg"){const target=new URL("/nexauren-story-social-preview.svg",request.url);return env.ASSETS.fetch(new Request(target,request));}
+  if(url.pathname==="/social-preview.png"){const target=new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url);return env.ASSETS.fetch(new Request(target,request));}
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
   const adminPath=url.pathname.toLowerCase();
