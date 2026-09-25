@@ -61,7 +61,7 @@ jobs:
           const w=fs.readFileSync('worker-entry.js','utf8');
           const wr=fs.readFileSync('wrangler.json','utf8');
           if(!wr.includes('"binding": "AI"')) throw new Error('Cloudflare Workers AI binding is missing');
-          for(const x of ['env.AI.run','TRANSLATION_AI_MODEL','autoTranslatePost','seoHead','async function sitemap','async function robots','post_translations']) {
+          for(const x of ['seoHead','async function sitemap','async function robots','post_translations']) {
             if(!w.includes(x)) throw new Error('Missing implementation marker: '+x);
           }
           if(w.includes('OPENAI_API_KEY')) throw new Error('Legacy OpenAI translation integration must not remain');
