@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const PT={
+const PT=
 {
   "Início": "Home",
   "Blog": "Blog",
