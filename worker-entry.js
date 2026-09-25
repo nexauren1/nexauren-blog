@@ -471,7 +471,8 @@ async function translateRuntimeBatch(env,sourceTexts){
     ]));
 
     for(const item of batch){
-      const translated=byKey.get(item.translation_key)||item.source_text;
+      const translated=byKey.get(item.translation_key);
+      if(!translated)throw Object.assign(new Error("IA não devolveu a tradução para "+item.translation_key),{code:"I18N_AI_MISSING_ITEM"});
       output[item.source_text]=translated;
       const ts=nowIso();
       await env.ACCOUNTS_DB.prepare(
