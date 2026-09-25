@@ -100,8 +100,8 @@ jobs:
                   flags=re.S,
               )
               if '</head>' in text:
-                  return text.replace('</head>', style + '\\n</head>', 1)
-              return style + '\\n' + text
+                  return text.replace('</head>', style + '\n</head>', 1)
+              return style + '\n' + text
 
           for path in sorted(root.rglob("*.html")):
               rel = path.relative_to(root)
@@ -110,27 +110,30 @@ jobs:
                   continue
 
               text = path.read_text(encoding="utf-8")
-              text = remove_blocks(text)
+text = remove_blocks(text)
+              # Repair literal "\\n" sequences left by older runs only inside generated ad markup.
+              text = re.sub(r'(?:(?<=</style>)|(?<=</head>)|(?<=<body[^>]*>)|(?<=NEXAUREN-AUTO-ADS:START -->)|(?<=NEXAUREN-AUTO-ADS:END -->)|(?<=NEXAUREN-AUTO-ADS:START-BOTTOM -->)|(?<=NEXAUREN-AUTO-ADS:END-BOTTOM -->))\\\\n', "\\n", text)
+              text = re.sub(r'\\\\n(?=</head>|<!-- NEXAUREN-AUTO-ADS|<div class="nx-auto-ad|<script>window\\.NexaurenAds|</body>)', "\\n", text)
               text = add_style(text)
 
               # One shared loader per tool page, loaded before any ad initializer.
               if '</head>' in text:
-                  text = text.replace('</head>', loader + '\\n</head>', 1)
+                  text = text.replace('</head>', loader + '\n</head>', 1)
               else:
-                  text = loader + '\\n' + text
+                  text = loader + '\n' + text
 
               body_open = re.search(r'<body[^>]*>', text, flags=re.I)
               if not body_open:
                   raise SystemExit(f"Could not find <body> in {path}")
 
               insert_at = body_open.end()
-              text = text[:insert_at] + '\\n' + top + text[insert_at:]
+              text = text[:insert_at] + '\n' + top + text[insert_at:]
 
               footer = re.search(r'<footer\b', text, flags=re.I)
               if footer:
-                  text = text[:footer.start()] + bottom + '\\n' + text[footer.start():]
+                  text = text[:footer.start()] + bottom + '\n' + text[footer.start():]
               elif '</body>' in text:
-                  text = text.replace('</body>', bottom + '\\n</body>', 1)
+                  text = text.replace('</body>', bottom + '\n</body>', 1)
               else:
                   raise SystemExit(f"Could not find footer/body end in {path}")
 
