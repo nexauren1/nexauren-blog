@@ -1,9 +1,33 @@
 <!doctype html>
-<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Conversor de Timestamp · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
-<body><main class="time-app"><a class="back" href="/tool/">← Ferramentas</a><header><div class="eyebrow">NEXAUREN / TIME SIGNAL</div><div class="hero"><div><h1>Timestamp Converter</h1><p>Converta Unix timestamps para datas e horas legíveis, ou faça o caminho inverso.</p></div><span class="chip">UTC · LOCAL</span></div></header>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Conversor de Timestamp · Nexauren Tools</title><link rel="stylesheet" href="./style.css"><style id="nexauren-auto-ads-style">
+.nx-auto-ad{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+.nx-auto-ad.top{min-height:60px;margin:0 auto 22px;padding:10px 6px}
+.nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
+.nx-auto-ad .nx-auto-ad-inner{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nx-auto-ad iframe{max-width:100%;border:0}
+.nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
+.nx-auto-ad.top,.nx-auto-ad.bottom{flex-direction:column}
+@media(max-width:520px){
+  .nx-auto-ad.top{margin-bottom:18px;padding:8px 2px}
+  .nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}
+}
+</style>\n</head>
+<body>\n<!-- NEXAUREN-AUTO-ADS:START -->
+<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
+  <div class="nx-auto-ad-label">PUBLICIDADE</div>
+  <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
+</div>
+<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+<!-- NEXAUREN-AUTO-ADS:END --><main class="time-app"><a class="back" href="/tool/">← Ferramentas</a><header><div class="eyebrow">NEXAUREN / TIME SIGNAL</div><div class="hero"><div><h1>Timestamp Converter</h1><p>Converta Unix timestamps para datas e horas legíveis, ou faça o caminho inverso.</p></div><span class="chip">UTC · LOCAL</span></div></header>
 <section class="converter"><div class="mode-switch"><button id="tsToDate" class="active">TIMESTAMP → DATA</button><button id="dateToTs">DATA → TIMESTAMP</button></div>
 <div class="now-row"><span>Agora</span><strong id="nowTs">—</strong><button id="useNow">Usar agora</button></div>
 <div class="grid"><section class="card"><div class="head"><span>ENTRADA</span><span id="inputHint">milissegundos ou segundos</span></div><input id="input" inputmode="numeric" placeholder="Ex.: 1779610800000"><div id="dateInputs" class="date-inputs" hidden><input id="date" type="datetime-local"><select id="zone"><option value="local">Hora local</option><option value="utc">UTC</option></select></div><div class="actions"><button id="convert" class="primary">Converter</button><button id="sample" class="secondary">Exemplo</button><button id="clear" class="secondary">Limpar</button></div></section>
 <section class="card result-card"><div class="head"><span>RESULTADO</span><span id="status">Aguardando</span></div><div class="result-main" id="result">—</div><div class="details"><div><span>ISO 8601</span><strong id="iso">—</strong></div><div><span>UTC</span><strong id="utc">—</strong></div><div><span>Local</span><strong id="local">—</strong></div><div><span>Unix s</span><strong id="seconds">—</strong></div><div><span>Unix ms</span><strong id="millis">—</strong></div></div><button id="copy" class="copy">Copiar principal</button></section></div></section>
 <p id="message" class="message">Escolha a direção e converta.</p><p id="access" class="access" hidden></p><footer>NEXAUREN TOOLS · Time Signal · Processamento local</footer></main>
-<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".converter"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script></body></html>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".converter"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script><script src="/assets/ads.js?v=20260925-auto1"></script>\n<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
+  <div class="nx-auto-ad-label">PUBLICIDADE</div>
+  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
+</div>
+<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->\n</body></html>

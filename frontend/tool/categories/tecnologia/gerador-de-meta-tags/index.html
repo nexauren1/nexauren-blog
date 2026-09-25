@@ -1,6 +1,24 @@
 <!doctype html>
-<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gerador de Meta Tags · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
-<body><main class="meta-app"><a class="back" href="/tool/">← Ferramentas</a><header><div class="eyebrow">NEXAUREN / HEAD BUILDER</div><div class="head-row"><div><h1>Gerador de Meta Tags</h1><p>Monte metadados essenciais para páginas web e veja a prévia antes de copiar o HTML.</p></div><span class="status">HTML · LOCAL</span></div></header>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gerador de Meta Tags · Nexauren Tools</title><link rel="stylesheet" href="./style.css"><style id="nexauren-auto-ads-style">
+.nx-auto-ad{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+.nx-auto-ad.top{min-height:60px;margin:0 auto 22px;padding:10px 6px}
+.nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
+.nx-auto-ad .nx-auto-ad-inner{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nx-auto-ad iframe{max-width:100%;border:0}
+.nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
+.nx-auto-ad.top,.nx-auto-ad.bottom{flex-direction:column}
+@media(max-width:520px){
+  .nx-auto-ad.top{margin-bottom:18px;padding:8px 2px}
+  .nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}
+}
+</style>\n</head>
+<body>\n<!-- NEXAUREN-AUTO-ADS:START -->
+<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
+  <div class="nx-auto-ad-label">PUBLICIDADE</div>
+  <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
+</div>
+<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+<!-- NEXAUREN-AUTO-ADS:END --><main class="meta-app"><a class="back" href="/tool/">← Ferramentas</a><header><div class="eyebrow">NEXAUREN / HEAD BUILDER</div><div class="head-row"><div><h1>Gerador de Meta Tags</h1><p>Monte metadados essenciais para páginas web e veja a prévia antes de copiar o HTML.</p></div><span class="status">HTML · LOCAL</span></div></header>
 <div class="layout"><section class="form-card"><div class="section-title">01 · CONFIGURAÇÃO</div>
 <label>Título<input id="title" maxlength="70" placeholder="Nexauren Story — Ferramentas digitais"></label><div class="counter" id="titleCount">0/70</div>
 <label>Descrição<textarea id="description" maxlength="160" placeholder="Uma descrição clara da página para motores de pesquisa."></textarea></label><div class="counter" id="descCount">0/160</div>
@@ -11,4 +29,10 @@
 <div class="buttons"><button id="generate" class="primary">Gerar meta tags</button><button id="sample" class="secondary">Exemplo</button><button id="clear" class="secondary">Limpar</button></div></section>
 <section class="preview-card"><div class="section-title">02 · PRÉ-VISUALIZAÇÃO</div><div class="preview"><div class="search-label">RESULTADO DE PESQUISA</div><h2 id="previewTitle">Título da página</h2><p id="previewDesc">A descrição aparecerá aqui.</p><span id="previewUrl">exemplo.com</span></div><div class="code-head"><span>HTML GERADO</span><button id="copy">Copiar HTML</button></div><pre id="code"></pre></section></div>
 <p id="access" class="access" hidden></p><footer>NEXAUREN TOOLS · Head Builder · Geração local no navegador</footer></main>
-<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".layout"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("input,textarea,select,button").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script></body></html>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".layout"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("input,textarea,select,button").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script><script src="/assets/ads.js?v=20260925-auto1"></script>\n<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
+  <div class="nx-auto-ad-label">PUBLICIDADE</div>
+  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
+</div>
+<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->\n</body></html>

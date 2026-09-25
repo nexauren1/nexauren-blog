@@ -1,8 +1,32 @@
 <!doctype html>
-<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Formatador HTML · Nexauren Tools</title><link rel="stylesheet" href="./style.css"></head>
-<body><main class="html-app"><a class="back" href="/tool/">← Ferramentas</a><header><div class="brandline">NEXAUREN / MARKUP WORKSHOP</div><div class="hero"><div><h1>Formatador HTML</h1><p>Organize, compacte e valide HTML com uma saída limpa para copiar diretamente para o projeto.</p></div><span class="badge">DOM · LOCAL</span></div></header>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Formatador HTML · Nexauren Tools</title><link rel="stylesheet" href="./style.css"><style id="nexauren-auto-ads-style">
+.nx-auto-ad{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+.nx-auto-ad.top{min-height:60px;margin:0 auto 22px;padding:10px 6px}
+.nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
+.nx-auto-ad .nx-auto-ad-inner{width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nx-auto-ad iframe{max-width:100%;border:0}
+.nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
+.nx-auto-ad.top,.nx-auto-ad.bottom{flex-direction:column}
+@media(max-width:520px){
+  .nx-auto-ad.top{margin-bottom:18px;padding:8px 2px}
+  .nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}
+}
+</style>\n</head>
+<body>\n<!-- NEXAUREN-AUTO-ADS:START -->
+<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
+  <div class="nx-auto-ad-label">PUBLICIDADE</div>
+  <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
+</div>
+<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+<!-- NEXAUREN-AUTO-ADS:END --><main class="html-app"><a class="back" href="/tool/">← Ferramentas</a><header><div class="brandline">NEXAUREN / MARKUP WORKSHOP</div><div class="hero"><div><h1>Formatador HTML</h1><p>Organize, compacte e valide HTML com uma saída limpa para copiar diretamente para o projeto.</p></div><span class="badge">DOM · LOCAL</span></div></header>
 <section class="workbench"><div class="toolbar"><button id="format" class="primary">Formatar</button><button id="minify" class="secondary">Compactar</button><button id="validate" class="secondary">Validar</button><button id="sample" class="secondary">Exemplo</button><button id="clear" class="secondary">Limpar</button><button id="copy" class="secondary">Copiar</button></div>
 <div class="options"><label>Indentação<select id="indent"><option value="2">2 espaços</option><option value="4">4 espaços</option><option value="1">1 espaço</option></select></label><label class="check"><input id="wrap" type="checkbox" checked> Preservar texto</label><span id="status">Aguardando</span></div>
 <div class="editor-grid"><section class="pane"><div class="head"><span>01 · HTML DE ENTRADA</span><span id="inCount">0</span></div><textarea id="input" spellcheck="false" placeholder="<section><h1>Nexauren</h1><p>Olá mundo</p></section>"></textarea></section><section class="pane output"><div class="head"><span>02 · HTML FORMATADO</span><span id="outCount">0</span></div><textarea id="output" spellcheck="false" readonly></textarea></section></div>
 <p id="message" class="message">Cole o HTML e escolha uma operação.</p></section><p id="access" class="access" hidden></p><footer>NEXAUREN TOOLS · Markup Workshop · Processamento local</footer></main>
-<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".workbench"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script></body></html>
+<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".workbench"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=locked)});</script><script src="./script.js"></script><script src="/assets/ads.js?v=20260925-auto1"></script>\n<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
+  <div class="nx-auto-ad-label">PUBLICIDADE</div>
+  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
+</div>
+<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->\n</body></html>
