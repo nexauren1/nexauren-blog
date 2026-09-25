@@ -391,12 +391,12 @@ async function createPost(env,a,d,ctx){
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts));
   await env.DB.batch(statements);
-  await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:await getPost(env,id)},201);
+  await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:d.category_id||null,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}},201);
 }
 async function updatePost(env,a,id,d,ctx){
-  const old=await getPost(env,id);if(!old)return fail("Artigo não encontrado.",404,"NOT_FOUND");const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);
-  const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);const type=["article","news","guide","tutorial","announcement","release","update","story"].includes(d.type)?d.type:old.type;
-  let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:old.status;const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():old.published_at;
+  const oldRow=await env.DB.prepare("SELECT id,slug,type,status,published_at FROM posts WHERE id=? LIMIT 1").bind(id).first();if(!oldRow)return fail("Artigo não encontrado.",404,"NOT_FOUND");const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);
+  const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);const type=["article","news","guide","tutorial","announcement","release","update","story"].includes(d.type)?d.type:oldRow.type;
+  let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:oldRow.status;const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():oldRow.published_at;
   if(status==="published"&&!published)published=nowIso();if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);
   if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
   const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000),coverMediaId=d.cover_media_id||null;
@@ -414,7 +414,7 @@ async function updatePost(env,a,id,d,ctx){
   statements.push(...postRelationStatements(env,id,d.tags,d.translations,true));
   statements.push(env.DB.prepare("INSERT INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
   await env.DB.batch(statements);
-  await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:await getPost(env,id)});
+  await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:d.category_id||null,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}});
 }
 
 async function uploadAuth(env,request){
