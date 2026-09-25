@@ -455,6 +455,14 @@ const PT=
   "Validação:": "Validation:",
   "Escolha um formato para ver as regras de entrada.": "Choose a format to see the input rules.",
   "✓ Código válido. Pronto para gerar.": "✓ Valid code. Ready to generate."
+  "Gerador de UUID | Nexauren": "UUID Generator | Nexauren",
+  "IDENTIDADE DIGITAL": "DIGITAL IDENTITY",
+  "Gerador de UUID": "UUID Generator",
+  "Crie identificadores únicos localmente no navegador.": "Create unique identifiers locally in your browser.",
+  "Quantidade": "Quantity",
+  "Gerar UUID": "Generate UUID",
+  "Nenhum UUID gerado.": "No UUID generated.",
+  "Copiar": "Copy"
   "Navegação": "Navigation",
   "Publicidade": "Advertisement",
   "Saltar para o conteúdo": "Skip to content",
