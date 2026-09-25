@@ -1,0 +1,663 @@
+{
+  "version": 1,
+  "language": "pt",
+  "targets": [
+    "en"
+  ],
+  "sources": [
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "home",
+      "source_text": "Início"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "blog",
+      "source_text": "Blog"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "tools",
+      "source_text": "Ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "account",
+      "source_text": "Conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "plans",
+      "source_text": "Planos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "legal",
+      "source_text": "Legal"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "privacy",
+      "source_text": "Privacidade"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "terms",
+      "source_text": "Termos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "cookies",
+      "source_text": "Cookies"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "menu",
+      "source_text": "Menu"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "search",
+      "source_text": "Pesquisar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "back",
+      "source_text": "Voltar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "clear",
+      "source_text": "Limpar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "close",
+      "source_text": "Fechar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "save",
+      "source_text": "Guardar alterações"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "continue",
+      "source_text": "Continuar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "tryAgain",
+      "source_text": "Tentar novamente"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "nowNot",
+      "source_text": "Agora não"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "featured",
+      "source_text": "Destaque"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "popular",
+      "source_text": "Popular"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "free",
+      "source_text": "Grátis"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "global",
+      "translation_key": "pro",
+      "source_text": "PRO"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "title",
+      "source_text": "Ferramentas que acompanham o seu trabalho."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "lead",
+      "source_text": "Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "searchPlaceholder",
+      "source_text": "Pesquisar ferramentas ou categorias…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "highlights",
+      "source_text": "Destaques"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "mostPopular",
+      "source_text": "Populares"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "catalog",
+      "source_text": "Catálogo Nexauren"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "available",
+      "source_text": "ferramentas disponíveis"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "availableNote",
+      "source_text": "Abra, use e volte quando precisar."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "results",
+      "source_text": "Resultados"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "explore",
+      "source_text": "EXPLORAR"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "categories",
+      "source_text": "Categorias"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "growing",
+      "source_text": "Sempre a crescer"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "checkingAccount",
+      "source_text": "A verificar a sua conta…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "noCategory",
+      "source_text": "Nenhuma categoria encontrada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "foundOne",
+      "source_text": "1 ferramenta encontrada"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "foundMany",
+      "source_text": "ferramentas encontradas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "tools",
+      "translation_key": "noTools",
+      "source_text": "Não foi possível carregar o catálogo."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "searchPlaceholder",
+      "source_text": "Pesquisar por nome, função, descrição ou palavra-chave…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "allKeywords",
+      "source_text": "Todas as palavras-chave"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "allAccess",
+      "source_text": "Todos os acessos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "freeAccess",
+      "source_text": "Grátis"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "proAccess",
+      "source_text": "Pro"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "relevance",
+      "source_text": "Mais relevantes"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "featured",
+      "source_text": "Em destaque"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "popular",
+      "source_text": "Mais populares"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "name",
+      "source_text": "Nome A–Z"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "clearSearch",
+      "source_text": "Limpar pesquisa"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "clearFilters",
+      "source_text": "Limpar filtros"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "noResults",
+      "source_text": "Nenhuma ferramenta encontrada."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "categoryReady",
+      "source_text": "A categoria está pronta."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "noPublishedTools",
+      "source_text": "Ainda não existem ferramentas publicadas aqui."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "accountGateTitle",
+      "source_text": "Crie uma conta para usar as ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "accountGateBody",
+      "source_text": "As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "category",
+      "translation_key": "enterCreate",
+      "source_text": "Entrar ou criar conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "loading",
+      "source_text": "A carregar…"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "createAccount",
+      "source_text": "Criar conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "forgot",
+      "source_text": "Esqueci a minha palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "emailVerified",
+      "source_text": "Email verificado"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "resend",
+      "source_text": "Reenviar email"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "confirmed",
+      "source_text": "Já confirmei"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "overview",
+      "source_text": "Visão geral"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "profile",
+      "source_text": "Perfil"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "security",
+      "source_text": "Segurança"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "billing",
+      "source_text": "Plano e faturação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "manage",
+      "source_text": "Gerir assinatura e recursos Pro."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "openManage",
+      "source_text": "Abrir gestão →"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "updatePassword",
+      "source_text": "Atualizar palavra-passe"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "nameUpdated",
+      "source_text": "Nome atualizado."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "passwordUpdated",
+      "source_text": "Palavra-passe atualizada com sucesso."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "logout",
+      "source_text": "Terminar sessão"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "account",
+      "translation_key": "closePassword",
+      "source_text": "Fechar"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyTitle",
+      "source_text": "Política de Privacidade"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyUpdated",
+      "source_text": "Atualizada em 22 de setembro de 2026"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyOverview",
+      "source_text": "Visão geral"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyData",
+      "source_text": "Dados"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyUse",
+      "source_text": "Utilização"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyServices",
+      "source_text": "Serviços técnicos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyRights",
+      "source_text": "Direitos"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyChanges",
+      "source_text": "Alterações"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsTitle",
+      "source_text": "Termos de Utilização"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsAccepted",
+      "source_text": "Aceitação"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsTools",
+      "source_text": "Ferramentas"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsAccount",
+      "source_text": "Conta"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsForbidden",
+      "source_text": "Uso proibido"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsAvailability",
+      "source_text": "Disponibilidade"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesTitle",
+      "source_text": "Política de Cookies"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesWhat",
+      "source_text": "O que são cookies?"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesEssential",
+      "source_text": "Cookies essenciais"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesMeasurement",
+      "source_text": "Medição"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesControl",
+      "source_text": "Controlo"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "updated",
+      "source_text": "Atualizada em 22 de setembro de 2026"
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyP1",
+      "source_text": "A Nexauren Story respeita a privacidade de quem utiliza os seus sites, contas e ferramentas."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyP2",
+      "source_text": "Podem ser tratados nome, email, fotografia de perfil, preferências e dados necessários ao funcionamento e segurança da conta."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyP3",
+      "source_text": "Os dados são utilizados para autenticação, funcionamento, personalização, segurança, suporte e melhoria dos serviços."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyP4",
+      "source_text": "Algumas funcionalidades dependem de fornecedores técnicos. O objetivo é limitar os dados partilhados ao necessário."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyP5",
+      "source_text": "Pode solicitar informações, correção ou eliminação dos seus dados quando aplicável."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "privacyP6",
+      "source_text": "Esta política pode ser atualizada. A data indicada acima identifica a versão atual."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsP1",
+      "source_text": "Ao utilizar a Nexauren Story, concorda em utilizar os serviços de forma legal, responsável e respeitosa."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsP2",
+      "source_text": "As ferramentas são disponibilizadas para fins gerais e podem ser melhoradas, alteradas ou descontinuadas. Verifique resultados antes de os utilizar em decisões importantes."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsP3",
+      "source_text": "É responsável por manter os dados da sua conta corretos e por proteger o acesso à mesma."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsP4",
+      "source_text": "Não utilize os serviços para fraude, abuso, tentativa de comprometer sistemas ou violação de direitos."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsP5",
+      "source_text": "Podem ocorrer interrupções para manutenção, segurança ou outras razões técnicas."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "termsP6",
+      "source_text": "Os termos podem ser atualizados para refletir mudanças nos serviços ou requisitos legais."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesP1",
+      "source_text": "Cookies e tecnologias semelhantes podem manter sessões, guardar preferências e medir o funcionamento das páginas."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesP2",
+      "source_text": "Alguns são necessários para autenticação e segurança."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesP3",
+      "source_text": "Algumas páginas públicas podem utilizar ferramentas de medição para compreender visitas e melhorar a experiência."
+    },
+    {
+      "scope": "ui",
+      "entity_id": "legal",
+      "translation_key": "cookiesP4",
+      "source_text": "Pode controlar ou eliminar cookies através das definições do seu navegador. Desativar cookies essenciais pode impedir algumas funcionalidades."
+    }
+  ]
+}
