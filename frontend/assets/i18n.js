@@ -410,7 +410,7 @@ const PT=
   "Não foi possível copiar automaticamente. Selecione o resultado manualmente.": "Could not copy automatically. Select the result manually.",
   "Câmara parada.": "Camera stopped.",
   "Pronto. Use a câmara ou escolha uma imagem.": "Ready. Use the camera or choose an image.",
-  "Parar": "Stop"
+  "Parar": "Stop",
   "Gerador de Código de Barras — Nexauren Tools": "Barcode Generator — Nexauren Tools",
   "Gerador de Código de Barras Nexauren — crie códigos EAN, UPC e Code 128.": "Nexauren Barcode Generator — create EAN, UPC, and Code 128 barcodes.",
   "Transforme dados em": "Turn data into",
