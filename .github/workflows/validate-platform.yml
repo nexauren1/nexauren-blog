@@ -14,7 +14,7 @@ on:
       - "frontend/admin-assets/**"
       - "frontend/data/public-urls.json"
       - "schema.sql"
-      - "database/accounts-upgrade.sql"
+      - "database/accounts-complete.sql"
       - "wrangler.json"
       - ".github/workflows/validate-platform.yml"
   pull_request:
@@ -26,7 +26,7 @@ on:
       - "frontend/tool/**"
       - "frontend/account/**"
       - "schema.sql"
-      - "database/accounts-upgrade.sql"
+      - "database/accounts-complete.sql"
       - "wrangler.json"
   workflow_dispatch:
 
@@ -114,7 +114,7 @@ jobs:
           for(const [source,pattern,label] of forbidden){
             if(pattern.test(source))throw new Error("Forbidden account marker found: "+label);
           }
-          if(!fs.existsSync("database/accounts-upgrade.sql"))throw new Error("database/accounts-upgrade.sql missing");
+          if(!fs.existsSync("database/accounts-complete.sql"))throw new Error("database/accounts-complete.sql missing");
           console.log("Firebase account isolation checks passed.");
           NODE
 
