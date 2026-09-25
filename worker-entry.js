@@ -1565,6 +1565,10 @@ export default{
   async fetch(request,env,ctx){try{const url=new URL(request.url);if(url.pathname.startsWith("/api/"))return await api(env,request,url,ctx);return await page(env,request,url);}catch(e){console.error(e);return fail("Erro interno do servidor.",500,"INTERNAL_ERROR");}},
   async scheduled(_controller,env){
     try{await publishDue(env);await cleanup(env);}catch(e){console.error("maintenance",e);}
+    try{
+      await startTranslationWorkflow(env,{scope:"ui",targetLanguages:["en"]});
+      await startTranslationWorkflow(env,{scope:"tools",targetLanguages:["en"]});
+    }catch(e){console.error("translation schedule",e);}
     try{}catch(e){console.error("billing schema",e);}
     try{}catch(e){console.error("tool unlock schema",e);}
     try{}catch(e){console.error("tool usage schema",e);}
