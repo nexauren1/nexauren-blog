@@ -12,7 +12,7 @@
 
   const language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="en")return "en";try{return localStorage.getItem("ns_lang")==="en"?"en":"pt"}catch{return "pt"}})();
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
-  const tags=v=>language==="en"?(Array.isArray(v?.tags_en)&&v.tags_en.length?v.tags_en:(v?.tags||[])):(v?.tags||[]);
+  const localizedTags=v=>language==="en"?(Array.isArray(v?.tags_en)&&v.tags_en.length?v.tags_en:(v?.tags||[])):(v?.tags||[]);
 
   let state={tools:[],query:"",tag:"",access:"all",sort:"relevance"};
   let isPro=null,user=null,accessApi=null;
@@ -38,7 +38,7 @@
     return '<a class="tool-card cat-'+esc(t.category||slug)+' nx-spotlight nx-reveal'+(locked?" tool-card-locked":"")+'" data-tool-id="'+esc(t.id)+'" data-tool-access="'+esc(t.access||"public")+'" data-tool-path="'+esc(t.path)+'" href="'+esc(t.path)+'">'+
       '<span class="tool-card-icon">'+iconSvg(t.icon)+'</span><span class="tool-arrow">→</span>'+
       '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
-      '<small>'+esc(tags(t).slice(0,4).join(" · "))+'</small>'+
+      '<small>'+esc(localizedTags(t).slice(0,4).join(" · "))+'</small>'+
       (locked?'<b class="tool-search-premium">PRO</b><span class="tool-lock" aria-hidden="true">🔒</span>':"")+
       '</a>';
   };
@@ -94,7 +94,7 @@
   }
 
   function buildSearch(){
-    const tags=[...new Set(state.tools.flatMap(t=>tags(t)||[]))].sort((a,b)=>normalize(a).localeCompare(normalize(b),language));
+    const tags=[...new Set(state.tools.flatMap(t=>localizedTags(t)||[]))].sort((a,b)=>normalize(a).localeCompare(normalize(b),language));
     const params=new URLSearchParams(location.search);
     state.query=params.get("q")||"";
     state.tag=params.get("tag")||"";
