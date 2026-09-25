@@ -20,7 +20,7 @@
   const scoreTool=(tool,query)=>{
     const q=normalize(query),tokens=q.split(/\s+/).filter(Boolean);
     if(!tokens.length)return 0;
-    const name=normalize(label(tool,"name")),desc=normalize(label(tool,"description")),tags=tags(tool).map(normalize);
+    const name=normalize(label(tool,"name")),desc=normalize(label(tool,"description")),tags=localizedTags(tool).map(normalize);
     let score=0;
     tokens.forEach(token=>{
       if(name===token)score+=120;else if(name.startsWith(token))score+=80;else if(name.includes(token))score+=55;
@@ -37,7 +37,7 @@
     const locked=t.access==="premium"&&isPro===false;
     return '<a class="tool-card cat-'+esc(t.category||slug)+' nx-spotlight nx-reveal'+(locked?" tool-card-locked":"")+'" data-tool-id="'+esc(t.id)+'" data-tool-access="'+esc(t.access||"public")+'" data-tool-path="'+esc(t.path)+'" href="'+esc(t.path)+'">'+
       '<span class="tool-card-icon">'+iconSvg(t.icon)+'</span><span class="tool-arrow">→</span>'+
-      '<h2>'+esc(t.name)+'</h2><p>'+esc(t.description||"")+'</p>'+
+      '<h2>'+esc(label(t,"name"))+"<\/h2><p>"+esc(label(t,"description")||"")+"</p>"+
       '<small>'+esc(localizedTags(t).slice(0,4).join(" · "))+'</small>'+
       (locked?'<b class="tool-search-premium">PRO</b><span class="tool-lock" aria-hidden="true">🔒</span>':"")+
       '</a>';
@@ -87,8 +87,8 @@
     grid.innerHTML=results.map(card).join("");
     empty.hidden=results.length>0;
     empty.innerHTML=state.query||state.tag||state.access!=="all"
-      ? "<strong>Nenhuma ferramenta encontrada.</strong><br>Tente outro termo, remova um filtro ou pesquise por uma funcionalidade."
-      : "<strong>A categoria está pronta.</strong><br>Ainda não existem ferramentas publicadas aqui.";
+      ? (language==="en"?"<strong>No tools found.</strong><br>Try another term, remove a filter, or search by feature.":"<strong>Nenhuma ferramenta encontrada.</strong><br>Tente outro termo, remova um filtro ou pesquise por uma funcionalidade.")
+      : (language==="en"?"<strong>The category is ready.</strong><br>No tools have been published here yet.":"<strong>A categoria está pronta.</strong><br>Ainda não existem ferramentas publicadas aqui.");
     grid.hidden=results.length===0;
     window.NexaurenUI?.refresh?.();
   }
