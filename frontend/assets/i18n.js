@@ -567,7 +567,7 @@ const PT=
   "Erro": "Error",
   "Posição": "Position",
   "Copiado ✓": "Copied ✓",
-  "Copie manualmente": "Copy manually"
+  "Copie manualmente": "Copy manually",
   "Testador de Regex": "Regex Tester",
   "Teste padrões, encontre correspondências, veja grupos e simule substituições.": "Test patterns, find matches, inspect groups, and simulate replacements.",
   "NEXAUREN / REGEX LAB": "NEXAUREN / REGEX LAB",
@@ -777,6 +777,11 @@ const PT=
   "Leia um QR Code.": "Read a QR code.",
   "01 · IDENTIDADE DIGITAL": "01 · DIGITAL IDENTITY",
   "02 · CRYPTO TOOLS": "02 · CRYPTO TOOLS",
+  "Escreva a mensagem…": "Write the message…",
+  "Minha Wi-Fi": "My Wi-Fi",
+  "Leitor de QR Code": "QR Code Reader",
+  "Leia um QR Code": "Read a QR code",
+  "Transforme dados em barras.": "Turn data into barcodes.",
   "← Ferramentas": "← Tools"
 
 };
@@ -844,7 +849,7 @@ function translateTextNodes(){
     if(shouldSkip(n))continue;
     const raw=n.nodeValue||"",key=raw.trim();
     if(!key)continue;
-    const translated=PT[key]||null;
+    const translated=PT[key]||translateDynamicText(key)||null;
     if(translated&&translated!==key)n.nodeValue=raw.replace(key,translated);
   }
 }
