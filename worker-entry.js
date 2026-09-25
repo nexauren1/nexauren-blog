@@ -992,7 +992,16 @@ async function billingSyncFromPaypal(env,row,remote){
   return await billingRow(env,row.account_id);
 }
 
+const PERMANENT_PRO_EMAIL = "nexaurenstore@gmail.com";
+function isPermanentProEmail(email){
+  return normalizeEmail(email)===PERMANENT_PRO_EMAIL;
+}
+async function isPermanentProAccount(env,accountId){
+  const row=await env.ACCOUNTS_DB.prepare("SELECT email FROM nexauren_accounts WHERE id=? LIMIT 1").bind(accountId).first();
+  return isPermanentProEmail(row?.email);
+}
 async function proToolAccess(env,accountId){
+  if(await isPermanentProAccount(env,accountId))return true;
   const row=await env.ACCOUNTS_DB.prepare("SELECT 1 FROM nexauren_subscriptions WHERE account_id=? AND plan='pro' AND status='ACTIVE' LIMIT 1").bind(accountId).first();
   return !!row;
 }
@@ -1180,6 +1189,9 @@ async function api(env,request,url,ctx){
         console.error("billing.remote_sync",String(error?.message||error));
         return fail("Não foi possível validar o estado atual da assinatura.",503,"BILLING_SYNC_UNAVAILABLE");
       }
+      if(isPermanentProEmail(a.account.email)){
+        return json({ok:true,billing:{plan:"pro",status:"ACTIVE",amount:"0.00",currency:"USD",cancel_at_period_end:false,current_period_end:null,paypal_subscription_id:null,permanent:true}});
+      }
       return json({ok:true,billing:billingPublic(row)});
     }catch(error){
       const code=error?.code||"BILLING_ERROR";
@@ -1192,6 +1204,7 @@ async function api(env,request,url,ctx){
     try{
       const a=await firebaseAccountAuth(env,request,true);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      if(isPermanentProEmail(a.account.email))return fail("Esta conta já tem acesso Pro permanente.",409,"PERMANENT_PRO");
       let row=await billingEnsureRow(env,a.account.id);
       if(row.plan==="pro"&&row.status==="ACTIVE")return fail("A sua conta já tem o plano Pro ativo.",409,"ALREADY_PRO");
       if(row.status==="APPROVAL_PENDING")return fail("Já existe uma assinatura PayPal aguardando aprovação.",409,"SUBSCRIPTION_PENDING");
