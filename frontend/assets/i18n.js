@@ -337,6 +337,7 @@ const PT=
   "PUBLICIDADE": "ADVERTISEMENT",
   "Navegação": "Navigation",
   "Publicidade": "Advertisement",
+  "Saltar para o conteúdo": "Skip to content",
   "← Produtividade": "← Productivity",
   "← Ferramentas": "← Tools"
 
