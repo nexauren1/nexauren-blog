@@ -1704,6 +1704,16 @@ async function api(env,request,url,ctx){
   })});}
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
+async function decorateToolHtmlResponse(request,response){
+  const type=response.headers.get("content-type")||"";
+  if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
+  let html=await response.text();
+  if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
+  if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-1" defer></script>\n</body>');
+  const headers=new Headers(response.headers);headers.delete("content-length");
+  return new Response(html,{status:response.status,statusText:response.statusText,headers});
+}
+
 async function page(env,request,url){
   if(url.pathname.startsWith("/__/auth/"))return firebaseAuthProxy(request);
   if(url.pathname==="/sitemap.xml")return sitemapIndex();
@@ -1730,10 +1740,10 @@ async function page(env,request,url){
       const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
     }
     if(url.pathname==="/" )return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/index.html",request.url))));
-    if(url.pathname==="/tool"||url.pathname==="/tool/")return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url))));
+    if(url.pathname==="/tool"||url.pathname==="/tool/")return decorateToolHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url))));
     let r=await env.ASSETS.fetch(request);
     if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
-    return decoratePublicHtmlResponse(request,r);
+    return decorateToolHtmlResponse(request,r);
   }
   const isBlog=url.pathname==="/blog"||url.pathname.startsWith("/blog/");
   if(!isBlog){
