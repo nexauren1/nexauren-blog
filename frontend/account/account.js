@@ -504,13 +504,15 @@ async function googleSignIn(button, errorTarget) {
 }
 
 function renderAccountError(error) {
-  root.innerHTML = `
-    <div class="success-large">
-      <div class="error" role="alert">${esc(friendlyError(error))}</div>
-      <button type="button" class="primary" id="reload-account">Tentar novamente</button>
-    </div>
-  `;
-  $("#reload-account").onclick = () => location.reload();
+  console.error("Nexauren account initialization", error);
+  try {
+    loginView("", getSafeReturnUrl() ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : "Pode entrar ou criar a sua conta Nexauren.");
+    const errorBox = $("#error");
+    if (errorBox && error) errorBox.textContent = "Não foi possível restaurar a sessão atual. Pode entrar novamente.";
+  } catch (fallbackError) {
+    console.error("Nexauren account login fallback", fallbackError);
+    if (root) root.innerHTML = '<div class="success-large"><div class="error" role="alert">Não foi possível carregar a conta.</div><button type="button" class="primary" onclick="location.reload()">Tentar novamente</button></div>';
+  }
 }
 
 async function init() {
