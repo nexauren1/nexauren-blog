@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08101a">
+<meta name="description" content="Junte vários ficheiros PDF num único documento diretamente no navegador.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/juntar-pdf/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./style.css?v=20260926-pdfmerge-1">
+<title>Juntar PDF — Nexauren Tools</title>
+<style id="nexauren-auto-ads-style">
+.nx-auto-ad{width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+.nx-auto-ad.top{min-height:70px;margin:0 auto 22px;padding:10px 6px}.nx-auto-ad.top .nx-auto-ad-inner{width:min(468px,100%);min-width:0}
+.nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
+.nx-auto-ad .nx-auto-ad-inner{width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nx-auto-ad.bottom .nx-auto-ad-inner{min-height:90px}.nx-auto-ad iframe{max-width:100%;border:0}
+.nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
+@media(max-width:520px){.nx-auto-ad.top{margin-bottom:18px;padding:8px 2px;min-height:70px}.nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}}
+</style>
+<script src="/assets/ads.js?v=20260925-auto3"></script>
+</head>
+<body>
+<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade"><div class="nx-auto-ad-label">PUBLICIDADE</div><div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div></div>
+<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+<main class="pdfmerge">
+<header class="pdfmerge-head">
+<a href="/tool/categories/pdf/" class="pdfmerge-back">← PDF</a>
+<div class="pdfmerge-head-actions"><span class="pdfmerge-brand">NEXAUREN / ASSEMBLY</span><button id="pdfmerge-lang" class="pdfmerge-lang" type="button" onclick="(function(){var u=new URL(location.href);if(u.searchParams.get('lang')==='en'){u.searchParams.delete('lang')}else{u.searchParams.set('lang','en')}location.replace(u.pathname+(u.search||''));})()">English</button></div>
+</header>
+<section class="pdfmerge-hero">
+<div>
+<div class="pdfmerge-kicker">PDF ASSEMBLY</div>
+<h1>Juntar <span>PDFs</span></h1>
+<p id="pdfmerge-lead">Combine vários documentos PDF num único ficheiro, organize a ordem e faça tudo localmente no navegador.</p>
+</div>
+<div class="pdfmerge-orbit"><div class="pdfmerge-orbit-ring"><b>PDF</b></div><small id="pdfmerge-local">LOCAL · SEM UPLOAD</small></div>
+</section>
+<section class="pdfmerge-app" id="pdfmerge-app">
+<div class="pdfmerge-board">
+<div class="pdfmerge-upload" id="pdfmerge-drop">
+<div class="pdfmerge-upload-icon">＋</div>
+<div><strong id="pdfmerge-drop-title">Adicionar PDFs</strong><span id="pdfmerge-drop-sub">Toque para selecionar documentos ou arraste-os para aqui</span></div>
+<input id="pdfmerge-files" type="file" accept="application/pdf,.pdf" multiple>
+</div>
+<div class="pdfmerge-toolbar">
+<div><span id="pdfmerge-count-label">Documentos</span><strong id="pdfmerge-count">0</strong></div>
+<div><span id="pdfmerge-pages-label">Páginas</span><strong id="pdfmerge-pages">0</strong></div>
+<div><span id="pdfmerge-size-label">Tamanho</span><strong id="pdfmerge-size">—</strong></div>
+</div>
+<div class="pdfmerge-list-head"><div><span id="pdfmerge-list-title">Fila de montagem</span><small id="pdfmerge-list-sub">A ordem será mantida no PDF final.</small></div><button id="pdfmerge-clear" type="button" class="pdfmerge-btn ghost">Limpar</button></div>
+<div id="pdfmerge-list" class="pdfmerge-list"><div id="pdfmerge-empty" class="pdfmerge-empty">Adicione pelo menos dois PDFs para começar.</div></div>
+<div class="pdfmerge-bottom">
+<div class="pdfmerge-name"><label id="pdfmerge-name-label" for="pdfmerge-name">Nome do PDF</label><input id="pdfmerge-name" value="documento-unificado" maxlength="70"></div>
+<button id="pdfmerge-build" class="pdfmerge-btn primary" type="button" disabled>Juntar PDFs</button>
+</div>
+<div class="pdfmerge-progress"><i id="pdfmerge-progress"></i></div>
+<div id="pdfmerge-status" class="pdfmerge-status">Pronto para receber documentos.</div>
+</div>
+<aside class="pdfmerge-side">
+<div class="pdfmerge-side-card">
+<span class="pdfmerge-side-label" id="pdfmerge-side-title">Montagem</span>
+<div class="pdfmerge-step active"><b>01</b><span id="pdfmerge-step1">Adicionar</span></div>
+<div class="pdfmerge-step"><b>02</b><span id="pdfmerge-step2">Organizar</span></div>
+<div class="pdfmerge-step"><b>03</b><span id="pdfmerge-step3">Exportar</span></div>
+</div>
+<div class="pdfmerge-side-card accent"><strong id="pdfmerge-privacy-title">Privacidade primeiro</strong><p id="pdfmerge-privacy-body">Os documentos permanecem no seu dispositivo enquanto a montagem acontece.</p></div>
+<div id="pdfmerge-result" class="pdfmerge-side-card result" hidden>
+<span id="pdfmerge-result-label">PDF criado</span><strong id="pdfmerge-result-name">documento-unificado.pdf</strong><small id="pdfmerge-result-size">—</small>
+<button id="pdfmerge-download" class="pdfmerge-btn primary" type="button">Baixar PDF</button>
+</div>
+</aside>
+</section>
+<div class="pdfmerge-footer">Juntar PDFs · Nexauren Tools</div>
+</main>
+<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade"><div class="nx-auto-ad-label">PUBLICIDADE</div><div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div></div>
+<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+<script type="module" src="./script.js?v=20260926-pdfmerge-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body></html>
