@@ -530,7 +530,7 @@ async function init() {
     loginView("", redirectError ? friendlyError(redirectError) : (returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : ""));
   }, 5000);
 
-  onAuthStateChanged(auth, async (user) => {
+  const handleAuthState = async (user) => {
     authResolved = true;
     clearTimeout(fallbackTimer);
     if (!user) {
@@ -556,7 +556,16 @@ async function init() {
     const target = getSafeReturnUrl();
     if (target) { location.replace(target); return; }
     await userView(user, syncMessage);
-  });
+  };
+
+  try {
+    onAuthStateChanged(auth, handleAuthState);
+  } catch (err) {
+    authResolved = true;
+    clearTimeout(fallbackTimer);
+    console.error("Nexauren auth listener", err);
+    loginView("", returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : "");
+  }
 }
 
 init().catch((err) => renderAccountError(err));
