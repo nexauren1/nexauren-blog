@@ -750,11 +750,23 @@
 }
 .nx-tools-page .tool-engagement-item{min-width:0}
 .nx-tools-page .tool-engagement{
+  padding:11px 12px!important;
   border-color:rgba(124,58,237,.10)!important;
   border-radius:13px!important;
   background:rgba(255,255,255,.86)!important;
   box-shadow:0 8px 22px rgba(15,23,42,.045)!important;
 }
+.nx-tools-page .tool-engagement .tool-favorite-btn,
+.nx-tools-page .tool-engagement .tool-review-btn,
+.nx-tools-page .tool-engagement .tool-reviews-link{
+  min-height:36px!important;
+  padding:0 11px!important;
+  font-size:10px!important;
+  border-radius:10px!important;
+}
+.nx-tools-page .tool-engagement .tool-rating-stars{font-size:14px}
+.nx-tools-page .tool-engagement .tool-rating-number{font-size:10px}
+.nx-tools-page .tool-engagement .tool-rating-count{font-size:9px}
 .nx-tools-page .tool-favorite-btn.is-active{
   background:rgba(124,58,237,.10)!important;border-color:rgba(124,58,237,.18)!important;color:#6d28d9!important;
 }
