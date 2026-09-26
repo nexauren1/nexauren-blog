@@ -16,7 +16,7 @@ import {
   linkWithCredential,
   signOut,
   syncWithWorker
-} from "/account/account-client.js?v=20260926-2";
+} from "/account/account-client.js?v=20260922-3";
 const root = document.querySelector("[data-account-app]");
 const $ = (selector, scope = document) => scope.querySelector(selector);
 let redirectError = null;
@@ -29,24 +29,6 @@ const esc = (value) => String(value ?? "")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;");
-
-async function accountWorkerFetch(path, options = {}) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("É necessário iniciar sessão.");
-  const token = await user.getIdToken();
-  const headers = new Headers(options.headers || {});
-  headers.set("Authorization", "Bearer " + token);
-  if (!headers.has("Content-Type") && options.body && typeof options.body === "string") headers.set("Content-Type", "application/json");
-  const response = await fetch(path, {...options, credentials:"same-origin", headers});
-  const data = await response.json().catch(() => ({ok:false,error:"Resposta inválida do servidor."}));
-  if (!response.ok) {
-    const error = new Error(data.error || "Pedido não concluído.");
-    error.code = data.code;
-    error.details = data.details || null;
-    throw error;
-  }
-  return data;
-}
 
 function friendlyError(error) {
   const code = String(error?.code || "");
@@ -212,93 +194,56 @@ function verificationPanel(user) {
   `;
 }
 
-async function userView(user, syncMessage = "") {
-  root.classList.add("account-dashboard-host");
-  let dashboard = { stats:{}, recent_comments:[], billing:{plan:"free",status:"FREE"} };
-  try { dashboard = await accountWorkerFetch("/api/account/dashboard"); } catch (err) { console.warn("Nexauren dashboard", err); }
-
-  const stats = dashboard.stats || {};
-  const billing = dashboard.billing || {plan:"free",status:"FREE"};
-  const comments = dashboard.recent_comments || [];
-  const planLabel = billing.plan === "pro" ? "Nexauren Pro" : "Nexauren Free";
-  const planState = billing.plan === "pro" ? "PRO" : "FREE";
-  const joined = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null;
-  const joinedText = joined && !Number.isNaN(joined.getTime()) ? new Intl.DateTimeFormat("pt-PT",{dateStyle:"medium"}).format(joined) : "—";
-  const initial = (user.displayName || user.email || "N").slice(0,1).toUpperCase();
+function userView(user, syncMessage = "") {
   const hasPasswordProvider = (user.providerData || []).some((p) => p.providerId === "password");
-  const commentStatus = s => ({approved:"Aprovado",pending:"Pendente",rejected:"Rejeitado",hidden:"Oculto"}[s] || s || "—");
-  const commentBadge = s => '<span class="account-history-status status-'+esc(s||"pending")+'">'+esc(commentStatus(s))+'</span>';
-  const recentHtml = comments.length ? comments.map(c =>
-    '<article class="account-history-item"><div class="account-history-icon">💬</div><div class="account-history-body"><strong>'+esc(c.post_title||"Artigo")+'</strong><p>'+esc(c.body)+'</p><div class="account-history-meta"><span>'+esc(formatAccountDate(c.created_at))+'</span>'+commentBadge(c.status)+'</div></div><a href="/blog/post/'+encodeURIComponent(c.post_slug||"")+'" class="account-history-link">Abrir →</a></article>'
-  ).join("") : '<div class="account-empty-history"><div class="account-empty-icon">◌</div><strong>Ainda não há atividade.</strong><p>Quando comentar num artigo, o seu histórico aparecerá aqui.</p><a class="secondary" href="/blog/">Explorar o Blog</a></div>';
-
+  root.classList.add("account-dashboard-host");
   root.innerHTML = `
-    <div class="account-dashboard-v3">
-      <aside class="account-sidebar">
+    <div class="account-dashboard-v2">
+      <aside class="account-sidebar" aria-label="Definições da conta">
         <div class="account-sidebar-profile">
-          <div class="avatar">${user.photoURL ? '<img src="' + esc(user.photoURL) + '" alt="" referrerpolicy="no-referrer">' : esc(initial)}</div>
+          <div class="avatar">${user.photoURL ? '<img src="' + esc(user.photoURL) + '" alt="" referrerpolicy="no-referrer">': esc((user.displayName || user.email || "N").slice(0, 1).toUpperCase())}</div>
           <div><strong>${esc(user.displayName || "Utilizador Nexauren")}</strong><span>${esc(user.email || "")}</span></div>
         </div>
         <nav class="account-side-nav">
-          <a class="active" href="#account-overview">Dashboard</a>
-          <a href="#account-history">Histórico</a>
+          <a class="active" href="#account-overview">Visão geral</a>
           <a href="#account-profile">Perfil</a>
           <a href="#account-security">Segurança</a>
+          <a href="/account/upgrade/">Plano Pro</a>
         </nav>
         <div class="account-side-footer">
           <a href="/tool/">Ferramentas</a>
-          <a href="/account/upgrade/">Plano e faturação</a>
           <a href="/legal/privacidade/">Privacidade</a>
         </div>
       </aside>
 
       <div class="account-main">
-        <section class="account-welcome" id="account-overview">
+        <header class="account-main-head" id="account-overview">
           <div>
-            <div class="account-kicker">NEXAUREN CONTROL CENTER</div>
-            <h2>Olá, ${esc((user.displayName || "Utilizador").split(" ")[0])}.</h2>
-            <p>O seu espaço pessoal para acompanhar atividade, comentários, perfil e recursos Nexauren.</p>
+            <div class="account-kicker">CONTA NEXAUREN</div>
+            <h2>Definições da conta</h2>
+            <p>Gira o seu perfil, segurança e acesso aos recursos Nexauren.</p>
           </div>
-          <div class="account-welcome-actions">
-            <span class="account-state"><i></i> Conta ativa</span>
-            <a class="primary" href="/blog/">Explorar Blog</a>
-          </div>
-        </section>
+          <span class="account-state"><i></i> Ativa</span>
+        </header>
 
         ${syncMessage ? messageBox("success", syncMessage) : ""}
         ${verificationPanel(user)}
 
-        <section class="account-metrics">
-          <div class="account-metric"><span>Comentários</span><strong>${Number(stats.total||0)}</strong><small>${Number(stats.approved||0)} aprovados · ${Number(stats.pending||0)} pendentes</small></div>
-          <div class="account-metric"><span>Reações</span><strong>${Number(stats.reactions||0)}</strong><small>Interações feitas nos comentários</small></div>
-          <div class="account-metric"><span>Denúncias</span><strong>${Number(stats.reports||0)}</strong><small>Registos enviados</small></div>
-          <div class="account-metric account-metric-plan"><span>Plano</span><strong>${esc(planState)}</strong><small>${esc(planLabel)}</small></div>
-        </section>
-
-        <section class="account-block account-history" id="account-history">
-          <div class="account-block-head">
-            <div><h3>Histórico de atividade</h3><p>As suas interações recentes com o Nexauren Story.</p></div>
-            <span class="account-history-count">${Number(stats.total||0)} comentário(s)</span>
-          </div>
-          <div class="account-history-list">${recentHtml}</div>
-        </section>
-
         <section class="account-block">
           <div class="account-block-head">
-            <div><h3>Plano e acesso</h3><p>Estado atual dos recursos da sua conta.</p></div>
-            <a href="/account/upgrade/" class="account-text-link">Gerir plano →</a>
+            <div><h3>Plano e faturação</h3><p>Gerir assinatura e recursos Pro.</p></div>
+            <a href="/account/upgrade/" class="account-text-link">Abrir gestão →</a>
           </div>
-          <div class="account-access-card ${billing.plan==="pro"?"is-pro":""}">
-            <div class="account-access-orb">${billing.plan==="pro"?"P":"N"}</div>
-            <div><strong>${esc(planLabel)}</strong><span>${billing.plan==="pro"?"Acesso aos recursos Pro ativo.":"Conta preparada para receber recursos e ferramentas Nexauren."}</span></div>
-            <a href="/account/upgrade/">${billing.plan==="pro"?"Ver detalhes":"Conhecer Pro"} →</a>
-          </div>
+          <a class="account-pro-card" href="/account/upgrade/">
+            <span class="pro-icon">N</span>
+            <span><strong>Nexauren Pro</strong><small>Consulte o seu plano, pagamento e benefícios.</small></span>
+            <b>Gerir →</b>
+          </a>
         </section>
 
         <div class="account-two-col">
           <section class="account-block" id="account-profile">
-            <div class="account-block-head"><div><h3>Perfil</h3><p>Dados básicos da sua identidade Nexauren.</p></div></div>
-            <div class="account-profile-summary"><div class="avatar large">${user.photoURL ? '<img src="' + esc(user.photoURL) + '" alt="">' : esc(initial)}</div><div><strong>${esc(user.displayName || "Utilizador Nexauren")}</strong><span>${esc(user.email||"")}</span><small>Membro desde ${esc(joinedText)}</small></div></div>
+            <div class="account-block-head"><div><h3>Perfil</h3><p>Informações visíveis na sua conta.</p></div></div>
             <form id="profile-form" class="mini-form" novalidate>
               <label>Nome de apresentação<input id="display-name" type="text" maxlength="80" value="${esc(user.displayName || "")}" autocomplete="name" required></label>
               <button class="secondary" type="submit">Guardar alterações</button>
@@ -308,7 +253,7 @@ async function userView(user, syncMessage = "") {
 
           <section class="account-block" id="account-security">
             <div class="account-block-head">
-              <div><h3>Segurança</h3><p>Proteja e mantenha o acesso à sua conta.</p></div>
+              <div><h3>Segurança</h3><p>Proteja o acesso à sua conta.</p></div>
               ${hasPasswordProvider ? '<button type="button" class="section-toggle" aria-expanded="false">Alterar</button>' : ""}
             </div>
             ${hasPasswordProvider ? `
@@ -324,15 +269,26 @@ async function userView(user, syncMessage = "") {
           </section>
         </div>
 
+        <section class="account-block account-resources">
+          <div class="account-block-head"><div><h3>Recursos</h3><p>Aceda rapidamente ao ecossistema.</p></div></div>
+          <div class="resource-links">
+            <a href="/tool/"><span><b>Ferramentas</b><small>Utilize as ferramentas Nexauren.</small></span><b>→</b></a>
+            <a href="/account/upgrade/"><span><b>Plano Pro</b><small>Recursos e assinatura.</small></span><b>→</b></a>
+            <a href="/legal/privacidade/"><span><b>Privacidade</b><small>Consulte os seus direitos e dados.</small></span><b>→</b></a>
+          </div>
+        </section>
+
         <section class="account-session">
-          <div><strong>Sessão segura</strong><span>Terminar a sessão neste dispositivo.</span></div>
+          <div><strong>Sessão</strong><span>Terminar a sessão neste dispositivo.</span></div>
           <button class="logout" id="logout">Terminar sessão</button>
         </section>
       </div>
     </div>
   `;
 
-  $("#logout").onclick = async () => { try { await signOut(auth); } catch (err) { alert(friendlyError(err)); } };
+  $("#logout").onclick = async () => {
+    try { await signOut(auth); } catch (err) { alert(friendlyError(err)); }
+  };
 
   $("#profile-form").addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -340,51 +296,98 @@ async function userView(user, syncMessage = "") {
     feedback.className = "inline-feedback";
     feedback.textContent = "";
     const displayName = $("#display-name").value.trim();
-    if (displayName.length < 2) { feedback.className="inline-feedback error-text"; feedback.textContent="O nome precisa de pelo menos 2 caracteres."; return; }
+    if (displayName.length < 2) {
+      feedback.className = "inline-feedback error-text";
+      feedback.textContent = "O nome precisa de pelo menos 2 caracteres.";
+      return;
+    }
     try {
       await updateProfile(auth.currentUser, { displayName });
       await syncWithWorker(auth.currentUser);
-      feedback.className="inline-feedback success-text"; feedback.textContent="Nome atualizado.";
+      feedback.className = "inline-feedback success-text";
+      feedback.textContent = "Nome atualizado.";
       setTimeout(() => auth.currentUser && userView(auth.currentUser), 400);
-    } catch (err) { feedback.className="inline-feedback error-text"; feedback.textContent=friendlyError(err); }
+    } catch (err) {
+      feedback.className = "inline-feedback error-text";
+      feedback.textContent = friendlyError(err);
+    }
   });
 
   const resend = $("#resend-verification");
   if (resend) resend.onclick = async () => {
-    const feedback = $("#verification-feedback"); feedback.textContent="";
-    try { await sendEmailVerification(auth.currentUser); feedback.className="inline-feedback success-text"; feedback.textContent="Email de verificação reenviado."; }
-    catch (err) { feedback.className="inline-feedback error-text"; feedback.textContent=friendlyError(err); }
+    const feedback = $("#verification-feedback");
+    feedback.textContent = "";
+    try {
+      await sendEmailVerification(auth.currentUser);
+      feedback.className = "inline-feedback success-text";
+      feedback.textContent = "Email de verificação reenviado.";
+    } catch (err) {
+      feedback.className = "inline-feedback error-text";
+      feedback.textContent = friendlyError(err);
+    }
   };
+
   const refresh = $("#refresh-verification");
   if (refresh) refresh.onclick = async () => {
-    const feedback=$("#verification-feedback"); feedback.textContent="";
-    try { await auth.currentUser.reload(); await userView(auth.currentUser); }
-    catch (err) { feedback.className="inline-feedback error-text"; feedback.textContent=friendlyError(err); }
+    const feedback = $("#verification-feedback");
+    feedback.textContent = "";
+    try { await auth.currentUser.reload(); userView(auth.currentUser); }
+    catch (err) { feedback.className = "inline-feedback error-text"; feedback.textContent = friendlyError(err); }
   };
 
   const passwordForm = $("#password-form");
   if (passwordForm) {
     const toggle = passwordForm.closest(".account-block")?.querySelector(".section-toggle");
-    if (toggle) toggle.onclick=()=>{const open=!passwordForm.hidden;passwordForm.hidden=open;toggle.setAttribute("aria-expanded",String(!open));toggle.textContent=open?"Alterar":"Fechar";};
-    const newPasswordInput=$("#new-password");
-    newPasswordInput.addEventListener("input",()=>{const missing=passwordPolicy(newPasswordInput.value),rules=$("#change-password-rules");rules.textContent=missing.length?"Falta: "+missing.join(", ")+".":"✓ Palavra-passe forte.";rules.className="password-rules "+(missing.length?"":"valid");});
-    passwordForm.addEventListener("submit",async event=>{
+    if (toggle) toggle.onclick = () => {
+      const open = !passwordForm.hidden;
+      passwordForm.hidden = open;
+      toggle.setAttribute("aria-expanded", String(!open));
+      toggle.textContent = open ? "Alterar" : "Fechar";
+    };
+    const newPasswordInput = $("#new-password");
+    newPasswordInput.addEventListener("input", () => {
+      const missing = passwordPolicy(newPasswordInput.value);
+      const rules = $("#change-password-rules");
+      rules.textContent = missing.length ? "Falta: " + missing.join(", ") + "." : "✓ Palavra-passe forte.";
+      rules.className = "password-rules " + (missing.length ? "" : "valid");
+    });
+    passwordForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const feedback=$("#password-feedback");feedback.className="inline-feedback";feedback.textContent="";
-      const currentPassword=$("#current-password").value,newPassword=newPasswordInput.value,confirm=$("#new-password-confirm").value,missing=passwordPolicy(newPassword);
-      if(missing.length){feedback.className="inline-feedback error-text";feedback.textContent="Falta: "+missing.join(", ")+".";
-        return;}
-      if(newPassword!==confirm){feedback.className="inline-feedback error-text";feedback.textContent="As palavras-passe não coincidem.";return;}
-      try{const credential=EmailAuthProvider.credential(auth.currentUser.email,currentPassword);await reauthenticateWithCredential(auth.currentUser,credential);await updatePassword(auth.currentUser,newPassword);feedback.className="inline-feedback success-text";feedback.textContent="Palavra-passe atualizada com sucesso.";passwordForm.reset();passwordForm.hidden=true;toggle?.setAttribute("aria-expanded","false");if(toggle)toggle.textContent="Alterar";}
-      catch(err){feedback.className="inline-feedback error-text";feedback.textContent=friendlyError(err);}
+      const feedback = $("#password-feedback");
+      feedback.className = "inline-feedback";
+      feedback.textContent = "";
+      const currentPassword = $("#current-password").value;
+      const newPassword = newPasswordInput.value;
+      const confirm = $("#new-password-confirm").value;
+      const missing = passwordPolicy(newPassword);
+      if (missing.length) {
+        feedback.className = "inline-feedback error-text";
+        feedback.textContent = "Falta: " + missing.join(", ") + ".";
+        return;
+      }
+      if (newPassword !== confirm) {
+        feedback.className = "inline-feedback error-text";
+        feedback.textContent = "As palavras-passe não coincidem.";
+        return;
+      }
+      try {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        await updatePassword(auth.currentUser, newPassword);
+        feedback.className = "inline-feedback success-text";
+        feedback.textContent = "Palavra-passe atualizada com sucesso.";
+        passwordForm.reset();
+        passwordForm.hidden = true;
+        toggle?.setAttribute("aria-expanded", "false");
+        if (toggle) toggle.textContent = "Alterar";
+      } catch (err) {
+        feedback.className = "inline-feedback error-text";
+        feedback.textContent = friendlyError(err);
+      }
     });
   }
 }
 
-function formatAccountDate(value){
-  try{return new Intl.DateTimeFormat("pt-PT",{dateStyle:"medium",timeStyle:"short"}).format(new Date(value));}
-  catch{return value || "—";}
-}
 function wireTabs() {
   root.querySelectorAll("[data-tab]").forEach((button) => {
     button.addEventListener("click", () => button.dataset.tab === "login" ? loginView() : registerView());
@@ -504,15 +507,13 @@ async function googleSignIn(button, errorTarget) {
 }
 
 function renderAccountError(error) {
-  console.error("Nexauren account initialization", error);
-  try {
-    loginView("", getSafeReturnUrl() ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : "Pode entrar ou criar a sua conta Nexauren.");
-    const errorBox = $("#error");
-    if (errorBox && error) errorBox.textContent = "Não foi possível restaurar a sessão atual. Pode entrar novamente.";
-  } catch (fallbackError) {
-    console.error("Nexauren account login fallback", fallbackError);
-    if (root) root.innerHTML = '<div class="success-large"><div class="error" role="alert">Não foi possível carregar a conta.</div><button type="button" class="primary" onclick="location.reload()">Tentar novamente</button></div>';
-  }
+  root.innerHTML = `
+    <div class="success-large">
+      <div class="error" role="alert">${esc(friendlyError(error))}</div>
+      <button type="button" class="primary" id="reload-account">Tentar novamente</button>
+    </div>
+  `;
+  $("#reload-account").onclick = () => location.reload();
 }
 
 async function init() {
@@ -525,18 +526,9 @@ async function init() {
     console.error("Nexauren auth redirect", err);
   }
 
-  let authResolved = false;
-  const returnTarget = getSafeReturnUrl();
-  const fallbackTimer = setTimeout(() => {
-    if (authResolved) return;
-    loginView("", redirectError ? friendlyError(redirectError) : (returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : ""));
-  }, 5000);
-
-  const handleAuthState = async (user) => {
-    authResolved = true;
-    clearTimeout(fallbackTimer);
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      loginView("", redirectError ? friendlyError(redirectError) : (returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : ""));
+      loginView("", redirectError ? friendlyError(redirectError) : "");
       redirectError = null;
       return;
     }
@@ -555,19 +547,8 @@ async function init() {
       }
     }
 
-    const target = getSafeReturnUrl();
-    if (target) { location.replace(target); return; }
-    await userView(user, syncMessage);
-  };
-
-  try {
-    onAuthStateChanged(auth, handleAuthState);
-  } catch (err) {
-    authResolved = true;
-    clearTimeout(fallbackTimer);
-    console.error("Nexauren auth listener", err);
-    loginView("", returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : "");
-  }
+    userView(user, syncMessage);
+  });
 }
 
 init().catch((err) => renderAccountError(err));
