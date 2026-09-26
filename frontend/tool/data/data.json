@@ -1,9 +1,9 @@
 {
-  "version": 8,
+  "version": 9,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-26T15:45:00Z",
+    "updatedAt": "2026-09-26T16:00:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1527,6 +1527,35 @@
         "PDF",
         "converter",
         "images",
+        "documents"
+      ]
+    },
+    {
+      "id": "juntar-pdf",
+      "name": "Juntar PDF",
+      "description": "Combine vários ficheiros PDF num único documento, organize a ordem e faça tudo localmente no navegador.",
+      "category": "pdf",
+      "icon": "⊕",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/juntar-pdf/",
+      "tags": [
+        "PDF",
+        "juntar",
+        "mesclar",
+        "combinar",
+        "documentos"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 50,
+      "name_en": "Merge PDF",
+      "description_en": "Combine multiple PDF files into one document, organize their order, and process everything locally in your browser.",
+      "tags_en": [
+        "PDF",
+        "merge",
+        "combine",
         "documents"
       ]
     }
