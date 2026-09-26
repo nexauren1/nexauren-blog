@@ -2,63 +2,37 @@
 <html lang="pt"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070b12"><meta name="description" content="Converta JPG/JPEG em PDF diretamente no navegador.">
+<meta name="robots" content="index,follow">
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/jpg-to-pdf/">
 <title>JPG → PDF — Nexauren Tools</title>
 <link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
 <link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
-<link rel="stylesheet" href="./style.css?v=20260926-jpgpdf-1">
-<style id="nexauren-auto-ads-style">
-.nx-auto-ad{width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
-.nx-auto-ad.top{min-height:70px;margin:0 auto 22px;padding:10px 6px}.nx-auto-ad.top .nx-auto-ad-inner{width:min(468px,100%);min-width:0}
-.nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
-.nx-auto-ad .nx-auto-ad-inner{width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.nx-auto-ad.bottom .nx-auto-ad-inner{min-height:90px}
-.nx-auto-ad iframe{max-width:100%;border:0}
-.nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
-@media(max-width:520px){
-  .nx-auto-ad.top{margin-bottom:18px;padding:8px 2px;min-height:70px}
-  .nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}
-}
-</style>
-<script src="/assets/ads.js?v=20260925-auto3"></script>
+<link rel="stylesheet" href="./style.css?v=20260926-jpgpdf-2">
 </head><body>
-<!-- NEXAUREN-AUTO-ADS:START -->
-<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
-  <div class="nx-auto-ad-label">PUBLICIDADE</div>
-  <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
-</div>
-<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
-<!-- NEXAUREN-AUTO-ADS:END -->
 <main class="jpgpdf">
-<header class="jpgpdf-top"><a class="jpgpdf-back" href="/tool/categories/pdf/">← PDF</a><div class="jpgpdf-actions"><span class="jpgpdf-mark">NEXAUREN / PDF</span><button class="jpgpdf-lang" id="jpgpdf-lang" type="button" aria-label="Translate">English</button></div></header>
-<section class="jpgpdf-hero"><div><h1 class="jpgpdf-title">JPG → PDF</h1><p class="jpgpdf-lead">Converta uma ou várias imagens JPG/JPEG em um único PDF. Escolha tamanho de página, margens, orientação e qualidade de saída.</p></div><div class="jpgpdf-plan"><strong id="jpgpdf-plan-name">NEXAUREN FREE</strong><small id="jpgpdf-plan-limit">Free: até 10 imagens por PDF · Pro: até 50 imagens por PDF.</small></div></section>
-<section class="jpgpdf-work"><div class="jpgpdf-card">
-<label class="jpgpdf-drop"><input class="jpgpdf-input" type="file" accept=".jpg,.jpeg,image/jpeg" multiple><span><b>Escolha imagens JPG/JPEG</b><span>ou toque para selecionar várias imagens</span></span></label>
-<section id="jpgpdf-gate" class="jpgpdf-account-gate jpgpdf-hide"></section>
-<section id="jpgpdf-app">
+<header class="jpgpdf-top"><a class="jpgpdf-back" id="jpgpdf-back" href="/tool/categories/pdf/">← PDF</a><div class="jpgpdf-actions"><span class="jpgpdf-mark">NEXAUREN / PDF</span><button class="jpgpdf-lang" id="jpgpdf-lang" type="button" aria-label="Translate">English</button></div></header>
+<section class="jpgpdf-hero"><div><h1 class="jpgpdf-title" id="jpgpdf-title">JPG → PDF</h1><p class="jpgpdf-lead" id="jpgpdf-lead">Converta uma ou várias imagens JPG/JPEG em um único PDF. Escolha tamanho de página, margens, orientação e qualidade de saída.</p></div><div class="jpgpdf-plan"><strong id="jpgpdf-plan-name">NEXAUREN FREE</strong><small id="jpgpdf-plan-limit">Free: até 10 imagens por PDF · Pro: até 50 imagens por PDF.</small></div></section>
+<section class="jpgpdf-card" id="jpgpdf-gate" hidden></section>
+<section class="jpgpdf-work jpgpdf-hide" id="jpgpdf-app">
+<div class="jpgpdf-card">
+<label class="jpgpdf-drop"><input class="jpgpdf-input" type="file" accept=".jpg,.jpeg,image/jpeg" multiple><span><b id="jpgpdf-drop-title">Escolha imagens JPG/JPEG</b><span id="jpgpdf-drop-sub">ou toque para selecionar várias imagens</span></span></label>
 <div class="jpgpdf-grid">
-<div class="jpgpdf-field"><label>Tamanho da página</label><select id="jpgpdf-page-size"><option value="a4">A4</option><option value="original">Tamanho original da imagem</option></select></div>
-<div class="jpgpdf-field"><label>Orientação</label><select id="jpgpdf-orientation"><option value="auto">Automática</option><option value="portrait">Retrato</option><option value="landscape">Paisagem</option></select></div>
-<div class="jpgpdf-field"><label>Margens <span>pt</span></label><input id="jpgpdf-margin" type="number" min="0" max="72" value="18"></div>
-<div class="jpgpdf-field"><label>Qualidade JPEG <output id="jpgpdf-quality">90%</output></label><input id="jpgpdf-quality-input" type="range" min="60" max="100" value="90"></div>
-<div class="jpgpdf-field"><label>Nome do ficheiro</label><input id="jpgpdf-name" type="text" value="jpg-to-pdf" maxlength="80"></div>
+<div class="jpgpdf-field"><label for="jpgpdf-page-size" id="jpgpdf-page-size-label">Tamanho da página</label><select id="jpgpdf-page-size"><option id="jpgpdf-page-a4" value="a4">A4</option><option id="jpgpdf-page-original" value="original">Tamanho original da imagem</option></select></div>
+<div class="jpgpdf-field"><label for="jpgpdf-orientation" id="jpgpdf-orientation-label">Orientação</label><select id="jpgpdf-orientation"><option id="jpgpdf-orientation-auto" value="auto">Automática</option><option id="jpgpdf-orientation-portrait" value="portrait">Retrato</option><option id="jpgpdf-orientation-landscape" value="landscape">Paisagem</option></select></div>
+<div class="jpgpdf-field"><label for="jpgpdf-margin" id="jpgpdf-margin-label">Margens</label><input id="jpgpdf-margin" type="number" min="0" max="72" value="18"></div>
+<div class="jpgpdf-field"><label for="jpgpdf-quality-input"><span id="jpgpdf-quality-label">Qualidade JPEG</span> <output id="jpgpdf-quality-field">90%</output></label><input id="jpgpdf-quality-input" type="range" min="60" max="100" value="90"></div>
+<div class="jpgpdf-field"><label for="jpgpdf-name" id="jpgpdf-name-label">Nome do ficheiro</label><input id="jpgpdf-name" type="text" value="jpg-to-pdf" maxlength="80"></div>
 </div>
 <div class="jpgpdf-actions-row"><button class="jpgpdf-btn primary" id="jpgpdf-convert" type="button" disabled>Criar PDF</button><button class="jpgpdf-btn" id="jpgpdf-clear" type="button">Limpar</button></div>
 <div class="jpgpdf-progress" aria-hidden="true"><i></i></div>
 <div class="jpgpdf-status" id="jpgpdf-status">A preparar a ferramenta…</div>
-<div class="jpgpdf-list" id="jpgpdf-list"><div class="jpgpdf-empty">Nenhuma imagem selecionada.</div></div>
-<div class="jpgpdf-output" id="jpgpdf-output"><h2>PDF pronto</h2><div class="jpgpdf-output-row"><span id="jpgpdf-output-name">—</span><a class="jpgpdf-btn primary jpgpdf-download" href="javascript:void(0)">Baixar PDF</a></div></div>
-</section></div>
-<aside class="jpgpdf-card jpgpdf-side"><h2>Resumo</h2><div class="jpgpdf-stat"><span>Imagens</span><span id="jpgpdf-count">0</span></div><div class="jpgpdf-stat"><span>Páginas</span><span id="jpgpdf-page">0</span></div><div class="jpgpdf-stat"><span>Tamanho do PDF</span><span id="jpgpdf-size">—</span></div><div class="jpgpdf-stat"><span>Qualidade</span><span id="jpgpdf-quality">90%</span></div><div class="jpgpdf-hint"><b>Privacidade</b><br>O processamento acontece diretamente no navegador. Os JPG/JPEG não precisam ser enviados para um servidor.</div><div class="jpgpdf-hint">Free: até 10 imagens por PDF.<br>Pro: até 50 imagens por PDF.</div></aside></section>
+<div class="jpgpdf-list" id="jpgpdf-list"><div class="jpgpdf-empty" id="jpgpdf-empty">Nenhuma imagem selecionada.</div></div>
+<div class="jpgpdf-output" id="jpgpdf-output" hidden><h2 id="jpgpdf-output-title">PDF pronto</h2><div class="jpgpdf-output-row"><span id="jpgpdf-output-name">—</span><button class="jpgpdf-btn primary jpgpdf-download" id="jpgpdf-download" type="button">Baixar PDF</button></div></div>
+</div>
+<aside class="jpgpdf-card jpgpdf-side"><h2 id="jpgpdf-summary-title">Resumo</h2><div class="jpgpdf-stat"><span id="jpgpdf-count-label">Imagens</span><span id="jpgpdf-count">0</span></div><div class="jpgpdf-stat"><span id="jpgpdf-pages-label">Páginas</span><span id="jpgpdf-page">0</span></div><div class="jpgpdf-stat"><span id="jpgpdf-size-label">Tamanho do PDF</span><span id="jpgpdf-size">—</span></div><div class="jpgpdf-stat"><span id="jpgpdf-quality-label-side">Qualidade</span><span id="jpgpdf-quality-stat">90%</span></div><div class="jpgpdf-hint"><b id="jpgpdf-privacy-title">Privacidade</b><br><span id="jpgpdf-privacy-body">O processamento acontece diretamente no navegador. Os JPG/JPEG não precisam ser enviados para um servidor.</span></div><div class="jpgpdf-hint" id="jpgpdf-limits-hint">Free: até 10 imagens por PDF.<br>Pro: até 50 imagens por PDF.</div></aside>
+</section>
 <div class="jpgpdf-footer">JPG → PDF · Nexauren Tools</div>
 </main>
-<script type="module" src="./script.js?v=20260926-jpgpdf-1"></script>
+<script type="module" src="./script.js?v=20260926-jpgpdf-2"></script>
 <script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
-<!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
-<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
-  <div class="nx-auto-ad-label">PUBLICIDADE</div>
-  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
-</div>
-<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
-<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
 </body></html>
