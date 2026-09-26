@@ -113,7 +113,7 @@
 
   function applyRegistry(registry){
     tools=registry.tools.filter(t=>t.status==="active");
-    categories=registry.categories.map(c=>({...c,count:tools.filter(t=>t.category===c.id).length}));
+    categories=registry.categories.map(c=>({...c,count:tools.filter(t=>t.category===c.id).length})).filter(c=>c.count>0);
     registryReady=true;
     if(countEl)countEl.textContent=tools.length;
     const stored=localStorage.getItem("nexauren-tool-search")||"";
