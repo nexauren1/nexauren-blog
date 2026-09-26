@@ -31,6 +31,6 @@ pages.addEventListener("change",()=>{range.disabled=pages.value!=="range"});scal
 clear.addEventListener("click",()=>{state.file=null;state.pdf=null;state.outputs=[];cleanUrls();fileInfo.hidden=true;count.textContent="0";sizeStat.textContent="—";renderResults();msg(ui.none);progress.style.width="0%";convert.disabled=!state.ready});
 convert.addEventListener("click",run);window.addEventListener("beforeunload",cleanUrls);
 langBtn.addEventListener("click",()=>{try{localStorage.setItem("ns_lang",language==="en"?"pt":"en")}catch{}const u=new URL(location.href);if(language==="en")u.searchParams.delete("lang");else u.searchParams.set("lang","en");location.href=u.pathname+u.search});
-applyLanguage();planUi();
+applyLanguage();
 onAuthStateChanged(auth,async user=>{if(!user){state.ready=false;convert.disabled=true;setGate();return}openApp();state.ready=true;convert.disabled=!state.file;});
 })();
