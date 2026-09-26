@@ -16,7 +16,7 @@ import {
   linkWithCredential,
   signOut,
   syncWithWorker
-} from "/account/account-client.js?v=20260922-3";
+} from "/account/account-client.js?v=20260926-2";
 const root = document.querySelector("[data-account-app]");
 const $ = (selector, scope = document) => scope.querySelector(selector);
 let redirectError = null;
