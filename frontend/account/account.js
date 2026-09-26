@@ -208,6 +208,7 @@ async function userView(user, syncMessage = "") {
   const joined = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null;
   const joinedText = joined && !Number.isNaN(joined.getTime()) ? new Intl.DateTimeFormat("pt-PT",{dateStyle:"medium"}).format(joined) : "—";
   const initial = (user.displayName || user.email || "N").slice(0,1).toUpperCase();
+  const hasPasswordProvider = (user.providerData || []).some((p) => p.providerId === "password");
   const commentStatus = s => ({approved:"Aprovado",pending:"Pendente",rejected:"Rejeitado",hidden:"Oculto"}[s] || s || "—");
   const commentBadge = s => '<span class="account-history-status status-'+esc(s||"pending")+'">'+esc(commentStatus(s))+'</span>';
   const recentHtml = comments.length ? comments.map(c =>
@@ -526,7 +527,9 @@ async function init() {
       }
     }
 
-    const target = getSafeReturnUrl();\n    if(target){ location.replace(target); return; }\n    await userView(user, syncMessage);
+    const target = getSafeReturnUrl();
+    if (target) { location.replace(target); return; }
+    await userView(user, syncMessage);
   });
 }
 
