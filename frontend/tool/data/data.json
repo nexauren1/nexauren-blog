@@ -1,9 +1,9 @@
 {
-  "version": 9,
+  "version": 10,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-26T16:00:00Z",
+    "updatedAt": "2026-09-26T16:20:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1556,6 +1556,36 @@
         "PDF",
         "merge",
         "combine",
+        "documents"
+      ]
+    },
+    {
+      "id": "dividir-pdf",
+      "name": "Dividir PDF",
+      "description": "Divida um PDF em vários ficheiros por páginas, com seleção por páginas ou intervalo.",
+      "category": "pdf",
+      "icon": "↯",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/dividir-pdf/",
+      "tags": [
+        "PDF",
+        "dividir",
+        "separar",
+        "páginas",
+        "documentos"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 60,
+      "name_en": "Split PDF",
+      "description_en": "Split a PDF into separate files by page, using individual pages or a custom range.",
+      "tags_en": [
+        "PDF",
+        "split",
+        "separate",
+        "pages",
         "documents"
       ]
     }
