@@ -1618,8 +1618,8 @@ async function api(env,request,url,ctx){
     try{return await saveToolReview(env,request);}
     catch(error){
       const code=error?.code||"TOOL_REVIEW_SAVE_ERROR";
-      const status=["TOOL_REQUIRED","TOOL_NOT_FOUND","TOOL_RATING_INVALID","ANONYMOUS_NAME_INVALID","UNAUTHENTICATED"].includes(code)?422:503;
-      return fail(error?.message||"Não foi possível guardar a avaliação.",code==="UNAUTHENTICATED"?401:status,code);
+      const status=code==="UNAUTHENTICATED"?401:(code==="TOOL_NOT_FOUND"?404:(["TOOL_REQUIRED","TOOL_RATING_INVALID","ANONYMOUS_NAME_INVALID"].includes(code)?422:503));
+      return fail(error?.message||"Não foi possível guardar a avaliação.",status,code);
     }
   }
   const trr=p.match(/^\/api\/tool\/reviews\/([^/]+)$/);
