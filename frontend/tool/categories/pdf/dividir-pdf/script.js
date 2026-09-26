@@ -85,7 +85,6 @@ drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag
 drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
 drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");openFile(e.dataTransfer.files?.[0])});
 mode.addEventListener("change",()=>{range.disabled=mode.value!=="range";if(pdf)parts.textContent=mode.value==="each"?String(pdf.getPageCount()):"1"});
-splitBtn.addEventListener("click",split);
 clearBtn.addEventListener("click",()=>{file=null;pdf=null;outputs=[];fileBar.hidden=true;total.textContent="0";parts.textContent="0";state.textContent=t().ready;progress.style.width="0%";splitBtn.disabled=true;renderResults();msg(t().ready)});
 langBtn.addEventListener("click",()=>{language=language==="en"?"pt":"en";const u=new URL(location.href);if(language==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search||""));applyLanguage();msg(t().ready)});
 range.disabled=true;applyLanguage();
