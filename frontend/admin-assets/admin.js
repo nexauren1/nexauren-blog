@@ -73,18 +73,27 @@ async function posts(){const d=await api("/api/posts?all=1&limit=100");state.pos
 function previewMd(v){
   let lines=String(v||"").replace(/\r/g,"").split("\n"),out="",i=0;
   const inline=s=>String(s||"").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*([^*\n]+)\*/g,"<em>$1</em>");
+  const imageLine=line=>{
+    let raw=line.trim();
+    if(/^@imagem\s+/i.test(raw))raw=raw.replace(/^@imagem\s+/i,"");
+    else if(/^@\s*(?:https?:\/\/|\/)/i.test(raw))raw=raw.replace(/^@\s*/,"");
+    else return "";
+    const parts=raw.split("|").map(x=>x.trim()),src=parts.shift()||"",alt=parts.shift()||"",cap=parts.join(" | ");
+    return src?'<figure><img loading="lazy" src="'+esc(src)+'" alt="'+esc(alt||"Imagem do artigo")+'">'+(cap?'<figcaption>'+esc(cap)+"</figcaption>":"")+"</figure>":"";
+  };
   while(i<lines.length){
     const line=lines[i].trim();
     if(!line){i++;continue}
-    if(/^#\s+/.test(line)){out+="<h2>"+esc(line.replace(/^#\s+/,""))+"</h2>";i++;continue}
-    if(/^##\s+/.test(line)){out+="<h3>"+esc(line.replace(/^##\s+/,""))+"</h3>";i++;continue}
+    if(/^##\s+/.test(line)){out+="<h2>"+esc(line.replace(/^##\s+/,""))+"</h2>";i++;continue}
+    if(/^#\s+/.test(line)){out+="<h1>"+esc(line.replace(/^#\s+/,""))+"</h1>";i++;continue}
     if(/^::\s*/.test(line)){out+="<p>"+inline(esc(line.replace(/^::\s*/,"")))+"</p>";i++;continue}
     if(/^>\s?/.test(line)){out+="<blockquote>"+inline(esc(line.replace(/^>\s?/,"")))+"</blockquote>";i++;continue}
     if(/^---+$/.test(line)){out+="<hr>";i++;continue}
-    if(/^@imagem\s+/i.test(line)){const parts=line.replace(/^@imagem\s+/i,"").split("|").map(x=>x.trim()),src=parts.shift()||"",alt=parts.shift()||"",cap=parts.join(" | ");out+=src?'<figure><img loading="lazy" src="'+esc(src)+'" alt="'+esc(alt)+'">'+(cap?'<figcaption>'+esc(cap)+"</figcaption>":"")+"</figure>":"";i++;continue}
+    if(/^@(?:imagem\s+|\s*(?:https?:\/\/|\/))/i.test(line)){out+=imageLine(line);i++;continue}
     if(/^-\s+/.test(line)){const items=[];while(i<lines.length&&/^\s*-\s+/.test(lines[i])){items.push("<li>"+inline(esc(lines[i].replace(/^\s*-\s+/,"")))+"</li>");i++}out+="<ul>"+items.join("")+"</ul>";continue}
     if(/^\d+\.\s+/.test(line)){const items=[];while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){items.push("<li>"+inline(esc(lines[i].replace(/^\s*\d+\.\s+/,"")))+"</li>");i++}out+="<ol>"+items.join("")+"</ol>";continue}
-    const para=[];while(i<lines.length&&lines[i].trim()&&!/^#\s+|^##\s+|^::\s*|^>\s?|^---+$|^@imagem\s+|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){para.push(lines[i].trim());i++}out+="<p>"+inline(esc(para.join("\n"))).replace(/\n/g,"<br>")+"</p>";
+    const para=[];while(i<lines.length&&lines[i].trim()&&!/^##\s+|^#\s+|^::\s*|^>\s?|^---+$|^@(?:imagem\s+|\s*(?:https?:\/\/|\/))|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){para.push(lines[i].trim());i++}
+    out+="<p>"+inline(esc(para.join("\n"))).replace(/\n/g,"<br>")+"</p>";
   }
   return out;
 }
