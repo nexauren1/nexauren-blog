@@ -32,20 +32,56 @@ function typeLabel(v){const m=lang==="en"?{article:"Article",news:"News",guide:"
 function catLabel(slug,name){const en={news:"News","breaking-news":"Breaking News",tecnologia:"Technology",entretenimento:"Entertainment",nexauren:"Nexauren",eventos:"Events",ferramentas:"Tools",apps:"Apps",products:"Products",guides:"Guides",tutorials:"Tutorials",releases:"Releases",updates:"Updates"};const pt={news:"Notícias","breaking-news":"Notícias de última hora",tecnologia:"Tecnologia",entretenimento:"Entretenimento",nexauren:"Nexauren",eventos:"Eventos",ferramentas:"Ferramentas",apps:"Aplicativos",products:"Produtos",guides:"Guias",tutorials:"Tutoriais",releases:"Lançamentos",updates:"Atualizações"};return (lang==="en"?en:pt)[slug]||name||""}
 function excerpt(p){if(p.excerpt)return p.excerpt;const s=String(p.content||"").replace(/[#_*\x60>\[\]()!]/g," ").replace(/\s+/g," ").trim();return s?(s.slice(0,180)+(s.length>180?"…":"")):"";}
 function md(s){
-  let lines=String(s||"").replace(/\r/g,"").split("\n"),out="",i=0;
-  const inline=s=>{let x=esc(s||"");x=x.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*([^*\n]+)\*/g,"<em>$1</em>");x=x.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,l,h)=>{const v=url(h);return v?'<a href="'+esc(v)+'" target="_blank" rel="noopener">'+l+"</a>":l;});return x;};
+  const lines=String(s||"").replace(/\r/g,"").split("\n");
+  let out="",i=0;
+  const inline=value=>{
+    let x=esc(value||"");
+    x=x.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*([^*\n]+)\*/g,"<em>$1</em>");
+    x=x.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,label,href)=>{
+      const v=url(href);
+      return v?'<a href="'+esc(v)+'" target="_blank" rel="noopener">'+label+"</a>":label;
+    });
+    return x;
+  };
+  const imageLine=line=>{
+    let raw=line.trim();
+    if(/^@imagem\s+/i.test(raw)) raw=raw.replace(/^@imagem\s+/i,"");
+    else if(/^@\s*(?:https?:\/\/|\/)/i.test(raw)) raw=raw.replace(/^@\s*/,"");
+    else return "";
+    const parts=raw.split("|").map(x=>x.trim());
+    const src=parts.shift()||"";
+    const alt=parts.shift()||"";
+    const cap=parts.join(" | ");
+    const v=url(src);
+    if(!v)return "";
+    return '<figure class="article-figure"><img loading="lazy" decoding="async" src="'+esc(v)+'" alt="'+esc(alt||"Imagem do artigo")+'">'+(cap?'<figcaption>'+esc(cap)+"</figcaption>":"")+"</figure>";
+  };
   while(i<lines.length){
     const line=lines[i].trim();
     if(!line){i++;continue}
-    if(/^#\s+/.test(line)){out+="<h2>"+inline(line.replace(/^#\s+/,""))+"</h2>";i++;continue}
-    if(/^##\s+/.test(line)){out+="<h3>"+inline(line.replace(/^##\s+/,""))+"</h3>";i++;continue}
+    if(/^##\s+/.test(line)){out+="<h2>"+inline(line.replace(/^##\s+/,""))+"</h2>";i++;continue}
+    if(/^#\s+/.test(line)){out+="<h1>"+inline(line.replace(/^#\s+/,""))+"</h1>";i++;continue}
     if(/^::\s*/.test(line)){out+="<p>"+inline(line.replace(/^::\s*/,""))+"</p>";i++;continue}
     if(/^>\s?/.test(line)){out+="<blockquote>"+inline(line.replace(/^>\s?/,""))+"</blockquote>";i++;continue}
     if(/^---+$/.test(line)){out+="<hr>";i++;continue}
-    if(/^@imagem\s+/i.test(line)){const parts=line.replace(/^@imagem\s+/i,"").split("|").map(x=>x.trim()),src=parts.shift()||"",alt=parts.shift()||"",cap=parts.join(" | "),v=url(src);if(v)out+='<figure class="article-figure"><img loading="lazy" decoding="async" src="'+esc(v)+'" alt="'+esc(alt)+'">'+(cap?'<figcaption>'+esc(cap)+"</figcaption>":"")+"</figure>";i++;continue}
-    if(/^-\s+/.test(line)){const items=[];while(i<lines.length&&/^\s*-\s+/.test(lines[i])){items.push("<li>"+inline(lines[i].replace(/^\s*-\s+/,""))+"</li>");i++}out+="<ul>"+items.join("")+"</ul>";continue}
-    if(/^\d+\.\s+/.test(line)){const items=[];while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){items.push("<li>"+inline(lines[i].replace(/^\s*\d+\.\s+/,""))+"</li>");i++}out+="<ol>"+items.join("")+"</ol>";continue}
-    const para=[];while(i<lines.length&&lines[i].trim()&&!/^#\s+|^##\s+|^::\s*|^>\s?|^---+$|^@imagem\s+|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){para.push(lines[i].trim());i++}out+="<p>"+inline(para.join("\n")).replace(/\n/g,"<br>")+"</p>";
+    if(/^@(?:imagem\s+|\s*(?:https?:\/\/|\/))/i.test(line)){
+      out+=imageLine(line);i++;continue;
+    }
+    if(/^-\s+/.test(line)){
+      const items=[];
+      while(i<lines.length&&/^\s*-\s+/.test(lines[i])){items.push("<li>"+inline(lines[i].replace(/^\s*-\s+/,""))+"</li>");i++}
+      out+="<ul>"+items.join("")+"</ul>";continue;
+    }
+    if(/^\d+\.\s+/.test(line)){
+      const items=[];
+      while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){items.push("<li>"+inline(lines[i].replace(/^\s*\d+\.\s+/,""))+"</li>");i++}
+      out+="<ol>"+items.join("")+"</ol>";continue;
+    }
+    const para=[];
+    while(i<lines.length&&lines[i].trim()&&!/^##\s+|^#\s+|^::\s*|^>\s?|^---+$|^@(?:imagem\s+|\s*(?:https?:\/\/|\/))|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){
+      para.push(lines[i].trim());i++;
+    }
+    out+="<p>"+inline(para.join("\n")).replace(/\n/g,"<br>")+"</p>";
   }
   return out;
 }
