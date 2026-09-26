@@ -237,6 +237,48 @@ async function search(q){
   const ps=(await api(langQuery("/api/search?q="+encodeURIComponent(q)))).posts||[];
   document.getElementById("list").innerHTML=ps.length?ps.map(card).join(""):'<div class="empty">'+t("noResults")+"</div>";
 }
+async function firebaseWorkerFetch(path,options={}){
+  try{
+    const mod=await import("/account/account-client.js?v=20260922-3");
+    const user=mod.auth?.currentUser;
+    if(!user)return null;
+    return await mod.workerFetch(path,options);
+  }catch(error){
+    if(error?.message?.includes("É necessário iniciar sessão"))return null;
+    throw error;
+  }
+}
+function commentText(value){return String(value??"").replace(/[<>]/g,"");}
+function commentItemHtml(x,depth=0){
+  const mine=x.my_reaction||"";
+  return '<article class="blog-comment" data-comment-id="'+esc(x.id)+'" style="--comment-depth:'+Math.min(depth,3)+'"><div class="blog-comment-head"><strong>'+esc(x.author_name||"Nexauren User")+'</strong><time>'+date(x.created_at)+'</time></div><p>'+esc(x.body)+'</p><div class="blog-comment-actions"><button type="button" data-comment-react="like" class="'+(mine==="like"?"active":"")+'">👍 <span>'+Number(x.like_count||0)+'</span></button><button type="button" data-comment-react="dislike" class="'+(mine==="dislike"?"active":"")+'">👎 <span>'+Number(x.dislike_count||0)+'</span></button><button type="button" data-comment-reply>Responder</button><button type="button" data-comment-report>Denunciar</button></div></article>';
+}
+function renderCommentTree(items){
+  const byParent=new Map();for(const x of items){const k=x.parent_id||"root";if(!byParent.has(k))byParent.set(k,[]);byParent.get(k).push(x)}
+  const walk=(parent,depth)=>((byParent.get(parent)||[]).map(x=>commentItemHtml(x,depth)+(byParent.has(x.id)?'<div class="blog-comment-replies">'+walk(x.id,depth+1)+'</div>':"")).join(""));return walk("root",0);
+}
+async function loadComments(postId,container,composer,allowComments){
+  if(!allowComments){container.innerHTML='<div class="comments-closed">Os comentários estão desativados para este artigo.</div>';composer?.remove();return;}
+  try{
+    const d=await api("/api/comments?post_id="+encodeURIComponent(postId));
+    const items=d.comments||[];container.innerHTML=items.length?renderCommentTree(items):'<div class="comments-empty">Ainda não há comentários. Seja o primeiro a participar.</div>';
+    container.closest(".blog-comments")?.querySelector("[data-comment-count]")?.replaceChildren(document.createTextNode(String(items.length)));
+    container.dataset.allowReplies=d.settings?.allow_replies?"1":"0";container.dataset.allowReactions=d.settings?.allow_reactions?"1":"0";
+  }catch(e){container.innerHTML='<div class="comments-error">'+esc(e.message||"Não foi possível carregar os comentários.")+"</div>";}
+}
+async function wireComments(postId,allowComments){
+  const box=document.getElementById("blog-comments"),list=document.getElementById("comments-list"),form=document.getElementById("comment-form"),feedback=document.getElementById("comment-feedback");if(!box||!list)return;
+  await loadComments(postId,list,form,allowComments);if(!allowComments||!form)return;
+  form.addEventListener("submit",async e=>{e.preventDefault();feedback.textContent="";const body=$("#comment-body").value.trim(),parent=$("#comment-parent").value||"";if(!body)return feedback.textContent=lang==="en"?"Write a comment.":"Escreva um comentário.";const submit=form.querySelector("button[type=submit]");submit.disabled=true;try{const d=await firebaseWorkerFetch("/api/comments?post_id="+encodeURIComponent(postId),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({body,parent_id:parent||null})});if(!d){location.href="/account?return="+encodeURIComponent(location.href);return;}$("#comment-body").value="";$("#comment-parent").value="";$("#comment-replying").textContent="";feedback.textContent=d.moderated?(lang==="en"?"Comment submitted for review.":"Comentário enviado para aprovação."): (lang==="en"?"Comment published.":"Comentário publicado.");await loadComments(postId,list,form,allowComments);}catch(x){feedback.textContent=x.message||"Não foi possível publicar."; }finally{submit.disabled=false;}});
+  list.addEventListener("click",async e=>{
+    const item=e.target.closest("[data-comment-id]");if(!item)return;const id=item.dataset.commentId;
+    const react=e.target.closest("[data-comment-react]");
+    if(react){try{const d=await firebaseWorkerFetch("/api/comments/"+encodeURIComponent(id),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reaction:react.dataset.commentReact})});if(!d){location.href="/account?return="+encodeURIComponent(location.href);return;}await loadComments(postId,list,form,allowComments);}catch(x){alert(x.message||"Não foi possível reagir.");}return;}
+    if(e.target.closest("[data-comment-reply]")){if(list.dataset.allowReplies!=="1")return;$("#comment-parent").value=id;$("#comment-replying").textContent=(lang==="en"?"Replying to ":"A responder a ")+(item.querySelector(".blog-comment-head strong")?.textContent||"comentário");$("#comment-body").focus();return;}
+    if(e.target.closest("[data-comment-report]")){try{const reason=prompt(lang==="en"?"Why are you reporting this comment?":"Por que deseja denunciar este comentário?","");if(!reason)return;const d=await firebaseWorkerFetch("/api/comments/"+encodeURIComponent(id)+"/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason})});if(!d){location.href="/account?return="+encodeURIComponent(location.href);return;}alert(lang==="en"?"Report submitted.":"Denúncia enviada.");}catch(x){alert(x.message||"Não foi possível denunciar.");}}
+  });
+  $("#comment-cancel").onclick=()=>{$("#comment-parent").value="";$("#comment-replying").textContent="";};
+}
 async function post(slug){
   app.innerHTML='<article class="article"><div class="hero-card" style="height:320px"></div></article>';
   try{
@@ -254,7 +296,7 @@ async function post(slug){
     const encodedShareUrl=encodeURIComponent(shareUrl);
     const encodedTitle=encodeURIComponent(p.title||"Nexauren Story");
     const socialActions='<a class="share-button share-link share-whatsapp" href="https://wa.me/?text='+encodedTitle+'%20'+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">WhatsApp</a><a class="share-button share-link" href="https://t.me/share/url?url='+encodedShareUrl+'&text='+encodedTitle+'" target="_blank" rel="noopener noreferrer">Telegram</a><a class="share-button share-link" href="https://www.facebook.com/sharer/sharer.php?u='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">Facebook</a><a class="share-button share-link" href="https://twitter.com/intent/tweet?text='+encodedTitle+'&url='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">X</a>';
-    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
+    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="blog-comments" id="blog-comments"><div class="section-head"><div><h2>'+ (lang==="en"?"Discussion":"Comentários") +'</h2><span class="comments-count"><span data-comment-count>0</span> '+(lang==="en"?"comments":"comentários")+'</span></div></div><div id="comments-list" class="comments-list"></div><form id="comment-form" class="comment-composer"><input type="hidden" id="comment-parent"><div id="comment-replying" class="comment-replying"></div><textarea id="comment-body" maxlength="5000" placeholder="'+(lang==="en"?"Share your thoughts…":"Partilhe a sua opinião…")+'" required></textarea><div class="comment-composer-footer"><small id="comment-feedback"></small><div><button type="button" class="share-button share-secondary" id="comment-cancel">Cancelar</button><button type="submit" class="share-button">Publicar comentário</button></div></div></form></section><section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
     document.getElementById("share-story")?.addEventListener("click",async()=>{
       try{
         if(navigator.share){await navigator.share({title:p.title,text:p.excerpt||p.title,url:shareUrl});return;}
@@ -262,6 +304,7 @@ async function post(slug){
         const b=document.getElementById("share-story");if(b){b.textContent="✓ "+(lang==="en"?"Copied":"Copiado");setTimeout(()=>b.textContent="↗ "+(lang==="en"?"Share":"Partilhar"),1800);}
       }catch{}
     });
+    await wireComments(p.id,p.allow_comments!==0);
     document.getElementById("copy-story")?.addEventListener("click",async()=>{
       try{
         await navigator.clipboard.writeText(shareUrl);
