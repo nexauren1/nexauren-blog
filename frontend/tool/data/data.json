@@ -1,9 +1,9 @@
 {
-  "version": 6,
+  "version": 7,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-26T15:00:00Z",
+    "updatedAt": "2026-09-26T15:20:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1465,6 +1465,36 @@
         "PDF",
         "JPG",
         "JPEG",
+        "converter",
+        "images",
+        "pages"
+      ]
+    },
+    {
+      "id": "pdf-to-png",
+      "name": "PDF → PNG",
+      "description": "Converta páginas de um PDF em imagens PNG com resolução ajustável.",
+      "category": "pdf",
+      "icon": "▤",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/pdf-to-png/",
+      "tags": [
+        "PDF",
+        "PNG",
+        "conversor",
+        "imagens",
+        "páginas"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 30,
+      "name_en": "PDF → PNG",
+      "description_en": "Convert PDF pages into PNG images with adjustable resolution.",
+      "tags_en": [
+        "PDF",
+        "PNG",
         "converter",
         "images",
         "pages"
