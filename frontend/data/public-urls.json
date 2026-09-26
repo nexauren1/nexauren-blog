@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-26T12:00:59.813284Z",
+  "generatedAt": "2026-09-26T15:42:02.318794Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -27,6 +27,7 @@
     "/tool/categories/pdf/inserir-paginas/",
     "/tool/categories/pdf/jpg-to-pdf/",
     "/tool/categories/pdf/juntar-pdf/",
+    "/tool/categories/pdf/marca-dagua-pdf/",
     "/tool/categories/pdf/pdf-to-jpg/",
     "/tool/categories/pdf/pdf-to-png/",
     "/tool/categories/pdf/png-to-pdf/",
