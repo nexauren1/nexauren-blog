@@ -1,9 +1,9 @@
 {
-  "version": 10,
+  "version": 11,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-26T16:20:00Z",
+    "updatedAt": "2026-09-26T18:15:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1585,6 +1585,36 @@
         "PDF",
         "split",
         "separate",
+        "pages",
+        "documents"
+      ]
+    },
+    {
+      "id": "rodar-pdf",
+      "name": "Rodar PDF",
+      "description": "Rode todas as páginas de um PDF ou apenas um intervalo e exporte o documento ajustado.",
+      "category": "pdf",
+      "icon": "↻",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/rodar-pdf/",
+      "tags": [
+        "PDF",
+        "rodar",
+        "rotação",
+        "páginas",
+        "documentos"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 70,
+      "name_en": "Rotate PDF",
+      "description_en": "Rotate all PDF pages or a selected page range and export the adjusted document.",
+      "tags_en": [
+        "PDF",
+        "rotate",
+        "rotation",
         "pages",
         "documents"
       ]
