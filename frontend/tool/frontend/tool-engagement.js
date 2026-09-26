@@ -12,7 +12,7 @@ function metaFor(id){return engagement[id]||{tool_id:id,avg_rating:0,review_coun
 function accountUrl(){return "/account?return="+encodeURIComponent(location.pathname+location.search+location.hash);}
 function ensureAuthScript(){
   if(auth!==null)return Promise.resolve();
-  return import("/account/account-client.js?v=20260926-2").then(mod=>{
+  return import("/account/account-client.js?v=20260923-tool-access-2").then(mod=>{
     auth=mod.auth;workerFetch=mod.workerFetch;
     mod.onAuthStateChanged(auth,current=>{user=current||null;refreshEngagement(true);});
   }).catch(()=>{auth=null;workerFetch=null;});
@@ -29,9 +29,17 @@ async function requestPublic(ids,withAuth){
 }
 async function refreshEngagement(forceAuth=false){
   if(!registry)return;
-  const ids=[...new Set((registry.tools||[]).filter(t=>t.status==="active").map(t=>t.id))].slice(0,100);
+  const ids=[...new Set((registry.tools||[]).filter(t=>t.status==="active").map(t=>t.id))];
   if(!ids.length)return;
-  try{const d=await requestPublic(ids,forceAuth||!!user);if(d?.items){engagement={...engagement,...d.items};renderEverything();refreshBars();}}catch{}
+  try{
+    for(let i=0;i<ids.length;i+=80){
+      const batch=ids.slice(i,i+80);
+      const d=await requestPublic(batch,forceAuth||!!user);
+      if(d?.items)engagement={...engagement,...d.items};
+    }
+    renderEverything();
+    refreshBars();
+  }catch{}
 }
 function getTool(id){return registry?.tools?.find(t=>t.id===id&&t.status==="active")||null;}
 function attachNav(){
