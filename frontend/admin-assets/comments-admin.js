@@ -1,1 +1,60 @@
-(()=>{const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");const date=v=>{try{return new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(v))}catch{return v||"—"}};async function loadComments(){const root=document.getElementById("view-comments");if(!root)return;root.innerHTML='<div class="view-header"><div><div class="eyebrow">Moderação</div><h1>Comentários</h1><p>A carregar comentários…</p></div></div>';try{const d=await api("/api/admin/comments");const s=d.stats||{},rows=d.comments||[];root.innerHTML='<div class="view-header"><div><div class="eyebrow">Moderação do Blog</div><h1>Comentários</h1><p>Revise, aprove, oculte ou elimine comentários dos artigos.</p></div><button class="secondary" id="comments-refresh">↻ Atualizar</button></div><div class="stats comments-admin-stats"><div class="stat"><div class="value">'+s.total+'</div><div class="label">Total</div></div><div class="stat"><div class="value">'+s.pending+'</div><div class="label">Pendentes</div></div><div class="stat"><div class="value">'+s.approved+'</div><div class="label">Aprovados</div></div><div class="stat"><div class="value">'+s.reports+'</div><div class="label">Denúncias pendentes</div></div></div><div class="panel"><div class="panel-pad"><div class="panel-title">Comentários recentes</div></div>'+(rows.length?rows.map(c=>'<article class="comment-admin-row '+(c.status==="pending"?"comment-admin-pending":"")+'" data-comment="'+esc(c.id)+'"><div><strong>'+esc(c.author_name)+'</strong><div class="comment-admin-meta">'+date(c.created_at)+' · <a href="/blog/post/'+encodeURIComponent(c.post_slug)+'" target="_blank" rel="noopener">'+esc(c.post_title)+'</a></div><div class="comment-admin-body">'+esc(c.body)+'</div><div class="comment-admin-meta">'+Number(c.like_count||0)+' gostos · '+Number(c.dislike_count||0)+' não gostos'+(Number(c.report_count||0)?' · '+Number(c.report_count)+' denúncia(s) pendente(s)':"")+'</div></div><div class="comment-admin-actions"><select data-status><option value="pending" '+(c.status==="pending"?"selected":"")+'>Pendente</option><option value="approved" '+(c.status==="approved"?"selected":"")+'>Aprovado</option><option value="rejected" '+(c.status==="rejected"?"selected":"")+'>Rejeitado</option><option value="hidden" '+(c.status==="hidden"?"selected":"")+'>Oculto</option></select><button class="secondary" data-save>Guardar</button><button class="danger-btn" data-delete>Eliminar</button></div></article>').join(""):'<div class="empty-state"><h2>Sem comentários.</h2><p>Quando os leitores comentarem, eles aparecerão aqui para moderação.</p></div>'+'</div>';document.getElementById("comments-refresh")?.addEventListener("click",loadComments);root.querySelectorAll("[data-save]").forEach(b=>b.addEventListener("click",async()=>{const row=b.closest("[data-comment]"),id=row.dataset.comment,st=row.querySelector("[data-status]").value;b.disabled=true;try{await api("/api/admin/comments/"+encodeURIComponent(id),{method:"PUT",body:JSON.stringify({status:st})});toast("Comentário atualizado.");await loadComments()}catch(e){toast(e.message||"Não foi possível atualizar.","error")}finally{b.disabled=false}}));root.querySelectorAll("[data-delete]").forEach(b=>b.addEventListener("click",async()=>{const row=b.closest("[data-comment]");if(!confirm("Eliminar este comentário?"))return;b.disabled=true;try{await api("/api/admin/comments/"+encodeURIComponent(row.dataset.comment),{method:"DELETE"});toast("Comentário eliminado.");await loadComments()}catch(e){toast(e.message||"Não foi possível eliminar.","error")}finally{b.disabled=false}}))}catch(e){root.innerHTML='<div class="view-header"><div><div class="eyebrow">Moderação do Blog</div><h1>Comentários</h1><p>Não foi possível carregar os comentários.</p></div></div><div class="empty-state"><h2>Comentários indisponíveis</h2><p>'+esc(e.message)+'</p><p>Se as tabelas ainda não foram criadas no D1 do Blog, execute <code>database/comments-complete.sql</code>.</p><button class="secondary" id="comments-retry">↻ Tentar novamente</button></div>';document.getElementById("comments-retry")?.addEventListener("click",loadComments)}}window.NexaurenLoadComments=loadComments;let lastRun=0;const watch=()=>{const root=document.getElementById("view-comments");if(!root)return;if(!root.classList.contains("active-view"))return;if(Date.now()-lastRun<1500)return;lastRun=Date.now();loadComments()};const root=document.getElementById("view-comments");if(root)new MutationObserver(watch).observe(root,{attributes:true,attributeFilter:["class"]});document.addEventListener("DOMContentLoaded",watch);watch();})();
+(function(){
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function formatDate(v){
+    try{return new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(v));}
+    catch(e){return v || "—";}
+  }
+  function message(root,title,text){
+    root.innerHTML='<div class="view-header"><div><div class="eyebrow">Moderação do Blog</div><h1>Comentários</h1><p>'+esc(text)+'</p></div></div><div class="empty-state"><h2>'+esc(title)+'</h2><p>'+esc(text)+'</p><button class="secondary" id="comments-retry">↻ Tentar novamente</button></div>';
+    var retry=document.getElementById("comments-retry");
+    if(retry) retry.onclick=window.NexaurenLoadComments;
+  }
+  window.NexaurenLoadComments=async function(){
+    var root=document.getElementById("view-comments");
+    if(!root)return;
+    root.innerHTML='<div class="view-header"><div><div class="eyebrow">Moderação do Blog</div><h1>Comentários</h1><p>A carregar comentários…</p></div></div>';
+    try{
+      var d=await window.api("/api/admin/comments");
+      var s=d.stats||{}, rows=d.comments||[];
+      var html='<div class="view-header"><div><div class="eyebrow">Moderação do Blog</div><h1>Comentários</h1><p>Revise e modere os comentários dos artigos.</p></div><button class="secondary" id="comments-refresh">↻ Atualizar</button></div>';
+      html+='<div class="stats comments-admin-stats"><div class="stat"><div class="value">'+Number(s.total||0)+'</div><div class="label">Total</div></div><div class="stat"><div class="value">'+Number(s.pending||0)+'</div><div class="label">Pendentes</div></div><div class="stat"><div class="value">'+Number(s.approved||0)+'</div><div class="label">Aprovados</div></div><div class="stat"><div class="value">'+Number(s.reports||0)+'</div><div class="label">Denúncias pendentes</div></div></div>';
+      html+='<div class="panel"><div class="panel-pad"><div class="panel-title">Comentários recentes</div></div>';
+      if(rows.length){
+        rows.forEach(function(c){
+          html+='<article class="comment-admin-row" data-comment="'+esc(c.id)+'"><div><strong>'+esc(c.author_name)+'</strong><div class="comment-admin-meta">'+formatDate(c.created_at)+' · '+esc(c.post_title||"Artigo")+'</div><div class="comment-admin-body">'+esc(c.body)+'</div><div class="comment-admin-meta">'+Number(c.like_count||0)+' gostos · '+Number(c.dislike_count||0)+' não gostos'+(Number(c.report_count||0)?' · '+Number(c.report_count)+' denúncia(s) pendente(s)':"")+'</div></div><div class="comment-admin-actions"><select data-status><option value="pending"'+(c.status==="pending"?" selected":"")+'>Pendente</option><option value="approved"'+(c.status==="approved"?" selected":"")+'>Aprovado</option><option value="rejected"'+(c.status==="rejected"?" selected":"")+'>Rejeitado</option><option value="hidden"'+(c.status==="hidden"?" selected":"")+'>Oculto</option></select><button class="secondary" data-save>Guardar</button><button class="danger-btn" data-delete>Eliminar</button></div></article>';
+        });
+      }else{
+        html+='<div class="empty-state"><h2>Sem comentários</h2><p>Ainda não existem comentários para moderar.</p></div>';
+      }
+      html+='</div>';
+      root.innerHTML=html;
+      var refresh=document.getElementById("comments-refresh");
+      if(refresh)refresh.onclick=window.NexaurenLoadComments;
+      root.querySelectorAll("[data-save]").forEach(function(btn){
+        btn.onclick=async function(){
+          var row=btn.closest("[data-comment]"), id=row.getAttribute("data-comment"), status=row.querySelector("[data-status]").value;
+          btn.disabled=true;
+          try{await window.api("/api/admin/comments/"+encodeURIComponent(id),{method:"PUT",body:JSON.stringify({status:status})});if(window.toast)window.toast("Comentário atualizado.");await window.NexaurenLoadComments();}
+          catch(e){if(window.toast)window.toast(e.message||"Erro ao atualizar.","error");}
+          btn.disabled=false;
+        };
+      });
+      root.querySelectorAll("[data-delete]").forEach(function(btn){
+        btn.onclick=async function(){
+          var row=btn.closest("[data-comment]"), id=row.getAttribute("data-comment");
+          if(!window.confirm("Eliminar este comentário?"))return;
+          btn.disabled=true;
+          try{await window.api("/api/admin/comments/"+encodeURIComponent(id),{method:"DELETE"});if(window.toast)window.toast("Comentário eliminado.");await window.NexaurenLoadComments();}
+          catch(e){if(window.toast)window.toast(e.message||"Erro ao eliminar.","error");}
+          btn.disabled=false;
+        };
+      });
+    }catch(e){
+      message(root,"Comentários indisponíveis",e && e.message ? e.message : "Não foi possível carregar os comentários.");
+    }
+  };
+})();
