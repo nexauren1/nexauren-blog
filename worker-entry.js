@@ -1709,7 +1709,7 @@ async function decorateToolHtmlResponse(request,response){
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   let html=await response.text();
   if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
-  if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-1" defer></script>\n</body>');
+  if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-2" defer></script>\n</body>');
   const headers=new Headers(response.headers);headers.delete("content-length");
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
 }
