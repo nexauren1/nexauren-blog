@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b12"><meta name="description" content="Converta páginas de PDF em imagens PNG diretamente no navegador.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/pdf-to-png/">
+<title>PDF → PNG — Nexauren Tools</title>
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="./style.css?v=20260926-pdftopng-1">
+</head>
+<body>
+<main class="pdftopng">
+<header class="pdftopng-top">
+<a class="pdftopng-back" href="/tool/categories/pdf/">← PDF</a>
+<div class="pdftopng-actions"><span class="pdftopng-mark">NEXAUREN / PDF</span><button class="pdftopng-lang" id="pdftopng-lang" type="button">English</button></div>
+</header>
+<section class="pdftopng-hero">
+<div><h1 class="pdftopng-title">PDF → PNG</h1><p class="pdftopng-lead" id="pdftopng-lead">Converta páginas de um PDF em imagens PNG com resolução ajustável. O processamento acontece diretamente no navegador.</p></div>
+</section>
+<section class="pdftopng-card" id="pdftopng-gate" hidden></section>
+<section class="pdftopng-work pdftopng-hide" id="pdftopng-app">
+<div class="pdftopng-card">
+<label class="pdftopng-drop" id="pdftopng-drop">
+<input id="pdftopng-file" type="file" accept="application/pdf,.pdf">
+<span><b id="pdftopng-drop-title">Escolha um PDF</b><span id="pdftopng-drop-sub">ou toque para selecionar um ficheiro PDF</span></span>
+</label>
+<div class="pdftopng-file" id="pdftopng-file-info" hidden><strong id="pdftopng-file-name">—</strong><span id="pdftopng-file-size">—</span></div>
+<div class="pdftopng-grid">
+<div class="pdftopng-field"><label for="pdftopng-pages" id="pdftopng-pages-label">Páginas</label><select id="pdftopng-pages"><option value="all" id="pdftopng-pages-all">Todas</option><option value="first" id="pdftopng-pages-first">Primeira página</option><option value="range" id="pdftopng-pages-range">Intervalo personalizado</option></select></div>
+<div class="pdftopng-field"><label for="pdftopng-range" id="pdftopng-range-label">Intervalo</label><input id="pdftopng-range" type="text" value="1-3" placeholder="1-3,5,8-10" disabled></div>
+<div class="pdftopng-field"><label for="pdftopng-scale" id="pdftopng-scale-label">Resolução <output id="pdftopng-scale-out">1.5×</output></label><input id="pdftopng-scale" type="range" min="1" max="3" step="0.1" value="1.5"></div>
+<div class="pdftopng-field"><label for="pdftopng-name" id="pdftopng-name-label">Nome base</label><input id="pdftopng-name" type="text" value="pdf-to-png" maxlength="70"></div>
+</div>
+<div class="pdftopng-actions-row">
+<button class="pdftopng-btn primary" id="pdftopng-convert" type="button" disabled>Criar PNG</button>
+<button class="pdftopng-btn" id="pdftopng-clear" type="button">Limpar</button>
+</div>
+<div class="pdftopng-progress"><i id="pdftopng-progress"></i></div>
+<div class="pdftopng-status" id="pdftopng-status">A preparar a ferramenta…</div>
+<div class="pdftopng-results" id="pdftopng-results"><div class="pdftopng-empty" id="pdftopng-empty">Nenhum resultado ainda.</div></div>
+</div>
+<aside class="pdftopng-card pdftopng-side">
+<h2 id="pdftopng-summary-title">Resumo</h2>
+<div class="pdftopng-stat"><span id="pdftopng-count-label">Páginas</span><span id="pdftopng-count">0</span></div>
+<div class="pdftopng-stat"><span id="pdftopng-size-label">PDF</span><span id="pdftopng-size">—</span></div>
+<div class="pdftopng-stat"><span id="pdftopng-resolution-label">Resolução</span><span id="pdftopng-resolution">1.5×</span></div>
+<div class="pdftopng-hint"><b id="pdftopng-privacy-title">Privacidade</b><br><span id="pdftopng-privacy-body">O PDF é processado localmente no navegador e não precisa de ser enviado para um servidor.</span></div>
+</aside>
+</section>
+<div class="pdftopng-footer">PDF → PNG · Nexauren Tools</div>
+</main>
+<script type="module" src="./script.js?v=20260926-pdftopng-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body></html>
