@@ -133,6 +133,18 @@ async function toggleFavorite(id){
   try{const d=await workerFetch("/api/tool/favorites",{method:"POST",body:JSON.stringify({tool_id:id,favorite:!m.my_favorite})});engagement[id]={...m,my_favorite:d.favorite,favorite_count:Number(d.favorite_count||0)};renderEverything();}
   catch(e){alert(e.message||"Não foi possível atualizar o favorito.");}
 }
+window.addEventListener("nexauren:tool-registry-updated",event=>{
+  if(!event.detail)return;
+  registry=event.detail;
+  ensurePremiumLayer();
+  renderEverything();
+  refreshEngagement(!!user);
+});
+window.addEventListener("nexauren:tool-cards-rendered",()=>{
+  ensurePremiumLayer();
+  renderCards();
+  refreshBars();
+});
 document.addEventListener("click",e=>{
   const fav=e.target.closest("[data-eng-favorite]");if(fav){e.preventDefault();e.stopPropagation();toggleFavorite(fav.dataset.engFavorite);return;}
   const review=e.target.closest("[data-eng-review]");if(review){e.preventDefault();e.stopPropagation();openReview(review.dataset.engReview);}
