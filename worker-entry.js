@@ -57,6 +57,64 @@ function socialImageForCover(value){
   return v;
 }
 
+function isDefaultSocialImage(value){
+  try{
+    const u=new URL(String(value||""),"https://nexaurenstory.com");
+    const p=u.pathname.toLowerCase();
+    return p==="/social-preview.png" || p==="/assets/social-preview-nexauren.png";
+  }catch{return false;}
+}
+function resolvedPostCover(row){
+  const direct=cleanCoverUrl(row?.cover_url);
+  if(direct)return direct;
+  const fallback=cleanCoverUrl(row?.social_image);
+  return fallback && !isDefaultSocialImage(fallback) ? fallback : null;
+}
+function coverMatchTokens(value){
+  return [...new Set(
+    String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
+      .replace(/[^a-z0-9]+/g," ").split(/\s+/)
+      .filter(x=>x.length>=4 && !/^(this|that|with|from|free|como|para|este|essa|mais|muito|your|this|weekend|championship|global|story|article|news)$/.test(x))
+  )].slice(0,24);
+}
+async function recoverMissingCover(env,row){
+  if(!row || row.cover_media_id)return row;
+  const current=String(row.social_image||"").trim();
+  if(current && !isDefaultSocialImage(current)){
+    try{
+      const exact=await env.DB.prepare("SELECT id,url,width,height,alt_text,caption FROM media WHERE url=? LIMIT 1").bind(current).first();
+      if(exact){
+        await env.DB.prepare("UPDATE posts SET cover_media_id=? WHERE id=? AND cover_media_id IS NULL").bind(exact.id,row.id).run();
+        row.cover_media_id=exact.id;row.cover_url=exact.url;row.cover_width=exact.width;row.cover_height=exact.height;row.cover_alt=exact.alt_text;row.cover_caption=exact.caption;
+        return row;
+      }
+    }catch{}
+  }
+  try{
+    const target=coverMatchTokens([row.slug,row.title,row.excerpt].join(" "));
+    if(!target.length)return row;
+    const mediaResult=await env.DB.prepare("SELECT id,url,width,height,alt_text,caption,filename,mime_type,uploaded_by,created_at FROM media ORDER BY created_at DESC LIMIT 100").all();
+    const postTs=Date.parse(row.updated_at||row.created_at||"")||0;
+    const candidates=(mediaResult.results||[]).map(m=>{
+      const cover=cleanCoverUrl(m.url);
+      if(!cover || /svg/i.test(String(m.mime_type||"")))return null;
+      const hay=coverMatchTokens([m.filename,m.alt_text,m.caption].join(" "));
+      let overlap=0;for(const token of target){if(hay.includes(token))overlap++;}
+      let score=overlap*4;
+      if(row.author_id && m.uploaded_by && row.author_id===m.uploaded_by)score+=4;
+      const mts=Date.parse(m.created_at||"");
+      if(postTs&&mts&&Math.abs(postTs-mts)<=48*3600*1000)score+=2;
+      else if(postTs&&mts&&Math.abs(postTs-mts)<=7*86400*1000)score+=1;
+      return {m,score,overlap};
+    }).filter(Boolean).sort((a,b)=>b.score-a.score || b.overlap-a.overlap || String(b.m.created_at).localeCompare(String(a.m.created_at)));
+    const best=candidates[0],second=candidates[1];
+    if(!best || best.score<8 || (second && best.score-second.score<2))return row;
+    await env.DB.prepare("UPDATE posts SET cover_media_id=? WHERE id=? AND cover_media_id IS NULL").bind(best.m.id,row.id).run();
+    row.cover_media_id=best.m.id;row.cover_url=best.m.url;row.cover_width=best.m.width;row.cover_height=best.m.height;row.cover_alt=best.m.alt_text;row.cover_caption=best.m.caption;
+  }catch{}
+  return row;
+}
+
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
     status,
@@ -349,7 +407,7 @@ async function postsAdmin(env,url){
     FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
     WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
   return json({ok:true,posts:(r.results||[]).map(x=>{
-    const coverUrl=cleanCoverUrl(x.cover_url);
+    const coverUrl=resolvedPostCover(x);
     const socialSource=coverUrl||x.social_image;
     return {...x,cover_url:coverUrl,social_image:socialImageForCover(socialSource)};
   })});
@@ -368,7 +426,7 @@ async function publicPosts(env,url){
   const sql="SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,p.category_id,p.allow_comments,c.name category_name,c.slug category_slug,m.url cover_url,p.social_image,m.width cover_width,m.height cover_height,m.alt_text cover_alt FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE "+where.join(" AND ")+" ORDER BY p.published_at DESC LIMIT "+limit;
   const result=await env.DB.prepare(sql).bind(...params).all();
   return json({ok:true,language:lang,posts:(result.results||[]).map(x=>{
-    const coverUrl=cleanCoverUrl(x.cover_url);
+    const coverUrl=resolvedPostCover(x);
     const socialSource=coverUrl||x.social_image;
     return {...x,cover_url:coverUrl,social_image:socialImageForCover(socialSource)};
   })});
@@ -427,7 +485,8 @@ async function getPost(env,id){
       meta_description:t.meta_description||""
     };
   }
-  const coverUrl=cleanCoverUrl(row.cover_url);
+  await recoverMissingCover(env,row);
+  const coverUrl=resolvedPostCover(row);
   const socialSource=coverUrl||row.social_image;
   return {
     ...row,
@@ -1364,7 +1423,7 @@ async function api(env,request,url,ctx){
   const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guardPostEditor(env,request,idm[1]);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
   if(idm&&m==="PUT"){const g=await guardPostEditor(env,request,idm[1]);if(g.error)return g.error;return updatePost(env,g.auth,idm[1],(await bodyJson(request))||{},ctx);}
   if(idm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const row=await env.DB.prepare("SELECT title FROM posts WHERE id=?").bind(idm[1]).first();if(!row)return fail("Artigo não encontrado.",404);await env.DB.prepare("DELETE FROM posts WHERE id=?").bind(idm[1]).run();await audit(env,g.auth.id,"post.deleted","post",idm[1],{title:row.title});return json({ok:true});}
-  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,m.url cover_url,p.social_image,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;post.cover_url=cleanCoverUrl(post.cover_url);
+  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.author_id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,m.url cover_url,p.social_image,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,p.created_at,p.updated_at,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,m.caption cover_caption,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");await recoverMissingCover(env,row);const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;post.cover_url=cleanCoverUrl(post.cover_url);
     post.social_image=socialImageForCover(post.cover_url||post.social_image);
     return json({ok:true,language:lang,post});}
   if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim(),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";if(q.length<2)return json({ok:true,language:lang,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url,p.social_image FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (COALESCE(NULLIF(t.title,''),p.title) LIKE ? OR COALESCE(NULLIF(t.excerpt,''),p.excerpt) LIKE ? OR COALESCE(NULLIF(t.content,''),p.content) LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(lang,s,s,s).all();return json({ok:true,language:lang,posts:(r.results||[]).map(x=>{
@@ -1448,9 +1507,10 @@ async function page(env,request,url){
       const status=Number(redirect.status_code);
       return Response.redirect(new URL(redirect.destination,request.url),[301,302,307,308].includes(status)?status:301);
     }
-    const p=await env.DB.prepare("SELECT p.title,p.slug,p.excerpt,p.content,p.meta_title,p.meta_description,m.url cover_url,p.social_image,p.published_at,p.updated_at,p.type,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
+    const p=await env.DB.prepare("SELECT p.id,p.author_id,p.title,p.slug,p.excerpt,p.content,p.meta_title,p.meta_description,m.url cover_url,p.social_image,p.published_at,p.updated_at,p.created_at,p.type,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,m.caption cover_caption,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
     if(!p)return asset;
-    const coverImage=cleanCoverUrl(p.cover_url);
+    await recoverMissingCover(env,p);
+    const coverImage=resolvedPostCover(p);
     const socialImage=socialImageForCover(coverImage||p.social_image);
     const localizedTitle=lang==="en"?(p.translation_title||p.title):p.title;
     const localizedMetaTitle=lang==="en"?(p.translation_meta_title||""):(p.meta_title||"");
