@@ -241,6 +241,24 @@
     }
   }
 
+  function applySeo(cat){
+    const name=label(cat,"name")||"Ferramentas";
+    const description=(label(cat,"description")||"Ferramentas online do Nexauren Story.").trim().slice(0,160);
+    const canonical=new URL("/tool/categories/"+encodeURIComponent(slug)+"/",location.origin).href;
+    const set=(selector,attr,value)=>{
+      let el=document.querySelector(selector);
+      if(!el){el=document.createElement("meta");if(selector.includes("[name=\"description\"]"))el.name="description";else if(selector.includes("[property=\""))el.setAttribute("property",selector.match(/property=\"([^\"]+)/)?.[1]||"");document.head.appendChild(el);}
+      el.setAttribute(attr,value);
+    };
+    set('meta[name="description"]',"content",description);
+    set('meta[property="og:title"]',"content",name+" — Ferramentas — Nexauren Story");
+    set('meta[property="og:description"]',"content",description);
+    set('meta[property="og:url"]',"content",canonical);
+    let link=document.querySelector('link[rel="canonical"]');
+    if(!link){link=document.createElement("link");link.rel="canonical";document.head.appendChild(link)}
+    link.href=canonical;
+  }
+
   function render(registry){
     const cat=window.NexaurenToolRegistry.getCategory(registry,slug);
     if(!cat){
@@ -248,6 +266,7 @@
       return;
     }
     document.title=label(cat,"name")+" — "+ui.tools+" — Nexauren Story";
+    applySeo(cat);
     state.tools=window.NexaurenToolRegistry.getTools(registry,cat.id);
     root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+esc(label(cat,"name"))+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?" "+ui.tool+" available":" "+ui.toolsPlural+" available")+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section>';
     buildSearch();
