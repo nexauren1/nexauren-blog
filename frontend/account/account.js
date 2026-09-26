@@ -15,8 +15,7 @@ import {
   updatePassword,
   linkWithCredential,
   signOut,
-  syncWithWorker,
-  workerFetch
+  syncWithWorker
 } from "/account/account-client.js?v=20260922-3";
 const root = document.querySelector("[data-account-app]");
 const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -30,6 +29,24 @@ const esc = (value) => String(value ?? "")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;");
+
+async function accountWorkerFetch(path, options = {}) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("É necessário iniciar sessão.");
+  const token = await user.getIdToken();
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", "Bearer " + token);
+  if (!headers.has("Content-Type") && options.body && typeof options.body === "string") headers.set("Content-Type", "application/json");
+  const response = await fetch(path, {...options, credentials:"same-origin", headers});
+  const data = await response.json().catch(() => ({ok:false,error:"Resposta inválida do servidor."}));
+  if (!response.ok) {
+    const error = new Error(data.error || "Pedido não concluído.");
+    error.code = data.code;
+    error.details = data.details || null;
+    throw error;
+  }
+  return data;
+}
 
 function friendlyError(error) {
   const code = String(error?.code || "");
@@ -198,7 +215,7 @@ function verificationPanel(user) {
 async function userView(user, syncMessage = "") {
   root.classList.add("account-dashboard-host");
   let dashboard = { stats:{}, recent_comments:[], billing:{plan:"free",status:"FREE"} };
-  try { dashboard = await workerFetch("/api/account/dashboard"); } catch (err) { console.warn("Nexauren dashboard", err); }
+  try { dashboard = await accountWorkerFetch("/api/account/dashboard"); } catch (err) { console.warn("Nexauren dashboard", err); }
 
   const stats = dashboard.stats || {};
   const billing = dashboard.billing || {plan:"free",status:"FREE"};
