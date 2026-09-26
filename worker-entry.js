@@ -1145,8 +1145,118 @@ async function handlePaypalWebhook(env,request){
   return json({ok:true});
 }
 
+async function commentPostBySlug(env,slug){
+  return await env.DB.prepare("SELECT id,allow_comments FROM posts WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
+}
+async function commentSettings(env){
+  const keys=["comments.require_approval","comments.allow_replies","comments.allow_reactions","comments.max_length","comments.rate_limit_count","comments.rate_limit_minutes"];
+  const out={};
+  try{
+    const r=await env.DB.prepare("SELECT key,value,type FROM settings WHERE key IN ("+keys.map(()=>"?").join(",")+")").bind(...keys).all();
+    for(const x of (r.results||[]))out[x.key]=x.type==="number"?Number(x.value):x.value;
+  }catch{}
+  return {require_approval:String(out["comments.require_approval"]??"1")==="1",allow_replies:String(out["comments.allow_replies"]??"1")==="1",allow_reactions:String(out["comments.allow_reactions"]??"1")==="1",max_length:Math.min(10000,Math.max(100,Number(out["comments.max_length"]||5000))),rate_limit_count:Math.min(30,Math.max(1,Number(out["comments.rate_limit_count"]||5))),rate_limit_minutes:Math.min(1440,Math.max(1,Number(out["comments.rate_limit_minutes"]||10)))};
+}
+async function publicComments(env,postId,request){
+  const settings=await commentSettings(env);
+  let viewer=null;
+  try{const a=await firebaseAccountAuth(env,request,false);viewer=a?.account||null;}catch{}
+  const rows=await env.DB.prepare(`SELECT c.id,c.post_id,c.parent_id,c.author_name,c.body,c.status,c.created_at,c.updated_at,
+    (SELECT COUNT(*) FROM blog_comment_reactions r WHERE r.comment_id=c.id AND r.reaction='like') like_count,
+    (SELECT COUNT(*) FROM blog_comment_reactions r WHERE r.comment_id=c.id AND r.reaction='dislike') dislike_count
+    FROM blog_comments c WHERE c.post_id=? AND c.status='approved' ORDER BY c.created_at ASC LIMIT 200`).bind(postId).all();
+  let items=rows.results||[];
+  if(viewer&&items.length){
+    const ids=items.map(x=>x.id);const placeholders=ids.map(()=>"?").join(",");
+    const rr=await env.DB.prepare("SELECT comment_id,reaction FROM blog_comment_reactions WHERE account_id=? AND comment_id IN ("+placeholders+")").bind(viewer.id,...ids).all();
+    const map=new Map((rr.results||[]).map(x=>[x.comment_id,x.reaction]));items=items.map(x=>({...x,my_reaction:map.get(x.id)||null}));
+  }else items=items.map(x=>({...x,my_reaction:null}));
+  return json({ok:true,comments:items,settings:{allow_replies:settings.allow_replies,allow_reactions:settings.allow_reactions}});
+}
+async function createPublicComment(env,request,postId){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Inicie sessão para comentar.",401,"UNAUTHENTICATED");
+  const post=await env.DB.prepare("SELECT id,allow_comments,status FROM posts WHERE id=? LIMIT 1").bind(postId).first();
+  if(!post||post.status!=="published")return fail("Artigo não encontrado.",404,"NOT_FOUND");
+  if(!post.allow_comments)return fail("Os comentários estão desativados neste artigo.",403,"COMMENTS_DISABLED");
+  const d=(await bodyJson(request))||{},settings=await commentSettings(env),body=text(d.body,settings.max_length).trim();
+  if(!body)return fail("Escreva um comentário.",422,"COMMENT_EMPTY");
+  if(body.length>settings.max_length)return fail("O comentário é demasiado longo.",422,"COMMENT_TOO_LONG");
+  const recent=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comments WHERE account_id=? AND created_at>=datetime('now',?)").bind(a.account.id,"-"+settings.rate_limit_minutes+" minutes").first();
+  if(Number(recent?.n||0)>=settings.rate_limit_count)return fail("Atingiu o limite de comentários. Tente novamente mais tarde.",429,"COMMENT_RATE_LIMIT");
+  let parentId=d.parent_id?text(d.parent_id,100).trim()||null:null;
+  if(parentId){
+    if(!settings.allow_replies)return fail("As respostas estão desativadas.",403,"REPLIES_DISABLED");
+    const parent=await env.DB.prepare("SELECT id FROM blog_comments WHERE id=? AND post_id=? AND status='approved' LIMIT 1").bind(parentId,postId).first();
+    if(!parent)return fail("Comentário pai não encontrado.",404,"PARENT_NOT_FOUND");
+  }
+  const id=crypto.randomUUID(),ts=nowIso(),status=settings.require_approval?"pending":"approved";
+  await env.DB.prepare("INSERT INTO blog_comments (id,post_id,account_id,author_name,parent_id,body,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,postId,a.account.id,text(a.account.display_name,80).trim()||"Nexauren User",parentId,body,status,ts,ts).run();
+  return json({ok:true,comment:{id,post_id:postId,parent_id:parentId,author_name:text(a.account.display_name,80).trim()||"Nexauren User",body,status,created_at:ts,updated_at:ts},moderated:status==="pending"},201);
+}
+async function commentReaction(env,request,commentId){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Inicie sessão para reagir.",401,"UNAUTHENTICATED");
+  const settings=await commentSettings(env);if(!settings.allow_reactions)return fail("As reações estão desativadas.",403,"REACTIONS_DISABLED");
+  const d=(await bodyJson(request))||{},reaction=d.reaction==="like"?"like":d.reaction==="dislike"?"dislike":null;if(!reaction)return fail("Reação inválida.",422,"REACTION_INVALID");
+  const comment=await env.DB.prepare("SELECT id FROM blog_comments WHERE id=? AND status='approved' LIMIT 1").bind(commentId).first();if(!comment)return fail("Comentário não encontrado.",404,"NOT_FOUND");
+  const current=await env.DB.prepare("SELECT id,reaction FROM blog_comment_reactions WHERE comment_id=? AND account_id=? LIMIT 1").bind(commentId,a.account.id).first();
+  if(current?.reaction===reaction)await env.DB.prepare("DELETE FROM blog_comment_reactions WHERE id=?").bind(current.id).run();
+  else if(current)await env.DB.prepare("UPDATE blog_comment_reactions SET reaction=?,created_at=? WHERE id=?").bind(reaction,nowIso(),current.id).run();
+  else await env.DB.prepare("INSERT INTO blog_comment_reactions (id,comment_id,account_id,reaction,created_at) VALUES (?,?,?,?,?)").bind(crypto.randomUUID(),commentId,a.account.id,reaction,nowIso()).run();
+  const counts=await env.DB.prepare("SELECT reaction,COUNT(*) n FROM blog_comment_reactions WHERE comment_id=? GROUP BY reaction").bind(commentId).all();
+  const map={like:0,dislike:0};for(const x of (counts.results||[]))map[x.reaction]=Number(x.n||0);
+  const mine=await env.DB.prepare("SELECT reaction FROM blog_comment_reactions WHERE comment_id=? AND account_id=? LIMIT 1").bind(commentId,a.account.id).first();
+  return json({ok:true,like_count:map.like,dislike_count:map.dislike,my_reaction:mine?.reaction||null});
+}
+async function reportComment(env,request,commentId){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Inicie sessão para denunciar.",401,"UNAUTHENTICATED");
+  const comment=await env.DB.prepare("SELECT id FROM blog_comments WHERE id=? LIMIT 1").bind(commentId).first();if(!comment)return fail("Comentário não encontrado.",404,"NOT_FOUND");
+  const d=(await bodyJson(request))||{},reason=text(d.reason,500).trim();if(!reason)return fail("Indique o motivo da denúncia.",422,"REPORT_REASON_REQUIRED");
+  try{await env.DB.prepare("INSERT INTO blog_comment_reports (id,comment_id,account_id,reason,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)").bind(crypto.randomUUID(),commentId,a.account.id,reason,"pending",nowIso(),nowIso()).run();}catch(e){if(String(e?.message||"").includes("UNIQUE"))return fail("Já denunciou este comentário.",409,"REPORT_EXISTS");throw e;}
+  return json({ok:true});
+}
+async function adminComments(env,request,url){
+  const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;
+  const status=text(url.searchParams.get("status")||"",20).trim(),q=text(url.searchParams.get("search")||"",120).trim();const w=["1=1"],b=[];
+  if(status){w.push("c.status=?");b.push(status)}if(q){w.push("(c.body LIKE ? OR c.author_name LIKE ? OR p.title LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
+  const r=await env.DB.prepare(`SELECT c.id,c.post_id,c.parent_id,c.account_id,c.author_name,c.body,c.status,c.created_at,c.updated_at,p.title post_title,p.slug post_slug,
+    (SELECT COUNT(*) FROM blog_comment_reports rp WHERE rp.comment_id=c.id AND rp.status='pending') report_count,
+    (SELECT COUNT(*) FROM blog_comment_reactions rr WHERE rr.comment_id=c.id AND rr.reaction='like') like_count,
+    (SELECT COUNT(*) FROM blog_comment_reactions rr WHERE rr.comment_id=c.id AND rr.reaction='dislike') dislike_count
+    FROM blog_comments c JOIN posts p ON p.id=c.post_id WHERE ${w.join(" AND ")} ORDER BY c.created_at DESC LIMIT 200`).bind(...b).all();
+  const stats=await env.DB.prepare("SELECT COUNT(*) total,SUM(status='pending') pending,SUM(status='approved') approved,SUM(status='rejected') rejected,SUM(status='hidden') hidden FROM blog_comments").first();
+  const reports=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comment_reports WHERE status='pending'").first();
+  return json({ok:true,comments:r.results||[],stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),approved:Number(stats?.approved||0),rejected:Number(stats?.rejected||0),hidden:Number(stats?.hidden||0),reports:Number(reports?.n||0)}});
+}
+
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
+  if(p==="/api/comments"&&m==="GET"){
+    const postId=text(url.searchParams.get("post_id")||"",100);if(!postId)return fail("Artigo não especificado.",400,"POST_REQUIRED");
+    try{return await publicComments(env,postId,request);}catch(error){return fail(error?.message||"Não foi possível carregar os comentários.",503,"COMMENTS_UNAVAILABLE");}
+  }
+  if(p==="/api/comments"&&m==="POST"){
+    const postId=text(url.searchParams.get("post_id")||"",100);if(!postId)return fail("Artigo não especificado.",400,"POST_REQUIRED");
+    try{return await createPublicComment(env,request,postId);}catch(error){return fail(error?.message||"Não foi possível publicar o comentário.",500,error?.code||"COMMENT_CREATE_FAILED");}
+  }
+  const cr=p.match(/^\/api\/comments\/([^/]+)$/);
+  if(cr&&m==="POST"){try{return await commentReaction(env,request,cr[1]);}catch(error){return fail(error?.message||"Não foi possível guardar a reação.",500,error?.code||"COMMENT_REACTION_FAILED");}}
+  const crr=p.match(/^\/api\/comments\/([^/]+)\/report$/);
+  if(crr&&m==="POST"){try{return await reportComment(env,request,crr[1]);}catch(error){return fail(error?.message||"Não foi possível denunciar o comentário.",500,error?.code||"COMMENT_REPORT_FAILED");}}
+  if(p==="/api/admin/comments"&&m==="GET"){
+    try{return await adminComments(env,request,url);}catch(error){return fail(error?.message||"Não foi possível carregar os comentários.",503,error?.code||"COMMENTS_ADMIN_FAILED");}
+  }
+  const acm=p.match(/^\/api\/admin\/comments\/([^/]+)$/);
+  if(acm&&(m==="PUT"||m==="DELETE")){
+    const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const id=acm[1];
+    const row=await env.DB.prepare("SELECT id,author_name,status FROM blog_comments WHERE id=? LIMIT 1").bind(id).first();if(!row)return fail("Comentário não encontrado.",404,"NOT_FOUND");
+    if(m==="DELETE"){await env.DB.prepare("DELETE FROM blog_comments WHERE id=?").bind(id).run();await audit(env,g.auth.id,"comment.deleted","comment",id,{author_name:row.author_name});return json({ok:true});}
+    const d=(await bodyJson(request))||{},status=["pending","approved","rejected","hidden"].includes(d.status)?d.status:null;if(!status)return fail("Estado de comentário inválido.",422,"COMMENT_STATUS_INVALID");
+    await env.DB.prepare("UPDATE blog_comments SET status=?,updated_at=? WHERE id=?").bind(status,nowIso(),id).run();await audit(env,g.auth.id,"comment."+status,"comment",id,{previous_status:row.status});return json({ok:true,status});
+  }
+
   if(p==="/api/paypal/webhook"&&m==="POST"){
     try{return await handlePaypalWebhook(env,request);}catch(error){
       const code=error?.code||"PAYPAL_WEBHOOK_ERROR";
