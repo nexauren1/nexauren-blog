@@ -1,9 +1,9 @@
 {
-  "version": 11,
+  "version": 12,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-26T18:15:00Z",
+    "updatedAt": "2026-09-26T13:34:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1616,6 +1616,36 @@
         "rotate",
         "rotation",
         "pages",
+        "documents"
+      ]
+    },
+    {
+      "id": "inserir-paginas",
+      "name": "Inserir Páginas",
+      "description": "Insira páginas de outro PDF no documento principal e exporte o resultado diretamente no navegador.",
+      "category": "pdf",
+      "icon": "⊞",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/inserir-paginas/",
+      "tags": [
+        "PDF",
+        "inserir",
+        "páginas",
+        "combinar",
+        "documentos"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 80,
+      "name_en": "Insert Pages",
+      "description_en": "Insert pages from another PDF into the main document and export the result directly in your browser.",
+      "tags_en": [
+        "PDF",
+        "insert",
+        "pages",
+        "combine",
         "documents"
       ]
     }
