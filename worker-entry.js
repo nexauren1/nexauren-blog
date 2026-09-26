@@ -1320,7 +1320,37 @@ async function api(env,request,url,ctx){
     }
   }
 
-  if(p==="/api/account/billing"&&m==="GET"){
+  if(p==="/api/account/dashboard"&&m==="GET"){
+    try{
+      const a=await firebaseAccountAuth(env,request,false);
+      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+      let stats={total:0,approved:0,pending:0,rejected:0,hidden:0,reactions:0,reports:0};
+      let recent=[];
+      try{
+        const s=await env.DB.prepare("SELECT COUNT(*) total,SUM(status='approved') approved,SUM(status='pending') pending,SUM(status='rejected') rejected,SUM(status='hidden') hidden FROM blog_comments WHERE account_id=?").bind(a.account.id).first();
+        stats.total=Number(s?.total||0);stats.approved=Number(s?.approved||0);stats.pending=Number(s?.pending||0);stats.rejected=Number(s?.rejected||0);stats.hidden=Number(s?.hidden||0);
+        const r1=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comment_reactions WHERE account_id=?").bind(a.account.id).first();
+        const r2=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comment_reports WHERE account_id=?").bind(a.account.id).first();
+        stats.reactions=Number(r1?.n||0);stats.reports=Number(r2?.n||0);
+        const rr=await env.DB.prepare("SELECT c.id,c.post_id,c.parent_id,c.body,c.status,c.created_at,c.updated_at,p.title post_title,p.slug post_slug FROM blog_comments c JOIN posts p ON p.id=c.post_id WHERE c.account_id=? ORDER BY c.created_at DESC LIMIT 8").bind(a.account.id).all();
+        recent=rr.results||[];
+      }catch(error){
+        console.warn("account.dashboard.comments",String(error?.message||error));
+      }
+      let billing={plan:"free",status:"FREE",amount:"5.00",currency:"USD",cancel_at_period_end:false,current_period_end:null,permanent:false};
+      try{
+        const row=await resolvedBillingRow(env,a.account.id);
+        billing=billingPublic(row);
+        if(isPermanentProEmail(a.account.email))billing={plan:"pro",status:"ACTIVE",amount:"0.00",currency:"USD",cancel_at_period_end:false,current_period_end:null,paypal_subscription_id:null,permanent:true};
+      }catch(error){console.warn("account.dashboard.billing",String(error?.message||error));}
+      return json({ok:true,account:a.account,stats,recent_comments:recent,billing});
+    }catch(error){
+      const code=error?.code||"ACCOUNT_DASHBOARD_ERROR";
+      const status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);
+      return fail(error?.message||"Não foi possível carregar o dashboard da conta.",status,code,error?.reason||error?.message);
+    }
+  }
+    if(p==="/api/account/billing"&&m==="GET"){
     try{
       const a=await firebaseAccountAuth(env,request,false);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
