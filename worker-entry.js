@@ -831,6 +831,139 @@ async function saveToolRegistry(env,actor,raw){
   await audit(env,actor.id,"tools.registry_updated","tools",null,{tools:registry.tools.length,categories:registry.categories.length});
   return json({ok:true,registry});
 }
+async function resolveActiveTool(env,request,rawId){
+  const toolId=slugify(rawId||"");
+  if(!toolId)throw Object.assign(new Error("Ferramenta não especificada."),{code:"TOOL_REQUIRED"});
+  const registry=await loadToolRegistry(env,request);
+  const tool=(registry?.tools||[]).find(t=>t.id===toolId&&t.status==="active");
+  if(!tool)throw Object.assign(new Error("Ferramenta não encontrada."),{code:"TOOL_NOT_FOUND"});
+  return tool;
+}
+
+async function toolEngagement(env,request,url){
+  const rawIds=text(url.searchParams.get("tool_ids")||"",6000);
+  let ids=rawIds.split(",").map(slugify).filter(Boolean).filter((id,i,a)=>a.indexOf(id)===i).slice(0,100);
+  if(!ids.length){
+    const registry=await loadToolRegistry(env,request);
+    ids=(registry?.tools||[]).filter(t=>t.status==="active").map(t=>t.id).slice(0,100);
+  }
+  if(!ids.length)return json({ok:true,items:{}});
+  const marks=ids.map(()=>"?").join(",");
+  let reviews=[],favorites=[],mineReviews=[],mineFavorites=[];
+  try{
+    const r=await env.ACCOUNTS_DB.prepare("SELECT tool_id,COUNT(*) review_count,ROUND(AVG(rating),2) avg_rating,SUM(rating=5) r5,SUM(rating=4) r4,SUM(rating=3) r3,SUM(rating=2) r2,SUM(rating=1) r1 FROM nexauren_tool_reviews WHERE tool_id IN ("+marks+") GROUP BY tool_id").bind(...ids).all();
+    reviews=r.results||[];
+    const f=await env.ACCOUNTS_DB.prepare("SELECT tool_id,COUNT(*) favorite_count FROM nexauren_tool_favorites WHERE tool_id IN ("+marks+") GROUP BY tool_id").bind(...ids).all();
+    favorites=f.results||[];
+    const authHeader=request.headers.get("Authorization")||"";
+    if(authHeader){
+      try{
+        const a=await firebaseAccountAuth(env,request,false);
+        if(a){
+          const mr=await env.ACCOUNTS_DB.prepare("SELECT tool_id,rating,body,display_mode,display_name,anonymous_name FROM nexauren_tool_reviews WHERE account_id=? AND tool_id IN ("+marks+")").bind(a.account.id,...ids).all();
+          mineReviews=mr.results||[];
+          const mf=await env.ACCOUNTS_DB.prepare("SELECT tool_id FROM nexauren_tool_favorites WHERE account_id=? AND tool_id IN ("+marks+")").bind(a.account.id,...ids).all();
+          mineFavorites=mf.results||[];
+        }
+      }catch(error){
+        if(error?.code==="ACCOUNT_DB_NOT_READY")throw error;
+      }
+    }
+  }catch(error){
+    if(error?.message?.includes("no such table")||error?.code==="ACCOUNT_DB_NOT_READY"){
+      return fail("As avaliações ainda não foram instaladas na base de contas.",503,"TOOL_REVIEWS_DB_NOT_READY");
+    }
+    throw error;
+  }
+  const byReview=new Map(reviews.map(x=>[x.tool_id,x]));
+  const byFavorite=new Map(favorites.map(x=>[x.tool_id,x]));
+  const myReview=new Map(mineReviews.map(x=>[x.tool_id,x]));
+  const myFav=new Set(mineFavorites.map(x=>x.tool_id));
+  const items={};
+  for(const id of ids){
+    const r=byReview.get(id)||{};
+    items[id]={
+      tool_id:id,
+      review_count:Number(r.review_count||0),
+      avg_rating:Number(r.avg_rating||0),
+      distribution:{5:Number(r.r5||0),4:Number(r.r4||0),3:Number(r.r3||0),2:Number(r.r2||0),1:Number(r.r1||0)},
+      favorite_count:Number(byFavorite.get(id)?.favorite_count||0),
+      my_favorite:myFav.has(id),
+      my_review:myReview.get(id)||null
+    };
+  }
+  return json({ok:true,items});
+}
+
+async function publicToolReviews(env,request,url){
+  const toolId=slugify(url.searchParams.get("tool_id")||"");
+  if(toolId)await resolveActiveTool(env,request,toolId);
+  const limit=Math.min(50,Math.max(1,Number(url.searchParams.get("limit")||30)));
+  const offset=Math.max(0,Number(url.searchParams.get("offset")||0));
+  const where=toolId?" WHERE tool_id=? ":"";
+  const bind=toolId?[toolId,limit,offset]:[limit,offset];
+  try{
+    const q=await env.ACCOUNTS_DB.prepare("SELECT id,tool_id,rating,body,display_mode,display_name,anonymous_name,created_at,updated_at FROM nexauren_tool_reviews"+where+" ORDER BY created_at DESC LIMIT ? OFFSET ?").bind(...bind).all();
+    const total=toolId
+      ? await env.ACCOUNTS_DB.prepare("SELECT COUNT(*) n FROM nexauren_tool_reviews WHERE tool_id=?").bind(toolId).first()
+      : await env.ACCOUNTS_DB.prepare("SELECT COUNT(*) n FROM nexauren_tool_reviews").first();
+    return json({ok:true,reviews:q.results||[],total:Number(total?.n||0),limit,offset});
+  }catch(error){
+    return fail("As avaliações ainda não foram instaladas na base de contas.",503,"TOOL_REVIEWS_DB_NOT_READY");
+  }
+}
+
+async function saveToolReview(env,request){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const a=await firebaseAccountAuth(env,request,true);
+  if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+  const d=(await bodyJson(request))||{};
+  const tool=await resolveActiveTool(env,request,d.tool_id);
+  const rating=Number(d.rating);
+  if(!Number.isInteger(rating)||rating<1||rating>5)return fail("A avaliação deve ter entre 1 e 5 estrelas.",422,"TOOL_RATING_INVALID");
+  const body=text(d.body||"",2000).trim();
+  const mode=["profile","anonymous"].includes(String(d.display_mode||""))?String(d.display_mode):"profile";
+  const anonymousName=text(d.anonymous_name||"",60).trim();
+  if(mode==="anonymous"&&(anonymousName.length<2||anonymousName.length>40))return fail("Escolha um nome anónimo entre 2 e 40 caracteres.",422,"ANONYMOUS_NAME_INVALID");
+  const displayName=text(a.account.display_name||a.account.email||"Utilizador Nexauren",80).trim()||"Utilizador Nexauren";
+  const existing=await env.ACCOUNTS_DB.prepare("SELECT id,created_at FROM nexauren_tool_reviews WHERE tool_id=? AND account_id=? LIMIT 1").bind(tool.id,a.account.id).first();
+  const ts=nowIso();
+  if(existing){
+    await env.ACCOUNTS_DB.prepare("UPDATE nexauren_tool_reviews SET rating=?,body=?,display_mode=?,display_name=?,anonymous_name=?,updated_at=? WHERE id=? AND account_id=?")
+      .bind(rating,body,mode,displayName,mode==="anonymous"?anonymousName:"",ts,existing.id,a.account.id).run();
+    return json({ok:true,created:false,review:{id:existing.id,tool_id:tool.id,rating,body,display_mode:mode,display_name:displayName,anonymous_name:mode==="anonymous"?anonymousName:"",created_at:existing.created_at,updated_at:ts}});
+  }
+  const id=crypto.randomUUID();
+  await env.ACCOUNTS_DB.prepare("INSERT INTO nexauren_tool_reviews (id,tool_id,account_id,rating,body,display_mode,display_name,anonymous_name,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)")
+    .bind(id,tool.id,a.account.id,rating,body,mode,displayName,mode==="anonymous"?anonymousName:"",ts,ts).run();
+  return json({ok:true,created:true,review:{id,tool_id:tool.id,rating,body,display_mode:mode,display_name:displayName,anonymous_name:mode==="anonymous"?anonymousName:"",created_at:ts,updated_at:ts}},201);
+}
+
+async function deleteToolReview(env,request,reviewId){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const a=await firebaseAccountAuth(env,request,false);
+  if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+  const row=await env.ACCOUNTS_DB.prepare("SELECT id FROM nexauren_tool_reviews WHERE id=? AND account_id=? LIMIT 1").bind(reviewId,a.account.id).first();
+  if(!row)return fail("Avaliação não encontrada.",404,"NOT_FOUND");
+  await env.ACCOUNTS_DB.prepare("DELETE FROM nexauren_tool_reviews WHERE id=? AND account_id=?").bind(reviewId,a.account.id).run();
+  return json({ok:true});
+}
+
+async function toggleToolFavorite(env,request){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const a=await firebaseAccountAuth(env,request,true);
+  if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
+  const d=(await bodyJson(request))||{},tool=await resolveActiveTool(env,request,d.tool_id);
+  const favorite=d.favorite!==false;
+  if(favorite){
+    await env.ACCOUNTS_DB.prepare("INSERT OR IGNORE INTO nexauren_tool_favorites (id,tool_id,account_id,created_at) VALUES (?,?,?,?)").bind(crypto.randomUUID(),tool.id,a.account.id,nowIso()).run();
+  }else{
+    await env.ACCOUNTS_DB.prepare("DELETE FROM nexauren_tool_favorites WHERE tool_id=? AND account_id=?").bind(tool.id,a.account.id).run();
+  }
+  const count=await env.ACCOUNTS_DB.prepare("SELECT COUNT(*) n FROM nexauren_tool_favorites WHERE tool_id=?").bind(tool.id).first();
+  return json({ok:true,favorite, favorite_count:Number(count?.n||0)});
+}
+
 async function adminUsers(env){
   const admins=await env.DB.prepare("SELECT id,email,display_name,role,status,email_verified,last_login_at,created_at,updated_at FROM users ORDER BY CASE role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END,display_name").all();
   let accounts=[];
