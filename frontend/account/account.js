@@ -16,7 +16,7 @@ import {
   linkWithCredential,
   signOut,
   syncWithWorker
-} from "/account/account-client.js?v=20260922-3";
+} from "/account/account-client.js?v=20260926-2";
 const root = document.querySelector("[data-account-app]");
 const $ = (selector, scope = document) => scope.querySelector(selector);
 let redirectError = null;
@@ -205,7 +205,8 @@ function userView(user, syncMessage = "") {
           <div><strong>${esc(user.displayName || "Utilizador Nexauren")}</strong><span>${esc(user.email || "")}</span></div>
         </div>
         <nav class="account-side-nav">
-          <a class="active" href="#account-overview">Visão geral</a>
+          <a class="active" href="#account-overview">Dashboard</a>
+          <a href="#account-history">Histórico</a>
           <a href="#account-profile">Perfil</a>
           <a href="#account-security">Segurança</a>
           <a href="/account/upgrade/">Plano Pro</a>
@@ -220,14 +221,28 @@ function userView(user, syncMessage = "") {
         <header class="account-main-head" id="account-overview">
           <div>
             <div class="account-kicker">CONTA NEXAUREN</div>
-            <h2>Definições da conta</h2>
-            <p>Gira o seu perfil, segurança e acesso aos recursos Nexauren.</p>
+            <h2>O seu painel Nexauren</h2>
+            <p>Acompanhe a sua atividade, comentários, perfil e acesso aos recursos Nexauren.</p>
           </div>
           <span class="account-state"><i></i> Ativa</span>
         </header>
 
         ${syncMessage ? messageBox("success", syncMessage) : ""}
         ${verificationPanel(user)}
+
+        <section class="account-dashboard-panel" id="account-history">
+          <div class="account-dashboard-panel-head">
+            <div><div class="account-kicker">ATIVIDADE</div><h3>Resumo da sua conta</h3><p>O histórico aparece aqui à medida que utiliza o Nexauren Story.</p></div>
+            <span class="account-history-count" id="account-history-count">A carregar…</span>
+          </div>
+          <div class="account-metrics">
+            <div class="account-metric"><span>Comentários</span><strong id="account-stat-comments">0</strong><small><span id="account-stat-approved">0</span> aprovados · <span id="account-stat-pending">0</span> pendentes</small></div>
+            <div class="account-metric"><span>Reações</span><strong id="account-stat-reactions">0</strong><small>Interações feitas</small></div>
+            <div class="account-metric"><span>Denúncias</span><strong id="account-stat-reports">0</strong><small>Registos enviados</small></div>
+            <div class="account-metric account-metric-plan"><span>Plano</span><strong id="account-stat-plan">FREE</strong><small id="account-stat-plan-label">Nexauren Free</small></div>
+          </div>
+          <div class="account-history-list" id="account-history-list"><div class="account-history-loading">A preparar o histórico…</div></div>
+        </section>
 
         <section class="account-block">
           <div class="account-block-head">
@@ -285,6 +300,8 @@ function userView(user, syncMessage = "") {
       </div>
     </div>
   `;
+
+  loadAccountDashboard(user);
 
   $("#logout").onclick = async () => {
     try { await signOut(auth); } catch (err) { alert(friendlyError(err)); }
@@ -385,6 +402,30 @@ function userView(user, syncMessage = "") {
         feedback.textContent = friendlyError(err);
       }
     });
+  }
+}
+
+function getSafeReturnUrl(){
+  const value=new URLSearchParams(location.search).get("return");
+  if(!value)return null;
+  try{const u=new URL(value,location.origin);if(u.origin!==location.origin)return null;if(u.pathname==="/account"||u.pathname.startsWith("/account/"))return null;return u.href;}catch{return null;}
+}
+function formatAccountDate(value){
+  try{return new Intl.DateTimeFormat("pt-PT",{dateStyle:"medium",timeStyle:"short"}).format(new Date(value));}catch{return value||"—";}
+}
+async function loadAccountDashboard(user){
+  try{
+    const token=await user.getIdToken();
+    const response=await fetch("/api/account/dashboard",{credentials:"same-origin",headers:{Authorization:"Bearer "+token}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||"Não foi possível carregar o dashboard.");
+    const s=data.stats||{},b=data.billing||{},rows=data.recent_comments||[];
+    const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=String(value??"—");};
+    set("account-stat-comments",Number(s.total||0));set("account-stat-approved",Number(s.approved||0));set("account-stat-pending",Number(s.pending||0));set("account-stat-reactions",Number(s.reactions||0));set("account-stat-reports",Number(s.reports||0));set("account-stat-plan",b.plan==="pro"?"PRO":"FREE");set("account-stat-plan-label",b.plan==="pro"?"Nexauren Pro":"Nexauren Free");set("account-history-count",Number(s.total||0)+" comentário(s)");
+    const list=document.getElementById("account-history-list");
+    if(list)list.innerHTML=rows.length?rows.map(x=>'<article class="account-history-item"><div class="account-history-icon">💬</div><div class="account-history-body"><strong>'+esc(x.post_title||"Artigo")+'</strong><p>'+esc(x.body||"")+'</p><div class="account-history-meta"><span>'+esc(formatAccountDate(x.created_at))+'</span><span class="account-history-status status-'+esc(x.status||"pending")+'">'+esc(({approved:"Aprovado",pending:"Pendente",rejected:"Rejeitado",hidden:"Oculto"}[x.status]||x.status||"Pendente"))+'</span></div></div><a href="/blog/post/'+encodeURIComponent(x.post_slug||"")+'" class="account-history-link">Abrir →</a></article>').join(""):'<div class="account-empty-history"><div class="account-empty-icon">◌</div><strong>Ainda não há atividade.</strong><p>Quando participar no Blog, o seu histórico aparecerá automaticamente aqui.</p><a class="secondary" href="/blog/">Explorar o Blog</a></div>';
+  }catch(error){
+    const list=document.getElementById("account-history-list");if(list)list.innerHTML='<div class="account-empty-history"><div class="account-empty-icon">!</div><strong>Histórico temporariamente indisponível.</strong><p>'+esc(error.message||"Tente novamente mais tarde.")+'</p></div>';
   }
 }
 
@@ -547,6 +588,8 @@ async function init() {
       }
     }
 
+    const target=getSafeReturnUrl();
+    if(target){ location.replace(target); return; }
     userView(user, syncMessage);
   });
 }
