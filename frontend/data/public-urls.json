@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-26T05:36:53.714938Z",
+  "generatedAt": "2026-09-26T05:39:26.701352Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -24,6 +24,7 @@
     "/tool/categories/pdf/jpg-to-pdf/",
     "/tool/categories/pdf/pdf-to-jpg/",
     "/tool/categories/pdf/pdf-to-png/",
+    "/tool/categories/pdf/png-to-pdf/",
     "/tool/categories/produtividade/",
     "/tool/categories/produtividade/contador-de-palavras/",
     "/tool/categories/produtividade/gerador-de-orcamentos/",
