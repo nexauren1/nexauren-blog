@@ -1606,6 +1606,32 @@ async function api(env,request,url,ctx){
   if(p==="/api/media"&&m==="POST"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const d=await bodyJson(request);if(!d?.url||!d?.fileId)return fail("Resposta do ImageKit incompleta.",422);if(d.fileType&&d.fileType!=="image")return fail("Apenas imagens são permitidas.",415,"UNSUPPORTED_MEDIA");if(isSvgUrl(d.url)||/svg/i.test(String(d.mime||"")))return fail("Imagens SVG não são permitidas.",415,"UNSUPPORTED_MEDIA");if(!await verifyImageKitFile(env,text(d.fileId,255).trim(),text(d.url,2000).trim()))return fail("O arquivo ImageKit não pôde ser validado.",422,"IMAGEKIT_FILE_INVALID");const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO media (id,imagekit_file_id,url,thumbnail_url,filename,mime_type,size_bytes,width,height,alt_text,caption,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,d.fileId,d.url,d.thumbnailUrl||d.url,text(d.name||d.fileName,255),text(d.fileType||d.mime,100),Number(d.size||0),Number(d.width||0)||null,Number(d.height||0)||null,text(d.altText||"",300),text(d.caption||"",500),g.auth.id,nowIso()).run();await audit(env,g.auth.id,"media.uploaded","media",id,{filename:d.name||d.fileName});return json({ok:true,media:await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first()},201);}
   const mm=p.match(/^\/api\/media\/([^/]+)$/);if(mm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=mm[1],row=await env.DB.prepare("SELECT * FROM media WHERE id=?").bind(id).first();if(!row)return fail("Mídia não encontrada.",404);if(env.IMAGEKIT_PRIVATE_KEY&&row.imagekit_file_id){const authHeader="Basic "+btoa(env.IMAGEKIT_PRIVATE_KEY+":");const ir=await fetch("https://api.imagekit.io/v1/files/"+encodeURIComponent(row.imagekit_file_id),{method:"DELETE",headers:{Authorization:authHeader,Accept:"application/json"}});if(!ir.ok&&ir.status!==404)return fail("O arquivo não pôde ser removido do ImageKit.",502,"IMAGEKIT_DELETE_FAILED");}await env.DB.prepare("UPDATE posts SET cover_media_id=NULL,social_image=? WHERE cover_media_id=?").bind(DEFAULT_SOCIAL_IMAGE,id).run();await env.DB.prepare("DELETE FROM media WHERE id=?").bind(id).run();await audit(env,g.auth.id,"media.deleted","media",id,{filename:row.filename});return json({ok:true});}
 
+  if(p==="/api/tool/engagement"&&m==="GET"){
+    try{return await toolEngagement(env,request,url);}
+    catch(error){return fail(error?.message||"Não foi possível carregar as avaliações.",503,error?.code||"TOOL_ENGAGEMENT_ERROR");}
+  }
+  if(p==="/api/tool/reviews"&&m==="GET"){
+    try{return await publicToolReviews(env,request,url);}
+    catch(error){return fail(error?.message||"Não foi possível carregar as avaliações.",503,error?.code||"TOOL_REVIEWS_ERROR");}
+  }
+  if(p==="/api/tool/reviews"&&m==="POST"){
+    try{return await saveToolReview(env,request);}
+    catch(error){
+      const code=error?.code||"TOOL_REVIEW_SAVE_ERROR";
+      const status=["TOOL_REQUIRED","TOOL_NOT_FOUND","TOOL_RATING_INVALID","ANONYMOUS_NAME_INVALID","UNAUTHENTICATED"].includes(code)?422:503;
+      return fail(error?.message||"Não foi possível guardar a avaliação.",code==="UNAUTHENTICATED"?401:status,code);
+    }
+  }
+  const trr=p.match(/^\/api\/tool\/reviews\/([^/]+)$/);
+  if(trr&&m==="DELETE"){
+    try{return await deleteToolReview(env,request,trr[1]);}
+    catch(error){return fail(error?.message||"Não foi possível eliminar a avaliação.",error?.code==="UNAUTHENTICATED"?401:503,error?.code||"TOOL_REVIEW_DELETE_ERROR");}
+  }
+  if(p==="/api/tool/favorites"&&m==="POST"){
+    try{return await toggleToolFavorite(env,request);}
+    catch(error){return fail(error?.message||"Não foi possível guardar o favorito.",error?.code==="UNAUTHENTICATED"?401:503,error?.code||"TOOL_FAVORITE_ERROR");}
+  }
+
   if(p==="/api/tool-registry"&&m==="GET"){
     try{
       const registry=await toolRegistryWithUsage(env,request);
