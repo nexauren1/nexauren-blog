@@ -1,5 +1,14 @@
 (()=>{"use strict";
 const API_BASE="/api/tool";
+function ensurePremiumLayer(){
+  document.body?.classList.add("nx-tools-page");
+  if(document.querySelector('link[data-nx-premium-ui]'))return;
+  const link=document.createElement("link");
+  link.rel="stylesheet";
+  link.href="/assets/nexauren-premium-ui.css?v=20260926-premium-1";
+  link.dataset.nxPremiumUi="1";
+  document.head.appendChild(link);
+}
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
@@ -64,6 +73,7 @@ function renderBar(host){
   host.innerHTML='<div class="tool-engagement-rating">'+stars(m.avg_rating)+'<span class="tool-rating-number">'+(m.review_count?Number(m.avg_rating||0).toFixed(1):"Sem avaliações")+'</span><span class="tool-rating-count">'+(Number(m.review_count||0)==1?"1 avaliação":Number(m.review_count||0)+" avaliações")+'</span></div><div class="tool-engagement-actions"><button type="button" class="tool-favorite-btn '+(m.my_favorite?"is-active":"")+'" data-eng-favorite="'+esc(id)+'"><span>♥</span><span>'+(m.my_favorite?"Favorito":"Favoritar")+'</span><small>'+Number(m.favorite_count||0)+'</small></button><button type="button" class="tool-review-btn" data-eng-review="'+esc(id)+'">★ <span>'+(mine?"Editar avaliação":"Avaliar")+'</span></button></div>';
 }
 function renderCards(){
+  ensurePremiumLayer();
   document.querySelectorAll(".tool-card[data-tool-id]").forEach(card=>{
     if(!card.parentElement?.matches(".tool-engagement-item")){
       const wrap=document.createElement("div");
@@ -128,6 +138,7 @@ document.addEventListener("click",e=>{
   const review=e.target.closest("[data-eng-review]");if(review){e.preventDefault();e.stopPropagation();openReview(review.dataset.engReview);}
 });
 (async()=>{
+  ensurePremiumLayer();
   try{
     const [registryModule]=await Promise.all([import("/tool/categories/category.js?v=20260925-static-2"),ensureAuthScript()]);
     registry=registryModule?.default||window.NexaurenToolRegistry?.getCachedRegistry?.()||null;
@@ -138,9 +149,20 @@ document.addEventListener("click",e=>{
   attachNav();
   const cached=window.NexaurenToolRegistry?.getCachedRegistry?.();
   if(cached)registry=cached;
-  const load=async()=>{try{registry=await window.NexaurenToolRegistry.loadRegistry();renderEverything();await refreshEngagement(false);}catch{}};
+  const load=async()=>{
+    try{
+      registry=await window.NexaurenToolRegistry.loadRegistry();
+      ensurePremiumLayer();
+      renderEverything();
+      await refreshEngagement(!!user);
+      setTimeout(()=>renderCards(),0);
+    }catch{}
+  };
   if(window.NexaurenToolRegistry?.loadRegistry)load();else renderEverything();
-  new MutationObserver(()=>renderCards()).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(()=>{
+    ensurePremiumLayer();
+    renderCards();
+  }).observe(document.body,{childList:true,subtree:true});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshEngagement(!!user);});
 })();
 })();
