@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b12">
+<meta name="description" content="Converta páginas de PDF em imagens JPG diretamente no navegador.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/pdf-to-jpg/">
+<title>PDF → JPG — Nexauren Tools</title>
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="./style.css?v=20260926-pdftojpg-1">
+</head>
+<body>
+<main class="pdftojpg">
+<header class="pdftojpg-top">
+<a class="pdftojpg-back" href="/tool/categories/pdf/">← PDF</a>
+<div class="pdftojpg-actions"><span class="pdftojpg-mark">NEXAUREN / PDF</span><button class="pdftojpg-lang" id="pdftojpg-lang" type="button">English</button></div>
+</header>
+<section class="pdftojpg-hero">
+<div><h1 class="pdftojpg-title">PDF → JPG</h1><p class="pdftojpg-lead" id="pdftojpg-lead">Converta páginas de um PDF em imagens JPG, escolha as páginas, a resolução e a qualidade. Tudo processado diretamente no navegador.</p></div>
+<div class="pdftojpg-plan"><strong id="pdftojpg-plan-name">NEXAUREN FREE</strong><small id="pdftojpg-plan-limit">PDF até 20 páginas por conversão.</small></div>
+</section>
+<section class="pdftojpg-card" id="pdftojpg-gate" hidden></section>
+<section class="pdftojpg-work pdftojpg-hide" id="pdftojpg-app">
+<div class="pdftojpg-card">
+<label class="pdftojpg-drop" id="pdftojpg-drop">
+<input id="pdftojpg-file" type="file" accept="application/pdf,.pdf">
+<span><b id="pdftojpg-drop-title">Escolha um PDF</b><span id="pdftojpg-drop-sub">ou toque para selecionar um ficheiro PDF</span></span>
+</label>
+<div class="pdftojpg-file" id="pdftojpg-file-info" hidden><strong id="pdftojpg-file-name">—</strong><span id="pdftojpg-file-size">—</span></div>
+<div class="pdftojpg-grid">
+<div class="pdftojpg-field"><label for="pdftojpg-pages" id="pdftojpg-pages-label">Páginas</label><select id="pdftojpg-pages"><option value="all" id="pdftojpg-pages-all">Todas</option><option value="first" id="pdftojpg-pages-first">Primeira página</option><option value="range" id="pdftojpg-pages-range">Intervalo personalizado</option></select></div>
+<div class="pdftojpg-field"><label for="pdftojpg-range" id="pdftojpg-range-label">Intervalo</label><input id="pdftojpg-range" type="text" value="1-3" placeholder="1-3,5,8-10" disabled></div>
+<div class="pdftojpg-field"><label for="pdftojpg-scale" id="pdftojpg-scale-label">Resolução <output id="pdftojpg-scale-out">1.5×</output></label><input id="pdftojpg-scale" type="range" min="1" max="2.5" step="0.1" value="1.5"></div>
+<div class="pdftojpg-field"><label for="pdftojpg-quality" id="pdftojpg-quality-label">Qualidade JPG <output id="pdftojpg-quality-out">90%</output></label><input id="pdftojpg-quality" type="range" min="60" max="100" value="90"></div>
+<div class="pdftojpg-field"><label for="pdftojpg-name" id="pdftojpg-name-label">Nome base</label><input id="pdftojpg-name" type="text" value="pdf-to-jpg" maxlength="70"></div>
+</div>
+<div class="pdftojpg-actions-row">
+<button class="pdftojpg-btn primary" id="pdftojpg-convert" type="button" disabled>Criar JPG</button>
+<button class="pdftojpg-btn" id="pdftojpg-clear" type="button">Limpar</button>
+</div>
+<div class="pdftojpg-progress"><i id="pdftojpg-progress"></i></div>
+<div class="pdftojpg-status" id="pdftojpg-status">A preparar a ferramenta…</div>
+<div class="pdftojpg-results" id="pdftojpg-results"><div class="pdftojpg-empty" id="pdftojpg-empty">Nenhum resultado ainda.</div></div>
+</div>
+<aside class="pdftojpg-card pdftojpg-side">
+<h2 id="pdftojpg-summary-title">Resumo</h2>
+<div class="pdftojpg-stat"><span id="pdftojpg-count-label">Páginas</span><span id="pdftojpg-count">0</span></div>
+<div class="pdftojpg-stat"><span id="pdftojpg-size-label">PDF</span><span id="pdftojpg-size">—</span></div>
+<div class="pdftojpg-stat"><span id="pdftojpg-resolution-label">Resolução</span><span id="pdftojpg-resolution">1.5×</span></div>
+<div class="pdftojpg-stat"><span id="pdftojpg-quality-stat-label">Qualidade</span><span id="pdftojpg-quality-stat">90%</span></div>
+<div class="pdftojpg-hint"><b id="pdftojpg-privacy-title">Privacidade</b><br><span id="pdftojpg-privacy-body">O PDF é processado localmente no seu navegador. O ficheiro não precisa de ser enviado para um servidor.</span></div>
+<div class="pdftojpg-hint" id="pdftojpg-limit-hint">Free: até 20 páginas por conversão.</div>
+</aside>
+</section>
+<div class="pdftojpg-footer">PDF → JPG · Nexauren Tools</div>
+</main>
+<script type="module" src="./script.js?v=20260926-pdftojpg-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body></html>
