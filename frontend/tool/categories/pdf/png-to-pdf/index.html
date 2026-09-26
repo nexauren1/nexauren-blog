@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0716">
+<meta name="description" content="Converta imagens PNG em um único PDF diretamente no navegador.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/png-to-pdf/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./style.css?v=20260926-pngtopdf-1">
+<title>PNG → PDF — Nexauren Tools</title>
+</head>
+<body>
+<main class="pngpdf">
+<header class="pngpdf-head">
+<a class="pngpdf-back" href="/tool/categories/pdf/">← PDF</a>
+<div class="pngpdf-head-right"><span class="pngpdf-orbit">NEXAUREN / PNG LAB</span><button id="pngpdf-lang" class="pngpdf-lang" type="button">English</button></div>
+</header>
+
+<section class="pngpdf-hero">
+<div class="pngpdf-hero-copy">
+<div class="pngpdf-kicker">PNG LAB</div>
+<h1>PNG <span>→ PDF</span></h1>
+<p id="pngpdf-lead">Junte uma ou várias imagens PNG num único PDF. Ajuste página, margem, orientação e qualidade sem enviar os ficheiros para um servidor.</p>
+</div>
+<div class="pngpdf-badge"><strong id="pngpdf-badge-title">LOCAL</strong><small id="pngpdf-badge-copy">Processamento no navegador</small></div>
+</section>
+
+<section id="pngpdf-gate" class="pngpdf-gate" hidden></section>
+<section id="pngpdf-app" class="pngpdf-hide">
+<div class="pngpdf-shell">
+<div class="pngpdf-main">
+<div class="pngpdf-upload">
+<div class="pngpdf-upload-icon">＋</div>
+<div><b id="pngpdf-drop-title">Adicionar PNGs</b><span id="pngpdf-drop-sub">Toque para escolher imagens ou arraste-as para aqui</span></div>
+<input id="pngpdf-files" type="file" accept=".png,image/png" multiple>
+</div>
+
+<div class="pngpdf-toolbar">
+<div class="pngpdf-control"><label id="pngpdf-page-label">Página</label><select id="pngpdf-page"><option value="a4">A4</option><option value="letter">Letter</option><option value="original">Original</option></select></div>
+<div class="pngpdf-control"><label id="pngpdf-orientation-label">Orientação</label><select id="pngpdf-orientation"><option value="auto">Automática</option><option value="portrait">Retrato</option><option value="landscape">Paisagem</option></select></div>
+<div class="pngpdf-control"><label id="pngpdf-fit-label">Ajuste</label><select id="pngpdf-fit"><option value="contain">Encaixar</option><option value="cover">Preencher</option><option value="original">Tamanho original</option></select></div>
+<div class="pngpdf-control"><label id="pngpdf-margin-label">Margem <output id="pngpdf-margin-out">18 pt</output></label><input id="pngpdf-margin" type="range" min="0" max="72" value="18"></div>
+<div class="pngpdf-control"><label id="pngpdf-quality-label">Qualidade <output id="pngpdf-quality-out">90%</output></label><input id="pngpdf-quality" type="range" min="60" max="100" value="90"></div>
+<div class="pngpdf-control wide"><label id="pngpdf-name-label">Nome do PDF</label><input id="pngpdf-name" value="png-to-pdf" maxlength="70"></div>
+</div>
+
+<div class="pngpdf-actions">
+<button id="pngpdf-create" class="pngpdf-btn primary" type="button" disabled>Criar PDF</button>
+<button id="pngpdf-clear" class="pngpdf-btn ghost" type="button">Limpar fila</button>
+</div>
+<div class="pngpdf-progress"><i id="pngpdf-progress"></i></div>
+<div id="pngpdf-status" class="pngpdf-status">A preparar a ferramenta…</div>
+
+<div class="pngpdf-queue" id="pngpdf-queue">
+<div class="pngpdf-empty" id="pngpdf-empty">Nenhuma imagem PNG selecionada.</div>
+</div>
+
+<div class="pngpdf-result" id="pngpdf-result" hidden>
+<div class="pngpdf-result-title"><span id="pngpdf-result-label">PDF pronto</span><span id="pngpdf-result-size">—</span></div>
+<div class="pngpdf-result-row">
+<strong id="pngpdf-result-name">png-to-pdf.pdf</strong>
+<button id="pngpdf-download" class="pngpdf-btn primary" type="button">Baixar PDF</button>
+</div>
+</div>
+</div>
+
+<aside class="pngpdf-side">
+<div class="pngpdf-side-card"><span class="pngpdf-side-title" id="pngpdf-side-title">Painel</span>
+<div class="pngpdf-metric"><span id="pngpdf-count-label">Imagens</span><strong id="pngpdf-count">0</strong></div>
+<div class="pngpdf-metric"><span id="pngpdf-pages-label">Páginas</span><strong id="pngpdf-pages">0</strong></div>
+<div class="pngpdf-metric"><span id="pngpdf-size-label">PDF</span><strong id="pngpdf-size">—</strong></div>
+</div>
+<div class="pngpdf-side-card note"><strong id="pngpdf-note-title">Privacidade</strong><p id="pngpdf-note-body">As imagens são processadas localmente no dispositivo.</p></div>
+<div class="pngpdf-side-card hint"><strong id="pngpdf-hint-title">Dica</strong><p id="pngpdf-hint-body">Use “Tamanho original” quando quiser manter o desenho no tamanho da imagem.</p></div>
+</aside>
+</div>
+</section>
+
+<footer class="pngpdf-footer">PNG → PDF · Nexauren Tools</footer>
+</main>
+<script type="module" src="./script.js?v=20260926-pngtopdf-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
