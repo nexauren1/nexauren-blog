@@ -83,6 +83,7 @@ function renderCards(){
   });
   attachNav();
   document.querySelectorAll(".tool-engagement").forEach(host=>{if(host.dataset.ready!=="1"){renderBar(host);host.dataset.ready="1";}});
+  window.NexaurenUI?.refresh?.();
 }
 function refreshBars(){
   document.querySelectorAll(".tool-engagement").forEach(host=>renderBar(host));
