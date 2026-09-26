@@ -174,11 +174,11 @@
     const results=toolResults();
     count.textContent=results.length+" "+(language==="en"?"of ":"de ")+state.tools.length+(state.tools.length===1?" "+ui.tool:" "+ui.toolsPlural);
     grid.innerHTML=results.map(card).join("");
-    empty.hidden=results.length>0;
+    empty.hidden=results.length>0;empty.style.display=results.length>0?"none":"";
     empty.innerHTML=state.query||state.tag||state.access!=="all"
       ? "<strong>"+ui.noTools+"</strong><br>"+ui.noToolsHint
       : "<strong>"+ui.ready+"</strong><br>"+ui.empty;
-    grid.hidden=results.length===0;
+    grid.hidden=results.length===0;grid.style.display=results.length===0?"none":"";
     window.NexaurenUI?.refresh?.();
   }
 
