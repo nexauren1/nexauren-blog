@@ -65,7 +65,9 @@ AND name IN (
   'nexauren_account_preferences',
   'nexauren_billing_config',
   'nexauren_subscriptions',
-  'nexauren_tool_unlocks'
+  'nexauren_tool_unlocks',
+  'nexauren_tool_reviews',
+  'nexauren_tool_favorites'
  )
 ORDER BY name;
 ```
