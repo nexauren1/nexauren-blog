@@ -506,9 +506,18 @@ async function init() {
     console.error("Nexauren auth redirect", err);
   }
 
+  let authResolved = false;
+  const returnTarget = getSafeReturnUrl();
+  const fallbackTimer = setTimeout(() => {
+    if (authResolved) return;
+    loginView("", redirectError ? friendlyError(redirectError) : (returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : ""));
+  }, 5000);
+
   onAuthStateChanged(auth, async (user) => {
+    authResolved = true;
+    clearTimeout(fallbackTimer);
     if (!user) {
-      loginView("", redirectError ? friendlyError(redirectError) : (getSafeReturnUrl() ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : ""));
+      loginView("", redirectError ? friendlyError(redirectError) : (returnTarget ? "Entre na sua conta para continuar. Depois voltará automaticamente ao artigo." : ""));
       redirectError = null;
       return;
     }
