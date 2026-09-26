@@ -64,7 +64,7 @@ function renderBar(host){
   host.innerHTML='<div class="tool-engagement-rating">'+stars(m.avg_rating)+'<span class="tool-rating-number">'+(m.review_count?Number(m.avg_rating||0).toFixed(1):"Sem avaliações")+'</span><span class="tool-rating-count">'+(Number(m.review_count||0)==1?"1 avaliação":Number(m.review_count||0)+" avaliações")+'</span></div><div class="tool-engagement-actions"><button type="button" class="tool-favorite-btn '+(m.my_favorite?"is-active":"")+'" data-eng-favorite="'+esc(id)+'"><span>♥</span><span>'+(m.my_favorite?"Favorito":"Favoritar")+'</span><small>'+Number(m.favorite_count||0)+'</small></button><button type="button" class="tool-review-btn" data-eng-review="'+esc(id)+'">★ <span>'+(mine?"Editar avaliação":"Avaliar")+'</span></button></div>';
 }
 function renderCards(){
-  $(".tool-card[data-tool-id]").forEach(card=>{
+  document.querySelectorAll(".tool-card[data-tool-id]").forEach(card=>{
     if(!card.parentElement?.matches(".tool-engagement-item")){
       const wrap=document.createElement("div");
       wrap.className="tool-engagement-item";
@@ -72,10 +72,10 @@ function renderCards(){
     }
   });
   attachNav();
-  $(".tool-engagement").forEach(host=>{if(host.dataset.ready!=="1"){renderBar(host);host.dataset.ready="1";}});
+  document.querySelectorAll(".tool-engagement").forEach(host=>{if(host.dataset.ready!=="1"){renderBar(host);host.dataset.ready="1";}});
 }
 function refreshBars(){
-  $(".tool-engagement").forEach(host=>renderBar(host));
+  document.querySelectorAll(".tool-engagement").forEach(host=>renderBar(host));
 }
 function renderIndividual(){
   if(!registry)return;
