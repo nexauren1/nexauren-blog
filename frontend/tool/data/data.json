@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
@@ -56,6 +56,16 @@
       "path": "/tool/categories/marketplace/",
       "name_en": "Marketplace",
       "description_en": "Tools for sellers, stores, and online commerce."
+    },
+    {
+      "id": "pdf",
+      "name": "PDF",
+      "description": "Ferramentas para criar, converter, organizar e trabalhar com documentos PDF.",
+      "icon": "▤",
+      "sortOrder": 35,
+      "path": "/tool/categories/pdf/",
+      "name_en": "PDF",
+      "description_en": "Tools for creating, converting, organizing, and working with PDF documents."
     }
   ],
   "tools": [
@@ -1394,6 +1404,38 @@
         "image",
         "favicon",
         "generator"
+      ]
+    },
+    {
+      "id": "jpg-to-pdf",
+      "name": "JPG → PDF",
+      "description": "Converta uma ou várias imagens JPG/JPEG em um único PDF, com tamanho de página, margens, orientação e qualidade ajustáveis.",
+      "category": "pdf",
+      "icon": "▤",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/jpg-to-pdf/",
+      "tags": [
+        "JPG",
+        "JPEG",
+        "PDF",
+        "conversor",
+        "imagens",
+        "documentos"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 10,
+      "name_en": "JPG → PDF",
+      "description_en": "Convert one or more JPG/JPEG images into a single PDF with adjustable page size, margins, orientation, and quality.",
+      "tags_en": [
+        "JPG",
+        "JPEG",
+        "PDF",
+        "converter",
+        "images",
+        "documents"
       ]
     }
   ]

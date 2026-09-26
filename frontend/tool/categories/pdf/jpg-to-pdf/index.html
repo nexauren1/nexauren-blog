@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b12"><meta name="description" content="Converta JPG/JPEG em PDF diretamente no navegador.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/jpg-to-pdf/">
+<title>JPG → PDF — Nexauren Tools</title>
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="./style.css?v=20260926-jpgpdf-1">
+</head><body>
+<main class="jpgpdf">
+<header class="jpgpdf-top"><a class="jpgpdf-back" href="/tool/categories/pdf/">← PDF</a><div class="jpgpdf-actions"><span class="jpgpdf-mark">NEXAUREN / PDF</span><button class="jpgpdf-lang" id="jpgpdf-lang" type="button" aria-label="Translate">English</button></div></header>
+<section class="jpgpdf-hero"><div><h1 class="jpgpdf-title">JPG → PDF</h1><p class="jpgpdf-lead">Converta uma ou várias imagens JPG/JPEG em um único PDF. Escolha tamanho de página, margens, orientação e qualidade de saída.</p></div><div class="jpgpdf-plan"><strong id="jpgpdf-plan-name">NEXAUREN FREE</strong><small id="jpgpdf-plan-limit">Free: até 10 imagens por PDF · Pro: até 50 imagens por PDF.</small></div></section>
+<section class="jpgpdf-work"><div class="jpgpdf-card">
+<label class="jpgpdf-drop"><input class="jpgpdf-input" type="file" accept=".jpg,.jpeg,image/jpeg" multiple><span><b>Escolha imagens JPG/JPEG</b><span>ou toque para selecionar várias imagens</span></span></label>
+<section id="jpgpdf-gate" class="jpgpdf-account-gate jpgpdf-hide"></section>
+<section id="jpgpdf-app">
+<div class="jpgpdf-grid">
+<div class="jpgpdf-field"><label>Tamanho da página</label><select id="jpgpdf-page-size"><option value="a4">A4</option><option value="original">Tamanho original da imagem</option></select></div>
+<div class="jpgpdf-field"><label>Orientação</label><select id="jpgpdf-orientation"><option value="auto">Automática</option><option value="portrait">Retrato</option><option value="landscape">Paisagem</option></select></div>
+<div class="jpgpdf-field"><label>Margens <span>pt</span></label><input id="jpgpdf-margin" type="number" min="0" max="72" value="18"></div>
+<div class="jpgpdf-field"><label>Qualidade JPEG <output id="jpgpdf-quality">90%</output></label><input id="jpgpdf-quality-input" type="range" min="60" max="100" value="90"></div>
+<div class="jpgpdf-field"><label>Nome do ficheiro</label><input id="jpgpdf-name" type="text" value="jpg-to-pdf" maxlength="80"></div>
+</div>
+<div class="jpgpdf-actions-row"><button class="jpgpdf-btn primary" id="jpgpdf-convert" type="button" disabled>Criar PDF</button><button class="jpgpdf-btn" id="jpgpdf-clear" type="button">Limpar</button></div>
+<div class="jpgpdf-progress" aria-hidden="true"><i></i></div>
+<div class="jpgpdf-status" id="jpgpdf-status">A preparar a ferramenta…</div>
+<div class="jpgpdf-list" id="jpgpdf-list"><div class="jpgpdf-empty">Nenhuma imagem selecionada.</div></div>
+<div class="jpgpdf-output" id="jpgpdf-output"><h2>PDF pronto</h2><div class="jpgpdf-output-row"><span id="jpgpdf-output-name">—</span><a class="jpgpdf-btn primary jpgpdf-download" href="javascript:void(0)">Baixar PDF</a></div></div>
+</section></div>
+<aside class="jpgpdf-card jpgpdf-side"><h2>Resumo</h2><div class="jpgpdf-stat"><span>Imagens</span><span id="jpgpdf-count">0</span></div><div class="jpgpdf-stat"><span>Páginas</span><span id="jpgpdf-page">0</span></div><div class="jpgpdf-stat"><span>Tamanho do PDF</span><span id="jpgpdf-size">—</span></div><div class="jpgpdf-stat"><span>Qualidade</span><span id="jpgpdf-quality">90%</span></div><div class="jpgpdf-hint"><b>Privacidade</b><br>O processamento acontece diretamente no navegador. Os JPG/JPEG não precisam ser enviados para um servidor.</div><div class="jpgpdf-hint">Free: até 10 imagens por PDF.<br>Pro: até 50 imagens por PDF.</div></aside></section>
+<div class="jpgpdf-footer">JPG → PDF · Nexauren Tools</div>
+</main>
+<script type="module" src="./script.js?v=20260926-jpgpdf-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body></html>
