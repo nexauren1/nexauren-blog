@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a090f">
+<meta name="description" content="Rode páginas de um PDF diretamente no navegador e descarregue o documento ajustado.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/rodar-pdf/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./style.css?v=20260926-pdfrotate-1">
+<title>Rodar PDF — Nexauren Tools</title>
+<style id="nexauren-auto-ads-style">
+.nx-auto-ad{width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;clear:both}
+.nx-auto-ad.top{min-height:70px;margin:0 auto 22px;padding:10px 6px}.nx-auto-ad.top .nx-auto-ad-inner{width:min(468px,100%);min-width:0}
+.nx-auto-ad.bottom{min-height:90px;margin:26px auto 0;padding:12px 6px}
+.nx-auto-ad .nx-auto-ad-inner{width:100%;min-height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.nx-auto-ad.bottom .nx-auto-ad-inner{min-height:90px}.nx-auto-ad iframe{max-width:100%;border:0}
+.nx-auto-ad-label{font-size:9px;line-height:1;letter-spacing:.18em;font-weight:800;opacity:.62;margin-bottom:8px}
+@media(max-width:520px){.nx-auto-ad.top{margin-bottom:18px;padding:8px 2px;min-height:70px}.nx-auto-ad.bottom{margin-top:20px;padding:10px 2px}}
+</style>
+<script src="/assets/ads.js?v=20260925-auto3"></script>
+</head>
+<body>
+<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade"><div class="nx-auto-ad-label">PUBLICIDADE</div><div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div></div>
+<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+
+<main class="pdfrotate">
+<header class="pdfrotate-head">
+<a class="pdfrotate-back" href="/tool/categories/pdf/">← PDF</a>
+<div class="pdfrotate-nav"><span class="pdfrotate-mark">NEXAUREN / ROTATION STUDIO</span><button id="pdfrotate-lang" class="pdfrotate-lang" type="button">English</button></div>
+</header>
+
+<section class="pdfrotate-hero">
+<div class="pdfrotate-hero-copy">
+<div class="pdfrotate-kicker">ROTATION STUDIO</div>
+<h1>Rodar <span>PDF</span></h1>
+<p id="pdfrotate-lead">Gire todas as páginas ou apenas as páginas escolhidas. Veja a orientação antes de exportar e processe tudo localmente.</p>
+</div>
+<div class="pdfrotate-dial" aria-hidden="true">
+<div class="pdfrotate-dial-ring r1"></div><div class="pdfrotate-dial-ring r2"></div><div class="pdfrotate-dial-core">↻</div>
+<span class="tick t1"></span><span class="tick t2"></span><span class="tick t3"></span><span class="tick t4"></span>
+</div>
+</section>
+
+<section class="pdfrotate-app">
+<div class="pdfrotate-console">
+<div class="pdfrotate-drop" id="pdfrotate-drop">
+<input id="pdfrotate-file" type="file" accept="application/pdf,.pdf">
+<div class="pdfrotate-drop-art"><span></span><b>PDF</b></div>
+<div><strong id="pdfrotate-drop-title">Adicionar PDF</strong><p id="pdfrotate-drop-sub">Toque para selecionar um documento ou arraste-o para aqui</p></div>
+</div>
+
+<div id="pdfrotate-filebar" class="pdfrotate-filebar" hidden>
+<div><small id="pdfrotate-file-label">Documento</small><strong id="pdfrotate-file-name">—</strong></div>
+<span id="pdfrotate-file-size">—</span>
+</div>
+
+<div class="pdfrotate-control-grid">
+<div class="pdfrotate-card">
+<label id="pdfrotate-angle-label" for="pdfrotate-angle">Rotação</label>
+<div class="pdfrotate-angle-grid">
+<button type="button" data-angle="90">90°</button>
+<button type="button" data-angle="180">180°</button>
+<button type="button" data-angle="270">270°</button>
+</div>
+</div>
+<div class="pdfrotate-card">
+<label id="pdfrotate-pages-label" for="pdfrotate-pages">Páginas</label>
+<select id="pdfrotate-pages">
+<option value="all" id="pdfrotate-all">Todas as páginas</option>
+<option value="range" id="pdfrotate-range-option">Intervalo personalizado</option>
+</select>
+<input id="pdfrotate-range" type="text" placeholder="1-3,5,8-10" disabled>
+</div>
+<div class="pdfrotate-card wide">
+<div class="pdfrotate-preview-head"><span id="pdfrotate-preview-label">Pré-visualização</span><span id="pdfrotate-preview-meta">—</span></div>
+<div class="pdfrotate-preview">
+<div class="pdfrotate-page-sheet" id="pdfrotate-page-sheet"><span>PDF</span><i>↻</i></div>
+<div class="pdfrotate-preview-copy"><strong id="pdfrotate-preview-title">Pronto para rodar</strong><p id="pdfrotate-preview-body">Escolha o ângulo e as páginas que deseja ajustar.</p></div>
+</div>
+</div>
+<div class="pdfrotate-card">
+<label id="pdfrotate-name-label" for="pdfrotate-name">Nome do ficheiro</label>
+<input id="pdfrotate-name" value="pdf-rodado" maxlength="70">
+</div>
+<div class="pdfrotate-card">
+<label id="pdfrotate-quality-label">Resumo</label>
+<div class="pdfrotate-mini-stats"><div><span id="pdfrotate-total-label">Páginas</span><strong id="pdfrotate-total">0</strong></div><div><span id="pdfrotate-angle-stat-label">Ângulo</span><strong id="pdfrotate-angle-stat">90°</strong></div></div>
+</div>
+</div>
+
+<div class="pdfrotate-actions">
+<button id="pdfrotate-run" class="pdfrotate-btn primary" type="button" disabled onclick="window.__nexaurenRotatePdf&&window.__nexaurenRotatePdf()">Rodar PDF</button>
+<button id="pdfrotate-clear" class="pdfrotate-btn ghost" type="button">Limpar</button>
+</div>
+<div class="pdfrotate-progress"><i id="pdfrotate-progress"></i></div>
+<div id="pdfrotate-status" class="pdfrotate-status">Pronto para receber um PDF.</div>
+
+<div id="pdfrotate-result" class="pdfrotate-result" hidden>
+<div><small id="pdfrotate-result-label">PDF pronto</small><strong id="pdfrotate-result-name">pdf-rodado.pdf</strong><span id="pdfrotate-result-meta">—</span></div>
+<a id="pdfrotate-download" class="pdfrotate-btn primary" href="#" download>Baixar PDF</a>
+</div>
+</div>
+
+<aside class="pdfrotate-side">
+<div class="pdfrotate-side-card orbit-card">
+<div class="pdfrotate-side-orbit">◎</div>
+<strong id="pdfrotate-side-title">Rotation Lab</strong>
+<p id="pdfrotate-side-body">A orientação é ajustada página a página sem sair do dispositivo.</p>
+</div>
+<div class="pdfrotate-side-card">
+<span class="pdfrotate-side-label" id="pdfrotate-flow-title">Fluxo</span>
+<div class="pdfrotate-flow active"><b>01</b><span id="pdfrotate-flow1">Escolher PDF</span></div>
+<div class="pdfrotate-flow"><b>02</b><span id="pdfrotate-flow2">Rodar</span></div>
+<div class="pdfrotate-flow"><b>03</b><span id="pdfrotate-flow3">Baixar</span></div>
+</div>
+</aside>
+</section>
+
+<footer class="pdfrotate-footer">Rodar PDF · Nexauren Tools</footer>
+</main>
+
+<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade"><div class="nx-auto-ad-label">PUBLICIDADE</div><div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div></div>
+<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+<script src="./script.js?v=20260926-pdfrotate-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
