@@ -64,57 +64,30 @@ function isDefaultSocialImage(value){
     return p==="/social-preview.png" || p==="/assets/social-preview-nexauren.png";
   }catch{return false;}
 }
+const LEGACY_COVER_OVERRIDES={
+  "fortnite-recompensa-gratis-global-championship-2026":"https://static.beebom.com/wp-content/uploads/2026/09/Twitch-Drop-Champions-Chargers-Kicks-in-Fortnite.jpg?w=1024"
+};
 function resolvedPostCover(row){
+  const override=row?.slug ? LEGACY_COVER_OVERRIDES[String(row.slug)] : "";
+  if(override)return override;
   const direct=cleanCoverUrl(row?.cover_url);
   if(direct)return direct;
   const fallback=cleanCoverUrl(row?.social_image);
   return fallback && !isDefaultSocialImage(fallback) ? fallback : null;
 }
-function coverMatchTokens(value){
-  return [...new Set(
-    String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
-      .replace(/[^a-z0-9]+/g," ").split(/\s+/)
-      .filter(x=>x.length>=4 && !/^(this|that|with|from|free|como|para|este|essa|mais|muito|your|this|weekend|championship|global|story|article|news)$/.test(x))
-  )].slice(0,24);
-}
 async function recoverMissingCover(env,row){
-  if(!row || row.cover_media_id)return row;
+  if(!row || row.cover_media_id || row?.slug in LEGACY_COVER_OVERRIDES)return row;
   const current=String(row.social_image||"").trim();
-  if(current && !isDefaultSocialImage(current)){
-    try{
-      const exact=await env.DB.prepare("SELECT id,url,width,height,alt_text,caption FROM media WHERE url=? LIMIT 1").bind(current).first();
-      if(exact){
-        await env.DB.prepare("UPDATE posts SET cover_media_id=? WHERE id=? AND cover_media_id IS NULL").bind(exact.id,row.id).run();
-        row.cover_media_id=exact.id;row.cover_url=exact.url;row.cover_width=exact.width;row.cover_height=exact.height;row.cover_alt=exact.alt_text;row.cover_caption=exact.caption;
-        return row;
-      }
-    }catch{}
-  }
+  if(!current || isDefaultSocialImage(current))return row;
   try{
-    const target=coverMatchTokens([row.slug,row.title,row.excerpt].join(" "));
-    if(!target.length)return row;
-    const mediaResult=await env.DB.prepare("SELECT id,url,width,height,alt_text,caption,filename,mime_type,uploaded_by,created_at FROM media ORDER BY created_at DESC LIMIT 100").all();
-    const postTs=Date.parse(row.updated_at||row.created_at||"")||0;
-    const candidates=(mediaResult.results||[]).map(m=>{
-      const cover=cleanCoverUrl(m.url);
-      if(!cover || /svg/i.test(String(m.mime_type||"")))return null;
-      const hay=coverMatchTokens([m.filename,m.alt_text,m.caption].join(" "));
-      let overlap=0;for(const token of target){if(hay.includes(token))overlap++;}
-      let score=overlap*4;
-      if(row.author_id && m.uploaded_by && row.author_id===m.uploaded_by)score+=4;
-      const mts=Date.parse(m.created_at||"");
-      if(postTs&&mts&&Math.abs(postTs-mts)<=48*3600*1000)score+=2;
-      else if(postTs&&mts&&Math.abs(postTs-mts)<=7*86400*1000)score+=1;
-      return {m,score,overlap};
-    }).filter(Boolean).sort((a,b)=>b.score-a.score || b.overlap-a.overlap || String(b.m.created_at).localeCompare(String(a.m.created_at)));
-    const best=candidates[0],second=candidates[1];
-    if(!best || best.score<8 || (second && best.score-second.score<2))return row;
-    await env.DB.prepare("UPDATE posts SET cover_media_id=? WHERE id=? AND cover_media_id IS NULL").bind(best.m.id,row.id).run();
-    row.cover_media_id=best.m.id;row.cover_url=best.m.url;row.cover_width=best.m.width;row.cover_height=best.m.height;row.cover_alt=best.m.alt_text;row.cover_caption=best.m.caption;
+    const exact=await env.DB.prepare("SELECT id,url,width,height,alt_text,caption FROM media WHERE url=? LIMIT 1").bind(current).first();
+    if(exact){
+      await env.DB.prepare("UPDATE posts SET cover_media_id=? WHERE id=? AND cover_media_id IS NULL").bind(exact.id,row.id).run();
+      row.cover_media_id=exact.id;row.cover_url=exact.url;row.cover_width=exact.width;row.cover_height=exact.height;row.cover_alt=exact.alt_text;row.cover_caption=exact.caption;
+    }
   }catch{}
   return row;
 }
-
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
     status,
