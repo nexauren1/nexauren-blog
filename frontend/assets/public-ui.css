@@ -555,3 +555,282 @@ html.nx-blog-route body,body.nx-blog-route{width:100%;max-width:100%;overflow-x:
   .nx-language-switch{height:42px;min-width:44px}
   header .nx-language-switch{order:2}
 }
+
+
+/* Nexauren visual system — non-Blog pages only.
+   Keep all Blog routes visually untouched. */
+body.nx-page:not(.nx-blog-route){
+  --nx-glow:rgba(109,93,252,.16);
+  background:
+    radial-gradient(900px 520px at 8% -6%,rgba(109,93,252,.12),transparent 62%),
+    radial-gradient(800px 520px at 100% 4%,rgba(21,184,166,.10),transparent 60%),
+    linear-gradient(180deg,#f8f9fd 0,#f6f7fb 38%,#f4f6fa 100%);
+}
+body.nx-page:not(.nx-blog-route) .nx-page{
+  isolation:isolate;
+}
+body.nx-page:not(.nx-blog-route) .site-header,
+body.nx-page:not(.nx-blog-route) .tool-header,
+body.nx-page:not(.nx-blog-route) .account-header,
+body.nx-page:not(.nx-blog-route) .legal-header{
+  box-shadow:0 8px 32px rgba(16,21,37,.045);
+}
+body.nx-page:not(.nx-blog-route) .nav,
+body.nx-page:not(.nx-blog-route) .tool-nav{
+  min-height:76px;
+}
+body.nx-page:not(.nx-blog-route) .nav-links a:hover,
+body.nx-page:not(.nx-blog-route) .tool-links a:hover,
+body.nx-page:not(.nx-blog-route) .account-header nav a:hover{
+  transform:translateY(-1px);
+}
+body.nx-page:not(.nx-blog-route) .nav-links a,
+body.nx-page:not(.nx-blog-route) .tool-links a,
+body.nx-page:not(.nx-blog-route) .account-header nav a{
+  transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease;
+}
+
+/* Home: stronger product-like hero without adding markup. */
+body.nx-page:not(.nx-blog-route) .home-hero{
+  position:relative;
+}
+body.nx-page:not(.nx-blog-route) .home-hero:before{
+  content:"";
+  position:absolute;
+  inset:16% 34% auto -8%;
+  height:220px;
+  background:radial-gradient(circle,var(--nx-glow),transparent 70%);
+  filter:blur(14px);
+  pointer-events:none;
+}
+body.nx-page:not(.nx-blog-route) .home-hero-copy,
+body.nx-page:not(.nx-blog-route) .home-art{
+  position:relative;
+  z-index:1;
+}
+body.nx-page:not(.nx-blog-route) .home-art{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.96),rgba(247,249,255,.86));
+  border-color:#dfe4ee;
+}
+body.nx-page:not(.nx-blog-route) .home-art-logo{
+  box-shadow:0 24px 80px rgba(68,79,140,.20),inset 0 1px 0 rgba(255,255,255,.14);
+}
+body.nx-page:not(.nx-blog-route) .home-card{
+  position:relative;
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background .22s ease;
+}
+body.nx-page:not(.nx-blog-route) .home-card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:radial-gradient(240px 120px at var(--nx-x,50%) var(--nx-y,0%),rgba(109,93,252,.08),transparent 70%);
+  opacity:0;
+  transition:opacity .2s ease;
+  pointer-events:none;
+}
+body.nx-page:not(.nx-blog-route) .home-card:hover:before{opacity:1}
+body.nx-page:not(.nx-blog-route) .home-card > *{position:relative;z-index:1}
+body.nx-page:not(.nx-blog-route) .home-card-link span{
+  display:inline-block;
+  transition:transform .18s ease;
+}
+body.nx-page:not(.nx-blog-route) .home-card:hover .home-card-link span{transform:translateX(4px)}
+body.nx-page:not(.nx-blog-route) .home-cta{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(360px 180px at 88% 15%,rgba(109,93,252,.24),transparent 68%),
+    radial-gradient(300px 160px at 8% 100%,rgba(21,184,166,.16),transparent 70%),
+    var(--surface-dark);
+}
+body.nx-page:not(.nx-blog-route) .home-cta:after{
+  content:"";
+  position:absolute;
+  width:260px;height:260px;right:-100px;bottom:-150px;
+  border:1px solid rgba(255,255,255,.08);border-radius:50%;
+  box-shadow:0 0 0 28px rgba(255,255,255,.025),0 0 0 56px rgba(255,255,255,.018);
+  pointer-events:none;
+}
+body.nx-page:not(.nx-blog-route) .home-cta > *{position:relative;z-index:1}
+
+/* Tools: stronger catalog hierarchy and reliable mobile 2-column grid. */
+body.nx-page:not(.nx-blog-route) .tool-hero{
+  position:relative;
+}
+body.nx-page:not(.nx-blog-route) .tool-hero:before{
+  content:"";
+  position:absolute;
+  right:-10%;
+  top:18px;
+  width:340px;height:220px;
+  background:radial-gradient(circle,rgba(109,93,252,.13),transparent 70%);
+  pointer-events:none;
+}
+body.nx-page:not(.nx-blog-route) .tool-overview{
+  position:relative;
+  overflow:hidden;
+}
+body.nx-page:not(.nx-blog-route) .tool-overview:after{
+  content:"";
+  position:absolute;
+  width:180px;height:180px;
+  right:-75px;top:-85px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:50%;
+  box-shadow:0 0 0 24px rgba(255,255,255,.025),0 0 0 48px rgba(255,255,255,.018);
+}
+body.nx-page:not(.nx-blog-route) .tool-search{
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+body.nx-page:not(.nx-blog-route) .tool-search:hover{
+  transform:translateY(-1px);
+}
+body.nx-page:not(.nx-blog-route) .tool-featured-btn{
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+}
+body.nx-page:not(.nx-blog-route) .tool-featured-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 25px rgba(16,21,37,.08);
+}
+body.nx-page:not(.nx-blog-route) .tool-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:stretch;
+}
+body.nx-page:not(.nx-blog-route) .tool-card{
+  min-width:0;
+  min-height:238px;
+  background:
+    radial-gradient(180px 90px at 100% 0,rgba(109,93,252,.055),transparent 72%),
+    linear-gradient(145deg,#fff,#f8f9fe);
+}
+body.nx-page:not(.nx-blog-route) .tool-card:focus-visible,
+body.nx-page:not(.nx-blog-route) .home-card:focus-visible{
+  transform:translateY(-3px);
+}
+body.nx-page:not(.nx-blog-route) .tool-empty{
+  grid-column:1/-1;
+  min-height:150px;
+  display:grid;
+  place-items:center;
+}
+body.nx-page:not(.nx-blog-route) .tool-footer{
+  background:rgba(255,255,255,.88);
+}
+body.nx-page:not(.nx-blog-route) .tool-footer-row{
+  min-height:74px;
+  align-items:center;
+}
+body.nx-page:not(.nx-blog-route) .tool-footer-row a{
+  transition:color .18s ease;
+}
+body.nx-page:not(.nx-blog-route) .tool-footer-row a:hover{color:var(--accent)}
+
+/* Account: clearer dashboard hierarchy and more premium plan surface. */
+body.nx-page:not(.nx-blog-route) .account-hero{
+  position:relative;
+}
+body.nx-page:not(.nx-blog-route) .account-hero:after{
+  content:"";
+  position:absolute;
+  width:300px;height:180px;
+  right:-30px;top:20px;
+  background:radial-gradient(circle,rgba(109,93,252,.10),transparent 70%);
+  pointer-events:none;
+}
+body.nx-page:not(.nx-blog-route) .account-dashboard-v2{
+  gap:20px;
+}
+body.nx-page:not(.nx-blog-route) .account-sidebar{
+  box-shadow:0 14px 42px rgba(16,21,37,.055);
+  backdrop-filter:blur(12px);
+}
+body.nx-page:not(.nx-blog-route) .account-side-nav a{
+  transition:background .18s ease,color .18s ease,transform .18s ease;
+}
+body.nx-page:not(.nx-blog-route) .account-side-nav a:hover,
+body.nx-page:not(.nx-blog-route) .account-side-nav a.active{
+  transform:translateX(2px);
+}
+body.nx-page:not(.nx-blog-route) .account-block{
+  box-shadow:0 12px 34px rgba(16,21,37,.05);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+body.nx-page:not(.nx-blog-route) .account-block:hover{
+  border-color:#d7dce6;
+}
+body.nx-page:not(.nx-blog-route) .account-pro-card{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(220px 100px at 100% 0,rgba(109,93,252,.10),transparent 70%),
+    linear-gradient(145deg,#fcfbff,#f7f5ff);
+}
+body.nx-page:not(.nx-blog-route) .account-session{
+  box-shadow:0 10px 24px rgba(180,40,30,.05);
+}
+body.nx-page:not(.nx-blog-route) .account-footer{
+  background:rgba(255,255,255,.88);
+}
+
+/* Mobile polish — menu, spacing, two-column tools and touch targets. */
+@media(max-width:700px){
+  body.nx-page:not(.nx-blog-route) .wrap,
+  body.nx-page:not(.nx-blog-route) .tool-wrap,
+  body.nx-page:not(.nx-blog-route) .account-wrap{
+    width:calc(100% - 24px);
+  }
+  body.nx-page:not(.nx-blog-route) .nav,
+  body.nx-page:not(.nx-blog-route) .tool-nav{
+    min-height:64px;
+  }
+  body.nx-page:not(.nx-blog-route) .menu-toggle,
+  body.nx-page:not(.nx-blog-route) .tool-menu{
+    width:44px;height:44px;
+    box-shadow:0 7px 18px rgba(16,21,37,.08);
+  }
+  body.nx-page:not(.nx-blog-route) .nx-menu-layer{
+    border:1px solid #dde2ea;
+    border-top:0;
+    border-radius:0 0 18px 18px;
+    box-shadow:0 18px 45px rgba(16,21,37,.14);
+  }
+  body.nx-page:not(.nx-blog-route) .nx-menu-layer a{
+    min-height:54px;
+    padding-inline:18px;
+  }
+  body.nx-page:not(.nx-blog-route) .home-hero,
+  body.nx-page:not(.nx-blog-route) .tool-hero{
+    padding-top:34px;
+  }
+  body.nx-page:not(.nx-blog-route) .home-art{
+    min-height:280px;
+  }
+  body.nx-page:not(.nx-blog-route) .tool-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  body.nx-page:not(.nx-blog-route) .tool-card{
+    min-height:228px;
+    padding:14px;
+    border-radius:16px;
+  }
+  body.nx-page:not(.nx-blog-route) .tool-card h2{
+    font-size:15px;
+  }
+  body.nx-page:not(.nx-blog-route) .tool-card p{
+    font-size:10px;
+  }
+  body.nx-page:not(.nx-blog-route) .account-dashboard-v2{
+    gap:12px;
+  }
+  body.nx-page:not(.nx-blog-route) .account-side-nav{
+    overflow:auto;
+    grid-template-columns:repeat(4,minmax(90px,1fr));
+    padding-bottom:4px;
+  }
+  body.nx-page:not(.nx-blog-route) .account-side-nav a{
+    min-height:38px;
+  }
+}
