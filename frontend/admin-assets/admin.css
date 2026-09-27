@@ -91,3 +91,20 @@ body{background:radial-gradient(circle at 8% 0,rgba(118,87,255,.08),transparent 
 @media(max-width:1100px){.admin-hub{grid-template-columns:1fr 1fr}.admin-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-large{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.view{padding:24px 14px}.view-header h1{font-size:32px}.admin-hub{grid-template-columns:1fr}.tool-admin-stats{grid-template-columns:1fr 1fr}.admin-form-grid{grid-template-columns:1fr}.admin-card-actions{align-items:flex-start;flex-direction:column}.topbar{height:68px}}
 @media(max-width:470px){.tool-admin-stats,.stats-large{grid-template-columns:1fr}.hub-card{grid-template-columns:auto 1fr;gap:12px}.hub-card>b{display:none}}
+
+/* Article tool picker */
+.tool-picker{margin:18px 0;background:linear-gradient(145deg,#fbfbff,#fff);border-color:#ddd9ff}
+.tool-picker-head h3{margin:3px 0 5px;font-size:18px}
+.tool-picker-head p{margin:0 0 14px;color:var(--muted);font-size:11px}
+.tool-picker-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+.tool-picker-grid input{min-height:44px}
+.tool-picker-grid select{min-height:190px;width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px}
+.tool-picker-grid option{padding:9px;border-radius:8px}
+.tool-picker-grid option:checked{background:#ece9ff;color:#4f3ad8}
+.tool-picker-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:10px}
+.tool-picker-actions select{min-height:42px;max-width:230px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:0 10px}
+.tool-picker-actions .primary{white-space:nowrap}
+.tool-picker>small{display:block;margin-top:9px;line-height:1.5}
+.preview-tool-cta{display:flex;align-items:center;gap:10px;margin:12px 0;padding:13px 15px;border:1px solid #dcd7ff;border-radius:13px;background:linear-gradient(135deg,#f6f3ff,#f8fffd)}
+.preview-tool-cta strong{display:block;font-size:12px}.preview-tool-cta span{display:block;color:var(--muted);font-size:9px}
+@media(max-width:600px){.tool-picker-actions{align-items:stretch;flex-direction:column}.tool-picker-actions select{max-width:none}.tool-picker-actions .primary{width:100%}}
