@@ -7,7 +7,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const state={
   lang:"en",mode:null,source:null,sourceBuffer:null,generated:[],organized:[],zipBlob:null,
-  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null
+  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null,selectedEffects:[],effectPreset:"diverse",modalOpen:null
 };
 
 const I18N={
@@ -60,7 +60,61 @@ const I18N={
     noAudio:"Escolha apenas ficheiros de áudio."
   }
 };
-const types=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","other","custom"];
+const types=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","other","custom"];Object.assign(I18N.en,{
+  effectsTitle:"Effects",optionsTitle:"Generation options",effectsSelected:"{n} effects selected · up to {max} per sample",optionsSummary:"{n} samples · {intensity}% intensity · {length}",
+  effectsApply:"Apply effects",cancel:"Cancel",presets:"Professional presets",presetDiverse:"Diverse Lab",presetDrum:"Drum Impact",presetMotion:"Motion Lab",presetSpace:"Space & Echo",presetLofi:"Lo-Fi Lab",presetTight:"Short & Tight",presetLong:"Long & Wide",
+  effectGroupsMovement:"Movement & Shape",effectGroupsSpace:"Space & Stereo",effectGroupsTiming:"Timing & Repetition",effectGroupsTone:"Tone & Texture",effectGroupsDynamics:"Dynamics & Length",
+  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Rise · Low → High",effectFall:"Fall · High → Low",effectRiseFall:"Rise & Fall",effectFallRise:"Fall & Rise",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · 360° stereo",effectBounce:"Bounce · forward ↔ reverse",effectStutter:"Stutter · micro repeats",effectChop:"Chop · rhythmic cuts",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Short",effectLong:"Long",
+  quantity:"Number of samples",variation:"Variation intensity",maxEffects:"Maximum effects per variation",lengthMode:"Length",lengthPreserve:"Preserve",lengthMixed:"Mixed",lengthShort:"Shorter",lengthLong:"Longer",
+  sampleType:"Sample type",customType:"Custom type",includeOriginal:"Include the original sample",randomize:"Randomize variation parameters",effectNaming:"Put effect names in filenames",outputNormalize:"Normalize output level",saved:"Saved",effectsHelp:"Select the effects you want available to the generator. Each variation uses a different combination.",optionsHelp:"Fine-tune the generation without cluttering the main workspace.",chooseEffects:"Choose effects"
+});
+Object.assign(I18N.pt,{
+  effectsTitle:"Efeitos",optionsTitle:"Opções de geração",effectsSelected:"{n} efeitos selecionados · até {max} por sample",optionsSummary:"{n} samples · {intensity}% intensidade · {length}",
+  effectsApply:"Aplicar efeitos",cancel:"Cancelar",presets:"Presets profissionais",presetDiverse:"Laboratório Diverso",presetDrum:"Impacto de Drum",presetMotion:"Laboratório de Movimento",presetSpace:"Espaço & Echo",presetLofi:"Laboratório Lo-Fi",presetTight:"Curto & Tight",presetLong:"Longo & Aberto",
+  effectGroupsMovement:"Movimento & Forma",effectGroupsSpace:"Espaço & Stereo",effectGroupsTiming:"Tempo & Repetição",effectGroupsTone:"Timbre & Textura",effectGroupsDynamics:"Dinâmica & Duração",
+  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Subida · Baixo → Alto",effectFall:"Descida · Alto → Baixo",effectRiseFall:"Subida & Descida",effectFallRise:"Descida & Subida",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · stereo 360°",effectBounce:"Bounce · frente ↔ reverse",effectStutter:"Stutter · micro repetições",effectChop:"Chop · cortes rítmicos",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Curto",effectLong:"Longo",
+  quantity:"Número de samples",variation:"Intensidade da variação",maxEffects:"Máximo de efeitos por variação",lengthMode:"Duração",lengthPreserve:"Manter",lengthMixed:"Mista",lengthShort:"Mais curta",lengthLong:"Mais longa",
+  sampleType:"Tipo de sample",customType:"Tipo personalizado",includeOriginal:"Incluir o sample original",randomize:"Variar os parâmetros aleatoriamente",effectNaming:"Colocar os efeitos no nome dos ficheiros",outputNormalize:"Normalizar o nível de saída",saved:"Guardado",effectsHelp:"Escolha os efeitos disponíveis para o gerador. Cada variação usa uma combinação diferente.",optionsHelp:"Ajuste a geração sem encher a área principal.",chooseEffects:"Escolher efeitos"
+});
+const EFFECT_CATALOG=[
+  {id:"rise",group:"movement",icon:"↗",key:"effectRise",descEn:"Controlled low-to-high pitch movement.",descPt:"Movimento controlado de baixo para alto."},
+  {id:"fall",group:"movement",icon:"↘",key:"effectFall",descEn:"Controlled high-to-low pitch movement.",descPt:"Movimento controlado de alto para baixo."},
+  {id:"rise-fall",group:"movement",icon:"⌁",key:"effectRiseFall",descEn:"Rises then falls in one continuous sweep.",descPt:"Sobe e depois desce numa única varredura."},
+  {id:"fall-rise",group:"movement",icon:"⌁",key:"effectFallRise",descEn:"Falls then rises in one continuous sweep.",descPt:"Desce e depois sobe numa única varredura."},
+  {id:"pitch-up",group:"movement",icon:"↑",key:"effectPitchUp",descEn:"Transposes the sample upward.",descPt:"Transpõe o sample para cima."},
+  {id:"pitch-down",group:"movement",icon:"↓",key:"effectPitchDown",descEn:"Transposes the sample downward.",descPt:"Transpõe o sample para baixo."},
+  {id:"reverse",group:"movement",icon:"↶",key:"effectReverse",descEn:"Plays the sample backwards.",descPt:"Reproduz o sample ao contrário."},
+  {id:"ping-pong",group:"movement",icon:"↔",key:"effectPingPong",descEn:"Moves left to right and back again.",descPt:"Move da esquerda para a direita e volta."},
+  {id:"orbit",group:"space",icon:"◌",key:"effectOrbit",descEn:"Continuous stereo orbit movement.",descPt:"Movimento stereo contínuo em órbita."},
+  {id:"bounce",group:"movement",icon:"↕",key:"effectBounce",descEn:"Forward and reverse bounce.",descPt:"Bounce para frente e para trás."},
+  {id:"stutter",group:"timing",icon:"⫶",key:"effectStutter",descEn:"Rapid repeated micro-slices.",descPt:"Micro cortes repetidos rapidamente."},
+  {id:"chop",group:"timing",icon:"▥",key:"effectChop",descEn:"Rhythmic gated cuts across the sample.",descPt:"Cortes rítmicos em diferentes partes."},
+  {id:"echo",group:"space",icon:"◍",key:"effectEcho",descEn:"Longer repeating echoes.",descPt:"Ecos repetidos e longos."},
+  {id:"delay",group:"space",icon:"◒",key:"effectDelay",descEn:"Shorter cleaner repeats.",descPt:"Repetições mais curtas e limpas."},
+  {id:"reverb",group:"space",icon:"✺",key:"effectReverb",descEn:"Synthetic room and hall tail.",descPt:"Cauda de sala e hall sintetizada."},
+  {id:"tremolo",group:"space",icon:"≋",key:"effectTremolo",descEn:"Pulsing amplitude movement.",descPt:"Movimento pulsante de amplitude."},
+  {id:"lowpass",group:"tone",icon:"⌄",key:"effectLowpass",descEn:"Sweeping low-pass filter.",descPt:"Filtro low-pass em varredura."},
+  {id:"highpass",group:"tone",icon:"⌃",key:"effectHighpass",descEn:"Sweeping high-pass filter.",descPt:"Filtro high-pass em varredura."},
+  {id:"distortion",group:"tone",icon:"∿",key:"effectDistortion",descEn:"Harmonic drive and saturation.",descPt:"Drive harmónico e saturação."},
+  {id:"lofi",group:"tone",icon:"▦",key:"effectLofi",descEn:"Bitcrush-style degradation.",descPt:"Degradação digital estilo bitcrush."},
+  {id:"fade-in",group:"dynamics",icon:"◢",key:"effectFadeIn",descEn:"Builds from silence.",descPt:"Entra gradualmente a partir do silêncio."},
+  {id:"fade-out",group:"dynamics",icon:"◣",key:"effectFadeOut",descEn:"Drops gradually into silence.",descPt:"Desaparece gradualmente até ao silêncio."},
+  {id:"short",group:"dynamics",icon:"−",key:"effectShort",descEn:"Tight shorter cut.",descPt:"Corte curto e apertado."},
+  {id:"long",group:"dynamics",icon:"＋",key:"effectLong",descEn:"Longer slower transformation.",descPt:"Transformação mais longa e lenta."}
+];
+const EFFECT_GROUPS=[{id:"movement",key:"effectGroupsMovement"},{id:"space",key:"effectGroupsSpace"},{id:"timing",key:"effectGroupsTiming"},{id:"tone",key:"effectGroupsTone"},{id:"dynamics",key:"effectGroupsDynamics"}];
+const EFFECT_PRESETS={
+  diverse:["rise","fall","rise-fall","fall-rise","reverse","ping-pong","orbit","bounce","stutter","chop","echo","reverb","pitch-up","pitch-down"],
+  drum:["pitch-down","stutter","chop","short","distortion","lowpass","bounce","fade-out"],
+  motion:["rise","fall","rise-fall","fall-rise","ping-pong","orbit","bounce","tremolo","pitch-up","pitch-down"],
+  space:["echo","delay","reverb","orbit","ping-pong","tremolo","rise","fall"],
+  lofi:["lofi","distortion","lowpass","short","reverse","stutter","echo"],
+  tight:["short","chop","stutter","pitch-down","fade-in","fade-out"],
+  long:["long","echo","delay","reverb","rise","fall","orbit","tremolo"]
+};
+const DEFAULT_EFFECTS=EFFECT_PRESETS.diverse.slice();
+state.selectedEffects=DEFAULT_EFFECTS.slice();
+state.generation={quantity:8,variation:55,includeOriginal:true,randomize:true,maxEffects:2,lengthMode:"mixed",effectNaming:true,normalize:true};
 
 function t(key,vars={}){
   let value=I18N[state.lang][key]??I18N.en[key]??key;
