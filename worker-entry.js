@@ -489,6 +489,7 @@ function normalizeToolRegistry(raw){
       description:text(t?.description||"",600).trim(),
       description_en:text(t?.description_en||t?.descriptionEn||"",600).trim(),
       category,
+      group:text(t?.group||"",100).trim(),
       icon:text(t?.icon||"✦",20).trim(),
       version:text(t?.version||"1.0.0",30).trim(),
       status:["active","disabled","draft"].includes(t?.status)?t.status:null,
