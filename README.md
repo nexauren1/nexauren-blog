@@ -1,23 +1,26 @@
-# Nexauren Story
+# Nexauren Tools
 
-The official Nexauren editorial portal, powered by Cloudflare Workers, D1, ImageKit and Workers AI.
+The Nexauren platform for online tools, accounts and paid features.
 
 ## Stack
 
 - Cloudflare Workers + Static Assets
 - Cloudflare D1
+- Firebase Authentication
+- PayPal
 - ImageKit
+- Workers AI
 - GitHub
 
 ## D1
 
 Binding: `DB`
 
-Database: `nexauren-blog`
+The current Cloudflare D1 resource name remains `nexauren-blog` for deployment compatibility. It is not used as an application concept; the runtime is now tool-focused. Renaming the live D1 resource would require a separate data migration and is intentionally not part of this cleanup.
 
-The complete D1 schemas are in `database/primary-complete.sql` and `database/accounts-complete.sql`.
+The complete schemas are in `database/primary-complete.sql` and `database/accounts-complete.sql`.
 
-**D1 setup is manual.** Execute the complete SQL files directly in the corresponding D1 database. Do not use migration scripts.
+**D1 setup is manual.** Execute the complete SQL files directly in the corresponding D1 database.
 
 ## Secrets
 
@@ -33,76 +36,34 @@ TRANSLATION_AI_MODEL
 PAYPAL_WEBHOOK_ID
 ```
 
-The first successful login using `ADMIN_EMAIL` + `ADMIN_PASSWORD` creates the first `owner` account in D1. Change that password later in Admin → Settings → Security.
+Never commit secrets to GitHub or frontend code.
 
-Never commit ImageKit private keys, admin credentials, or other secrets to GitHub or frontend code. Cloudflare Workers AI is accessed through the `AI` binding in `wrangler.json`.
+## PayPal
 
-## PayPal webhooks
-
-Configure the PayPal webhook URL as:
+Webhook endpoint:
 
 `https://nexaurenstory.com/api/paypal/webhook`
 
-The Worker verifies PayPal webhook signatures before updating subscription state. Store the PayPal webhook ID in the private Worker secret `PAYPAL_WEBHOOK_ID`.
+The Worker verifies PayPal webhook signatures before updating subscription state.
 
-## Deploy
+## Public routes
 
-Cloudflare's build command can simply remain:
+- `/` — platform home
+- `/tool/` — tools catalog
+- `/account` — Firebase account area
+- `/account/upgrade/` — Pro plan
+- `/legal/privacidade/`
+- `/legal/termos/`
+- `/legal/cookies/`
+- `/sitemap.xml`
 
-```bash
-npm run deploy
-```
+## Tools
 
-The repository includes a local Wrangler dependency and the `deploy` script. Cloudflare will install the dependencies and run Wrangler.
+The official registry is:
 
-For local development:
+`frontend/tool/data/data.json`
 
-```bash
-npm install
-npm run dev
-```
-
-## Routes
-
-Public:
-`/` (porta de entrada), `/blog/`, `/blog/post/:slug`, `/blog/:categoria`, `/blog/search`, `/sitemap.xml`, `/rss.xml`.
-
-URLs antigas do blog (`/post/:slug`, `/posts`, `/about`, `/search` e categorias) são redirecionadas para `/blog/...` para preservar acessos e referências existentes.
-
-Admin:
-`/admin`
-
-## Platform foundation
-
-### Public Nexauren accounts
-
-Public accounts use **Firebase Authentication** and are intentionally separate from editorial/admin users.
-
-Firebase handles:
-- email/password registration and login
-- Google sign-in
-- email verification
-- password recovery
-- password changes
-- account/browser authentication state
-
-The public account UI lives at `/account` and uses the Firebase web configuration in `frontend/account/firebase-config.js`.
-
-The Worker does not authenticate public accounts with the editorial `users` table. Firebase ID tokens are sent over HTTPS and verified on the Worker before the Firebase UID is accepted. The verified UID is stored in `nexauren_accounts`; application preferences live in `nexauren_account_preferences`.
-
-The public account API is:
-- `/api/account/me`
-- `/api/account/sync`
-
-The account profile stores no password and no Firebase browser session. Passwords, providers and authentication state remain in Firebase Authentication.
-
-In the Firebase console, add `nexaurenstory.com` to Authentication → Settings → Authorized domains.
-
-### Nexauren Tool
-
-The tools area lives under `/tool/`. The official registry is `frontend/tool/data/data.json`, and category pages read that registry through `frontend/tool/categories/category.js`.
-
-Every future tool must be isolated in:
+Tool pages live under:
 
 ```text
 frontend/tool/categories/<category>/<tool-id>/
@@ -112,39 +73,47 @@ frontend/tool/categories/<category>/<tool-id>/
 └── assets/
 ```
 
-The shared Tool shell must not contain individual tool logic. The `access` registry field is reserved for future public/account/premium gating.
+The shared tool shell must not contain individual tool logic. The `access` registry field supports public, account and premium access.
 
-## Admin capabilities
+## Public accounts
 
-- Email/password authentication
-- Secure session cookie
-- Dashboard
-- Post create/edit/delete
-- Draft, published, scheduled and archived states
-- Categories and tags
-- ImageKit direct upload
-- Media library
-- SEO fields
-- Featured stories
-- Activity/audit log
-- Password change
-- Automatic scheduled publication via Worker cron
+Public accounts use Firebase Authentication and remain separate from administrative users.
 
+Firebase handles:
+- email/password registration and login
+- Google sign-in
+- email verification
+- password recovery
+- password changes
 
-## Idiomas
+The public account UI lives at `/account`.
 
-O portal público começa por pedir ao visitante o idioma, Português ou Inglês. A escolha fica guardada no navegador e pode ser alterada pelo botão de idioma.
+## Admin
 
-As publicações possuem armazenamento bilingue em D1. Com a binding `AI` do Cloudflare Workers AI, o Worker pode gerar automaticamente a versão em inglês e preencher metadados SEO em PT/EN quando uma publicação é criada ou atualizada. `TRANSLATION_AI_MODEL` pode alterar o modelo usado.
+The administration area is available at `/admin`.
 
-Para uma instalação nova, execute o SQL completo indicado em `database/`. A instalação é manual no D1.
+It focuses on:
+- tool catalog management
+- tool access, featured and popular flags
+- user management
+- operational statistics
+- media management
+- settings
+- audit/activity records
 
-## Publicidade
+## Advertising
 
-`frontend/assets/ads.js` é carregado apenas quando um artigo é renderizado. O site usa somente o Monetag In-Page Push (zona `11183778`); Vignette e Direct Link não são usados. Páginas de categoria, pesquisa e início não carregam Monetag.
+The advertising integration is kept in `frontend/assets/ads.js`. Blog/editorial ad validation has been removed together with the editorial platform; tool-related advertising remains part of the project.
 
-As verificações automáticas estão em `.github/workflows/validate-post-ads.yml` e `.github/workflows/seo-sitemap.yml`. O segundo workflow verifica a implementação e, diariamente, confere o sitemap, robots.txt e as URLs públicas.
+## Deploy
 
-## Nexauren Accounts D1
+```bash
+npm install
+npm run deploy
+```
 
-The public Nexauren account system is isolated from the blog database. The blog uses the `DB` binding; public Firebase-backed accounts use the separate `ACCOUNTS_DB` binding. The separate Cloudflare D1 database for Nexauren accounts is configured through `ACCOUNTS_DB` in `wrangler.json` (database ID `2f22bdb8-8e34-4036-bbd7-10053cfbca24`), and execute `database/accounts-complete.sql` manually in that database. Never execute the Accounts SQL in the blog D1.
+For local development:
+
+```bash
+npm run dev
+```
