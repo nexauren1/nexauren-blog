@@ -57,7 +57,7 @@ function renderToolCta(toolId,registry){
   return '<section class="article-tool-cta" aria-label="'+(lang==="en"?"Related tool":"Ferramenta relacionada")+'"><div class="article-tool-cta-icon">✦</div><div class="article-tool-cta-copy"><span>NEXAUREN TOOL</span><strong>'+name+'</strong><p>'+description+'</p></div><div class="article-tool-cta-actions"><a href="'+esc(path)+'" class="article-tool-primary">'+label+' →</a><a href="'+esc(path)+'" class="article-tool-secondary">'+open+'</a></div></section>';
 }
 function excerpt(p){if(p.excerpt)return p.excerpt;const s=String(p.content||"").replace(/[#_*\x60>\[\]()!]/g," ").replace(/\s+/g," ").trim();return s?(s.slice(0,180)+(s.length>180?"…":"")):"";}
-function md(s,toolRegistry=null){
+function md(s,toolRegistry=null,articleTitle=""){
   const lines=String(s||"").replace(/\r/g,"").split("\n");
   let out="",i=0;
   const inline=value=>{
@@ -82,6 +82,7 @@ function md(s,toolRegistry=null){
     if(!v)return "";
     return '<figure class="article-figure"><img loading="lazy" decoding="async" src="'+esc(v)+'" alt="'+esc(alt||"Imagem do artigo")+'">'+(cap?'<figcaption>'+esc(cap)+"</figcaption>":"")+"</figure>";
   };
+  let emittedContentTitle=false;
   while(i<lines.length){
     const line=lines[i].trim();
     if(!line){i++;continue}
@@ -90,6 +91,15 @@ function md(s,toolRegistry=null){
     if(/^##\s+/.test(line)){out+="<h2>"+inline(line.replace(/^##\s+/,""))+"</h2>";i++;continue}
     if(/^#\s+/.test(line)){out+="<h1>"+inline(line.replace(/^#\s+/,""))+"</h1>";i++;continue}
     if(/^::\s*/.test(line)){out+="<p>"+inline(line.replace(/^::\s*/,""))+"</p>";i++;continue}
+    // Compatibility: some older posts lost # / ## during paste or editing.
+    // Their normal paragraphs still use ::, so a bare standalone line is a heading.
+    if(line && !/^[-*]\s+/.test(line) && !/^\d+\.\s+/.test(line) && !/^@(?:imagem\s+|\s*(?:https?:\/\/|\/))/i.test(line)){
+      const clean=String(line).trim();
+      if(articleTitle && !emittedContentTitle && clean.localeCompare(String(articleTitle).trim(),undefined,{sensitivity:"accent"})===0){
+        emittedContentTitle=true;i++;continue;
+      }
+      out+="<h2>"+inline(clean)+"</h2>";emittedContentTitle=true;i++;continue;
+    }
     if(/^>\s?/.test(line)){out+="<blockquote>"+inline(line.replace(/^>\s?/,""))+"</blockquote>";i++;continue}
     if(/^---+$/.test(line)){out+="<hr>";i++;continue}
     if(/^@(?:imagem\s+|\s*(?:https?:\/\/|\/))/i.test(line)){
@@ -325,7 +335,7 @@ async function post(slug){
     const encodedShareUrl=encodeURIComponent(shareUrl);
     const encodedTitle=encodeURIComponent(p.title||"Nexauren Story");
     const socialActions='<a class="share-button share-link share-whatsapp" href="https://wa.me/?text='+encodedTitle+'%20'+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">WhatsApp</a><a class="share-button share-link" href="https://t.me/share/url?url='+encodedShareUrl+'&text='+encodedTitle+'" target="_blank" rel="noopener noreferrer">Telegram</a><a class="share-button share-link" href="https://www.facebook.com/sharer/sharer.php?u='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">Facebook</a><a class="share-button share-link" href="https://twitter.com/intent/tweet?text='+encodedTitle+'&url='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">X</a>';
-    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content,toolRegistry)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="blog-comments" id="blog-comments"><div class="section-head"><div><h2>'+ (lang==="en"?"Discussion":"Comentários") +'</h2><span class="comments-count"><span data-comment-count>0</span> '+(lang==="en"?"comments":"comentários")+'</span></div></div><div id="comments-list" class="comments-list"></div><form id="comment-form" class="comment-composer"><input type="hidden" id="comment-parent"><div id="comment-replying" class="comment-replying"></div><textarea id="comment-body" maxlength="5000" placeholder="'+(lang==="en"?"Share your thoughts…":"Partilhe a sua opinião…")+'" required></textarea><div class="comment-composer-footer"><small id="comment-feedback"></small><div><button type="button" class="share-button share-secondary" id="comment-cancel">Cancelar</button><button type="submit" class="share-button">Publicar comentário</button></div></div></form></section><section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
+    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content,toolRegistry,p.title)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="blog-comments" id="blog-comments"><div class="section-head"><div><h2>'+ (lang==="en"?"Discussion":"Comentários") +'</h2><span class="comments-count"><span data-comment-count>0</span> '+(lang==="en"?"comments":"comentários")+'</span></div></div><div id="comments-list" class="comments-list"></div><form id="comment-form" class="comment-composer"><input type="hidden" id="comment-parent"><div id="comment-replying" class="comment-replying"></div><textarea id="comment-body" maxlength="5000" placeholder="'+(lang==="en"?"Share your thoughts…":"Partilhe a sua opinião…")+'" required></textarea><div class="comment-composer-footer"><small id="comment-feedback"></small><div><button type="button" class="share-button share-secondary" id="comment-cancel">Cancelar</button><button type="submit" class="share-button">Publicar comentário</button></div></div></form></section><section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
     document.getElementById("share-story")?.addEventListener("click",async()=>{
       try{
         if(navigator.share){await navigator.share({title:p.title,text:p.excerpt||p.title,url:shareUrl});return;}
