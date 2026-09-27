@@ -72,7 +72,7 @@
     if(document.querySelector("header")) return;
     const header=document.createElement("header");
     header.className="nx-auto-header";
-    header.innerHTML='<div style="width:min(1160px,calc(100% - 24px));margin:auto"><div class="nav"><a class="brand" href="/" aria-label="Nexauren"><img class="brand-logo" src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="42" height="42"><span class="brand-copy"><strong>Nexauren</strong><span>Story</span></span></a><nav class="nav-links" aria-label="Navegação principal"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a></nav><button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button></div><div class="mobile-menu"><div style="width:min(1160px,calc(100% - 24px));margin:auto"><a href="/blog/">Blog</a><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a><a href="/legal/cookies/">Cookies</a></div></div></div>';
+    header.innerHTML='<div style="width:min(1160px,calc(100% - 24px));margin:auto"><div class="nav"><a class="brand" href="/" aria-label="Nexauren"><img class="brand-logo" src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="42" height="42"><span class="brand-copy"><strong>Nexauren</strong><span>Story</span></span></a><nav class="nav-links" aria-label="Navegação principal"><a href="/tool/">Ferramentas</a><a href="/account">Conta</a></nav><button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span></button></div><div class="mobile-menu"><div style="width:min(1160px,calc(100% - 24px));margin:auto"><a href="/tool/">Ferramentas</a><a href="/account">Conta</a><a href="/legal/privacidade/">Privacidade</a><a href="/legal/termos/">Termos</a><a href="/legal/cookies/">Cookies</a></div></div></div>';
     document.body.prepend(header);
   }
 
@@ -80,7 +80,7 @@
     if(document.querySelector("footer")) return;
     const footer=document.createElement("footer");
     footer.className="nx-auto-footer site-footer";
-    footer.innerHTML='<div style="width:min(1160px,calc(100% - 24px));margin:auto"><div class="nx-footer-grid"><div><div style="font-weight:950">Nexauren Story</div><p class="nx-footer-copy">Conteúdo, ferramentas e experiências num só ecossistema.</p></div><div><div class="nx-footer-title">Explorar</div><a class="nx-footer-link" href="/blog/">Blog</a><a class="nx-footer-link" href="/tool/">Ferramentas</a><a class="nx-footer-link" href="/account">Conta</a></div><div><div class="nx-footer-title">Legal</div><a class="nx-footer-link" href="/legal/privacidade/">Privacidade</a><a class="nx-footer-link" href="/legal/termos/">Termos</a><a class="nx-footer-link" href="/legal/cookies/">Cookies</a></div></div><div class="nx-footer-bottom"><div><span>© 2026 Nexauren Story</span><span>Uma experiência Nexauren.</span></div></div></div>';
+    footer.innerHTML='<div style="width:min(1160px,calc(100% - 24px));margin:auto"><div class="nx-footer-grid"><div><div style="font-weight:950">Nexauren Story</div><p class="nx-footer-copy">Ferramentas e experiências num só ecossistema.</p></div><div><div class="nx-footer-title">Explorar</div><a class="nx-footer-link" href="/blog/">Blog</a><a class="nx-footer-link" href="/tool/">Ferramentas</a><a class="nx-footer-link" href="/account">Conta</a></div><div><div class="nx-footer-title">Legal</div><a class="nx-footer-link" href="/legal/privacidade/">Privacidade</a><a class="nx-footer-link" href="/legal/termos/">Termos</a><a class="nx-footer-link" href="/legal/cookies/">Cookies</a></div></div><div class="nx-footer-bottom"><div><span>© 2026 Nexauren Story</span><span>Uma experiência Nexauren.</span></div></div></div>';
     document.body.appendChild(footer);
   }
 
@@ -142,7 +142,7 @@
       const a=e.target.closest("a");
       if(!a||a.target==="_blank"||a.hasAttribute("download")||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
       const u=new URL(a.href,location.href);
-      if(u.origin!==location.origin||u.pathname.startsWith("/blog/")||u.pathname==="/blog")return;
+      if(u.origin!==location.origin||false)return;
       if(u.pathname===location.pathname&&u.search===location.search)return;
       document.body.classList.add("nx-leaving");
       setTimeout(()=>document.body.classList.remove("nx-leaving"),220);
