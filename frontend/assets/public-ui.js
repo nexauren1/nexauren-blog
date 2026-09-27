@@ -1,10 +1,10 @@
-/* Nexauren Public Experience — shared behavior for non-blog pages. */
+/* Nexauren Public Experience — shared behavior. */
 (() => {
   "use strict";
   const config=Object.freeze({
     reducedMotion:window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     selectors:Object.freeze({menuButton:"[data-nx-menu]",menuPanel:"[data-nx-panel]",reveal:".nx-reveal,[data-nx-reveal]",spotlight:".nx-spotlight,.tool-card"}),
-    routes:Object.freeze({home:"/",blog:"/blog/",tools:"/tool/",account:"/account",legal:"/legal/privacidade/"})
+    routes:Object.freeze({home:"/",tools:"/tool/",account:"/account",legal:"/legal/privacidade/"})
   });
   const $=(s,scope=document)=>scope.querySelector(s);
   const $$=(s,scope=document)=>[...scope.querySelectorAll(s)];
@@ -15,7 +15,7 @@
     $$("header nav a").forEach(link=>{
       const href=link.getAttribute("href");if(!href||!href.startsWith("/"))return;
       const target=href.split("#")[0].replace(/\/+$/,"")||"/";
-      const matches=target===path||(target==="/blog"&&path.startsWith("/blog/"))||(target==="/tool"&&path.startsWith("/tool/"))||(target==="/legal/privacidade"&&path.startsWith("/legal/"));
+      const matches=target===path||(target==="/tool"&&path.startsWith("/tool/"))||(target==="/legal/privacidade"&&path.startsWith("/legal/"));
       if(matches)link.setAttribute("aria-current","page");else if(link.getAttribute("aria-current")==="page")link.removeAttribute("aria-current");
     });
   }
