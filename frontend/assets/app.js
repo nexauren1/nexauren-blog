@@ -86,8 +86,18 @@ function md(s,toolRegistry=null,articleTitle=""){
   while(i<lines.length){
     const line=lines[i].trim();
     if(!line){i++;continue}
-    const toolMatch=line.match(/^\[\[nexauren-tool:([a-z0-9-]+)\]\]$/i);
-    if(toolMatch){out+=renderToolCta(toolMatch[1],toolRegistry);i++;continue}
+    const toolMatch=line.match(/^\[\[nexauren-tool:([^\]]+)\]\]$/i);
+    if(toolMatch){
+      const toolId=String(toolMatch[1]||"").trim();
+      if(/^replace_with_/i.test(toolId)){i++;continue}
+      out+=renderToolCta(toolId,toolRegistry);i++;continue;
+    }
+    const markdownImage=line.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$/);
+    if(markdownImage){
+      const src=url(markdownImage[2]);
+      if(src)out+='<figure class="article-figure"><img loading="lazy" decoding="async" src="'+esc(src)+'" alt="'+esc(markdownImage[1]||"Imagem do artigo")+'">'+(markdownImage[3]?'<figcaption>'+esc(markdownImage[3])+'</figcaption>':"")+"</figure>";
+      i++;continue;
+    }
     if(/^##\s+/.test(line)){out+="<h2>"+inline(line.replace(/^##\s+/,""))+"</h2>";i++;continue}
     if(/^#\s+/.test(line)){out+="<h1>"+inline(line.replace(/^#\s+/,""))+"</h1>";i++;continue}
     if(/^::\s*/.test(line)){out+="<p>"+inline(line.replace(/^::\s*/,""))+"</p>";i++;continue}
@@ -116,7 +126,7 @@ function md(s,toolRegistry=null,articleTitle=""){
       out+="<ol>"+items.join("")+"</ol>";continue;
     }
     const para=[];
-    while(i<lines.length&&lines[i].trim()&&!/^\[\[nexauren-tool:[a-z0-9-]+\]\]$|^##\s+|^#\s+|^::\s*|^>\s?|^---+$|^@(?:imagem\s+|\s*(?:https?:\/\/|\/))|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){
+    while(i<lines.length&&lines[i].trim()&&!/^\[\[nexauren-tool:[^\]]+\]\]$|^!\[[^\]]*\]\([^)\s]+(?:\s+"[^"]*")?\)$|^##\s+|^#\s+|^::\s*|^>\s?|^---+$|^@(?:imagem\s+|\s*(?:https?:\/\/|\/))|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){
       para.push(lines[i].trim());i++;
     }
     out+="<p>"+inline(para.join("\n")).replace(/\n/g,"<br>")+"</p>";
