@@ -422,12 +422,12 @@ function makeVariationPlan(quantity,includeOriginal){
   }
   return plan;
 }
-async function audioContextCtor(){return globalThis.AudioContext||globalThis.webkitAudioContext||null}
+function audioContextCtor(){return globalThis.AudioContext||globalThis.webkitAudioContext||null}
 function offlineAudioContextCtor(){return globalThis.OfflineAudioContext||globalThis.webkitOfflineAudioContext||null}
 function isAudioFile(file){
   if(!file)return false;
   if(file.type&&file.type.toLowerCase().startsWith("audio/"))return true;
-  return /\\.(wav|mp3|m4a|aac|ogg|oga|flac|webm|aif|aiff|opus)$/i.test(file.name||"");
+  return /\.(wav|mp3|m4a|aac|ogg|oga|flac|webm|aif|aiff|opus)$/i.test(file.name||"");
 }
 async function decodeAudio(file){
   const Ctor=audioContextCtor();
