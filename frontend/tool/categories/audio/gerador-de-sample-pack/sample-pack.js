@@ -7,7 +7,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const state={
   lang:"en",mode:null,source:null,sourceBuffer:null,generated:[],organized:[],zipBlob:null,
-  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null
+  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null,selectedEffects:[],effectPreset:"diverse",modalOpen:null
 };
 
 const I18N={
@@ -60,7 +60,61 @@ const I18N={
     noAudio:"Escolha apenas ficheiros de áudio."
   }
 };
-const types=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","other","custom"];
+const types=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","other","custom"];Object.assign(I18N.en,{
+  effectsTitle:"Effects",optionsTitle:"Generation options",effectsSelected:"{n} effects selected · up to {max} per sample",optionsSummary:"{n} samples · {intensity}% intensity · {length}",
+  effectsApply:"Apply effects",cancel:"Cancel",presets:"Professional presets",presetDiverse:"Diverse Lab",presetDrum:"Drum Impact",presetMotion:"Motion Lab",presetSpace:"Space & Echo",presetLofi:"Lo-Fi Lab",presetTight:"Short & Tight",presetLong:"Long & Wide",
+  effectGroupsMovement:"Movement & Shape",effectGroupsSpace:"Space & Stereo",effectGroupsTiming:"Timing & Repetition",effectGroupsTone:"Tone & Texture",effectGroupsDynamics:"Dynamics & Length",
+  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Rise · Low → High",effectFall:"Fall · High → Low",effectRiseFall:"Rise & Fall",effectFallRise:"Fall & Rise",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · 360° stereo",effectBounce:"Bounce · forward ↔ reverse",effectStutter:"Stutter · micro repeats",effectChop:"Chop · rhythmic cuts",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Short",effectLong:"Long",
+  quantity:"Number of samples",variation:"Variation intensity",maxEffects:"Maximum effects per variation",lengthMode:"Length",lengthPreserve:"Preserve",lengthMixed:"Mixed",lengthShort:"Shorter",lengthLong:"Longer",
+  sampleType:"Sample type",customType:"Custom type",includeOriginal:"Include the original sample",randomize:"Randomize variation parameters",effectNaming:"Put effect names in filenames",outputNormalize:"Normalize output level",saved:"Saved",effectsHelp:"Select the effects you want available to the generator. Each variation uses a different combination.",optionsHelp:"Fine-tune the generation without cluttering the main workspace.",chooseEffects:"Choose effects"
+});
+Object.assign(I18N.pt,{
+  effectsTitle:"Efeitos",optionsTitle:"Opções de geração",effectsSelected:"{n} efeitos selecionados · até {max} por sample",optionsSummary:"{n} samples · {intensity}% intensidade · {length}",
+  effectsApply:"Aplicar efeitos",cancel:"Cancelar",presets:"Presets profissionais",presetDiverse:"Laboratório Diverso",presetDrum:"Impacto de Drum",presetMotion:"Laboratório de Movimento",presetSpace:"Espaço & Echo",presetLofi:"Laboratório Lo-Fi",presetTight:"Curto & Tight",presetLong:"Longo & Aberto",
+  effectGroupsMovement:"Movimento & Forma",effectGroupsSpace:"Espaço & Stereo",effectGroupsTiming:"Tempo & Repetição",effectGroupsTone:"Timbre & Textura",effectGroupsDynamics:"Dinâmica & Duração",
+  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Subida · Baixo → Alto",effectFall:"Descida · Alto → Baixo",effectRiseFall:"Subida & Descida",effectFallRise:"Descida & Subida",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · stereo 360°",effectBounce:"Bounce · frente ↔ reverse",effectStutter:"Stutter · micro repetições",effectChop:"Chop · cortes rítmicos",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Curto",effectLong:"Longo",
+  quantity:"Número de samples",variation:"Intensidade da variação",maxEffects:"Máximo de efeitos por variação",lengthMode:"Duração",lengthPreserve:"Manter",lengthMixed:"Mista",lengthShort:"Mais curta",lengthLong:"Mais longa",
+  sampleType:"Tipo de sample",customType:"Tipo personalizado",includeOriginal:"Incluir o sample original",randomize:"Variar os parâmetros aleatoriamente",effectNaming:"Colocar os efeitos no nome dos ficheiros",outputNormalize:"Normalizar o nível de saída",saved:"Guardado",effectsHelp:"Escolha os efeitos disponíveis para o gerador. Cada variação usa uma combinação diferente.",optionsHelp:"Ajuste a geração sem encher a área principal.",chooseEffects:"Escolher efeitos"
+});
+const EFFECT_CATALOG=[
+  {id:"rise",group:"movement",icon:"↗",key:"effectRise",descEn:"Controlled low-to-high pitch movement.",descPt:"Movimento controlado de baixo para alto."},
+  {id:"fall",group:"movement",icon:"↘",key:"effectFall",descEn:"Controlled high-to-low pitch movement.",descPt:"Movimento controlado de alto para baixo."},
+  {id:"rise-fall",group:"movement",icon:"⌁",key:"effectRiseFall",descEn:"Rises then falls in one continuous sweep.",descPt:"Sobe e depois desce numa única varredura."},
+  {id:"fall-rise",group:"movement",icon:"⌁",key:"effectFallRise",descEn:"Falls then rises in one continuous sweep.",descPt:"Desce e depois sobe numa única varredura."},
+  {id:"pitch-up",group:"movement",icon:"↑",key:"effectPitchUp",descEn:"Transposes the sample upward.",descPt:"Transpõe o sample para cima."},
+  {id:"pitch-down",group:"movement",icon:"↓",key:"effectPitchDown",descEn:"Transposes the sample downward.",descPt:"Transpõe o sample para baixo."},
+  {id:"reverse",group:"movement",icon:"↶",key:"effectReverse",descEn:"Plays the sample backwards.",descPt:"Reproduz o sample ao contrário."},
+  {id:"ping-pong",group:"movement",icon:"↔",key:"effectPingPong",descEn:"Moves left to right and back again.",descPt:"Move da esquerda para a direita e volta."},
+  {id:"orbit",group:"space",icon:"◌",key:"effectOrbit",descEn:"Continuous stereo orbit movement.",descPt:"Movimento stereo contínuo em órbita."},
+  {id:"bounce",group:"movement",icon:"↕",key:"effectBounce",descEn:"Forward and reverse bounce.",descPt:"Bounce para frente e para trás."},
+  {id:"stutter",group:"timing",icon:"⫶",key:"effectStutter",descEn:"Rapid repeated micro-slices.",descPt:"Micro cortes repetidos rapidamente."},
+  {id:"chop",group:"timing",icon:"▥",key:"effectChop",descEn:"Rhythmic gated cuts across the sample.",descPt:"Cortes rítmicos em diferentes partes."},
+  {id:"echo",group:"space",icon:"◍",key:"effectEcho",descEn:"Longer repeating echoes.",descPt:"Ecos repetidos e longos."},
+  {id:"delay",group:"space",icon:"◒",key:"effectDelay",descEn:"Shorter cleaner repeats.",descPt:"Repetições mais curtas e limpas."},
+  {id:"reverb",group:"space",icon:"✺",key:"effectReverb",descEn:"Synthetic room and hall tail.",descPt:"Cauda de sala e hall sintetizada."},
+  {id:"tremolo",group:"space",icon:"≋",key:"effectTremolo",descEn:"Pulsing amplitude movement.",descPt:"Movimento pulsante de amplitude."},
+  {id:"lowpass",group:"tone",icon:"⌄",key:"effectLowpass",descEn:"Sweeping low-pass filter.",descPt:"Filtro low-pass em varredura."},
+  {id:"highpass",group:"tone",icon:"⌃",key:"effectHighpass",descEn:"Sweeping high-pass filter.",descPt:"Filtro high-pass em varredura."},
+  {id:"distortion",group:"tone",icon:"∿",key:"effectDistortion",descEn:"Harmonic drive and saturation.",descPt:"Drive harmónico e saturação."},
+  {id:"lofi",group:"tone",icon:"▦",key:"effectLofi",descEn:"Bitcrush-style degradation.",descPt:"Degradação digital estilo bitcrush."},
+  {id:"fade-in",group:"dynamics",icon:"◢",key:"effectFadeIn",descEn:"Builds from silence.",descPt:"Entra gradualmente a partir do silêncio."},
+  {id:"fade-out",group:"dynamics",icon:"◣",key:"effectFadeOut",descEn:"Drops gradually into silence.",descPt:"Desaparece gradualmente até ao silêncio."},
+  {id:"short",group:"dynamics",icon:"−",key:"effectShort",descEn:"Tight shorter cut.",descPt:"Corte curto e apertado."},
+  {id:"long",group:"dynamics",icon:"＋",key:"effectLong",descEn:"Longer slower transformation.",descPt:"Transformação mais longa e lenta."}
+];
+const EFFECT_GROUPS=[{id:"movement",key:"effectGroupsMovement"},{id:"space",key:"effectGroupsSpace"},{id:"timing",key:"effectGroupsTiming"},{id:"tone",key:"effectGroupsTone"},{id:"dynamics",key:"effectGroupsDynamics"}];
+const EFFECT_PRESETS={
+  diverse:["rise","fall","rise-fall","fall-rise","reverse","ping-pong","orbit","bounce","stutter","chop","echo","reverb","pitch-up","pitch-down"],
+  drum:["pitch-down","stutter","chop","short","distortion","lowpass","bounce","fade-out"],
+  motion:["rise","fall","rise-fall","fall-rise","ping-pong","orbit","bounce","tremolo","pitch-up","pitch-down"],
+  space:["echo","delay","reverb","orbit","ping-pong","tremolo","rise","fall"],
+  lofi:["lofi","distortion","lowpass","short","reverse","stutter","echo"],
+  tight:["short","chop","stutter","pitch-down","fade-in","fade-out"],
+  long:["long","echo","delay","reverb","rise","fall","orbit","tremolo"]
+};
+const DEFAULT_EFFECTS=EFFECT_PRESETS.diverse.slice();
+state.selectedEffects=DEFAULT_EFFECTS.slice();
+state.generation={quantity:8,variation:55,includeOriginal:true,randomize:true,maxEffects:2,lengthMode:"mixed",effectNaming:true,normalize:true};
 
 function t(key,vars={}){
   let value=I18N[state.lang][key]??I18N.en[key]??key;
@@ -76,12 +130,19 @@ function setMode(mode){state.mode=mode;$("#mode-picker").hidden=!!mode;$("#creat
 function setLanguage(){
   document.documentElement.lang=state.lang;
   $("#language-toggle").textContent=state.lang==="en"?"PT":"EN";
-  $$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
-  $$("[data-i18n-opt]").forEach(el=>el.textContent=t(el.dataset.i18nOpt));
-  $("#quantity-value").textContent=$("#quantity").value;
-  $("#variation-value").textContent=$("#variation").value+"%";
+  $$("[data-i18n]").forEach(function(el){el.textContent=t(el.dataset.i18n);});
+  $$("[data-i18n-opt]").forEach(function(el){el.textContent=t(el.dataset.i18nOpt);});
   if(state.source)renderCreateSource();
   if(state.orgFiles.length)renderOrganizerList();
+  renderSettingsSummary();
+  if(state.modalOpen==="effects")renderEffectsModal();
+  if(state.modalOpen==="options")renderOptionsModal();
+}
+function renderSettingsSummary(){
+  const count=state.selectedEffects.length;
+  $("#effects-summary").textContent=t("effectsSelected",{n:count,max:state.generation.maxEffects});
+  const lengthKey={preserve:"lengthPreserve",mixed:"lengthMixed",short:"lengthShort",long:"lengthLong"}[state.generation.lengthMode]||"lengthMixed";
+  $("#options-summary").textContent=t("optionsSummary",{n:state.generation.quantity,intensity:state.generation.variation,length:t(lengthKey)});
 }
 function fileKey(file){return [file.name,file.size,file.lastModified].join("::")}
 function categoryFromName(name){
@@ -123,39 +184,241 @@ function normalizeBuffer(buffer){
   for(let c=0;c<out.numberOfChannels;c++){const data=out.getChannelData(c);for(let i=0;i<data.length;i++)data[i]*=gain}
   return out;
 }
-async function renderEffect(buffer,effect,amount,randomize){
-  let work=buffer;
-  if(effect==="reverse")work=reverseBuffer(buffer);
-  if(effect==="short")work=sliceBuffer(buffer,.05,.72);
-  if(effect==="punch")work=sliceBuffer(buffer,0,.92);
-  const rateBase={original:1,up:1.12,down:.89,bright:1,dark:1,punch:1,soft:1,short:1,reverse:1}[effect]||1;
-  const jitter=randomize?(Math.random()-.5)*(.1*(amount/100)):0;
-  const rate=Math.max(.55,Math.min(1.55,rateBase+jitter));
-  const duration=work.duration/rate+.12;
-  const context=new OfflineAudioContext(Math.min(2,work.numberOfChannels),Math.max(1,Math.ceil(work.sampleRate*duration)),work.sampleRate);
-  const src=context.createBufferSource();src.buffer=work;src.playbackRate.value=rate;
-  let node=src;
-  if(effect==="bright"){const f=context.createBiquadFilter();f.type="highshelf";f.frequency.value=3500;f.gain.value=4+(amount/100)*5;node.connect(f);node=f}
-  if(effect==="dark"){const f=context.createBiquadFilter();f.type="lowpass";f.frequency.value=5000-(amount/100)*2200;node.connect(f);node=f}
-  if(effect==="punch"){const f=context.createBiquadFilter();f.type="peaking";f.frequency.value=110;f.Q.value=1.2;f.gain.value=3+(amount/100)*5;node.connect(f);node=f}
-  if(effect==="soft"){const f=context.createBiquadFilter();f.type="lowpass";f.frequency.value=11000-(amount/100)*3500;node.connect(f);node=f}
-  const gain=context.createGain();gain.gain.value=effect==="soft"?.88:(.98+(amount/100)*.12);node.connect(gain);gain.connect(context.destination);
-  src.start();
-  const rendered=await context.startRendering();
-  return normalizeBuffer(rendered);
+
+function concatBuffers(parts){
+  const valid=parts.filter(Boolean);
+  if(!valid.length)return null;
+  const channels=Math.max(...valid.map(function(b){return b.numberOfChannels;}));
+  const rate=valid[0].sampleRate;
+  const length=valid.reduce(function(total,b){return total+b.length;},0);
+  const out=new AudioBuffer({length,numberOfChannels:channels,sampleRate:rate});
+  let offset=0;
+  valid.forEach(function(b){
+    for(let c=0;c<channels;c++)out.getChannelData(c).set(b.getChannelData(Math.min(c,b.numberOfChannels-1)),offset);
+    offset+=b.length;
+  });
+  return out;
 }
-const EFFECTS=["original","up","down","reverse","bright","dark","punch","soft","short"];
+function repeatSlice(buffer,start,end,count){
+  const slice=sliceBuffer(buffer,start,end);
+  const parts=[];
+  for(let i=0;i<count;i++)parts.push(i%2?reverseBuffer(slice):slice);
+  return concatBuffers(parts);
+}
+function bounceBuffer(buffer){
+  const a=sliceBuffer(buffer,0,.62);
+  const b=sliceBuffer(buffer,.18,1);
+  const parts=[];
+  for(let i=0;i<4;i++)parts.push(i%2?reverseBuffer(b):a);
+  return sliceBuffer(concatBuffers(parts),0,.78);
+}
+function chopBuffer(buffer){
+  const a=sliceBuffer(buffer,0,.2);
+  const b=sliceBuffer(buffer,.42,.58);
+  const c=sliceBuffer(buffer,.78,1);
+  return concatBuffers([a,b,reverseBuffer(a),c,b]);
+}
+function bitcrushBuffer(buffer,bits,hold){
+  const out=copyBuffer(buffer);
+  const levels=Math.pow(2,bits-1);
+  for(let c=0;c<out.numberOfChannels;c++){
+    const data=out.getChannelData(c);
+    let held=0;
+    for(let i=0;i<data.length;i++){
+      if(i%hold===0)held=Math.round(data[i]*levels)/levels;
+      data[i]=held;
+    }
+  }
+  return out;
+}
+function distortionCurve(amount){
+  const curve=new Float32Array(8192);
+  const drive=1+amount/16;
+  for(let i=0;i<curve.length;i++){
+    const x=i*2/curve.length-1;
+    curve[i]=(3+drive)*x*20*Math.PI/180/(Math.PI+drive*Math.abs(x));
+  }
+  return curve;
+}
+function makeImpulse(context,duration,decay){
+  const length=Math.floor(context.sampleRate*duration);
+  const buffer=context.createBuffer(2,length,context.sampleRate);
+  for(let c=0;c<2;c++){
+    const data=buffer.getChannelData(c);
+    for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/length,decay);
+  }
+  return buffer;
+}
+async function offlineEffect(buffer,effect,amount,randomize){
+  const source=buffer;
+  const sampleRate=source.sampleRate;
+  const intensity=Math.max(0,Math.min(100,amount));
+  let outputDuration=source.duration;
+  if(effect==="pitch-up")outputDuration/=1.18;
+  if(effect==="pitch-down")outputDuration/=.84;
+  if(effect==="long")outputDuration/=.72;
+  if(effect==="echo")outputDuration+=source.duration*.8;
+  if(effect==="delay")outputDuration+=source.duration*.5;
+  if(effect==="reverb")outputDuration+=1.2;
+  const context=new OfflineAudioContext(Math.max(1,Math.min(2,source.numberOfChannels)),Math.max(1,Math.ceil(sampleRate*outputDuration)),sampleRate);
+  const sourceNode=context.createBufferSource();
+  sourceNode.buffer=source;
+  const jitter=randomize?(Math.random()-.5)*(intensity/100)*.08:0;
+  let node=sourceNode;
+
+  if(effect==="pitch-up")sourceNode.playbackRate.value=1.18+jitter;
+  if(effect==="pitch-down")sourceNode.playbackRate.value=.84+jitter;
+  if(effect==="long")sourceNode.playbackRate.value=.72+jitter;
+
+  if(effect==="rise"||effect==="fall"||effect==="rise-fall"||effect==="fall-rise"){
+    let first=.66,last=1.34;
+    if(effect==="fall"||effect==="fall-rise"){first=1.34;last=.66;}
+    sourceNode.playbackRate.setValueAtTime(first,0);
+    if(effect==="rise-fall"||effect==="fall-rise"){
+      sourceNode.playbackRate.linearRampToValueAtTime(last,source.duration*.5);
+      sourceNode.playbackRate.linearRampToValueAtTime(first,source.duration);
+    }else{
+      sourceNode.playbackRate.linearRampToValueAtTime(last,source.duration);
+    }
+  }
+
+  if(effect==="lowpass"||effect==="highpass"){
+    const filter=context.createBiquadFilter();
+    filter.type=effect==="lowpass"?"lowpass":"highpass";
+    if(effect==="lowpass"){
+      filter.frequency.setValueAtTime(9000,0);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(700,7000-intensity*55),source.duration*.72);
+    }else{
+      filter.frequency.setValueAtTime(80,0);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(900,900+intensity*55),source.duration*.72);
+    }
+    filter.Q.value=.7+intensity/120;
+    node.connect(filter);node=filter;
+  }
+
+  if(effect==="distortion"){
+    const shaper=context.createWaveShaper();
+    shaper.curve=distortionCurve(20+intensity);
+    shaper.oversample="4x";
+    node.connect(shaper);node=shaper;
+  }
+
+  if(effect==="echo"||effect==="delay"){
+    const delay=context.createDelay(2);
+    const feedback=context.createGain();
+    const wet=context.createGain();
+    const dry=context.createGain();
+    delay.delayTime.value=effect==="echo"?.32:.16;
+    feedback.gain.value=effect==="echo"?.48:.30;
+    wet.gain.value=.45+(intensity/100)*.22;
+    dry.gain.value=.82;
+    node.connect(dry);node.connect(delay);delay.connect(wet);delay.connect(feedback);feedback.connect(delay);
+    dry.connect(context.destination);wet.connect(context.destination);
+    sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="reverb"){
+    const convolver=context.createConvolver();
+    const wet=context.createGain();
+    const dry=context.createGain();
+    convolver.buffer=makeImpulse(context,.7+(intensity/100)*1.2,2.6-(intensity/100)*.8);
+    wet.gain.value=.35+(intensity/100)*.3;
+    dry.gain.value=.78;
+    node.connect(dry);node.connect(convolver);convolver.connect(wet);
+    dry.connect(context.destination);wet.connect(context.destination);
+    sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="tremolo"){
+    const gain=context.createGain();
+    const oscillator=context.createOscillator();
+    const depth=context.createGain();
+    gain.gain.value=1;
+    oscillator.frequency.value=4+(intensity/100)*7;
+    depth.gain.value=.22+(intensity/100)*.42;
+    oscillator.connect(depth);depth.connect(gain.gain);node.connect(gain);gain.connect(context.destination);
+    oscillator.start();sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="orbit"||effect==="ping-pong"){
+    const panner=context.createStereoPanner();
+    const cycles=effect==="orbit"?3:1.6;
+    panner.pan.setValueAtTime(-1,0);
+    for(let i=1;i<=32;i++)panner.pan.linearRampToValueAtTime(Math.sin(i/32*Math.PI*2*cycles),source.duration*i/32);
+    node.connect(panner);panner.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="fade-in"||effect==="fade-out"){
+    const gain=context.createGain();
+    if(effect==="fade-in"){
+      gain.gain.setValueAtTime(0,0);
+      gain.gain.linearRampToValueAtTime(1,Math.min(.8,source.duration*.35));
+    }else{
+      gain.gain.setValueAtTime(1,source.duration*.55);
+      gain.gain.linearRampToValueAtTime(0,source.duration);
+    }
+    node.connect(gain);gain.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  node.connect(context.destination);
+  sourceNode.start();
+  return normalizeBuffer(await context.startRendering());
+}
+async function renderEffectOnce(buffer,effect,amount,randomize){
+  if(effect==="original")return copyBuffer(buffer);
+  if(effect==="reverse")return reverseBuffer(buffer);
+  if(effect==="bounce")return bounceBuffer(buffer);
+  if(effect==="stutter")return repeatSlice(buffer,.12,.3,4);
+  if(effect==="chop")return chopBuffer(buffer);
+  if(effect==="lofi")return bitcrushBuffer(await offlineEffect(buffer,"lowpass",amount,randomize),5,5);
+  if(effect==="short")return sliceBuffer(buffer,.05,.68);
+  return offlineEffect(buffer,effect,amount,randomize);
+}
+async function renderEffectPipeline(buffer,effects,amount,randomize){
+  let out=copyBuffer(buffer);
+  for(const effect of effects)out=await renderEffectOnce(out,effect,amount,randomize);
+  return normalizeBuffer(out);
+}
 function effectLabel(effect){
-  return ({original:"Original",up:"Pitch Up",down:"Pitch Down",reverse:"Reverse",bright:"Bright",dark:"Dark",punch:"Punch",soft:"Soft",short:"Short"}[effect]||effect);
+  const item=EFFECT_CATALOG.find(function(entry){return entry.id===effect;});
+  return item?I18N[state.lang][item.key]:effect;
 }
-function audioToWav(buffer){
-  const channels=Math.min(2,buffer.numberOfChannels),sampleRate=buffer.sampleRate,frames=buffer.length;
-  const dataLength=frames*channels*2,bufferOut=new ArrayBuffer(44+dataLength),view=new DataView(bufferOut);
-  const write=(o,s)=>{for(let i=0;i<s.length;i++)view.setUint8(o+i,s.charCodeAt(i))}
-  write(0,"RIFF");view.setUint32(4,36+dataLength,true);write(8,"WAVE");write(12,"fmt ");view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,channels,true);view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*channels*2,true);view.setUint16(32,channels*2,true);view.setUint16(34,16,true);write(36,"data");view.setUint32(40,dataLength,true);
-  let offset=44;
-  for(let i=0;i<frames;i++){for(let c=0;c<channels;c++){let v=buffer.getChannelData(c)[i];v=Math.max(-1,Math.min(1,v));view.setInt16(offset,(v<0?v*0x8000:v*0x7fff),true);offset+=2}}
-  return new Blob([bufferOut],{type:"audio/wav"});
+function shuffle(array){
+  const out=array.slice();
+  for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const temp=out[i];out[i]=out[j];out[j]=temp;}
+  return out;
+}
+function lengthModifier(){
+  const mode=state.generation.lengthMode||"mixed";
+  if(mode==="short")return "short";
+  if(mode==="long")return "long";
+  if(mode==="mixed"&&Math.random()<.42)return Math.random()<.5?"short":"long";
+  return null;
+}
+function makeVariationPlan(quantity,includeOriginal){
+  const plan=[];
+  if(includeOriginal)plan.push({effects:["original"]});
+  const pool=shuffle(state.selectedEffects.length?state.selectedEffects:DEFAULT_EFFECTS);
+  const wanted=Math.max(1,Math.min(3,Number(state.generation.maxEffects)||2));
+  let cursor=0;
+  for(let i=plan.length;i<quantity;i++){
+    const count=Math.min(wanted,1+(state.generation.randomize&&Math.random()<.72?Math.floor(Math.random()*wanted):0));
+    const chosen=[];
+    while(chosen.length<count){
+      const effect=pool[cursor%pool.length];
+      cursor++;
+      if(!chosen.includes(effect))chosen.push(effect);
+    }
+    const modifier=lengthModifier();
+    if(modifier&&!chosen.includes(modifier)&&chosen.length<wanted)chosen.push(modifier);
+    plan.push({effects:chosen.length?chosen:["reverse"]});
+  }
+  return plan;
 }
 async function decodeAudio(file){
   const ctx=new AudioContext();try{return await ctx.decodeAudioData(await file.arrayBuffer())}finally{await ctx.close().catch(()=>{})}
@@ -172,31 +435,163 @@ async function loadCreateFile(file){
   try{state.source=file;state.sourceBuffer=await decodeAudio(file);renderCreateSource();setGenerateState();$("#create-status").textContent=t("sourceLoaded",{name:file.name})}catch{state.source=null;state.sourceBuffer=null;notify(t("generateError"),true);setGenerateState()}
 }
 function setCustomField(){const show=$("#sample-type").value==="custom";$("#custom-type-field").hidden=!show}
-function makeVariationPlan(quantity,includeOriginal){
-  const plan=[];if(includeOriginal)plan.push("original");
-  for(let i=plan.length;i<quantity;i++)plan.push(EFFECTS[i%EFFECTS.length]);
-  return plan;
+function updateLegacyControls(){
+  $("#quantity").value=String(state.generation.quantity);
+  $("#variation").value=String(state.generation.variation);
+  $("#include-original").checked=state.generation.includeOriginal;
+  $("#randomize").checked=state.generation.randomize;
+}
+function openModal(kind){
+  state.modalOpen=kind;
+  const el=$("#"+kind+"-modal");
+  if(!el)return;
+  el.hidden=false;
+  el.setAttribute("aria-hidden","false");
+  document.body.classList.add("sp-modal-open");
+  if(kind==="effects")renderEffectsModal();else renderOptionsModal();
+}
+function closeModal(){
+  if(!state.modalOpen)return;
+  const el=$("#"+state.modalOpen+"-modal");
+  if(el){el.hidden=true;el.setAttribute("aria-hidden","true");}
+  state.modalOpen=null;
+  document.body.classList.remove("sp-modal-open");
+}
+function effectCardHtml(item){
+  const selected=state.selectedEffects.includes(item.id)?" selected":"";
+  const name=t(item.key);
+  const desc=state.lang==="en"?item.descEn:item.descPt;
+  return '<button class="sp-effect-card'+selected+'" type="button" data-effect="'+esc(item.id)+'"><span class="sp-effect-icon">'+item.icon+'</span><span class="sp-effect-copy"><b>'+esc(name)+'</b><small>'+esc(desc)+'</small></span><span class="sp-effect-check">✓</span></button>';
+}
+function presetLabel(id){
+  const map={diverse:"presetDiverse",drum:"presetDrum",motion:"presetMotion",space:"presetSpace",lofi:"presetLofi",tight:"presetTight",long:"presetLong"};
+  return t(map[id]||"presetDiverse");
+}
+function renderEffectsModal(){
+  const el=$("#effects-modal");
+  if(!el)return;
+  const groups=EFFECT_GROUPS.map(function(group){
+    const cards=EFFECT_CATALOG.filter(function(item){return item.group===group.id;}).map(effectCardHtml).join("");
+    return '<section class="sp-effect-group"><h3>'+esc(t(group.key))+'</h3><div class="sp-effect-grid">'+cards+'</div></section>';
+  }).join("");
+  const presets=Object.keys(EFFECT_PRESETS).map(function(id){
+    return '<button class="sp-preset'+(state.effectPreset===id?" active":"")+'" type="button" data-effect-preset="'+id+'">'+esc(presetLabel(id))+'</button>';
+  }).join("");
+  el.innerHTML='<div class="sp-modal-backdrop" data-modal-close></div><section class="sp-modal-panel" role="dialog" aria-modal="true"><div class="sp-modal-head"><div><span class="sp-kicker">'+esc(t("effectsTitle"))+'</span><h2>'+esc(t("chooseEffects"))+'</h2><p>'+esc(t("effectsHelp"))+'</p></div><button class="sp-modal-close" data-modal-close type="button">×</button></div><div class="sp-preset-row"><span>'+esc(t("presets"))+'</span>'+presets+'</div>'+groups+'<div class="sp-modal-foot"><span>'+esc(t("effectsSelected",{n:state.selectedEffects.length,max:state.generation.maxEffects}))+'</span><div><button class="sp-secondary" data-modal-close type="button">'+esc(t("cancel"))+'</button><button class="sp-primary" data-effects-apply type="button">'+esc(t("effectsApply"))+'</button></div></div></section>';
+  el.querySelectorAll("[data-effect]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      const id=btn.dataset.effect;
+      if(state.selectedEffects.includes(id)){
+        if(state.selectedEffects.length===1)return;
+        state.selectedEffects=state.selectedEffects.filter(function(x){return x!==id;});
+      }else{
+        state.selectedEffects.push(id);
+      }
+      state.effectPreset=null;
+      renderEffectsModal();
+    });
+  });
+  el.querySelectorAll("[data-effect-preset]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      const id=btn.dataset.effectPreset;
+      state.effectPreset=id;
+      state.selectedEffects=EFFECT_PRESETS[id].slice();
+      renderEffectsModal();
+    });
+  });
+  el.querySelectorAll("[data-modal-close]").forEach(function(btn){btn.addEventListener("click",closeModal);});
+  el.querySelector("[data-effects-apply]")?.addEventListener("click",function(){renderSettingsSummary();closeModal();});
+}
+function renderOptionsModal(){
+  const el=$("#options-modal");
+  if(!el)return;
+  const optionSelect=function(id,labelKey,options){
+    return '<label><span>'+esc(t(labelKey))+'</span><select id="'+id+'">'+options+'</select></label>';
+  };
+  const typeOptions=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","custom"].map(function(type){return '<option value="'+type+'">'+esc(t(type==="hi-hat"?"hihat":type))+'</option>';}).join("");
+  const lengthOptions='<option value="preserve">'+esc(t("lengthPreserve"))+'</option><option value="mixed">'+esc(t("lengthMixed"))+'</option><option value="short">'+esc(t("lengthShort"))+'</option><option value="long">'+esc(t("lengthLong"))+'</option>';
+  el.innerHTML='<div class="sp-modal-backdrop" data-modal-close></div><section class="sp-modal-panel compact" role="dialog" aria-modal="true"><div class="sp-modal-head"><div><span class="sp-kicker">'+esc(t("optionsTitle"))+'</span><h2>'+esc(t("optionsTitle"))+'</h2><p>'+esc(t("optionsHelp"))+'</p></div><button class="sp-modal-close" data-modal-close type="button">×</button></div><div class="sp-options-grid">'+
+    optionSelect("modal-sample-type","sampleType",typeOptions)+
+    '<label id="modal-custom-wrap" hidden><span>'+esc(t("customType"))+'</span><input id="modal-custom-type" maxlength="32"></label>'+
+    '<label><span>'+esc(t("quantity"))+'</span><div class="sp-range-row"><input id="modal-quantity" type="range" min="1" max="24" value="'+state.generation.quantity+'"><output id="modal-quantity-value">'+state.generation.quantity+'</output></div></label>'+
+    '<label><span>'+esc(t("variation"))+'</span><div class="sp-range-row"><input id="modal-variation" type="range" min="0" max="100" value="'+state.generation.variation+'"><output id="modal-variation-value">'+state.generation.variation+'%</output></div></label>'+
+    optionSelect("modal-max-effects","maxEffects",'<option value="1">1</option><option value="2">2</option><option value="3">3</option>')+
+    optionSelect("modal-length","lengthMode",lengthOptions)+
+    '<label class="sp-check"><input id="modal-original" type="checkbox" '+(state.generation.includeOriginal?"checked":"")+'><span>'+esc(t("includeOriginal"))+'</span></label>'+
+    '<label class="sp-check"><input id="modal-randomize" type="checkbox" '+(state.generation.randomize?"checked":"")+'><span>'+esc(t("randomize"))+'</span></label>'+
+    '<label class="sp-check"><input id="modal-effect-naming" type="checkbox" '+(state.generation.effectNaming?"checked":"")+'><span>'+esc(t("effectNaming"))+'</span></label>'+
+    '<label class="sp-check"><input id="modal-normalize" type="checkbox" '+(state.generation.normalize?"checked":"")+'><span>'+esc(t("outputNormalize"))+'</span></label>'+
+    '</div><div class="sp-modal-foot"><span>'+esc(t("saved"))+'</span><div><button class="sp-secondary" data-modal-close type="button">'+esc(t("cancel"))+'</button><button class="sp-primary" data-options-apply type="button">'+esc(t("saved"))+'</button></div></div></section>';
+  const typeEl=el.querySelector("#modal-sample-type");
+  typeEl.value=$("#sample-type").value;
+  el.querySelector("#modal-custom-type").value=$("#custom-type").value;
+  el.querySelector("#modal-max-effects").value=String(state.generation.maxEffects);
+  el.querySelector("#modal-length").value=state.generation.lengthMode;
+  const customWrap=el.querySelector("#modal-custom-wrap");
+  const syncCustom=function(){customWrap.hidden=typeEl.value!=="custom";};
+  typeEl.addEventListener("change",syncCustom);syncCustom();
+  el.querySelector("#modal-quantity").addEventListener("input",function(e){el.querySelector("#modal-quantity-value").textContent=e.target.value;});
+  el.querySelector("#modal-variation").addEventListener("input",function(e){el.querySelector("#modal-variation-value").textContent=e.target.value+"%";});
+  el.querySelectorAll("[data-modal-close]").forEach(function(btn){btn.addEventListener("click",closeModal);});
+  el.querySelector("[data-options-apply]")?.addEventListener("click",function(){
+    $("#sample-type").value=typeEl.value;
+    $("#custom-type").value=el.querySelector("#modal-custom-type").value;
+    state.generation={
+      quantity:Number(el.querySelector("#modal-quantity").value),
+      variation:Number(el.querySelector("#modal-variation").value),
+      maxEffects:Number(el.querySelector("#modal-max-effects").value),
+      lengthMode:el.querySelector("#modal-length").value,
+      includeOriginal:el.querySelector("#modal-original").checked,
+      randomize:el.querySelector("#modal-randomize").checked,
+      effectNaming:el.querySelector("#modal-effect-naming").checked,
+      normalize:el.querySelector("#modal-normalize").checked
+    };
+    setCustomField();
+    updateLegacyControls();
+    renderSettingsSummary();
+    closeModal();
+  });
 }
 async function generateSamples(){
   if(!state.sourceBuffer){notify(t("chooseFile"),true);return}
-  const quantity=Number($("#quantity").value)||8,amount=Number($("#variation").value)||55,includeOriginal=$("#include-original").checked,randomize=$("#randomize").checked,type=createTypeFolder();
-  if(quantity>1&&!includeOriginal&&quantity<2)return;
-  $("#generate-pack").disabled=true;$("#create-status").textContent=t("creating");state.generated.forEach(x=>x.url&&URL.revokeObjectURL(x.url));state.generated=[];
+  updateLegacyControls();
+  const quantity=Number(state.generation.quantity)||8;
+  const amount=Number(state.generation.variation)||55;
+  const includeOriginal=state.generation.includeOriginal;
+  const randomize=state.generation.randomize;
+  const type=createTypeFolder();
+  $("#generate-pack").disabled=true;
+  $("#create-status").textContent=t("creating");
+  state.generated.forEach(function(item){if(item.url)URL.revokeObjectURL(item.url);});
+  state.generated=[];
   const plan=makeVariationPlan(quantity,includeOriginal);
   try{
     for(let i=0;i<plan.length;i++){
-      const effect=plan[i];
-      const buffer=effect==="original"?normalizeBuffer(state.sourceBuffer):await renderEffect(state.sourceBuffer,effect,amount,randomize);
-      const blob=audioToWav(buffer),num=String(i+1).padStart(3,"0");
-      const filename=safeFileName(type).toLowerCase().replace(/\s+/g,"-")+"_"+num+".wav";
-      state.generated.push({name:filename,blob,url:URL.createObjectURL(blob),effect,duration:buffer.duration,size:blob.size,type});
+      const effects=plan[i].effects;
+      let buffer;
+      if(effects.length===1&&effects[0]==="original")buffer=copyBuffer(state.sourceBuffer);
+      else buffer=await renderEffectPipeline(state.sourceBuffer,effects,amount,randomize);
+      if(state.generation.normalize)buffer=normalizeBuffer(buffer);
+      const blob=audioToWav(buffer);
+      const num=String(i+1).padStart(3,"0");
+      const effectSlug=effects.filter(function(x){return x!=="original";}).map(function(x){return x;}).join("-")||"original";
+      const base=safeFileName(type).toLowerCase().replace(/\s+/g,"-");
+      const suffix=state.generation.effectNaming?"_"+effectSlug:"";
+      const filename=base+"_"+num+suffix+".wav";
+      state.generated.push({name:filename,blob:blob,url:URL.createObjectURL(blob),effects:effects,duration:buffer.duration,size:blob.size,type:type});
     }
     renderGenerated();
-    $("#create-results").hidden=false;$("#create-status").textContent=t("doneCreate",{n:state.generated.length});
-  }catch(e){console.error(e);notify(t("generateError"),true)}finally{setGenerateState()}
+    $("#create-results").hidden=false;
+    $("#create-status").textContent=t("doneCreate",{n:state.generated.length});
+  }catch(error){
+    console.error(error);
+    notify(t("generateError"),true);
+  }finally{
+    setGenerateState();
+  }
 }
 function renderGenerated(){
-  $("#generated-list").innerHTML=state.generated.map(item=>'<div class="sp-audio-row"><div><div class="sp-audio-name">'+esc(item.name)+'</div><div class="sp-audio-meta">'+esc(effectLabel(item.effect))+' · '+formatSeconds(item.duration)+'s · '+bytes(item.size)+'</div></div><audio controls preload="none" src="'+esc(item.url)+'"></audio></div>').join("");
+  $("#generated-list").innerHTML=state.generated.map(item=>'<div class="sp-audio-row"><div><div class="sp-audio-name">'+esc(item.name)+'</div><div class="sp-audio-meta">'+esc((item.effects||[item.effect||"original"]).map(effectLabel).join(" + "))+' · '+formatSeconds(item.duration)+'s · '+bytes(item.size)+'</div></div><audio controls preload="none" src="'+esc(item.url)+'"></audio></div>').join("");
   $("#created-summary").textContent=t("generatedSummary",{n:state.generated.length,type:state.generated[0]?.type||"Sample",duration:formatSeconds(state.sourceBuffer?.duration||0)});
   $("#download-created").disabled=!state.generated.length;
 }
@@ -226,7 +621,7 @@ function trackUse(){fetch("/api/tools/events",{method:"POST",headers:{"content-t
 function makeReadmeText(info,items){return [info.packName,"","Created with Nexauren Sample Pack Studio","",`Author: ${info.author||"—"}`,`Genre: ${info.style||"—"}`,`BPM: ${info.bpm||"—"}`,`Key: ${info.key||"—"}`,`Files: ${items.length}`,`Created: ${info.createdAt}`,"",`Nexauren: ${TOOL_URL}`,"",...items.map(x=>`${x.folder}/${x.name} · ${x.kind} · ${bytes(x.size)}`)].join("\n")}
 function getCreateItems(){
   const type=createTypeFolder();
-  return state.generated.map(item=>({name:item.name,folder:safeFileName(type).replace(/\s+/g,"-").toUpperCase(),kind:item.effect,size:item.blob.size,blob:item.blob}));
+  return state.generated.map(item=>({name:item.name,folder:safeFileName(type).replace(/\s+/g,"-").toUpperCase(),kind:(item.effects||[]).map(effectLabel).join(" + "),size:item.blob.size,blob:item.blob}));
 }
 async function createZip(){
   if(!state.generated.length){notify(t("chooseFile"),true);return}
@@ -235,7 +630,7 @@ async function createZip(){
   $("#download-created").disabled=true;$("#create-status").textContent=t("zipping");
   try{
     const info=packInfoBase($("#pack-name").value.trim()||"Nexauren Sample Pack",$("#pack-author").value.trim(),$("#pack-style").value.trim(),$("#pack-bpm").value.trim(),$("#pack-key").value.trim(),"create");
-    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
+    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.effects=state.selectedEffects.slice();info.generationOptions={...state.generation};info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
     info.description="Generated locally from one source sample.";
     const items=getCreateItems();state.zipBlob=await zipPack(info,items,passwordEnabled?password:"",$("#include-cover").checked);
     $("#download-created").disabled=false;trackUse();downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
@@ -281,11 +676,12 @@ async function organizeZip(){
 }
 
 $("#language-toggle").addEventListener("click",()=>{state.lang=state.lang==="en"?"pt":"en";setLanguage()});
+$("#effects-open").addEventListener("click",()=>openModal("effects"));
+$("#options-open").addEventListener("click",()=>openModal("options"));
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeModal()});
 $$("[data-mode]").forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode)));
 $$("[data-back-picker]").forEach(btn=>btn.addEventListener("click",()=>setMode(null)));
 $("#sample-type").addEventListener("change",setCustomField);
-$("#quantity").addEventListener("input",e=>$("#quantity-value").textContent=e.target.value);
-$("#variation").addEventListener("input",e=>$("#variation-value").textContent=e.target.value+"%");
 $("#protect-zip").addEventListener("change",()=>$("#password-field").hidden=!$("#protect-zip").checked);
 $("#org-protect-zip").addEventListener("change",()=>$("#org-password-field").hidden=!$("#org-protect-zip").checked);
 $("#create-file").addEventListener("change",e=>loadCreateFile(e.target.files?.[0]));

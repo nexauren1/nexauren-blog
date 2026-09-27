@@ -9,7 +9,7 @@
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/audio/gerador-de-sample-pack/">
 <link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
 <link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
-<link rel="stylesheet" href="./sample-pack.css?v=20260927-1">
+<link rel="stylesheet" href="./sample-pack.css?v=20260927-2">
 <title>Sample Pack Studio — Nexauren</title>
 <script src="/assets/ads.js?v=20260925-auto3"></script>
 </head>
@@ -82,7 +82,11 @@
 
       <section class="sp-card">
         <div class="sp-card-head"><div><span class="sp-step">03</span><h3 data-i18n="sampleSettings">Sample settings</h3></div><small data-i18n="generatedLocally">Processed in your browser</small></div>
-        <div class="sp-fields">
+        <div class="sp-selection-grid">
+          <button class="sp-selection-btn" id="effects-open" type="button"><span><b data-i18n="effectsTitle">Effects</b><small id="effects-summary">12 effects selected</small></span><strong>→</strong></button>
+          <button class="sp-selection-btn" id="options-open" type="button"><span><b data-i18n="optionsTitle">Generation options</b><small id="options-summary">8 samples · 55% intensity · mixed length</small></span><strong>→</strong></button>
+        </div>
+        <div class="sp-config-store" hidden aria-hidden="true">
           <label><span data-i18n="sampleType">Sample type</span>
             <select id="sample-type">
               <option value="kick" data-i18n-opt="kick">Kick</option><option value="snare" data-i18n-opt="snare">Snare</option><option value="clap" data-i18n-opt="clap">Clap</option><option value="hi-hat" data-i18n-opt="hihat">Hi-Hat</option><option value="percussion" data-i18n-opt="percussion">Percussion</option><option value="bass" data-i18n-opt="bass">Bass</option><option value="guitar" data-i18n-opt="guitar">Guitar</option><option value="pad" data-i18n-opt="pad">Pad</option><option value="melody" data-i18n-opt="melody">Melody</option><option value="vocal" data-i18n-opt="vocal">Vocal</option><option value="fx" data-i18n-opt="fx">FX</option><option value="custom" data-i18n-opt="custom">Custom</option>
@@ -117,7 +121,10 @@
     </section>
   </section>
 
-  <section id="organize-mode" class="sp-mode-panel" hidden>
+  <div id="effects-modal" class="sp-modal" hidden aria-hidden="true"></div>
+<div id="options-modal" class="sp-modal" hidden aria-hidden="true"></div>
+
+<section id="organize-mode" class="sp-mode-panel" hidden>
     <div class="sp-mode-top">
       <button class="sp-text-btn" data-back-picker type="button">← <span data-i18n="backChoose">Back to mode selection</span></button>
       <div><span class="sp-kicker" data-i18n="organizeKicker">ORGANIZE PACK</span><h2 data-i18n="organizeTitle">Turn loose files into a clean pack.</h2></div>
@@ -176,7 +183,7 @@ window.NexaurenAds?.loadBanner(document.getElementById("sp-ad-top"));
 window.NexaurenAds?.loadResponsive(document.getElementById("sp-ad-bottom"));
 document.getElementById("year").textContent=new Date().getFullYear();
 </script>
-<script src="./sample-pack.js?v=20260927-1"></script>
+<script src="./sample-pack.js?v=20260927-2"></script>
 <script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
 </body>
 </html>
