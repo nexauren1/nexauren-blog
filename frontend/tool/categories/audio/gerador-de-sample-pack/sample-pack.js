@@ -435,10 +435,11 @@ async function loadCreateFile(file){
   try{state.source=file;state.sourceBuffer=await decodeAudio(file);renderCreateSource();setGenerateState();$("#create-status").textContent=t("sourceLoaded",{name:file.name})}catch{state.source=null;state.sourceBuffer=null;notify(t("generateError"),true);setGenerateState()}
 }
 function setCustomField(){const show=$("#sample-type").value==="custom";$("#custom-type-field").hidden=!show}
-function makeVariationPlan(quantity,includeOriginal){
-  const plan=[];if(includeOriginal)plan.push("original");
-  for(let i=plan.length;i<quantity;i++)plan.push(EFFECTS[i%EFFECTS.length]);
-  return plan;
+function updateLegacyControls(){
+  $("#quantity").value=String(state.generation.quantity);
+  $("#variation").value=String(state.generation.variation);
+  $("#include-original").checked=state.generation.includeOriginal;
+  $("#randomize").checked=state.generation.randomize;
 }
 function openModal(kind){
   state.modalOpen=kind;
@@ -553,24 +554,44 @@ function renderOptionsModal(){
 }
 async function generateSamples(){
   if(!state.sourceBuffer){notify(t("chooseFile"),true);return}
-  const quantity=Number($("#quantity").value)||8,amount=Number($("#variation").value)||55,includeOriginal=$("#include-original").checked,randomize=$("#randomize").checked,type=createTypeFolder();
-  if(quantity>1&&!includeOriginal&&quantity<2)return;
-  $("#generate-pack").disabled=true;$("#create-status").textContent=t("creating");state.generated.forEach(x=>x.url&&URL.revokeObjectURL(x.url));state.generated=[];
+  updateLegacyControls();
+  const quantity=Number(state.generation.quantity)||8;
+  const amount=Number(state.generation.variation)||55;
+  const includeOriginal=state.generation.includeOriginal;
+  const randomize=state.generation.randomize;
+  const type=createTypeFolder();
+  $("#generate-pack").disabled=true;
+  $("#create-status").textContent=t("creating");
+  state.generated.forEach(function(item){if(item.url)URL.revokeObjectURL(item.url);});
+  state.generated=[];
   const plan=makeVariationPlan(quantity,includeOriginal);
   try{
     for(let i=0;i<plan.length;i++){
-      const effect=plan[i];
-      const buffer=effect==="original"?normalizeBuffer(state.sourceBuffer):await renderEffect(state.sourceBuffer,effect,amount,randomize);
-      const blob=audioToWav(buffer),num=String(i+1).padStart(3,"0");
-      const filename=safeFileName(type).toLowerCase().replace(/\s+/g,"-")+"_"+num+".wav";
-      state.generated.push({name:filename,blob,url:URL.createObjectURL(blob),effect,duration:buffer.duration,size:blob.size,type});
+      const effects=plan[i].effects;
+      let buffer;
+      if(effects.length===1&&effects[0]==="original")buffer=copyBuffer(state.sourceBuffer);
+      else buffer=await renderEffectPipeline(state.sourceBuffer,effects,amount,randomize);
+      if(state.generation.normalize)buffer=normalizeBuffer(buffer);
+      const blob=audioToWav(buffer);
+      const num=String(i+1).padStart(3,"0");
+      const effectSlug=effects.filter(function(x){return x!=="original";}).map(function(x){return x;}).join("-")||"original";
+      const base=safeFileName(type).toLowerCase().replace(/\s+/g,"-");
+      const suffix=state.generation.effectNaming?"_"+effectSlug:"";
+      const filename=base+"_"+num+suffix+".wav";
+      state.generated.push({name:filename,blob:blob,url:URL.createObjectURL(blob),effects:effects,duration:buffer.duration,size:blob.size,type:type});
     }
     renderGenerated();
-    $("#create-results").hidden=false;$("#create-status").textContent=t("doneCreate",{n:state.generated.length});
-  }catch(e){console.error(e);notify(t("generateError"),true)}finally{setGenerateState()}
+    $("#create-results").hidden=false;
+    $("#create-status").textContent=t("doneCreate",{n:state.generated.length});
+  }catch(error){
+    console.error(error);
+    notify(t("generateError"),true);
+  }finally{
+    setGenerateState();
+  }
 }
 function renderGenerated(){
-  $("#generated-list").innerHTML=state.generated.map(item=>'<div class="sp-audio-row"><div><div class="sp-audio-name">'+esc(item.name)+'</div><div class="sp-audio-meta">'+esc(effectLabel(item.effect))+' · '+formatSeconds(item.duration)+'s · '+bytes(item.size)+'</div></div><audio controls preload="none" src="'+esc(item.url)+'"></audio></div>').join("");
+  $("#generated-list").innerHTML=state.generated.map(item=>'<div class="sp-audio-row"><div><div class="sp-audio-name">'+esc(item.name)+'</div><div class="sp-audio-meta">'+esc((item.effects||[item.effect||"original"]).map(effectLabel).join(" + "))+' · '+formatSeconds(item.duration)+'s · '+bytes(item.size)+'</div></div><audio controls preload="none" src="'+esc(item.url)+'"></audio></div>').join("");
   $("#created-summary").textContent=t("generatedSummary",{n:state.generated.length,type:state.generated[0]?.type||"Sample",duration:formatSeconds(state.sourceBuffer?.duration||0)});
   $("#download-created").disabled=!state.generated.length;
 }
@@ -600,7 +621,7 @@ function trackUse(){fetch("/api/tools/events",{method:"POST",headers:{"content-t
 function makeReadmeText(info,items){return [info.packName,"","Created with Nexauren Sample Pack Studio","",`Author: ${info.author||"—"}`,`Genre: ${info.style||"—"}`,`BPM: ${info.bpm||"—"}`,`Key: ${info.key||"—"}`,`Files: ${items.length}`,`Created: ${info.createdAt}`,"",`Nexauren: ${TOOL_URL}`,"",...items.map(x=>`${x.folder}/${x.name} · ${x.kind} · ${bytes(x.size)}`)].join("\n")}
 function getCreateItems(){
   const type=createTypeFolder();
-  return state.generated.map(item=>({name:item.name,folder:safeFileName(type).replace(/\s+/g,"-").toUpperCase(),kind:item.effect,size:item.blob.size,blob:item.blob}));
+  return state.generated.map(item=>({name:item.name,folder:safeFileName(type).replace(/\s+/g,"-").toUpperCase(),kind:(item.effects||[]).map(effectLabel).join(" + "),size:item.blob.size,blob:item.blob}));
 }
 async function createZip(){
   if(!state.generated.length){notify(t("chooseFile"),true);return}
@@ -609,7 +630,7 @@ async function createZip(){
   $("#download-created").disabled=true;$("#create-status").textContent=t("zipping");
   try{
     const info=packInfoBase($("#pack-name").value.trim()||"Nexauren Sample Pack",$("#pack-author").value.trim(),$("#pack-style").value.trim(),$("#pack-bpm").value.trim(),$("#pack-key").value.trim(),"create");
-    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
+    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.effects=state.selectedEffects.slice();info.generationOptions={...state.generation};info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
     info.description="Generated locally from one source sample.";
     const items=getCreateItems();state.zipBlob=await zipPack(info,items,passwordEnabled?password:"",$("#include-cover").checked);
     $("#download-created").disabled=false;trackUse();downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
@@ -655,11 +676,12 @@ async function organizeZip(){
 }
 
 $("#language-toggle").addEventListener("click",()=>{state.lang=state.lang==="en"?"pt":"en";setLanguage()});
+$("#effects-open").addEventListener("click",()=>openModal("effects"));
+$("#options-open").addEventListener("click",()=>openModal("options"));
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeModal()});
 $$("[data-mode]").forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode)));
 $$("[data-back-picker]").forEach(btn=>btn.addEventListener("click",()=>setMode(null)));
 $("#sample-type").addEventListener("change",setCustomField);
-$("#quantity").addEventListener("input",e=>$("#quantity-value").textContent=e.target.value);
-$("#variation").addEventListener("input",e=>$("#variation-value").textContent=e.target.value+"%");
 $("#protect-zip").addEventListener("change",()=>$("#password-field").hidden=!$("#protect-zip").checked);
 $("#org-protect-zip").addEventListener("change",()=>$("#org-password-field").hidden=!$("#org-protect-zip").checked);
 $("#create-file").addEventListener("change",e=>loadCreateFile(e.target.files?.[0]));
