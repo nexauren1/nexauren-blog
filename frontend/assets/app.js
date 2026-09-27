@@ -30,8 +30,34 @@ function url(v){try{const u=new URL(v,location.origin);return ["http:","https:"]
 function date(v){if(!v)return "";try{return new Intl.DateTimeFormat(lang==="en"?"en-US":"pt-BR",{dateStyle:"medium"}).format(new Date(v));}catch{return v;}}
 function typeLabel(v){const m=lang==="en"?{article:"Article",news:"News",guide:"Guide",tutorial:"Tutorial",announcement:"Announcement",release:"Release",update:"Update",story:"Story"}:{article:"Artigo",news:"Notícias",guide:"Guia",tutorial:"Tutorial",announcement:"Comunicado",release:"Lançamento",update:"Atualização",story:"História"};return m[v]||m.article}
 function catLabel(slug,name){const en={news:"News","breaking-news":"Breaking News",tecnologia:"Technology",entretenimento:"Entertainment",nexauren:"Nexauren",eventos:"Events",ferramentas:"Tools",apps:"Apps",products:"Products",guides:"Guides",tutorials:"Tutorials",releases:"Releases",updates:"Updates"};const pt={news:"Notícias","breaking-news":"Notícias de última hora",tecnologia:"Tecnologia",entretenimento:"Entretenimento",nexauren:"Nexauren",eventos:"Eventos",ferramentas:"Ferramentas",apps:"Aplicativos",products:"Produtos",guides:"Guias",tutorials:"Tutoriais",releases:"Lançamentos",updates:"Atualizações"};return (lang==="en"?en:pt)[slug]||name||""}
+let blogToolRegistry=null;
+let blogToolRegistryPromise=null;
+async function loadBlogToolRegistry(){
+  if(blogToolRegistry)return blogToolRegistry;
+  if(blogToolRegistryPromise)return blogToolRegistryPromise;
+  blogToolRegistryPromise=(async()=>{
+    try{
+      const d=await api(langQuery("/api/tool-registry"));
+      blogToolRegistry=d?.tools?.filter(t=>t.status==="active")||[];
+    }catch{blogToolRegistry=[]}
+    return blogToolRegistry;
+  })();
+  return blogToolRegistryPromise;
+}
+function renderToolCta(toolId,registry){
+  const id=String(toolId||"").trim().toLowerCase();
+  const tool=(registry||[]).find(t=>String(t.id||"").toLowerCase()===id&&t.status==="active");
+  if(!tool)return "";
+  const path=url(tool.path||"/tool/");
+  if(!path)return "";
+  const name=esc(tool.name||"Ferramenta Nexauren");
+  const description=esc(tool.description||"Teste esta ferramenta online no Nexauren.");
+  const label=lang==="en"?"Try the tool":"Testar ferramenta";
+  const open=lang==="en"?"Open tool":"Abrir ferramenta";
+  return '<section class="article-tool-cta" aria-label="'+(lang==="en"?"Related tool":"Ferramenta relacionada")+'"><div class="article-tool-cta-icon">✦</div><div class="article-tool-cta-copy"><span>NEXAUREN TOOL</span><strong>'+name+'</strong><p>'+description+'</p></div><div class="article-tool-cta-actions"><a href="'+esc(path)+'" class="article-tool-primary">'+label+' →</a><a href="'+esc(path)+'" class="article-tool-secondary">'+open+'</a></div></section>';
+}
 function excerpt(p){if(p.excerpt)return p.excerpt;const s=String(p.content||"").replace(/[#_*\x60>\[\]()!]/g," ").replace(/\s+/g," ").trim();return s?(s.slice(0,180)+(s.length>180?"…":"")):"";}
-function md(s){
+function md(s,toolRegistry=null){
   const lines=String(s||"").replace(/\r/g,"").split("\n");
   let out="",i=0;
   const inline=value=>{
@@ -59,6 +85,8 @@ function md(s){
   while(i<lines.length){
     const line=lines[i].trim();
     if(!line){i++;continue}
+    const toolMatch=line.match(/^\[\[nexauren-tool:([a-z0-9-]+)\]\]$/i);
+    if(toolMatch){out+=renderToolCta(toolMatch[1],toolRegistry);i++;continue}
     if(/^##\s+/.test(line)){out+="<h2>"+inline(line.replace(/^##\s+/,""))+"</h2>";i++;continue}
     if(/^#\s+/.test(line)){out+="<h1>"+inline(line.replace(/^#\s+/,""))+"</h1>";i++;continue}
     if(/^::\s*/.test(line)){out+="<p>"+inline(line.replace(/^::\s*/,""))+"</p>";i++;continue}
@@ -78,7 +106,7 @@ function md(s){
       out+="<ol>"+items.join("")+"</ol>";continue;
     }
     const para=[];
-    while(i<lines.length&&lines[i].trim()&&!/^##\s+|^#\s+|^::\s*|^>\s?|^---+$|^@(?:imagem\s+|\s*(?:https?:\/\/|\/))|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){
+    while(i<lines.length&&lines[i].trim()&&!/^\[\[nexauren-tool:[a-z0-9-]+\]\]$|^##\s+|^#\s+|^::\s*|^>\s?|^---+$|^@(?:imagem\s+|\s*(?:https?:\/\/|\/))|^-\s+|^\d+\.\s+/i.test(lines[i].trim())){
       para.push(lines[i].trim());i++;
     }
     out+="<p>"+inline(para.join("\n")).replace(/\n/g,"<br>")+"</p>";
@@ -283,7 +311,7 @@ async function wireComments(postId,allowComments){
 async function post(slug){
   app.innerHTML='<article class="article"><div class="hero-card" style="height:320px"></div></article>';
   try{
-    const p=(await api(langQuery("/api/posts/slug/"+encodeURIComponent(slug)))).post;
+    const [postData,toolRegistry]=await Promise.all([api(langQuery("/api/posts/slug/"+encodeURIComponent(slug))),loadBlogToolRegistry().catch(()=>[])]); const p=postData.post;
     const description=p.meta_description||p.excerpt||excerpt(p);
     const canonical=new URL(location.pathname,location.origin);if(lang==="en")canonical.searchParams.set("lang","en");
     const canonicalUrl=(lang==="en"&&!p.translation_available)?new URL(location.pathname,location.origin).href:canonical.href;
@@ -297,7 +325,7 @@ async function post(slug){
     const encodedShareUrl=encodeURIComponent(shareUrl);
     const encodedTitle=encodeURIComponent(p.title||"Nexauren Story");
     const socialActions='<a class="share-button share-link share-whatsapp" href="https://wa.me/?text='+encodedTitle+'%20'+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">WhatsApp</a><a class="share-button share-link" href="https://t.me/share/url?url='+encodedShareUrl+'&text='+encodedTitle+'" target="_blank" rel="noopener noreferrer">Telegram</a><a class="share-button share-link" href="https://www.facebook.com/sharer/sharer.php?u='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">Facebook</a><a class="share-button share-link" href="https://twitter.com/intent/tweet?text='+encodedTitle+'&url='+encodedShareUrl+'" target="_blank" rel="noopener noreferrer">X</a>';
-    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="blog-comments" id="blog-comments"><div class="section-head"><div><h2>'+ (lang==="en"?"Discussion":"Comentários") +'</h2><span class="comments-count"><span data-comment-count>0</span> '+(lang==="en"?"comments":"comentários")+'</span></div></div><div id="comments-list" class="comments-list"></div><form id="comment-form" class="comment-composer"><input type="hidden" id="comment-parent"><div id="comment-replying" class="comment-replying"></div><textarea id="comment-body" maxlength="5000" placeholder="'+(lang==="en"?"Share your thoughts…":"Partilhe a sua opinião…")+'" required></textarea><div class="comment-composer-footer"><small id="comment-feedback"></small><div><button type="button" class="share-button share-secondary" id="comment-cancel">Cancelar</button><button type="submit" class="share-button">Publicar comentário</button></div></div></form></section><section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
+    app.innerHTML='<article class="article"><div class="meta"><span class="pill">'+esc(catLabel(p.category_slug,p.category_name||typeLabel(p.type)))+'</span><span>·</span><span>'+date(p.published_at)+'</span><span>·</span><span>'+reading+" "+(lang==="en"?"min read":"min de leitura")+'</span></div><h1>'+esc(p.title)+'</h1>'+(p.excerpt?'<div class="article-excerpt">'+esc(p.excerpt)+"</div>":"")+cover+translationNotice+'<div class="article-actions"><button id="share-story" class="share-button" type="button">↗ '+(lang==="en"?"Share":"Partilhar")+'</button>'+socialActions+'<button id="copy-story" class="share-button share-secondary" type="button">▣ '+(lang==="en"?"Copy link":"Copiar link")+'</button></div><div class="article-content">'+md(p.content,toolRegistry)+"</div>"+((p.tags||[]).length?'<div class="tags">'+p.tags.map(x=>'<span class="tag">#'+esc(x.name)+"</span>").join("")+"</div>":"")+'<section class="blog-comments" id="blog-comments"><div class="section-head"><div><h2>'+ (lang==="en"?"Discussion":"Comentários") +'</h2><span class="comments-count"><span data-comment-count>0</span> '+(lang==="en"?"comments":"comentários")+'</span></div></div><div id="comments-list" class="comments-list"></div><form id="comment-form" class="comment-composer"><input type="hidden" id="comment-parent"><div id="comment-replying" class="comment-replying"></div><textarea id="comment-body" maxlength="5000" placeholder="'+(lang==="en"?"Share your thoughts…":"Partilhe a sua opinião…")+'" required></textarea><div class="comment-composer-footer"><small id="comment-feedback"></small><div><button type="button" class="share-button share-secondary" id="comment-cancel">Cancelar</button><button type="submit" class="share-button">Publicar comentário</button></div></div></form></section><section class="related-section"><div class="section-head"><h2>'+t("related")+'</h2></div><div id="related" class="grid"></div></section></article>';
     document.getElementById("share-story")?.addEventListener("click",async()=>{
       try{
         if(navigator.share){await navigator.share({title:p.title,text:p.excerpt||p.title,url:shareUrl});return;}
