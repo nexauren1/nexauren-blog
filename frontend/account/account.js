@@ -222,7 +222,7 @@ function userView(user, syncMessage = "") {
           <div>
             <div class="account-kicker">CONTA NEXAUREN</div>
             <h2>O seu painel Nexauren</h2>
-            <p>Acompanhe a sua atividade, comentários, perfil e acesso aos recursos Nexauren.</p>
+            <p>Acompanhe a sua conta, perfil e acesso aos recursos Nexauren.</p>
           </div>
           <span class="account-state"><i></i> Ativa</span>
         </header>
@@ -236,9 +236,9 @@ function userView(user, syncMessage = "") {
             <span class="account-history-count" id="account-history-count">A carregar…</span>
           </div>
           <div class="account-metrics">
-            <div class="account-metric"><span>Comentários</span><strong id="account-stat-comments">0</strong><small><span id="account-stat-approved">0</span> aprovados · <span id="account-stat-pending">0</span> pendentes</small></div>
-            <div class="account-metric"><span>Reações</span><strong id="account-stat-reactions">0</strong><small>Interações feitas</small></div>
-            <div class="account-metric"><span>Denúncias</span><strong id="account-stat-reports">0</strong><small>Registos enviados</small></div>
+            <div class="account-metric"><span>Conta</span><strong>ATIVA</strong><small>Autenticação protegida</small></div>
+            <div class="account-metric"><span>Acesso</span><strong>NEXAUREN</strong><small>Ferramentas e recursos</small></div>
+            <div class="account-metric"><span>Experiência</span><strong>ONLINE</strong><small>Pronta para utilizar</small></div>
             <div class="account-metric account-metric-plan"><span>Plano</span><strong id="account-stat-plan">FREE</strong><small id="account-stat-plan-label">Nexauren Free</small></div>
           </div>
           <div class="account-history-list" id="account-history-list"><div class="account-history-loading">A preparar o histórico…</div></div>
@@ -419,13 +419,16 @@ async function loadAccountDashboard(user){
     const response=await fetch("/api/account/dashboard",{credentials:"same-origin",headers:{Authorization:"Bearer "+token}});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||"Não foi possível carregar o dashboard.");
-    const s=data.stats||{},b=data.billing||{},rows=data.recent_comments||[];
+    const billing=data.billing||{};
     const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=String(value??"—");};
-    set("account-stat-comments",Number(s.total||0));set("account-stat-approved",Number(s.approved||0));set("account-stat-pending",Number(s.pending||0));set("account-stat-reactions",Number(s.reactions||0));set("account-stat-reports",Number(s.reports||0));set("account-stat-plan",b.plan==="pro"?"PRO":"FREE");set("account-stat-plan-label",b.plan==="pro"?"Nexauren Pro":"Nexauren Free");set("account-history-count",Number(s.total||0)+" comentário(s)");
+    set("account-stat-plan",billing.plan==="pro"?"PRO":"FREE");
+    set("account-stat-plan-label",billing.plan==="pro"?"Nexauren Pro":"Nexauren Free");
+    set("account-history-count",billing.plan==="pro"?"Nexauren Pro":"Nexauren Free");
     const list=document.getElementById("account-history-list");
-    if(list)list.innerHTML=rows.length?rows.map(x=>'<article class="account-history-item"><div class="account-history-icon">💬</div><div class="account-history-body"><strong>'+esc(x.post_title||"Artigo")+'</strong><p>'+esc(x.body||"")+'</p><div class="account-history-meta"><span>'+esc(formatAccountDate(x.created_at))+'</span><span class="account-history-status status-'+esc(x.status||"pending")+'">'+esc(({approved:"Aprovado",pending:"Pendente",rejected:"Rejeitado",hidden:"Oculto"}[x.status]||x.status||"Pendente"))+'</span></div></div><a href="/blog/post/'+encodeURIComponent(x.post_slug||"")+'" class="account-history-link">Abrir →</a></article>').join(""):'<div class="account-empty-history"><div class="account-empty-icon">◌</div><strong>Ainda não há atividade.</strong><p>Quando participar no Blog, o seu histórico aparecerá automaticamente aqui.</p><a class="secondary" href="/blog/">Explorar o Blog</a></div>';
+    if(list)list.innerHTML='<div class="account-empty-history"><div class="account-empty-icon">✦</div><strong>A sua conta está pronta.</strong><p>Use as ferramentas Nexauren diretamente no navegador e consulte o seu plano e faturação quando precisar.</p><a class="secondary" href="/tool/">Explorar ferramentas</a></div>';
   }catch(error){
-    const list=document.getElementById("account-history-list");if(list)list.innerHTML='<div class="account-empty-history"><div class="account-empty-icon">!</div><strong>Histórico temporariamente indisponível.</strong><p>'+esc(error.message||"Tente novamente mais tarde.")+'</p></div>';
+    const list=document.getElementById("account-history-list");
+    if(list)list.innerHTML='<div class="account-empty-history"><div class="account-empty-icon">!</div><strong>Dados temporariamente indisponíveis.</strong><p>'+esc(error.message||"Tente novamente mais tarde.")+'</p></div>';
   }
 }
 
