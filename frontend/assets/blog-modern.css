@@ -677,3 +677,15 @@ body.blog-skin .mobile-nav a.active{
   .error-page .error-links{display:none}
   .error-page .error-brand{font-size:14px}
 }
+
+/* Nexauren tool CTA inside articles */
+.article-tool-cta{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;margin:28px 0;padding:18px;border:1px solid #ded9ff;border-radius:18px;background:linear-gradient(135deg,#faf9ff 0%,#fff 62%,#f3fffc 100%);box-shadow:0 12px 30px rgba(25,20,75,.07)}
+.article-tool-cta-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,#6d5dfc,#14b8a6);color:#fff;font-weight:950;font-size:18px}
+.article-tool-cta-copy>span{display:block;color:#6d5dfc;font-size:9px;font-weight:950;letter-spacing:.14em;text-transform:uppercase}
+.article-tool-cta-copy strong{display:block;margin-top:3px;font-size:17px;line-height:1.15}
+.article-tool-cta-copy p{margin:5px 0 0;color:#687287;font-size:11px;line-height:1.55}
+.article-tool-cta-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.article-tool-cta-actions a{min-height:40px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;text-decoration:none;font-size:10px;font-weight:900}
+.article-tool-primary{background:#111827;color:#fff}.article-tool-secondary{background:#fff;color:#111827;border:1px solid #dfe3eb}
+.article-tool-primary:hover{background:#6d5dfc}.article-tool-secondary:hover{border-color:#cfc9ff;color:#5b21b6}
+@media(max-width:680px){.article-tool-cta{grid-template-columns:auto minmax(0,1fr)}.article-tool-cta-actions{grid-column:1/-1;justify-content:stretch}.article-tool-cta-actions a{flex:1}}
