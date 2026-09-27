@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - "frontend/blog/**"
   pull_request:
     branches: [main]
     paths-ignore:
@@ -40,7 +39,7 @@ jobs:
           worker=Path("worker-entry.js").read_text(encoding="utf-8")
           excluded_prefixes=(
               "/admin","/account","/api","/assets","/admin-assets","/data",
-              "/blog","/tool/frontend/templates/"
+              "/tool/frontend/templates/"
           )
 
           def public_path(index_file: Path):
