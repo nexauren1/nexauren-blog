@@ -172,7 +172,7 @@ jobs:
               raise SystemExit("No tool pages found under frontend/tool/categories.")
 
           print(f"Verified {len(tools)} tool page(s).")
-          print("Blog is untouched because the workflow scans only frontend/tool/categories.")
+          print("The workflow scans only frontend/tool/categories; editorial blog code is no longer part of the platform.")
           PY
 
       - name: Commit automatic ads updates

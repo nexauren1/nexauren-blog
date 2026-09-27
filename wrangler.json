@@ -18,14 +18,10 @@
       "/Admin",
       "/Admin/*",
       "/account/*",
-      "/blog/*",
       "/tool/*",
-      "/post/*",
       "/sitemap.xml",
       "/sitemap-pages.xml",
-      "/sitemap-posts.xml",
       "/robots.txt",
-      "/rss.xml"
     ]
   },
   "d1_databases": [

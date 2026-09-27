@@ -57,37 +57,6 @@ function socialImageForCover(value){
   return v;
 }
 
-function isDefaultSocialImage(value){
-  try{
-    const u=new URL(String(value||""),"https://nexaurenstory.com");
-    const p=u.pathname.toLowerCase();
-    return p==="/social-preview.png" || p==="/assets/social-preview-nexauren.png";
-  }catch{return false;}
-}
-const LEGACY_COVER_OVERRIDES={
-  "fortnite-recompensa-gratis-global-championship-2026":"https://static.beebom.com/wp-content/uploads/2026/09/Twitch-Drop-Champions-Chargers-Kicks-in-Fortnite.jpg?w=1024"
-};
-function resolvedPostCover(row){
-  const override=row?.slug ? LEGACY_COVER_OVERRIDES[String(row.slug)] : "";
-  if(override)return override;
-  const direct=cleanCoverUrl(row?.cover_url);
-  if(direct)return direct;
-  const fallback=cleanCoverUrl(row?.social_image);
-  return fallback && !isDefaultSocialImage(fallback) ? fallback : null;
-}
-async function recoverMissingCover(env,row){
-  if(!row || row.cover_media_id || row?.slug in LEGACY_COVER_OVERRIDES)return row;
-  const current=String(row.social_image||"").trim();
-  if(!current || isDefaultSocialImage(current))return row;
-  try{
-    const exact=await env.DB.prepare("SELECT id,url,width,height,alt_text,caption FROM media WHERE url=? LIMIT 1").bind(current).first();
-    if(exact){
-      await env.DB.prepare("UPDATE posts SET cover_media_id=? WHERE id=? AND cover_media_id IS NULL").bind(exact.id,row.id).run();
-      row.cover_media_id=exact.id;row.cover_url=exact.url;row.cover_width=exact.width;row.cover_height=exact.height;row.cover_alt=exact.alt_text;row.cover_caption=exact.caption;
-    }
-  }catch{}
-  return row;
-}
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), {
     status,
@@ -108,22 +77,8 @@ function text(v,max=1000000){return String(v??"").slice(0,max);}
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 function xml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");}
 function publicUrl(path,language="pt"){const u=new URL(path,"https://nexaurenstory.com");if(language==="en")u.searchParams.set("lang","en");return u.href;}
-function blogPublicPath(path){const p=String(path||"/");return p==="/"?"/blog/":"/blog"+(p.startsWith("/")?p:"/"+p)}
 function safeJsonLd(v){return JSON.stringify(v).replace(/</g,"\\u003c");}
-function stripMarkdown(v){return String(v??"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/\[[^\]]+\]\([^)]*\)/g," ").replace(/[#>*_\x60~]/g," ").replace(/\s+/g," ").trim();}
-function seoDesc(excerpt,content){const s=stripMarkdown(excerpt)||stripMarkdown(content);return s.slice(0,160)+(s.length>160?"…":"");}
-function cookie(name,value,opts={}){const p=[name+"="+encodeURIComponent(value),`Max-Age=${opts.maxAge??0}`,"Path=/","HttpOnly","Secure","SameSite=Lax"];return p.join("; ");}
-function getCookie(request,name){const c=request.headers.get("Cookie")||"";const p=c.split(";").map(x=>x.trim()).find(x=>x.startsWith(name+"="));return p?decodeURIComponent(p.slice(name.length+1)):null;}
-async function sha256(value){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
-function b64(bytes){let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(s);}
-function bytes(v){const s=atob(v);return Uint8Array.from(s,c=>c.charCodeAt(0));}
-function rand(n){const x=new Uint8Array(n);crypto.getRandomValues(x);return x;}
-async function hashPassword(password,saltB64=null){
-  const salt=saltB64?bytes(saltB64):rand(16);
-  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]);
-  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:100000,hash:"SHA-256"},key,256);
-  return "pbkdf2$100000$"+b64(salt)+"$"+b64(new Uint8Array(bits));
-}
+
 const DUMMY_PASSWORD_HASH="pbkdf2$100000$bmV4YXVyZW4tZHVtbXkhIQ==$U9sMbP6gZ3gM76yZKWit5js74oHgAbqewfMqFO9livQ=";
 async function verifyPassword(password,stored){
   try{
@@ -326,219 +281,34 @@ async function guard(env,request,roles=null){
   if(Array.isArray(roles)&&!roles.includes(a.role))return {error:fail("Permissão insuficiente.",403,"FORBIDDEN")};
   return {auth:a};
 }
-async function guardPostEditor(env,request,postId){
-  const g=await guard(env,request);
-  if(g.error)return g;
-  if(["owner","admin","editor"].includes(g.auth.role))return g;
-  if(g.auth.role!=="author")return {error:fail("Permissão insuficiente.",403,"FORBIDDEN")};
-  const row=await env.DB.prepare("SELECT author_id FROM posts WHERE id=? LIMIT 1").bind(postId).first();
-  if(!row)return {error:fail("Artigo não encontrado.",404,"NOT_FOUND")};
-  if(row.author_id!==g.auth.id)return {error:fail("Permissão insuficiente.",403,"FORBIDDEN")};
-  return g;
-}
 async function bodyJson(request){try{return await request.json();}catch{return null;}}
-async function publishDue(env){const t=nowIso();await env.DB.prepare("UPDATE posts SET status='published',published_at=COALESCE(published_at,scheduled_at,?),updated_at=? WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?").bind(t,t,t).run();}
 async function cleanup(env){const t=nowIso();await env.DB.prepare("DELETE FROM sessions WHERE expires_at<=?").bind(t).run();await env.DB.prepare("DELETE FROM login_attempts WHERE created_at<?").bind(new Date(Date.now()-2592000000).toISOString()).run();}
 async function dbCheck(env){
   const required={
     users:["id","email","password_hash","display_name","role","status","email_verified","last_login_at","created_at","updated_at"],
     sessions:["id","user_id","token_hash","expires_at","created_at","last_seen_at","ip_hash","user_agent"],
     login_attempts:["id","identifier","success","created_at"],
-    categories:["id","name","slug","description","icon","parent_id","sort_order","created_at","updated_at"],
-    tags:["id","name","slug","created_at"],
     media:["id","imagekit_file_id","url","thumbnail_url","filename","mime_type","size_bytes","width","height","alt_text","caption","uploaded_by","created_at"],
-    posts:["id","author_id","title","slug","excerpt","content","content_format","type","status","category_id","cover_media_id","social_image","published_at","scheduled_at","featured","allow_comments","meta_title","meta_description","created_at","updated_at"],
-    post_translations:["id","post_id","language","title","excerpt","content","meta_title","meta_description","created_at","updated_at"],
-    post_tags:["post_id","tag_id"], revisions:["id","post_id","editor_id","title","excerpt","content","revision_number","created_at"],
-    settings:["key","value","type","updated_at"], navigation:["id","location","label","url","icon","sort_order","visible","parent_id"],
-    redirects:["id","source","destination","status_code","created_at"],
+    settings:["key","value","type","updated_at"],
     audit_logs:["id","user_id","action","entity_type","entity_id","metadata","ip_hash","created_at"],
-    notifications:["id","user_id","type","title","message","link","read_at","created_at"]
+    notifications:["id","user_id","type","title","message","link","read_at","created_at"],
+    tool_usage:["tool_id","bucket","visitor_hash","created_at"]
   };
   try{
     const tables=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
     const existing=new Set((tables.results||[]).map(x=>x.name));
     const missingTables=[],missingColumns=[];
     for(const [table,cols] of Object.entries(required)){
-      if(!existing.has(table)){missingTables.push(table);continue;}
-      let info=await env.DB.prepare("PRAGMA table_info("+table+")").all();
-      let have=new Set((info.results||[]).map(x=>x.name));
+      if(!existing.has(table)){missingTables.push(table);continue}
+      const info=await env.DB.prepare("PRAGMA table_info("+table+")").all();
+      const have=new Set((info.results||[]).map(x=>x.name));
       for(const col of cols)if(!have.has(col))missingColumns.push(table+"."+col);
     }
     return {ready:missingTables.length===0&&missingColumns.length===0,missingTables,missingColumns};
-  }catch(e){return {ready:false,missingTables:[],missingColumns:[],error:String(e?.message||e)};}
+  }catch(e){return {ready:false,missingTables:[],missingColumns:[],error:String(e?.message||e)}}
 }
 async function dbReady(env){return (await dbCheck(env)).ready;}
 
-
-async function postsAdmin(env,url){
-  const w=["1=1"],b=[],status=url.searchParams.get("status"),type=url.searchParams.get("type"),q=url.searchParams.get("search");
-  if(status){w.push("p.status=?");b.push(status)}
-  if(type){w.push("p.type=?");b.push(type)}
-  if(q){w.push("(p.title LIKE ? OR p.slug LIKE ? OR p.excerpt LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
-  const r=await env.DB.prepare(`SELECT p.id,p.title,p.slug,p.excerpt,p.type,p.status,p.published_at,p.scheduled_at,p.featured,p.created_at,p.updated_at,c.name category_name,u.display_name author_name,COALESCE(NULLIF(m.url,''),NULLIF(p.social_image,'')) cover_url
-    FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN media m ON m.id=p.cover_media_id
-    WHERE ${w.join(" AND ")} ORDER BY COALESCE(p.published_at,p.scheduled_at,p.created_at) DESC LIMIT ? OFFSET ?`).bind(...b,Math.min(Number(url.searchParams.get("limit")||100),100),Math.max(Number(url.searchParams.get("offset")||0),0)).all();
-  return json({ok:true,posts:(r.results||[]).map(x=>{
-    const coverUrl=resolvedPostCover(x);
-    const socialSource=coverUrl||x.social_image;
-    return {...x,cover_url:coverUrl,social_image:socialImageForCover(socialSource)};
-  })});
-}
-async function publicPosts(env,url){
-  const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";
-  const requestedLimit=Number.parseInt(url.searchParams.get("limit")||"12",10);
-  const limit=Number.isFinite(requestedLimit)?Math.min(60,Math.max(1,requestedLimit)):12;
-  const category=text(url.searchParams.get("category")||"",100).trim();
-  const params=[lang];
-  const where=["p.status='published'","p.published_at IS NOT NULL"];
-  if(category){
-    where.push("c.slug=?");
-    params.push(category);
-  }
-  const sql="SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,p.category_id,p.allow_comments,c.name category_name,c.slug category_slug,m.url cover_url,p.social_image,m.width cover_width,m.height cover_height,m.alt_text cover_alt FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE "+where.join(" AND ")+" ORDER BY p.published_at DESC LIMIT "+limit;
-  const result=await env.DB.prepare(sql).bind(...params).all();
-  return json({ok:true,language:lang,posts:(result.results||[]).map(x=>{
-    const coverUrl=resolvedPostCover(x);
-    const socialSource=coverUrl||x.social_image;
-    return {...x,cover_url:coverUrl,social_image:socialImageForCover(socialSource)};
-  })});
-}
-
-function postRelationStatements(env,postId,tags,translations,includeTagReset=true){
-  const statements=[];
-  if(includeTagReset)statements.push(env.DB.prepare("DELETE FROM post_tags WHERE post_id=?").bind(postId));
-  for(const item of (Array.isArray(tags)?tags:[]).slice(0,12)){
-    const name=text(item,60).trim(),slug=slugify(name);
-    if(!name||!slug)continue;
-    statements.push(env.DB.prepare("INSERT INTO tags (id,name,slug,created_at) VALUES (?,?,?,?) ON CONFLICT(slug) DO UPDATE SET name=excluded.name").bind(crypto.randomUUID(),name,slug,nowIso()));
-    statements.push(env.DB.prepare("INSERT OR IGNORE INTO post_tags (post_id,tag_id) SELECT ?,id FROM tags WHERE slug=? LIMIT 1").bind(postId,slug));
-  }
-  for(const lang of ["pt","en"]){
-    const t=translations?.[lang];
-    if(!t)continue;
-    const title=text(t.title,180).trim(),content=text(t.content,2000000),excerpt=text(t.excerpt,500).trim();
-    if(!title&&!content&&!excerpt)continue;
-    const ts=nowIso();
-    statements.push(env.DB.prepare(`INSERT INTO post_translations (id,post_id,language,title,excerpt,content,meta_title,meta_description,created_at,updated_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(post_id,language) DO UPDATE SET title=excluded.title,excerpt=excluded.excerpt,content=excluded.content,meta_title=excluded.meta_title,meta_description=excluded.meta_description,updated_at=excluded.updated_at`)
-      .bind(crypto.randomUUID(),postId,lang,title||"",excerpt,content,text(t.meta_title,180).trim(),text(t.meta_description,300).trim(),ts,ts));
-  }
-  return statements;
-}
-
-async function getPost(env,id){
-  const row=await env.DB.prepare(`SELECT
-    p.id,p.author_id,p.title,p.slug,p.excerpt,p.content,p.content_format,p.type,p.status,
-    p.category_id,p.cover_media_id,p.social_image,p.published_at,p.scheduled_at,
-    p.featured,p.allow_comments,p.meta_title,p.meta_description,p.created_at,p.updated_at,
-    c.name category_name,c.slug category_slug,
-    m.url cover_url,m.width cover_width,m.height cover_height,m.alt_text cover_alt,m.caption cover_caption,
-    u.display_name author_name
-    FROM posts p
-    LEFT JOIN categories c ON c.id=p.category_id
-    LEFT JOIN media m ON m.id=p.cover_media_id
-    LEFT JOIN users u ON u.id=p.author_id
-    WHERE p.id=? LIMIT 1`).bind(id).first();
-  if(!row)return null;
-  const [tr,tags]=await Promise.all([
-    env.DB.prepare(`SELECT language,title,excerpt,content,meta_title,meta_description
-      FROM post_translations WHERE post_id=? ORDER BY language`).bind(id).all(),
-    env.DB.prepare(`SELECT t.id,t.name,t.slug
-      FROM tags t JOIN post_tags pt ON pt.tag_id=t.id
-      WHERE pt.post_id=? ORDER BY t.name`).bind(id).all()
-  ]);
-  const translations={};
-  for(const t of (tr.results||[])){
-    translations[t.language]={
-      title:t.title||"",
-      excerpt:t.excerpt||"",
-      content:t.content||"",
-      meta_title:t.meta_title||"",
-      meta_description:t.meta_description||""
-    };
-  }
-  await recoverMissingCover(env,row);
-  const coverUrl=resolvedPostCover(row);
-  const socialSource=coverUrl||row.social_image;
-  return {
-    ...row,
-    cover_url:coverUrl,
-    social_image:socialImageForCover(socialSource),
-    cover_alt:row.cover_alt||"",
-    cover_caption:row.cover_caption||"",
-    tags:tags.results||[],
-    translations
-  };
-}
-
-async function createPost(env,a,d,ctx){
-  const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);
-  let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:"draft";const type=["article","news","guide","tutorial","announcement","release","update","story"].includes(d.type)?d.type:"article";
-  const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():null;
-  if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);if(status==="published"&&!published)published=nowIso();
-  if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
-  const id=crypto.randomUUID(),ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000),coverMediaId=d.cover_media_id||null,categoryId=d.category_id||null;
-  let socialImage=DEFAULT_SOCIAL_IMAGE;
-  if(categoryId){
-    const category=await env.DB.prepare("SELECT id FROM categories WHERE id=? LIMIT 1").bind(categoryId).first();
-    if(!category)return fail("A categoria selecionada não existe.",422,"CATEGORY_NOT_FOUND");
-  }
-  if(coverMediaId){
-    const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();
-    if(!cm)return fail("A mídia de capa não existe.",422,"MEDIA_NOT_FOUND");
-    socialImage=socialImageForCover(text(cm.url,2000).trim());
-  }
-  try{
-    await env.DB.prepare(`INSERT INTO posts (id,author_id,title,slug,excerpt,content,content_format,type,status,category_id,cover_media_id,social_image,published_at,scheduled_at,featured,allow_comments,meta_title,meta_description,created_at,updated_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,a.id,title,slug,excerpt,content,"markdown",type,status,categoryId,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,ts).run();
-  }catch(e){
-    console.error("post.create.core",e);
-    return fail("Não foi possível guardar a publicação.",500,"POST_CREATE_FAILED");
-  }
-  try{
-    const secondary=[];
-    if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))secondary.push(env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId));
-    secondary.push(...postRelationStatements(env,id,d.tags,d.translations,true));
-    secondary.push(env.DB.prepare("INSERT OR IGNORE INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,1,ts));
-    if(secondary.length)await env.DB.batch(secondary);
-  }catch(e){console.error("post.create.secondary",e);}
-  await audit(env,a.id,"post.created","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:categoryId,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}},201);
-}
-async function updatePost(env,a,id,d,ctx){
-  const oldRow=await env.DB.prepare("SELECT id,slug,type,status,published_at FROM posts WHERE id=? LIMIT 1").bind(id).first();if(!oldRow)return fail("Artigo não encontrado.",404,"NOT_FOUND");const title=text(d.title,180).trim();if(!title)return fail("Título é obrigatório.",422);
-  const slug=slugify(d.slug||title);if(!slug)return fail("Slug inválido.",422);const type=["article","news","guide","tutorial","announcement","release","update","story"].includes(d.type)?d.type:oldRow.type;
-  let status=["draft","scheduled","published","archived"].includes(d.status)?d.status:oldRow.status;const scheduled=d.scheduled_at?new Date(d.scheduled_at).toISOString():null;let published=d.published_at?new Date(d.published_at).toISOString():oldRow.published_at;
-  if(status==="published"&&!published)published=nowIso();if(status==="scheduled"&&!scheduled)return fail("Um artigo agendado precisa de data.",422);
-  if(status==="scheduled"&&scheduled&&new Date(scheduled)<=new Date()){status="published";published=nowIso();}
-  const ts=nowIso(),excerpt=text(d.excerpt,500).trim(),content=text(d.content,2000000),coverMediaId=d.cover_media_id||null,categoryId=d.category_id||null;
-  let socialImage=DEFAULT_SOCIAL_IMAGE;
-  if(categoryId){
-    const category=await env.DB.prepare("SELECT id FROM categories WHERE id=? LIMIT 1").bind(categoryId).first();
-    if(!category)return fail("A categoria selecionada não existe.",422,"CATEGORY_NOT_FOUND");
-  }
-  if(coverMediaId){
-    const cm=await env.DB.prepare("SELECT url FROM media WHERE id=? LIMIT 1").bind(coverMediaId).first();
-    if(!cm)return fail("A mídia de capa não existe.",422,"MEDIA_NOT_FOUND");
-    socialImage=socialImageForCover(text(cm.url,2000).trim());
-  }
-  try{
-    await env.DB.prepare(`UPDATE posts SET title=?,slug=?,excerpt=?,content=?,type=?,status=?,category_id=?,cover_media_id=?,social_image=?,published_at=?,scheduled_at=?,featured=?,allow_comments=?,meta_title=?,meta_description=?,updated_at=? WHERE id=?`)
-      .bind(title,slug,excerpt,content,type,status,categoryId,coverMediaId,socialImage,published,scheduled,d.featured?1:0,d.allow_comments===false?0:1,text(d.meta_title,180).trim(),text(d.meta_description,300).trim(),ts,id).run();
-  }catch(e){
-    console.error("post.update.core",e);
-    return fail("Não foi possível atualizar a publicação.",500,"POST_UPDATE_FAILED");
-  }
-  try{
-    const secondary=[];
-    if(old.slug!==slug)secondary.push(env.DB.prepare("INSERT INTO redirects (id,source,destination,status_code,created_at) VALUES (?,?,?,?,?) ON CONFLICT(source) DO UPDATE SET destination=excluded.destination,status_code=excluded.status_code").bind(crypto.randomUUID(),"/blog/post/"+encodeURIComponent(old.slug),"/blog/post/"+encodeURIComponent(slug),301,ts));
-    if(coverMediaId&&(d.cover_alt!==undefined||d.cover_caption!==undefined))secondary.push(env.DB.prepare("UPDATE media SET alt_text=?,caption=? WHERE id=?").bind(text(d.cover_alt,300).trim(),text(d.cover_caption,500).trim(),coverMediaId));
-    secondary.push(...postRelationStatements(env,id,d.tags,d.translations,true));
-    secondary.push(env.DB.prepare("INSERT OR IGNORE INTO revisions (id,post_id,editor_id,title,excerpt,content,revision_number,created_at) VALUES (?,?,?,?,?,?,(SELECT COALESCE(MAX(revision_number),0)+1 FROM revisions WHERE post_id=?),?)").bind(crypto.randomUUID(),id,a.id,title,excerpt,content,id,ts));
-    if(secondary.length)await env.DB.batch(secondary);
-  }catch(e){console.error("post.update.secondary",e);}
-  await audit(env,a.id,"post.updated","post",id,{status,type});return json({ok:true,post:{id,title,slug,excerpt,content,type,status,category_id:categoryId,cover_media_id:coverMediaId,social_image:socialImage,published_at:published,scheduled_at:scheduled,featured:!!d.featured,allow_comments:d.allow_comments!==false,meta_title:text(d.meta_title,180).trim(),meta_description:text(d.meta_description,300).trim()}});
-}
 
 async function verifyImageKitFile(env,fileId,fileUrl){
   if(!fileId||!fileUrl)return false;
@@ -573,7 +343,7 @@ function decoratePublicHtmlResponse(request,response){
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   const url=new URL(request.url);
   const path=url.pathname;
-  const lowerPath=path.toLowerCase();if(lowerPath==="/blog"||lowerPath.startsWith("/blog/")||lowerPath==="/admin"||lowerPath.startsWith("/admin/"))return response;
+  const lowerPath=path.toLowerCase();if(lowerPath==="/admin"||lowerPath.startsWith("/admin/"))return response;
   const requestedLang=url.searchParams.get("lang")==="en"?"en":"pt";
   return response.text().then(html=>{
     html=html.replace(/<body(\s[^>]*)?>/i,(match,attrs="")=>{if(/\bclass\s*=/.test(attrs)){return match.replace(/class\s*=\s*(['"])(.*?)\1/i,(m,q,v)=>/\bnx-page\b/.test(v)?m:'class='+q+'nx-page '+v+q);}return '<body class="nx-page"'+attrs+'>';});
@@ -643,47 +413,15 @@ function decoratePublicHtmlResponse(request,response){
 }
 
 async function sitemapPages(env){
-  const maxRow=await env.DB.prepare("SELECT MAX(updated_at) lastmod FROM posts WHERE status='published' AND published_at IS NOT NULL").first();
-  const catRows=await env.DB.prepare("SELECT c.slug,MAX(p.updated_at) lastmod FROM categories c LEFT JOIN posts p ON p.category_id=c.id AND p.status='published' AND p.published_at IS NOT NULL GROUP BY c.id,c.slug ORDER BY c.sort_order,c.name").all();
   const pages=[],seen=new Set();
-  const add=(raw,lastmod=null)=>{
-    if(typeof raw!=="string")return;
-    let path=raw.trim();
-    if(!path||!path.startsWith("/")||path.startsWith("//"))return;
-    if(path==="/."||path==="/./")path="/";
-    if(path.includes("?")||path.includes("#"))return;
-    path=path.replace(/\/{2,}/g,"/");
-    if(path!=="/")path=path.replace(/\/+$/,"")||"/";
-    if(/^\/(admin|account|api|assets|admin-assets|data)(\/|$)/.test(path))return;
-    if(path.startsWith("/tool/frontend/templates/"))return;
-    if(seen.has(path))return;
-    seen.add(path);pages.push({path,lastmod});
-  };
-  try{
-    const r=await env.ASSETS.fetch(new Request("https://nexaurenstory.com/data/public-urls.json"));
-    if(r.ok){
-      const manifest=await r.json();
-      for(const path of (Array.isArray(manifest.urls)?manifest.urls:[]))add(path,null);
-    }
-  }catch{}
-  for(const path of ["/","/blog/","/blog/posts","/blog/about"])add(path,maxRow?.lastmod||null);
-  for(const c of (catRows.results||[]))add("/blog/"+c.slug,c.lastmod||null);
-  const out=pages.map(x=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com"+x.path)+"</loc>"];if(x.lastmod)lines.push("    <lastmod>"+xml(x.lastmod)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
-  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}});
+  const add=raw=>{if(typeof raw!=="string")return;let path=raw.trim();if(!path||!path.startsWith("/")||path.startsWith("//")||path.includes("?")||path.includes("#"))return;path=path.replace(/\/+/g,"/");if(path!=="/")path=path.replace(/\/+$/,"")||"/";if(/^\/(admin|account|api|assets|admin-assets|data)(\/|$)/.test(path)||path.startsWith("/tool/frontend/templates/"))return;if(!seen.has(path)){seen.add(path);pages.push(path)}};
+  try{const r=await env.ASSETS.fetch(new Request("https://nexaurenstory.com/data/public-urls.json"));if(r.ok){const m=await r.json();for(const p of (Array.isArray(m.urls)?m.urls:[]))add(p)}}catch{}
+  if(!seen.has("/"))add("/");
+  const out=pages.map(p=>"  <url>\n    <loc>"+xml("https://nexaurenstory.com"+p)+"</loc>\n  </url>").join("\n");
+  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}});
 }
-async function sitemapPosts(env){
-  const rows=await env.DB.prepare("SELECT slug,updated_at FROM posts WHERE status='published' AND published_at IS NOT NULL ORDER BY published_at DESC LIMIT 50000").all();
-  const out=(rows.results||[]).map(p=>{const lines=["  <url>","    <loc>"+xml("https://nexaurenstory.com/blog/post/"+encodeURIComponent(p.slug))+"</loc>"];if(p.updated_at)lines.push("    <lastmod>"+xml(p.updated_at)+"</lastmod>");lines.push("  </url>");return lines.join("\n");});
-  return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out.join("\n")+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
-}
-async function sitemapIndex(){
-  const body='<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://nexaurenstory.com/sitemap-pages.xml</loc></sitemap>\n  <sitemap><loc>https://nexaurenstory.com/sitemap-posts.xml</loc></sitemap>\n</sitemapindex>';
-  return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=3600"}});
-}
-async function robots(request){
-  return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}});
-}
-
+async function sitemapIndex(){const body='<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://nexaurenstory.com/sitemap-pages.xml</loc></sitemap>\n</sitemapindex>';return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}})}
+async function robots(){return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}})}
 function seoHead(html,o){
   const set=(re,val)=>{html=html.replace(re,val);};
   html=html.replace(/<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*type=["']image\/svg\+xml["'][^>]*>/gi,"");
@@ -722,14 +460,6 @@ function seoHead(html,o){
   html=html.replace(/<script id="nexauren-structured-data" type="application\/ld\+json">[\s\S]*?<\/script>/i,'<script id="nexauren-structured-data" type="application/ld+json">'+safeJsonLd(o.structured)+'</script>');
   return html;
 }
-async function rss(env,request){
-  const base=new URL(request.url).origin;
-  if(!(await dbReady(env))) return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Base de dados ainda não inicializada.</description></channel></rss>',{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=300"}});
-  const rows=await env.DB.prepare("SELECT title,slug,excerpt,published_at FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT 30").all();
-  const items=rows.results.map(p=>"<item><title>"+esc(p.title)+"</title><link>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</link><guid>"+base+"/blog/post/"+encodeURIComponent(p.slug)+"</guid><pubDate>"+new Date(p.published_at).toUTCString()+"</pubDate><description>"+esc(p.excerpt||"")+"</description></item>").join("");
-  return new Response('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Nexauren Story</title><link>'+base+'</link><description>Stories, releases, guides and updates from Nexauren.</description>'+items+"</channel></rss>",{headers:{"content-type":"application/rss+xml; charset=utf-8","cache-control":"public,max-age=1800"}});
-}
-
 function normalizeToolRegistry(raw){
   const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
     id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
@@ -976,34 +706,17 @@ async function adminUsers(env){
   return {admins:admins.results||[],accounts};
 }
 async function adminStats(env,request){
-  const [posts,published,drafts,scheduled,media,categories,tags,adminUsers,activeSessions,registry,toolViews]=await Promise.all([
-    env.DB.prepare("SELECT COUNT(*) n FROM posts").first(),
-    env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='published'").first(),
-    env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='draft'").first(),
-    env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status='scheduled'").first(),
+  const [media,adminUsers,activeSessions,registry,toolViews]=await Promise.all([
     env.DB.prepare("SELECT COUNT(*) n FROM media").first(),
-    env.DB.prepare("SELECT COUNT(*) n FROM categories").first(),
-    env.DB.prepare("SELECT COUNT(*) n FROM tags").first(),
     env.DB.prepare("SELECT COUNT(*) n FROM users").first(),
     env.DB.prepare("SELECT COUNT(*) n FROM sessions WHERE expires_at>?").bind(nowIso()).first(),
     loadToolRegistry(env,request),
     env.DB.prepare("SELECT COUNT(*) n FROM tool_usage WHERE bucket>=?").bind(new Date(Date.now()-30*86400000).toISOString().slice(0,10)).first()
   ]);
-  let publicUsers=0;
-  try{publicUsers=Number((await env.ACCOUNTS_DB.prepare("SELECT COUNT(*) n FROM nexauren_accounts").first())?.n||0)}catch{}
-  return {
-    posts:Number(posts?.n||0),published:Number(published?.n||0),drafts:Number(drafts?.n||0),scheduled:Number(scheduled?.n||0),
-    media:Number(media?.n||0),categories:Number(categories?.n||0),tags:Number(tags?.n||0),adminUsers:Number(adminUsers?.n||0),
-    publicUsers,activeSessions:Number(activeSessions?.n||0),tools:Array.isArray(registry?.tools)?registry.tools.length:0,
-    featuredTools:Array.isArray(registry?.tools)?registry.tools.filter(t=>t.featured).length:0,
-    popularTools:Array.isArray(registry?.tools)?registry.tools.filter(t=>t.popular).length:0,
-    featuredPosts:Number((await env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE featured=1 AND status='published'").first())?.n||0),
-    toolViews30d:Number(toolViews?.n||0),
-    topTools:(await toolRegistryWithUsage(env,request)).tools.sort((a,b)=>(b.usageCount||0)-(a.usageCount||0)).slice(0,8)
-  };
+  let publicUsers=0;try{publicUsers=Number((await env.ACCOUNTS_DB.prepare("SELECT COUNT(*) n FROM nexauren_accounts").first())?.n||0)}catch{}
+  const tools=Array.isArray(registry?.tools)?registry.tools:[];
+  return {media:Number(media?.n||0),adminUsers:Number(adminUsers?.n||0),publicUsers,activeSessions:Number(activeSessions?.n||0),tools:tools.length,featuredTools:tools.filter(t=>t.featured).length,popularTools:tools.filter(t=>t.popular).length,toolViews30d:Number(toolViews?.n||0),topTools:(await toolRegistryWithUsage(env,request)).tools.sort((a,b)=>(b.usageCount||0)-(a.usageCount||0)).slice(0,8)};
 }
-
-
 const PAYPAL_PRODUCT_KEY = "paypal_pro_product_id";
 const PAYPAL_PLAN_KEY = "paypal_pro_monthly_plan_id";
 const PAYPAL_ENV_KEY = "paypal_environment";
@@ -1278,118 +991,8 @@ async function handlePaypalWebhook(env,request){
   return json({ok:true});
 }
 
-async function commentPostBySlug(env,slug){
-  return await env.DB.prepare("SELECT id,allow_comments FROM posts WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
-}
-async function commentSettings(env){
-  const keys=["comments.require_approval","comments.allow_replies","comments.allow_reactions","comments.max_length","comments.rate_limit_count","comments.rate_limit_minutes"];
-  const out={};
-  try{
-    const r=await env.DB.prepare("SELECT key,value,type FROM settings WHERE key IN ("+keys.map(()=>"?").join(",")+")").bind(...keys).all();
-    for(const x of (r.results||[]))out[x.key]=x.type==="number"?Number(x.value):x.value;
-  }catch{}
-  return {require_approval:String(out["comments.require_approval"]??"1")==="1",allow_replies:String(out["comments.allow_replies"]??"1")==="1",allow_reactions:String(out["comments.allow_reactions"]??"1")==="1",max_length:Math.min(10000,Math.max(100,Number(out["comments.max_length"]||5000))),rate_limit_count:Math.min(30,Math.max(1,Number(out["comments.rate_limit_count"]||5))),rate_limit_minutes:Math.min(1440,Math.max(1,Number(out["comments.rate_limit_minutes"]||10)))};
-}
-async function publicComments(env,postId,request){
-  const settings=await commentSettings(env);
-  let viewer=null;
-  try{const a=await firebaseAccountAuth(env,request,false);viewer=a?.account||null;}catch{}
-  const rows=await env.DB.prepare(`SELECT c.id,c.post_id,c.parent_id,c.author_name,c.body,c.status,c.created_at,c.updated_at,
-    (SELECT COUNT(*) FROM blog_comment_reactions r WHERE r.comment_id=c.id AND r.reaction='like') like_count,
-    (SELECT COUNT(*) FROM blog_comment_reactions r WHERE r.comment_id=c.id AND r.reaction='dislike') dislike_count
-    FROM blog_comments c WHERE c.post_id=? AND c.status='approved' ORDER BY c.created_at ASC LIMIT 200`).bind(postId).all();
-  let items=rows.results||[];
-  if(viewer&&items.length){
-    const ids=items.map(x=>x.id);const placeholders=ids.map(()=>"?").join(",");
-    const rr=await env.DB.prepare("SELECT comment_id,reaction FROM blog_comment_reactions WHERE account_id=? AND comment_id IN ("+placeholders+")").bind(viewer.id,...ids).all();
-    const map=new Map((rr.results||[]).map(x=>[x.comment_id,x.reaction]));items=items.map(x=>({...x,my_reaction:map.get(x.id)||null}));
-  }else items=items.map(x=>({...x,my_reaction:null}));
-  return json({ok:true,comments:items,settings:{allow_replies:settings.allow_replies,allow_reactions:settings.allow_reactions}});
-}
-async function createPublicComment(env,request,postId){
-  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-  const a=await firebaseAccountAuth(env,request,true);if(!a)return fail("Inicie sessão para comentar.",401,"UNAUTHENTICATED");
-  const post=await env.DB.prepare("SELECT id,allow_comments,status FROM posts WHERE id=? LIMIT 1").bind(postId).first();
-  if(!post||post.status!=="published")return fail("Artigo não encontrado.",404,"NOT_FOUND");
-  if(!post.allow_comments)return fail("Os comentários estão desativados neste artigo.",403,"COMMENTS_DISABLED");
-  const d=(await bodyJson(request))||{},settings=await commentSettings(env),body=text(d.body,settings.max_length).trim();
-  if(!body)return fail("Escreva um comentário.",422,"COMMENT_EMPTY");
-  if(body.length>settings.max_length)return fail("O comentário é demasiado longo.",422,"COMMENT_TOO_LONG");
-  const recent=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comments WHERE account_id=? AND created_at>=datetime('now',?)").bind(a.account.id,"-"+settings.rate_limit_minutes+" minutes").first();
-  if(Number(recent?.n||0)>=settings.rate_limit_count)return fail("Atingiu o limite de comentários. Tente novamente mais tarde.",429,"COMMENT_RATE_LIMIT");
-  let parentId=d.parent_id?text(d.parent_id,100).trim()||null:null;
-  if(parentId){
-    if(!settings.allow_replies)return fail("As respostas estão desativadas.",403,"REPLIES_DISABLED");
-    const parent=await env.DB.prepare("SELECT id FROM blog_comments WHERE id=? AND post_id=? AND status='approved' LIMIT 1").bind(parentId,postId).first();
-    if(!parent)return fail("Comentário pai não encontrado.",404,"PARENT_NOT_FOUND");
-  }
-  const id=crypto.randomUUID(),ts=nowIso(),status=settings.require_approval?"pending":"approved";
-  await env.DB.prepare("INSERT INTO blog_comments (id,post_id,account_id,author_name,parent_id,body,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,postId,a.account.id,text(a.account.display_name,80).trim()||"Nexauren User",parentId,body,status,ts,ts).run();
-  return json({ok:true,comment:{id,post_id:postId,parent_id:parentId,author_name:text(a.account.display_name,80).trim()||"Nexauren User",body,status,created_at:ts,updated_at:ts},moderated:status==="pending"},201);
-}
-async function commentReaction(env,request,commentId){
-  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-  const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Inicie sessão para reagir.",401,"UNAUTHENTICATED");
-  const settings=await commentSettings(env);if(!settings.allow_reactions)return fail("As reações estão desativadas.",403,"REACTIONS_DISABLED");
-  const d=(await bodyJson(request))||{},reaction=d.reaction==="like"?"like":d.reaction==="dislike"?"dislike":null;if(!reaction)return fail("Reação inválida.",422,"REACTION_INVALID");
-  const comment=await env.DB.prepare("SELECT id FROM blog_comments WHERE id=? AND status='approved' LIMIT 1").bind(commentId).first();if(!comment)return fail("Comentário não encontrado.",404,"NOT_FOUND");
-  const current=await env.DB.prepare("SELECT id,reaction FROM blog_comment_reactions WHERE comment_id=? AND account_id=? LIMIT 1").bind(commentId,a.account.id).first();
-  if(current?.reaction===reaction)await env.DB.prepare("DELETE FROM blog_comment_reactions WHERE id=?").bind(current.id).run();
-  else if(current)await env.DB.prepare("UPDATE blog_comment_reactions SET reaction=?,created_at=? WHERE id=?").bind(reaction,nowIso(),current.id).run();
-  else await env.DB.prepare("INSERT INTO blog_comment_reactions (id,comment_id,account_id,reaction,created_at) VALUES (?,?,?,?,?)").bind(crypto.randomUUID(),commentId,a.account.id,reaction,nowIso()).run();
-  const counts=await env.DB.prepare("SELECT reaction,COUNT(*) n FROM blog_comment_reactions WHERE comment_id=? GROUP BY reaction").bind(commentId).all();
-  const map={like:0,dislike:0};for(const x of (counts.results||[]))map[x.reaction]=Number(x.n||0);
-  const mine=await env.DB.prepare("SELECT reaction FROM blog_comment_reactions WHERE comment_id=? AND account_id=? LIMIT 1").bind(commentId,a.account.id).first();
-  return json({ok:true,like_count:map.like,dislike_count:map.dislike,my_reaction:mine?.reaction||null});
-}
-async function reportComment(env,request,commentId){
-  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
-  const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Inicie sessão para denunciar.",401,"UNAUTHENTICATED");
-  const comment=await env.DB.prepare("SELECT id FROM blog_comments WHERE id=? LIMIT 1").bind(commentId).first();if(!comment)return fail("Comentário não encontrado.",404,"NOT_FOUND");
-  const d=(await bodyJson(request))||{},reason=text(d.reason,500).trim();if(!reason)return fail("Indique o motivo da denúncia.",422,"REPORT_REASON_REQUIRED");
-  try{await env.DB.prepare("INSERT INTO blog_comment_reports (id,comment_id,account_id,reason,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)").bind(crypto.randomUUID(),commentId,a.account.id,reason,"pending",nowIso(),nowIso()).run();}catch(e){if(String(e?.message||"").includes("UNIQUE"))return fail("Já denunciou este comentário.",409,"REPORT_EXISTS");throw e;}
-  return json({ok:true});
-}
-async function adminComments(env,request,url){
-  const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;
-  const status=text(url.searchParams.get("status")||"",20).trim(),q=text(url.searchParams.get("search")||"",120).trim();const w=["1=1"],b=[];
-  if(status){w.push("c.status=?");b.push(status)}if(q){w.push("(c.body LIKE ? OR c.author_name LIKE ? OR p.title LIKE ?)");const s="%"+q+"%";b.push(s,s,s)}
-  const r=await env.DB.prepare(`SELECT c.id,c.post_id,c.parent_id,c.account_id,c.author_name,c.body,c.status,c.created_at,c.updated_at,p.title post_title,p.slug post_slug,
-    (SELECT COUNT(*) FROM blog_comment_reports rp WHERE rp.comment_id=c.id AND rp.status='pending') report_count,
-    (SELECT COUNT(*) FROM blog_comment_reactions rr WHERE rr.comment_id=c.id AND rr.reaction='like') like_count,
-    (SELECT COUNT(*) FROM blog_comment_reactions rr WHERE rr.comment_id=c.id AND rr.reaction='dislike') dislike_count
-    FROM blog_comments c JOIN posts p ON p.id=c.post_id WHERE ${w.join(" AND ")} ORDER BY c.created_at DESC LIMIT 200`).bind(...b).all();
-  const stats=await env.DB.prepare("SELECT COUNT(*) total,SUM(status='pending') pending,SUM(status='approved') approved,SUM(status='rejected') rejected,SUM(status='hidden') hidden FROM blog_comments").first();
-  const reports=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comment_reports WHERE status='pending'").first();
-  return json({ok:true,comments:r.results||[],stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),approved:Number(stats?.approved||0),rejected:Number(stats?.rejected||0),hidden:Number(stats?.hidden||0),reports:Number(reports?.n||0)}});
-}
-
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
-  if(p==="/api/comments"&&m==="GET"){
-    const postId=text(url.searchParams.get("post_id")||"",100);if(!postId)return fail("Artigo não especificado.",400,"POST_REQUIRED");
-    try{return await publicComments(env,postId,request);}catch(error){return fail(error?.message||"Não foi possível carregar os comentários.",503,"COMMENTS_UNAVAILABLE");}
-  }
-  if(p==="/api/comments"&&m==="POST"){
-    const postId=text(url.searchParams.get("post_id")||"",100);if(!postId)return fail("Artigo não especificado.",400,"POST_REQUIRED");
-    try{return await createPublicComment(env,request,postId);}catch(error){return fail(error?.message||"Não foi possível publicar o comentário.",500,error?.code||"COMMENT_CREATE_FAILED");}
-  }
-  const cr=p.match(/^\/api\/comments\/([^/]+)$/);
-  if(cr&&m==="POST"){try{return await commentReaction(env,request,cr[1]);}catch(error){return fail(error?.message||"Não foi possível guardar a reação.",500,error?.code||"COMMENT_REACTION_FAILED");}}
-  const crr=p.match(/^\/api\/comments\/([^/]+)\/report$/);
-  if(crr&&m==="POST"){try{return await reportComment(env,request,crr[1]);}catch(error){return fail(error?.message||"Não foi possível denunciar o comentário.",500,error?.code||"COMMENT_REPORT_FAILED");}}
-  if(p==="/api/admin/comments"&&m==="GET"){
-    try{return await adminComments(env,request,url);}catch(error){return fail(error?.message||"Não foi possível carregar os comentários.",503,error?.code||"COMMENTS_ADMIN_FAILED");}
-  }
-  const acm=p.match(/^\/api\/admin\/comments\/([^/]+)$/);
-  if(acm&&(m==="PUT"||m==="DELETE")){
-    const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const id=acm[1];
-    const row=await env.DB.prepare("SELECT id,author_name,status FROM blog_comments WHERE id=? LIMIT 1").bind(id).first();if(!row)return fail("Comentário não encontrado.",404,"NOT_FOUND");
-    if(m==="DELETE"){await env.DB.prepare("DELETE FROM blog_comments WHERE id=?").bind(id).run();await audit(env,g.auth.id,"comment.deleted","comment",id,{author_name:row.author_name});return json({ok:true});}
-    const d=(await bodyJson(request))||{},status=["pending","approved","rejected","hidden"].includes(d.status)?d.status:null;if(!status)return fail("Estado de comentário inválido.",422,"COMMENT_STATUS_INVALID");
-    await env.DB.prepare("UPDATE blog_comments SET status=?,updated_at=? WHERE id=?").bind(status,nowIso(),id).run();await audit(env,g.auth.id,"comment."+status,"comment",id,{previous_status:row.status});return json({ok:true,status});
-  }
-
   if(p==="/api/paypal/webhook"&&m==="POST"){
     try{return await handlePaypalWebhook(env,request);}catch(error){
       const code=error?.code||"PAYPAL_WEBHOOK_ERROR";
@@ -1454,36 +1057,13 @@ async function api(env,request,url,ctx){
   }
 
   if(p==="/api/account/dashboard"&&m==="GET"){
-    try{
-      const a=await firebaseAccountAuth(env,request,false);
-      if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
-      let stats={total:0,approved:0,pending:0,rejected:0,hidden:0,reactions:0,reports:0};
-      let recent=[];
-      try{
-        const s=await env.DB.prepare("SELECT COUNT(*) total,SUM(status='approved') approved,SUM(status='pending') pending,SUM(status='rejected') rejected,SUM(status='hidden') hidden FROM blog_comments WHERE account_id=?").bind(a.account.id).first();
-        stats.total=Number(s?.total||0);stats.approved=Number(s?.approved||0);stats.pending=Number(s?.pending||0);stats.rejected=Number(s?.rejected||0);stats.hidden=Number(s?.hidden||0);
-        const r1=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comment_reactions WHERE account_id=?").bind(a.account.id).first();
-        const r2=await env.DB.prepare("SELECT COUNT(*) n FROM blog_comment_reports WHERE account_id=?").bind(a.account.id).first();
-        stats.reactions=Number(r1?.n||0);stats.reports=Number(r2?.n||0);
-        const rr=await env.DB.prepare("SELECT c.id,c.post_id,c.parent_id,c.body,c.status,c.created_at,c.updated_at,p.title post_title,p.slug post_slug FROM blog_comments c JOIN posts p ON p.id=c.post_id WHERE c.account_id=? ORDER BY c.created_at DESC LIMIT 8").bind(a.account.id).all();
-        recent=rr.results||[];
-      }catch(error){
-        console.warn("account.dashboard.comments",String(error?.message||error));
-      }
+    try{const a=await firebaseAccountAuth(env,request,false);if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
       let billing={plan:"free",status:"FREE",amount:"5.00",currency:"USD",cancel_at_period_end:false,current_period_end:null,permanent:false};
-      try{
-        const row=await resolvedBillingRow(env,a.account.id);
-        billing=billingPublic(row);
-        if(isPermanentProEmail(a.account.email))billing={plan:"pro",status:"ACTIVE",amount:"0.00",currency:"USD",cancel_at_period_end:false,current_period_end:null,paypal_subscription_id:null,permanent:true};
-      }catch(error){console.warn("account.dashboard.billing",String(error?.message||error));}
-      return json({ok:true,account:a.account,stats,recent_comments:recent,billing});
-    }catch(error){
-      const code=error?.code||"ACCOUNT_DASHBOARD_ERROR";
-      const status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);
-      return fail(error?.message||"Não foi possível carregar o dashboard da conta.",status,code,error?.reason||error?.message);
-    }
+      try{const row=await resolvedBillingRow(env,a.account.id);billing=billingPublic(row);if(isPermanentProEmail(a.account.email))billing={plan:"pro",status:"ACTIVE",amount:"0.00",currency:"USD",cancel_at_period_end:false,current_period_end:null,paypal_subscription_id:null,permanent:true}}catch(error){console.warn("account.dashboard.billing",String(error?.message||error))}
+      return json({ok:true,account:a.account,billing});
+    }catch(error){const code=error?.code||"ACCOUNT_DASHBOARD_ERROR",status=code==="ACCOUNT_DB_NOT_READY"?503:(code==="ACCOUNT_SUSPENDED"?403:401);return fail(error?.message||"Não foi possível carregar o dashboard da conta.",status,code,error?.reason||error?.message)}
   }
-    if(p==="/api/account/billing"&&m==="GET"){
+  if(p==="/api/account/billing"&&m==="GET"){
     try{
       const a=await firebaseAccountAuth(env,request,false);
       if(!a)return fail("Autenticação Firebase necessária.",401,"UNAUTHENTICATED");
@@ -1580,8 +1160,7 @@ async function api(env,request,url,ctx){
   }
 
   if(p.startsWith("/api/account/")) return fail("Endpoint de conta não disponível.",410,"ACCOUNT_ENDPOINT_DISABLED");
-  if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco nexauren-blog e publique novamente.",503,"DB_NOT_READY");
-  try{await publishDue(env);}catch(e){console.error("publishDue",e);}
+  if(!(await dbReady(env))) return fail("O D1 ainda não foi inicializado. Execute o conteúdo completo de schema.sql no banco Nexauren primary e publique novamente.",503,"DB_NOT_READY");
   if(p==="/api/auth/login"&&m==="POST"){
     try{
     if(!sameOrigin(request))return fail("Origem não autorizada.",403);const d=await bodyJson(request),email=normalizeEmail(d?.email),pw=String(d?.password||"");
@@ -1682,26 +1261,10 @@ async function api(env,request,url,ctx){
       await audit(env,g.auth.id,"account.user_status_updated","account",row.id,{status});return json({ok:true});
     }catch(e){return fail("Não foi possível atualizar o utilizador.",503,"ACCOUNTS_DB_ERROR");}
   }
-  if(p==="/api/categories"&&m==="GET"){const r=await env.DB.prepare("SELECT c.*,(SELECT COUNT(*) FROM posts p WHERE p.category_id=c.id) post_count FROM categories c ORDER BY c.sort_order,c.name").all();return json({ok:true,categories:r.results});}
-  if(p==="/api/categories"&&m==="POST"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;const d=await bodyJson(request),name=text(d?.name,100).trim(),slug=slugify(d?.slug||name);if(!name||!slug)return fail("Nome da categoria é obrigatório.",422);if(await env.DB.prepare("SELECT id FROM categories WHERE slug=?").bind(slug).first())return fail("Esse slug já existe.",409);const id=crypto.randomUUID();await env.DB.prepare("INSERT INTO categories (id,name,slug,description,icon,parent_id,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(id,name,slug,text(d?.description,500),text(d?.icon,30),d?.parent_id||null,Number(d?.sort_order||0),nowIso(),nowIso()).run();await audit(env,g.auth.id,"category.created","category",id,{name});return json({ok:true,category:await env.DB.prepare("SELECT * FROM categories WHERE id=?").bind(id).first()},201);}
-  const cm=p.match(/^\/api\/categories\/([^/]+)$/);if(cm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const id=cm[1],row=await env.DB.prepare("SELECT name FROM categories WHERE id=?").bind(id).first();if(!row)return fail("Categoria não encontrada.",404);const c=await env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE category_id=?").bind(id).first();if(Number(c?.n||0))return fail("A categoria ainda possui artigos.",409);await env.DB.prepare("DELETE FROM categories WHERE id=?").bind(id).run();await audit(env,g.auth.id,"category.deleted","category",id,{name:row.name});return json({ok:true});}
-  if(p==="/api/tags"&&m==="GET"){const r=await env.DB.prepare("SELECT t.*,(SELECT COUNT(*) FROM post_tags pt WHERE pt.tag_id=t.id) post_count FROM tags t ORDER BY t.name").all();return json({ok:true,tags:r.results});}
   if(p==="/api/settings"&&m==="GET"){const g=await guard(env,request,["owner","admin"]);if(g.error)return g.error;const r=await env.DB.prepare("SELECT key,value,type FROM settings ORDER BY key").all(),s={};for(const x of r.results)s[x.key]=x.value;return json({ok:true,settings:s});}
   if(p==="/api/settings"&&m==="PUT"){const g=await guard(env,request,true);if(g.error)return g.error;const d=await bodyJson(request);for(const [key,value] of Object.entries(d||{}).slice(0,100)){if(!/^[a-z0-9_.-]{1,80}$/i.test(key))continue;await env.DB.prepare("INSERT INTO settings (key,value,type,updated_at) VALUES (?,?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,type=excluded.type,updated_at=excluded.updated_at").bind(key,String(value).slice(0,10000),typeof value==="number"?"number":"string",nowIso()).run();}await audit(env,g.auth.id,"settings.updated","settings",null,{keys:Object.keys(d||{})});return json({ok:true});}
   if(p==="/api/activity"&&m==="GET"){const g=await guard(env,request,["owner","admin"]);if(g.error)return g.error;const r=await env.DB.prepare("SELECT a.*,u.display_name,u.email FROM audit_logs a LEFT JOIN users u ON u.id=a.user_id ORDER BY a.created_at DESC LIMIT 100").all();return json({ok:true,activity:r.results});}
   if(p==="/api/stats"&&m==="GET"){const g=await guard(env,request,["owner","admin"]);if(g.error)return g.error;return json({ok:true,stats:await adminStats(env,request)});}
-  if(p==="/api/posts"&&m==="GET"){if(url.searchParams.get("all")==="1"){const g=await guard(env,request,["owner","admin","editor"]);if(g.error)return g.error;return postsAdmin(env,url)}return publicPosts(env,url);}
-  if(p==="/api/posts"&&m==="POST"){const g=await guard(env,request);if(g.error)return g.error;return createPost(env,g.auth,(await bodyJson(request))||{},ctx);}
-  const idm=p.match(/^\/api\/posts\/([^/]+)$/);if(idm&&m==="GET"){const g=await guardPostEditor(env,request,idm[1]);if(g.error)return g.error;const post=await getPost(env,idm[1]);return post?json({ok:true,post}):fail("Artigo não encontrado.",404);}
-  if(idm&&m==="PUT"){const g=await guardPostEditor(env,request,idm[1]);if(g.error)return g.error;return updatePost(env,g.auth,idm[1],(await bodyJson(request))||{},ctx);}
-  if(idm&&m==="DELETE"){const g=await guard(env,request,true);if(g.error)return g.error;const row=await env.DB.prepare("SELECT title FROM posts WHERE id=?").bind(idm[1]).first();if(!row)return fail("Artigo não encontrado.",404);await env.DB.prepare("DELETE FROM posts WHERE id=?").bind(idm[1]).run();await audit(env,g.auth.id,"post.deleted","post",idm[1],{title:row.title});return json({ok:true});}
-  const pm=p.match(/^\/api\/posts\/slug\/(.+)$/);if(pm&&m==="GET"){const slug=decodeURIComponent(pm[1]),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt",row=await env.DB.prepare("SELECT p.id,p.author_id,p.title,p.slug,p.excerpt,p.content,p.type,p.status,p.category_id,p.cover_media_id,m.url cover_url,p.social_image,p.published_at,p.featured,p.allow_comments,p.meta_title,p.meta_description,p.created_at,p.updated_at,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,m.caption cover_caption,u.display_name author_name,t.id translation_id,t.title translation_title,t.excerpt translation_excerpt,t.content translation_content,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();if(!row)return fail("Artigo não encontrado.",404,"NOT_FOUND");await recoverMissingCover(env,row);const tags=await env.DB.prepare("SELECT t.id,t.name,t.slug FROM tags t JOIN post_tags pt ON pt.tag_id=t.id WHERE pt.post_id=? ORDER BY t.name").bind(row.id).all();const post={...row,title:row.translation_title||row.title,excerpt:row.translation_excerpt||row.excerpt,content:row.translation_content||row.content,meta_title:row.translation_meta_title||row.meta_title,meta_description:row.translation_meta_description||row.meta_description,translation_available:!!row.translation_id,tags:tags.results};delete post.translation_id;delete post.translation_title;delete post.translation_excerpt;delete post.translation_content;delete post.translation_meta_title;delete post.translation_meta_description;post.cover_url=cleanCoverUrl(post.cover_url);
-    post.social_image=socialImageForCover(post.cover_url||post.social_image);
-    return json({ok:true,language:lang,post});}
-  if(p==="/api/search"&&m==="GET"){const q=text(url.searchParams.get("q")||"",100).trim(),lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):"pt";if(q.length<2)return json({ok:true,language:lang,posts:[]});const s="%"+q+"%",r=await env.DB.prepare("SELECT p.id,COALESCE(NULLIF(t.title,''),p.title) title,p.slug,COALESCE(NULLIF(t.excerpt,''),p.excerpt) excerpt,p.type,p.published_at,p.featured,c.name category_name,m.url cover_url,p.social_image FROM posts p LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id WHERE p.status='published' AND (COALESCE(NULLIF(t.title,''),p.title) LIKE ? OR COALESCE(NULLIF(t.excerpt,''),p.excerpt) LIKE ? OR COALESCE(NULLIF(t.content,''),p.content) LIKE ?) ORDER BY p.published_at DESC LIMIT 30").bind(lang,s,s,s).all();return json({ok:true,language:lang,posts:(r.results||[]).map(x=>{
-    const image=preferredImage(x.cover_url,x.social_image);
-    return {...x,cover_url:image===DEFAULT_SOCIAL_IMAGE?null:image,social_image:image===DEFAULT_SOCIAL_IMAGE?DEFAULT_SOCIAL_IMAGE:socialImageForCover(image)};
-  })});}
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
 async function decorateToolHtmlResponse(request,response){
@@ -1718,125 +1281,26 @@ async function page(env,request,url){
   if(url.pathname.startsWith("/__/auth/"))return firebaseAuthProxy(request);
   if(url.pathname==="/sitemap.xml")return sitemapIndex();
   if(url.pathname==="/sitemap-pages.xml")return sitemapPages(env);
-  if(url.pathname==="/sitemap-posts.xml")return sitemapPosts(env);
-  if(url.pathname==="/robots.txt")return robots(request);
-  if(url.pathname==="/rss.xml")return rss(env,request);
-  if(url.pathname==="/social-preview.png"){const target=new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url);return env.ASSETS.fetch(new Request(target,request));}
-  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||["/manifest.json"].includes(url.pathname))return env.ASSETS.fetch(request);
+  if(url.pathname==="/robots.txt")return robots();
+  if(url.pathname==="/social-preview.png")return env.ASSETS.fetch(new Request(new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url),request));
+  if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||url.pathname==="/manifest.json")return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
   const adminPath=url.pathname.toLowerCase();
-   if(adminPath==="/admin"||adminPath.startsWith("/admin/")){
-    const r=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
-    const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");h.set("Cache-Control","no-store, no-cache, must-revalidate, max-age=0");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
+  if(adminPath==="/admin"||adminPath.startsWith("/admin/")){
+    const rr=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
+    const h=new Headers(rr.headers);h.set("X-Robots-Tag","noindex, nofollow");h.set("Cache-Control","no-store,no-cache,must-revalidate,max-age=0");
+    return decoratePublicHtmlResponse(request,new Response(rr.body,{status:rr.status,headers:h}));
   }
-  if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname==="/tool/"||url.pathname.startsWith("/tool/")){
-    if(url.pathname.startsWith("/legal/")){
-      let r=await env.ASSETS.fetch(request);
-      if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
-      if(r.ok)return decoratePublicHtmlResponse(request,r);
-    }
-    if(url.pathname==="/account"||url.pathname==="/account/"){
-      const r=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));
-      const h=new Headers(r.headers);h.set("X-Robots-Tag","noindex, nofollow");const protectedResponse=new Response(r.body,{status:r.status,headers:h});return decoratePublicHtmlResponse(request,protectedResponse);
-    }
-    if(url.pathname==="/" )return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/index.html",request.url))));
+  if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname.startsWith("/tool/")){
+    if(url.pathname.startsWith("/legal/")){let rr=await env.ASSETS.fetch(request);if(!rr.ok&&url.pathname.endsWith("/"))rr=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));if(rr.ok)return decoratePublicHtmlResponse(request,rr)}
+    if(url.pathname==="/account"||url.pathname==="/account/"){const rr=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));const h=new Headers(rr.headers);h.set("X-Robots-Tag","noindex, nofollow");return decoratePublicHtmlResponse(request,new Response(rr.body,{status:rr.status,headers:h}))}
+    if(url.pathname==="/")return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/index.html",request.url))));
     if(url.pathname==="/tool"||url.pathname==="/tool/")return decorateToolHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/tool/index.html",request.url))));
-    let r=await env.ASSETS.fetch(request);
-    if(!r.ok&&url.pathname.endsWith("/"))r=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));
-    return decorateToolHtmlResponse(request,r);
+    let rr=await env.ASSETS.fetch(request);if(!rr.ok&&url.pathname.endsWith("/"))rr=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));return decorateToolHtmlResponse(request,rr);
   }
-  const isBlog=url.pathname==="/blog"||url.pathname.startsWith("/blog/");
-  if(!isBlog){
-    const legacyExact=["/posts","/about","/search"];
-    if(legacyExact.includes(url.pathname)||url.pathname.startsWith("/post/")){
-      const target=new URL(blogPublicPath(url.pathname),request.url);
-      target.search=url.search;
-      return Response.redirect(target,301);
-    }
-    if(/^\/[^/]+$/.test(url.pathname)&&url.pathname!=="/"){
-      try{
-        if(await dbReady(env)){
-          const legacyCategory=await env.DB.prepare("SELECT slug FROM categories WHERE slug=? LIMIT 1").bind(url.pathname.slice(1)).first();
-          if(legacyCategory){
-            const target=new URL(blogPublicPath(url.pathname),request.url);
-            target.search=url.search;
-            return Response.redirect(target,301);
-          }
-        }
-      }catch{}
-    }
-    return fail("Página não encontrada.",404,"NOT_FOUND");
-  }
-  const asset=await env.ASSETS.fetch(new Request(new URL("/blog/index.html",request.url)));
-  if(!asset.ok)return asset;
-  let h=await asset.text();
-  const path=url.pathname==="/blog"||url.pathname==="/blog/"?"/":url.pathname.slice("/blog".length)||"/";
-  const publicPath=blogPublicPath(path);
-  const cookieLang=getCookie(request,"ns_lang")||"pt";
-  const lang=["en","pt"].includes(url.searchParams.get("lang"))?url.searchParams.get("lang"):(["en","pt"].includes(cookieLang)?cookieLang:"pt");
-  const image=DEFAULT_SOCIAL_IMAGE;
-  let title=lang==="en"?"Nexauren Story — Official stories and updates":"Nexauren Story — Histórias e novidades oficiais";
-  let desc=lang==="en"?"Official stories, launches, guides and updates from the Nexauren ecosystem.":"Histórias, lançamentos, guias e atualizações oficiais do ecossistema Nexauren.";
-  let type="website",articleMeta="";
-  let structured={"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://nexaurenstory.com/#website","url":"https://nexaurenstory.com/","name":"Nexauren Story","inLanguage":lang},{"@type":"Organization","@id":"https://nexaurenstory.com/#organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/assets/favicon-nexauren.png?v=20260925-1"}}]};
-  const canonical=publicUrl(publicPath,lang),ptUrl=publicUrl(publicPath,"pt"),enUrl=publicUrl(publicPath,"en");
-  if(path.match(/^\/post\/[^/]+$/)){
-    if(!(await dbReady(env)))return asset;
-    const slug=decodeURIComponent(path.slice(6));
-    const requestedSource="/blog/post/"+encodeURIComponent(slug);
-    const redirect=await env.DB.prepare("SELECT destination,status_code FROM redirects WHERE source=? LIMIT 1").bind(requestedSource).first();
-    if(redirect?.destination){
-      const status=Number(redirect.status_code);
-      return Response.redirect(new URL(redirect.destination,request.url),[301,302,307,308].includes(status)?status:301);
-    }
-    const p=await env.DB.prepare("SELECT p.id,p.author_id,p.title,p.slug,p.excerpt,p.content,p.meta_title,p.meta_description,m.url cover_url,p.social_image,p.published_at,p.updated_at,p.created_at,p.type,c.name category_name,c.slug category_slug,m.width cover_width,m.height cover_height,m.alt_text cover_alt,m.caption cover_caption,u.display_name author_name,t.title translation_title,t.excerpt translation_excerpt,t.meta_title translation_meta_title,t.meta_description translation_meta_description FROM posts p LEFT JOIN categories c ON c.id=p.category_id LEFT JOIN media m ON m.id=p.cover_media_id LEFT JOIN users u ON u.id=p.author_id LEFT JOIN post_translations t ON t.post_id=p.id AND t.language=? WHERE p.slug=? AND p.status='published' LIMIT 1").bind(lang,slug).first();
-    if(!p)return asset;
-    await recoverMissingCover(env,p);
-    const coverImage=resolvedPostCover(p);
-    const socialImage=socialImageForCover(coverImage||p.social_image);
-    const localizedTitle=lang==="en"?(p.translation_title||p.title):p.title;
-    const localizedMetaTitle=lang==="en"?(p.translation_meta_title||""):(p.meta_title||"");
-    const localizedDesc=lang==="en"?(p.translation_meta_description||p.translation_excerpt||p.excerpt||"Nexauren Story"):(p.meta_description||p.excerpt||"Nexauren Story");
-    title=(localizedMetaTitle||localizedTitle)+" — Nexauren Story";
-    desc=localizedDesc.slice(0,300);
-    type="article";
-    const imgRaw=coverImage||image,img=socialImage||(imgRaw.startsWith("http")?imgRaw:new URL(imgRaw,"https://nexaurenstory.com").href),section=p.category_name||"Posts",sectionEn={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"}[p.category_slug]||section;
-    articleMeta='<meta property="article:published_time" content="'+esc(p.published_at||"")+'"><meta property="article:modified_time" content="'+esc(p.updated_at||p.published_at||"")+'"><meta property="article:section" content="'+esc(section)+'">';
-    structured={"@context":"https://schema.org","@graph":[{"@type":p.type==="news"?"NewsArticle":"Article","@id":canonical+"#article","headline":localizedTitle.slice(0,180),"description":desc,"url":canonical,"image":[img],"datePublished":p.published_at,"dateModified":p.updated_at||p.published_at,"wordCount":String(p.content||"").trim().split(/\s+/).filter(Boolean).length,"isAccessibleForFree":true,"author":{"@type":"Person","name":p.author_name||"Nexauren Story","url":"https://nexaurenstory.com/about"},"publisher":{"@type":"Organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/assets/favicon-nexauren.png?v=20260925-1"}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":lang,"articleSection":lang==="en"?sectionEn:section},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Nexauren Story","item":"https://nexaurenstory.com/"},{"@type":"ListItem","position":2,"name":lang==="en"?sectionEn:section,"item":publicUrl("/"+(p.category_slug||"posts"),lang)},{"@type":"ListItem","position":3,"name":localizedTitle,"item":canonical}]}]};
-    structured['@graph'][0].image=[img];
-    const hasEnglish=!!p.translation_title;
-    const articleRobots=(lang==="en"&&!hasEnglish)?"noindex,follow":"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
-    const articleCanonical=(lang==="en"&&!hasEnglish)?ptUrl:canonical;
-    return new Response(seoHead(h,{lang,title,desc,robots:articleRobots,canonical:articleCanonical,ptUrl,enUrl:hasEnglish?enUrl:"",type,image:img,imageWidth:p.cover_width||1200,imageHeight:p.cover_height||630,articleMeta,structured}),{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=300"}});
-  }
-  if(path==="/posts"){title=lang==="en"?"Latest stories — Nexauren Story":"Mais recentes — Nexauren Story";desc=lang==="en"?"Browse the latest stories, launches, guides and updates from Nexauren.":"Veja as histórias, lançamentos, guias e atualizações mais recentes da Nexauren.";}
-  else if(path==="/about"){title=lang==="en"?"About Nexauren Story":"Sobre o Nexauren Story";desc=lang==="en"?"The official public home for Nexauren products, applications, ideas and milestones.":"O espaço público oficial para produtos, aplicações, ideias e marcos da Nexauren.";}
-  else if(path==="/search"){title=lang==="en"?"Search — Nexauren Story":"Pesquisar — Nexauren Story";desc=lang==="en"?"Search Nexauren Story.":"Pesquisar no Nexauren Story.";}
-  else if(await dbReady(env)){
-    const c=await env.DB.prepare("SELECT name,slug,description FROM categories WHERE slug=? LIMIT 1").bind(path.slice(1)).first();
-    if(c){const enNames={"breaking-news":"Breaking News","tecnologia":"Technology","entretenimento":"Entertainment","nexauren":"Nexauren","eventos":"Events","ferramentas":"Tools"};title=(lang==="en"?(enNames[c.slug]||c.name):c.name)+" — Nexauren Story";desc=(lang==="en"?({"breaking-news":"Urgent news and recent events.","tecnologia":"Technology, innovation and digital products.","entretenimento":"Music, video, games and culture.","nexauren":"Products, apps and Nexauren projects.","eventos":"Events and live launches.","ferramentas":"Tools and utilities."}[c.slug]||c.description):c.description||"Explore histórias e atualizações desta categoria.").slice(0,300);}
-  }
-  const pageType=path==="/about"?"AboutPage":path==="/posts"?"CollectionPage":path==="/search"?"SearchResultsPage":path==="/"?"WebPage":"CollectionPage";
-  structured={"@context":"https://schema.org","@graph":[
-    {"@type":"WebSite","@id":"https://nexaurenstory.com/#website","url":"https://nexaurenstory.com/","name":"Nexauren Story","inLanguage":lang},
-    {"@type":"Organization","@id":"https://nexaurenstory.com/#organization","name":"Nexauren Story","url":"https://nexaurenstory.com/","logo":{"@type":"ImageObject","url":"https://nexaurenstory.com/assets/favicon-nexauren.png?v=20260925-1"}},
-    {"@type":pageType,"@id":canonical+"#webpage","url":canonical,"name":title,"description":desc,"inLanguage":lang,"isPartOf":{"@id":"https://nexaurenstory.com/#website"}}
-  ]};
-  if(path!=="/"){
-    structured["@graph"].push({"@type":"BreadcrumbList","itemListElement":[
-      {"@type":"ListItem","position":1,"name":"Nexauren Story","item":"https://nexaurenstory.com/"},
-      {"@type":"ListItem","position":2,"name":title,"item":canonical}
-    ]});
-  }
-  const robotsValue=path==="/search"?"noindex,follow":"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
-  return new Response(seoHead(h,{lang,title,desc,robots:robotsValue,canonical,ptUrl,enUrl,type,image,articleMeta,structured}),{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public,max-age=300"}});
+  return fail("Página não encontrada.",404,"NOT_FOUND");
 }
 export default{
   async fetch(request,env,ctx){try{const url=new URL(request.url);if(url.pathname.startsWith("/api/"))return await api(env,request,url,ctx);return await page(env,request,url);}catch(e){console.error(e);return fail("Erro interno do servidor.",500,"INTERNAL_ERROR");}},
-  async scheduled(_controller,env){
-    try{await publishDue(env);await cleanup(env);}catch(e){console.error("maintenance",e);}
-    try{}catch(e){console.error("billing schema",e);}
-    try{}catch(e){console.error("tool unlock schema",e);}
-    try{}catch(e){console.error("tool usage schema",e);}
-  }
+  async scheduled(_controller,env){try{await cleanup(env);}catch(e){console.error("maintenance",e);}}
 };

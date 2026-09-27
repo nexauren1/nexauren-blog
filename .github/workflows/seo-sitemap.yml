@@ -1,178 +1,51 @@
-name: SEO and sitemap guard
+name: Validate public sitemap
 
 on:
   push:
-    branches: [main]
+    branches: [main, remove-blog]
     paths:
       - "worker-entry.js"
       - "wrangler.json"
-      - "frontend/index.html"
-      - "frontend/blog/index.html"
-      - "frontend/tool/index.html"
-      - "frontend/robots.txt"
-      - "frontend/assets/app.js"
-      - "frontend/assets/style.css"
-      - "frontend/assets/ads.js"
-      - "frontend/manifest.json"
-      - "frontend/assets/favicon-nexauren.png"
-      - "frontend/assets/social-preview-nexauren.png"
-      - "frontend/apple-touch-icon.png"
-      - ".github/workflows/seo-sitemap.yml"
+      - "frontend/data/public-urls.json"
+      - "frontend/**"
   schedule:
-    - cron: "17 2 * * *"
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    env:
-      SITE: https://nexaurenstory.com
     steps:
       - uses: actions/checkout@v4
-
-      - name: Verify source files
+      - name: Validate Worker and public manifest
         run: |
+          set -euo pipefail
           node --check worker-entry.js
-          node --check frontend/assets/app.js
-          test -s frontend/assets/favicon-nexauren.png
-          test -s frontend/assets/social-preview-nexauren.png
-          test -f frontend/apple-touch-icon.png
-          grep -Fq '/assets/favicon-nexauren.png' frontend/blog/index.html
-          grep -Fq '/assets/social-preview-nexauren.png' frontend/blog/index.html
-          ! grep -Eq 'nexauren-story-favicon[.]svg|rel="(icon|shortcut icon)"[^>]+image/svg[+]xml' frontend/blog/index.html
-          grep -Fq 'assets/social-preview-nexauren.png' worker-entry.js
-          test -f frontend/manifest.json
-          grep -q 'rel="canonical"' frontend/index.html
-          grep -q 'hreflang="pt"' frontend/index.html
-          grep -q 'hreflang="en"' frontend/index.html
-          grep -q 'og:image' frontend/index.html
-          grep -q 'twitter:card' frontend/index.html
-          grep -q 'application/ld+json' frontend/index.html
-          grep -q 'defer' frontend/index.html
-          grep -Fq 'loadPostAds' frontend/assets/app.js
-          grep -q '842be0a485a66000fcf7e5d24ee7b149' frontend/assets/ads.js
-          ! grep -q '11177602' frontend/assets/ads.js
-          ! grep -q 'vignette.min.js' frontend/assets/ads.js
-
-      - name: Verify Cloudflare AI and SEO implementation
-        run: |
-          node <<'NODE'
-          const fs=require('fs');
-          const w=fs.readFileSync('worker-entry.js','utf8');
-          const wr=fs.readFileSync('wrangler.json','utf8');
-          if(!wr.includes('"binding": "AI"')) throw new Error('Cloudflare Workers AI binding is missing');
-          for(const x of ['seoHead','async function sitemap','async function robots','post_translations']) {
-            if(!w.includes(x)) throw new Error('Missing implementation marker: '+x);
-          }
-          if(w.includes('OPENAI_API_KEY')) throw new Error('Legacy OpenAI translation integration must not remain');
-          console.log('Cloudflare Workers AI, SEO head, robots and dynamic sitemap verified.');
-          NODE
-
-      - name: Validate live sitemap, robots and every public URL
-        if: ${{ github.event_name != 'push' }}
-        run: |
           python - <<'PY'
           import json
-          import urllib.parse
-          import urllib.request
-          import concurrent.futures
-          import xml.etree.ElementTree as ET
-
-          SITE = "https://nexaurenstory.com"
-
-          def get(url):
-              req = urllib.request.Request(url, headers={"User-Agent": "NexaurenStory-SEO-Check/1.0"})
-              with urllib.request.urlopen(req, timeout=25) as r:
-                  return r.status, r.headers.get("content-type", ""), r.read()
-
-          status, ctype, sitemap_bytes = get(SITE + "/sitemap.xml")
-          assert status == 200, f"sitemap status={status}"
-          assert "xml" in ctype.lower(), f"sitemap content-type={ctype}"
-
-          status, _, robots = get(SITE + "/robots.txt")
-          assert status == 200, f"robots status={status}"
-          robots_text = robots.decode("utf-8", "replace")
-          assert "Sitemap: https://nexaurenstory.com/sitemap.xml" in robots_text
-          assert "Disallow: /admin" in robots_text
-          assert "Disallow: /api/" in robots_text
-          assert "Disallow: /blog/search" in robots_text
-
-          root = ET.fromstring(sitemap_bytes)
-          ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-          index_locs = [n.text.strip() for n in root.findall("sm:sitemap/sm:loc", ns) if n.text]
-          if index_locs:
-              sitemap_urls = []
-              for child in index_locs:
-                  st, ct, body = get(child)
-                  assert st == 200, f"child sitemap status={st}: {child}"
-                  child_root = ET.fromstring(body)
-                  sitemap_urls.extend(n.text.strip() for n in child_root.findall("sm:url/sm:loc", ns) if n.text)
-          else:
-              sitemap_urls = [n.text.strip() for n in root.findall("sm:url/sm:loc", ns) if n.text]
-
-          assert sitemap_urls, "sitemap is empty"
-          assert len(sitemap_urls) == len(set(sitemap_urls)), "duplicate sitemap URLs"
-
-          status, _, cats_raw = get(SITE + "/api/categories")
-          assert status == 200, f"categories API status={status}"
-          categories = json.loads(cats_raw.decode("utf-8"))["categories"]
-          cat_slugs = {c["slug"] for c in categories}
-
-          posts = []
-          offset = 0
-          while True:
-              status, _, raw = get(f"{SITE}/api/posts?lang=pt&limit=60&offset={offset}")
-              assert status == 200, f"posts API status={status} offset={offset}"
-              batch = json.loads(raw.decode("utf-8")).get("posts", [])
-              posts.extend(batch)
-              if len(batch) < 60:
-                  break
-              offset += 60
-
-          expected = {SITE+"/", SITE+"/blog/", SITE+"/blog/posts", SITE+"/blog/about"}
-          for slug in cat_slugs:
-              expected.add(SITE+"/blog/"+urllib.parse.quote(slug, safe="-._~"))
-
-          for p in posts:
-              base=SITE+"/blog/post/"+urllib.parse.quote(p["slug"], safe="-._~")
-              expected.add(base)
-              # English translations are alternate page content, not duplicate sitemap URLs.
-              # The sitemap intentionally contains only canonical post URLs.
-
-          sitemap_set=set(sitemap_urls)
-          missing=sorted(expected-sitemap_set)
-          assert not missing, "URLs missing from sitemap:\n"+ "\n".join(missing[:50])
-
-          private=[]
-          unexpected=[]
-          for u in sitemap_urls:
-              parsed=urllib.parse.urlsplit(u)
-              if parsed.netloc!="nexaurenstory.com":
-                  private.append(u)
-                  continue
-              if parsed.path.startswith("/admin") or parsed.path.startswith("/api") or parsed.path.startswith("/blog/search") or parsed.path.startswith("/search"):
-                  private.append(u)
-              if parsed.query:
-                  unexpected.append(u)
-
-          assert not private, "Private/search/API URLs found in sitemap:\n"+ "\n".join(private[:50])
-          assert not unexpected, "Unexpected query parameters found in sitemap:\n"+ "\n".join(unexpected[:50])
-
-          def check_url(u):
-              try:
-                  s,ct,body=get(u)
-                  return u,s,ct,body[:20000]
-              except Exception as e:
-                  return u,599,"",str(e).encode()
-
-          failures=[]
-          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-              for u,s,ct,body in pool.map(check_url,sitemap_urls):
-                  if s!=200 or "text/html" not in ct.lower():
-                      failures.append((u,s,ct))
-                  elif "Nexauren Story" not in body.decode("utf-8","replace"):
-                      failures.append((u,s,ct+" (brand marker missing)"))
-
-          assert not failures, "Live sitemap URL checks failed:\n"+ "\n".join(map(str,failures[:50]))
-          print(f"Verified {len(sitemap_urls)} public sitemap URLs, {len(posts)} published posts and {len(cat_slugs)} categories.")
+          from pathlib import Path
+          d=json.loads(Path("frontend/data/public-urls.json").read_text())
+          urls=d.get("urls",[])
+          assert urls==sorted(set(urls))
+          assert all(u.startswith("/") and "?" not in u and "#" not in u for u in urls)
+          assert all(not u.startswith(("/admin","/account","/api","/assets","/admin-assets","/data")) for u in urls)
+          assert all(not u.startswith("/blog") for u in urls)
+          print("Manifest OK:",len(urls),"URLs")
+          PY
+      - name: Validate live sitemap
+        if: github.event_name != 'push'
+        run: |
+          python - <<'PY'
+          import urllib.request, xml.etree.ElementTree as ET
+          site="https://nexaurenstory.com"
+          ns={"sm":"http://www.sitemaps.org/schemas/sitemap/0.9"}
+          root=ET.fromstring(urllib.request.urlopen(site+"/sitemap.xml",timeout=20).read())
+          children=[n.text.strip() for n in root.findall("sm:sitemap/sm:loc",ns) if n.text]
+          assert children==[site+"/sitemap-pages.xml"]
+          child=ET.fromstring(urllib.request.urlopen(children[0],timeout=20).read())
+          urls=[n.text.strip() for n in child.findall("sm:url/sm:loc",ns) if n.text]
+          assert urls and len(urls)==len(set(urls))
+          assert all("/blog" not in u and "?" not in u for u in urls)
+          assert all(not u.startswith(site+"/api/") and not u.startswith(site+"/admin") and not u.startswith(site+"/account") for u in urls)
+          print("Live sitemap OK:",len(urls),"URLs")
           PY

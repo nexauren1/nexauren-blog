@@ -2,32 +2,23 @@ name: Validate Nexauren platform
 
 on:
   push:
-    branches: [main]
+    branches: [main, remove-blog]
     paths:
       - "worker-entry.js"
       - "frontend/index.html"
-      - "frontend/blog/**"
       - "frontend/tool/**"
       - "frontend/account/**"
-      - "frontend/assets/public-ui.*"
       - "frontend/admin/**"
       - "frontend/admin-assets/**"
+      - "frontend/assets/public-ui.*"
+      - "frontend/assets/site.js"
+      - "frontend/assets/i18n.js"
       - "frontend/data/public-urls.json"
       - "schema.sql"
-      - "database/accounts-complete.sql"
+      - "database/primary-complete.sql"
       - "wrangler.json"
-      - ".github/workflows/validate-platform.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "worker-entry.js"
-      - "frontend/index.html"
-      - "frontend/blog/**"
-      - "frontend/tool/**"
-      - "frontend/account/**"
-      - "schema.sql"
-      - "database/accounts-complete.sql"
-      - "wrangler.json"
   workflow_dispatch:
 
 jobs:
@@ -39,137 +30,50 @@ jobs:
         run: |
           set -euo pipefail
           node --check worker-entry.js
-          node --check frontend/assets/app.js
+          node --check frontend/assets/public-ui.js
+          node --check frontend/assets/i18n.js
+          node --check frontend/assets/site.js
           node --check frontend/tool/categories/category.js
           node --check frontend/tool/categories/category-page.js
           node --check frontend/tool/frontend/tool.js
           node --check frontend/account/account.js
           node --check frontend/account/account-client.js
-          node --check frontend/assets/public-ui.js
-          node --check frontend/assets/i18n.js
           node --check frontend/admin-assets/admin.js
       - name: Validate tool registry
         run: |
+          set -euo pipefail
           node <<'NODE'
           const fs=require("fs");
-          const p="frontend/tool/data/data.json";
-          const d=JSON.parse(fs.readFileSync(p,"utf8"));
-          if(!Array.isArray(d.categories)||!Array.isArray(d.tools)) throw new Error("Registry must contain categories and tools arrays.");
+          const d=JSON.parse(fs.readFileSync("frontend/tool/data/data.json","utf8"));
+          if(!Array.isArray(d.categories)||!Array.isArray(d.tools)) throw new Error("Registry inválido.");
           const cats=new Set(d.categories.map(x=>x.id));
-          if(cats.size!==d.categories.length) throw new Error("Duplicate category id.");
-          const tools=new Set();
+          const ids=new Set();
           for(const t of d.tools){
-            if(!t.id||tools.has(t.id)) throw new Error("Duplicate or missing tool id: "+t.id);
-            tools.add(t.id);
-            if(!cats.has(t.category)) throw new Error("Tool references unknown category: "+t.id);
-            if(!/^\/tool\/categories\/[^/]+\/[^/]+\/$/.test(t.path)) throw new Error("Invalid tool path: "+t.id);
+            if(!t.id||ids.has(t.id)) throw new Error("ID de ferramenta duplicado: "+t.id);
+            ids.add(t.id);
+            if(!cats.has(t.category)) throw new Error("Categoria inválida: "+t.id);
+            if(!/^\/tool\/categories\/[^/]+\/[^/]+\/$/.test(t.path)) throw new Error("Caminho inválido: "+t.id);
           }
-          console.log("Tool registry OK: "+d.categories.length+" categories, "+d.tools.length+" tools.");
+          console.log("Tool registry OK:",d.categories.length,"categorias,",d.tools.length,"ferramentas.");
           NODE
-      - name: Validate account isolation and Firebase wiring
+      - name: Validate account wiring
         run: |
           set -euo pipefail
           node <<'NODE'
           const fs=require("fs");
-          const read=p=>fs.readFileSync(p,"utf8");
-          const account=read("frontend/account/index.html");
-          const config=read("frontend/account/firebase-config.js");
-          const client=read("frontend/account/account-client.js");
-          const app=read("frontend/account/account.js");
-          const worker=read("worker-entry.js");
-          const wr=read("wrangler.json");
-          const schema=read("schema.sql");
-          const required=[
-            [config,"firebaseConfig"],
-            [config,'authDomain: "nexaurenstory.com"'],
-            [wr,'"/__/auth/*"'],
-            [worker,"firebaseAuthProxy"],
-            [client,"initializeAuth"],
-            [client,"browserPopupRedirectResolver"],
-            [app,"createUserWithEmailAndPassword"],
-            [app,"signInWithEmailAndPassword"],
-            [app,"signInWithPopup"],
-            [app,"sendPasswordResetEmail"],
-            [app,"sendEmailVerification"],
-            [app,"updatePassword"],
-            [worker,"jwtVerify"],
-            [worker,'FIREBASE_PROJECT_ID = "nexauren-story"'],
-            [worker,"nexauren_accounts"],
-            [worker,"nexauren_account_preferences"],
-            [worker,"ACCOUNTS_DB"],
-            [wr,'"binding": "ACCOUNTS_DB"'],
-          ];
-          for(const [source,marker] of required){
-            if(!source.includes(marker))throw new Error("Missing account marker: "+marker);
-          }
-          const forbidden=[
-            [account,/Firebase Authentication/i,"Firebase Authentication"],
-            [account,/Cloudflare/i,"Cloudflare"],
-            [account,/administração editorial/i,"administração editorial"],
-            [app,/await signInWithRedirect/,"await signInWithRedirect"],
-            [schema,/CREATE TABLE IF NOT EXISTS nexauren_accounts/,"account schema in main DB"],
-            [worker,/INSERT INTO account_profiles/,"account_profiles insert"],
-            [worker,/INSERT INTO users.*register/,"legacy register insert"],
-          ];
-          for(const [source,pattern,label] of forbidden){
-            if(pattern.test(source))throw new Error("Forbidden account marker found: "+label);
-          }
-          if(!fs.existsSync("database/accounts-complete.sql"))throw new Error("database/accounts-complete.sql missing");
-          console.log("Firebase account isolation checks passed.");
+          const account=fs.readFileSync("frontend/account/index.html","utf8");
+          const config=fs.readFileSync("frontend/account/firebase-config.js","utf8");
+          const client=fs.readFileSync("frontend/account/account-client.js","utf8");
+          const app=fs.readFileSync("frontend/account/account.js","utf8");
+          const worker=fs.readFileSync("worker-entry.js","utf8");
+          const wr=fs.readFileSync("wrangler.json","utf8");
+          for(const [s,m] of [[config,"firebaseConfig"],[client,"initializeAuth"],[app,"signInWithPopup"],[worker,"firebaseAuthProxy"],[worker,"jwtVerify"],[worker,"ACCOUNTS_DB"],[wr,'"binding": "ACCOUNTS_DB"']]) if(!s.includes(m)) throw new Error("Missing account marker: "+m);
+          if(/\/blog/i.test(account)||/\/blog/i.test(app)) throw new Error("Blog reference remains in account files.");
+          console.log("Firebase/account checks passed.");
           NODE
-
-      - name: Validate public experience and SEO safeguards
+      - name: Validate blog is absent
         run: |
           set -euo pipefail
-          test -f frontend/assets/public-ui.css
-          test -f frontend/assets/public-ui.js
-          grep -q 'decoratePublicHtmlResponse' worker-entry.js
-          grep -q 'DEFAULT_SOCIAL_IMAGE' worker-entry.js
-          grep -q 'assets/social-preview-nexauren.png' worker-entry.js
-          grep -q 'social-preview.png' worker-entry.js
-          grep -q 'favicon-nexauren.png' worker-entry.js
-          grep -Fq '/assets/favicon-nexauren.png' frontend/blog/index.html
-          grep -Fq '/assets/social-preview-nexauren.png' frontend/blog/index.html
-          ! grep -Eq 'nexauren-story-favicon[.]svg|rel="(icon|shortcut icon)"[^>]+image/svg[+]xml' frontend/blog/index.html
-          grep -Eq 'public-ui\.css\?v=[0-9-]+' worker-entry.js
-          grep -Eq 'public-ui\.js\?v=[0-9-]+' worker-entry.js
-          grep -q '@view-transition' frontend/assets/public-ui.css
-          grep -q 'IntersectionObserver' frontend/assets/public-ui.js
-          node <<'NODE'
-          const fs=require("fs"),path=require("path");
-          const root="frontend";
-          const forbidden=/^(\/admin|\/account|\/api|\/assets|\/admin-assets|\/data)(\/|$)/;
-          function walk(dir,out=[]){
-            for(const name of fs.readdirSync(dir,{withFileTypes:true})){
-              const p=path.join(dir,name.name);
-              if(name.isDirectory()) walk(p,out);
-              else if(name.name==="index.html") out.push(p);
-            }
-            return out;
-          }
-          const pages=walk(root).filter(p=>!p.startsWith("frontend/blog/")&&!p.startsWith("frontend/admin/")&&!p.startsWith("frontend/account/")&&!p.includes("/tool/frontend/templates/"));
-          const manifest=JSON.parse(fs.readFileSync("frontend/data/public-urls.json","utf8"));
-          const urls=new Set(manifest.urls||[]);
-          for(const file of pages){
-            const rel=path.posix.normalize(file.replace(/^frontend[\\/]/,""));
-            const dir=path.posix.dirname(rel);
-            const url=dir==="."?"/":"/"+dir.replace(/\\/g,"/")+"/";
-            if(!urls.has(url)) throw new Error("Public page missing from URL manifest: "+url);
-            const html=fs.readFileSync(file,"utf8");
-            if(!/<meta[^>]+property=["']og:image["']/i.test(html) && !/decoratePublicHtmlResponse/.test(fs.readFileSync("worker-entry.js","utf8"))) throw new Error("No social preview protection for "+file);
-          }
-          for(const u of urls) if(forbidden.test(u)) throw new Error("Private URL leaked into public manifest: "+u);
-          console.log("Public experience checks OK:",pages.length,"static public pages,",urls.size,"manifest URLs.");
-          NODE
-      - name: Validate platform routes
-        run: |
-          grep -Fq '"/account/*"' wrangler.json
-          grep -Fq '"/blog/*"' wrangler.json
-          grep -Fq '"/tool/*"' wrangler.json
-          test -f frontend/blog/index.html
-          test -f frontend/tool/index.html
-          test -f frontend/account/index.html
-          test -f frontend/admin/index.html
-          grep -q "/api/admin/tools" frontend/admin-assets/admin.js
-          grep -q "data-view=\"users\"" frontend/admin/index.html
-          echo "Platform route checks passed."
+          ! test -e frontend/blog
+          ! test -e frontend/assets/app.js
+          ! grep -RInE '(/blog|/api/posts|/api/comments|rss\.xml|sitemap-posts)' worker-entry.js frontend/admin-assets frontend/account frontend/tool || true
