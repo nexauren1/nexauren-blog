@@ -260,7 +260,9 @@ async function offlineEffect(buffer,effect,amount,randomize){
   if(effect==="echo")outputDuration+=source.duration*.8;
   if(effect==="delay")outputDuration+=source.duration*.5;
   if(effect==="reverb")outputDuration+=1.2;
-  const context=new OfflineAudioContext(Math.max(1,Math.min(2,source.numberOfChannels)),Math.max(1,Math.ceil(sampleRate*outputDuration)),sampleRate);
+  const OfflineCtor=offlineAudioContextCtor();
+  if(!OfflineCtor)throw new Error("Offline Web Audio is not supported by this browser.");
+  const context=new OfflineCtor(Math.max(1,Math.min(2,source.numberOfChannels)),Math.max(1,Math.ceil(sampleRate*outputDuration)),sampleRate);
   const sourceNode=context.createBufferSource();
   sourceNode.buffer=source;
   const jitter=randomize?(Math.random()-.5)*(intensity/100)*.08:0;
@@ -420,8 +422,26 @@ function makeVariationPlan(quantity,includeOriginal){
   }
   return plan;
 }
+async function audioContextCtor(){return globalThis.AudioContext||globalThis.webkitAudioContext||null}
+function offlineAudioContextCtor(){return globalThis.OfflineAudioContext||globalThis.webkitOfflineAudioContext||null}
+function isAudioFile(file){
+  if(!file)return false;
+  if(file.type&&file.type.toLowerCase().startsWith("audio/"))return true;
+  return /\\.(wav|mp3|m4a|aac|ogg|oga|flac|webm|aif|aiff|opus)$/i.test(file.name||"");
+}
 async function decodeAudio(file){
-  const ctx=new AudioContext();try{return await ctx.decodeAudioData(await file.arrayBuffer())}finally{await ctx.close().catch(()=>{})}
+  const Ctor=audioContextCtor();
+  if(!Ctor)throw new Error("Web Audio API is not supported by this browser.");
+  const ctx=new Ctor();
+  try{
+    const data=await file.arrayBuffer();
+    return await new Promise(function(resolve,reject){
+      const done=buffer=>resolve(buffer);
+      const fail=error=>reject(error||new Error("Audio decoding failed."));
+      const result=ctx.decodeAudioData(data,done,fail);
+      if(result&&typeof result.then==="function")result.then(done).catch(fail);
+    });
+  }finally{await ctx.close().catch(()=>{})}
 }
 function renderCreateSource(){
   const el=$("#create-source");if(!state.source){el.hidden=true;return}
@@ -431,7 +451,7 @@ function setGenerateState(){
   $("#generate-pack").disabled=!state.sourceBuffer||state.sourceBuffer.length<1;
 }
 async function loadCreateFile(file){
-  if(!file||!file.type.startsWith("audio/")){notify(t("noAudio"),true);return}
+  if(!isAudioFile(file)){notify(t("noAudio"),true);return}
   try{state.source=file;state.sourceBuffer=await decodeAudio(file);renderCreateSource();setGenerateState();$("#create-status").textContent=t("sourceLoaded",{name:file.name})}catch{state.source=null;state.sourceBuffer=null;notify(t("generateError"),true);setGenerateState()}
 }
 function setCustomField(){const show=$("#sample-type").value==="custom";$("#custom-type-field").hidden=!show}
