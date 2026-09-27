@@ -440,6 +440,117 @@ function makeVariationPlan(quantity,includeOriginal){
   for(let i=plan.length;i<quantity;i++)plan.push(EFFECTS[i%EFFECTS.length]);
   return plan;
 }
+function openModal(kind){
+  state.modalOpen=kind;
+  const el=$("#"+kind+"-modal");
+  if(!el)return;
+  el.hidden=false;
+  el.setAttribute("aria-hidden","false");
+  document.body.classList.add("sp-modal-open");
+  if(kind==="effects")renderEffectsModal();else renderOptionsModal();
+}
+function closeModal(){
+  if(!state.modalOpen)return;
+  const el=$("#"+state.modalOpen+"-modal");
+  if(el){el.hidden=true;el.setAttribute("aria-hidden","true");}
+  state.modalOpen=null;
+  document.body.classList.remove("sp-modal-open");
+}
+function effectCardHtml(item){
+  const selected=state.selectedEffects.includes(item.id)?" selected":"";
+  const name=t(item.key);
+  const desc=state.lang==="en"?item.descEn:item.descPt;
+  return '<button class="sp-effect-card'+selected+'" type="button" data-effect="'+esc(item.id)+'"><span class="sp-effect-icon">'+item.icon+'</span><span class="sp-effect-copy"><b>'+esc(name)+'</b><small>'+esc(desc)+'</small></span><span class="sp-effect-check">✓</span></button>';
+}
+function presetLabel(id){
+  const map={diverse:"presetDiverse",drum:"presetDrum",motion:"presetMotion",space:"presetSpace",lofi:"presetLofi",tight:"presetTight",long:"presetLong"};
+  return t(map[id]||"presetDiverse");
+}
+function renderEffectsModal(){
+  const el=$("#effects-modal");
+  if(!el)return;
+  const groups=EFFECT_GROUPS.map(function(group){
+    const cards=EFFECT_CATALOG.filter(function(item){return item.group===group.id;}).map(effectCardHtml).join("");
+    return '<section class="sp-effect-group"><h3>'+esc(t(group.key))+'</h3><div class="sp-effect-grid">'+cards+'</div></section>';
+  }).join("");
+  const presets=Object.keys(EFFECT_PRESETS).map(function(id){
+    return '<button class="sp-preset'+(state.effectPreset===id?" active":"")+'" type="button" data-effect-preset="'+id+'">'+esc(presetLabel(id))+'</button>';
+  }).join("");
+  el.innerHTML='<div class="sp-modal-backdrop" data-modal-close></div><section class="sp-modal-panel" role="dialog" aria-modal="true"><div class="sp-modal-head"><div><span class="sp-kicker">'+esc(t("effectsTitle"))+'</span><h2>'+esc(t("chooseEffects"))+'</h2><p>'+esc(t("effectsHelp"))+'</p></div><button class="sp-modal-close" data-modal-close type="button">×</button></div><div class="sp-preset-row"><span>'+esc(t("presets"))+'</span>'+presets+'</div>'+groups+'<div class="sp-modal-foot"><span>'+esc(t("effectsSelected",{n:state.selectedEffects.length,max:state.generation.maxEffects}))+'</span><div><button class="sp-secondary" data-modal-close type="button">'+esc(t("cancel"))+'</button><button class="sp-primary" data-effects-apply type="button">'+esc(t("effectsApply"))+'</button></div></div></section>';
+  el.querySelectorAll("[data-effect]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      const id=btn.dataset.effect;
+      if(state.selectedEffects.includes(id)){
+        if(state.selectedEffects.length===1)return;
+        state.selectedEffects=state.selectedEffects.filter(function(x){return x!==id;});
+      }else{
+        state.selectedEffects.push(id);
+      }
+      state.effectPreset=null;
+      renderEffectsModal();
+    });
+  });
+  el.querySelectorAll("[data-effect-preset]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      const id=btn.dataset.effectPreset;
+      state.effectPreset=id;
+      state.selectedEffects=EFFECT_PRESETS[id].slice();
+      renderEffectsModal();
+    });
+  });
+  el.querySelectorAll("[data-modal-close]").forEach(function(btn){btn.addEventListener("click",closeModal);});
+  el.querySelector("[data-effects-apply]")?.addEventListener("click",function(){renderSettingsSummary();closeModal();});
+}
+function renderOptionsModal(){
+  const el=$("#options-modal");
+  if(!el)return;
+  const optionSelect=function(id,labelKey,options){
+    return '<label><span>'+esc(t(labelKey))+'</span><select id="'+id+'">'+options+'</select></label>';
+  };
+  const typeOptions=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","custom"].map(function(type){return '<option value="'+type+'">'+esc(t(type==="hi-hat"?"hihat":type))+'</option>';}).join("");
+  const lengthOptions='<option value="preserve">'+esc(t("lengthPreserve"))+'</option><option value="mixed">'+esc(t("lengthMixed"))+'</option><option value="short">'+esc(t("lengthShort"))+'</option><option value="long">'+esc(t("lengthLong"))+'</option>';
+  el.innerHTML='<div class="sp-modal-backdrop" data-modal-close></div><section class="sp-modal-panel compact" role="dialog" aria-modal="true"><div class="sp-modal-head"><div><span class="sp-kicker">'+esc(t("optionsTitle"))+'</span><h2>'+esc(t("optionsTitle"))+'</h2><p>'+esc(t("optionsHelp"))+'</p></div><button class="sp-modal-close" data-modal-close type="button">×</button></div><div class="sp-options-grid">'+
+    optionSelect("modal-sample-type","sampleType",typeOptions)+
+    '<label id="modal-custom-wrap" hidden><span>'+esc(t("customType"))+'</span><input id="modal-custom-type" maxlength="32"></label>'+
+    '<label><span>'+esc(t("quantity"))+'</span><div class="sp-range-row"><input id="modal-quantity" type="range" min="1" max="24" value="'+state.generation.quantity+'"><output id="modal-quantity-value">'+state.generation.quantity+'</output></div></label>'+
+    '<label><span>'+esc(t("variation"))+'</span><div class="sp-range-row"><input id="modal-variation" type="range" min="0" max="100" value="'+state.generation.variation+'"><output id="modal-variation-value">'+state.generation.variation+'%</output></div></label>'+
+    optionSelect("modal-max-effects","maxEffects",'<option value="1">1</option><option value="2">2</option><option value="3">3</option>')+
+    optionSelect("modal-length","lengthMode",lengthOptions)+
+    '<label class="sp-check"><input id="modal-original" type="checkbox" '+(state.generation.includeOriginal?"checked":"")+'><span>'+esc(t("includeOriginal"))+'</span></label>'+
+    '<label class="sp-check"><input id="modal-randomize" type="checkbox" '+(state.generation.randomize?"checked":"")+'><span>'+esc(t("randomize"))+'</span></label>'+
+    '<label class="sp-check"><input id="modal-effect-naming" type="checkbox" '+(state.generation.effectNaming?"checked":"")+'><span>'+esc(t("effectNaming"))+'</span></label>'+
+    '<label class="sp-check"><input id="modal-normalize" type="checkbox" '+(state.generation.normalize?"checked":"")+'><span>'+esc(t("outputNormalize"))+'</span></label>'+
+    '</div><div class="sp-modal-foot"><span>'+esc(t("saved"))+'</span><div><button class="sp-secondary" data-modal-close type="button">'+esc(t("cancel"))+'</button><button class="sp-primary" data-options-apply type="button">'+esc(t("saved"))+'</button></div></div></section>';
+  const typeEl=el.querySelector("#modal-sample-type");
+  typeEl.value=$("#sample-type").value;
+  el.querySelector("#modal-custom-type").value=$("#custom-type").value;
+  el.querySelector("#modal-max-effects").value=String(state.generation.maxEffects);
+  el.querySelector("#modal-length").value=state.generation.lengthMode;
+  const customWrap=el.querySelector("#modal-custom-wrap");
+  const syncCustom=function(){customWrap.hidden=typeEl.value!=="custom";};
+  typeEl.addEventListener("change",syncCustom);syncCustom();
+  el.querySelector("#modal-quantity").addEventListener("input",function(e){el.querySelector("#modal-quantity-value").textContent=e.target.value;});
+  el.querySelector("#modal-variation").addEventListener("input",function(e){el.querySelector("#modal-variation-value").textContent=e.target.value+"%";});
+  el.querySelectorAll("[data-modal-close]").forEach(function(btn){btn.addEventListener("click",closeModal);});
+  el.querySelector("[data-options-apply]")?.addEventListener("click",function(){
+    $("#sample-type").value=typeEl.value;
+    $("#custom-type").value=el.querySelector("#modal-custom-type").value;
+    state.generation={
+      quantity:Number(el.querySelector("#modal-quantity").value),
+      variation:Number(el.querySelector("#modal-variation").value),
+      maxEffects:Number(el.querySelector("#modal-max-effects").value),
+      lengthMode:el.querySelector("#modal-length").value,
+      includeOriginal:el.querySelector("#modal-original").checked,
+      randomize:el.querySelector("#modal-randomize").checked,
+      effectNaming:el.querySelector("#modal-effect-naming").checked,
+      normalize:el.querySelector("#modal-normalize").checked
+    };
+    setCustomField();
+    updateLegacyControls();
+    renderSettingsSummary();
+    closeModal();
+  });
+}
 async function generateSamples(){
   if(!state.sourceBuffer){notify(t("chooseFile"),true);return}
   const quantity=Number($("#quantity").value)||8,amount=Number($("#variation").value)||55,includeOriginal=$("#include-original").checked,randomize=$("#randomize").checked,type=createTypeFolder();
