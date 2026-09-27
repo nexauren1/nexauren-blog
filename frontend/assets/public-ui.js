@@ -247,7 +247,7 @@
       const href=link.getAttribute("href")||"";
       if(!href||href.startsWith("#")||href.startsWith("mailto:")||href.startsWith("tel:"))return;
       let target;try{target=new URL(href,location.href)}catch{return}
-      if(target.origin!==location.origin||target.pathname.startsWith("/blog"))return;
+      if(target.origin!==location.origin||false)return;
       if(target.pathname===location.pathname&&target.search===location.search)return;
       show();
     },{capture:true});
@@ -261,7 +261,7 @@
       const href=link.getAttribute("href")||"";
       if(!href||href.startsWith("#")||href.startsWith("mailto:")||href.startsWith("tel:"))return;
       let target;try{target=new URL(href,location.href);}catch{return}
-      if(target.origin!==location.origin||target.pathname.startsWith("/blog"))return;
+      if(target.origin!==location.origin||false)return;
       if(target.href===location.href)return;
       document.body.classList.add("nx-leaving");
       window.setTimeout(()=>document.body.classList.remove("nx-leaving"),420);
