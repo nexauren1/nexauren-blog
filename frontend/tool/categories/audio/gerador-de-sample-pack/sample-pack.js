@@ -208,7 +208,7 @@ function makeReadme(info,items){
   const rows=items.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+esc(x.folder)+'</td><td>'+esc(x.kind)+'</td><td>'+esc(bytes(x.size))+'</td></tr>').join("");
   return '<!doctype html><html><head><meta charset="utf-8"><title>'+esc(t("readmeTitle"))+'</title><style>body{font-family:Arial,sans-serif;background:#0b0e13;color:#eef2f7;max-width:900px;margin:40px auto;padding:20px;line-height:1.6}a{color:#75e0ff}table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:9px;border-bottom:1px solid #27303a;text-align:left}small{color:#9da7b5}</style></head><body><h1>'+esc(info.packName)+'</h1><p>'+esc(info.description||"")+'</p><h2>'+esc(t("readmeTitle"))+'</h2><p><strong>Author:</strong> '+esc(info.author||"—")+'<br><strong>Genre:</strong> '+esc(info.style||"—")+'<br><strong>BPM:</strong> '+esc(info.bpm||"—")+'<br><strong>Key:</strong> '+esc(info.key||"—")+'<br><strong>Samples:</strong> '+items.length+'<br><strong>Created:</strong> '+esc(info.createdAt)+'</p><p><a href="'+TOOL_URL+'">'+esc(t("readmeBack"))+' ↗</a></p><table><thead><tr><th>File</th><th>Folder</th><th>Type</th><th>Size</th></tr></thead><tbody>'+rows+'</tbody></table><p><small>'+esc(t("coverMade"))+'</small></p></body></html>';
 }
-async async function zipPack(info,items,password,includeCover=true){
+async function zipPack(info,items,password,includeCover=true){
   if(!state.zipLib)state.zipLib=await import(ZIPJS_URL);
   const {ZipWriter,BlobWriter,BlobReader,TextReader}=state.zipLib;
   const writer=new ZipWriter(new BlobWriter("application/zip"),password?{password,encryptionStrength:3,level:6}:{level:6});
