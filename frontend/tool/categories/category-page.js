@@ -176,7 +176,7 @@
     count.textContent=results.length+" "+(language==="en"?"of ":"de ")+state.tools.length+(state.tools.length===1?" "+ui.tool:" "+ui.toolsPlural);
     grid.innerHTML=results.map(card).join("");
     empty.hidden=results.length>0;empty.style.display=results.length>0?"none":"";
-    empty.innerHTML=state.query||state.tag||state.access!=="all"
+    empty.innerHTML=state.query||state.tag||state.group||state.access!=="all"
       ? "<strong>"+ui.noTools+"</strong><br>"+ui.noToolsHint
       : "<strong>"+ui.ready+"</strong><br>"+ui.empty;
     grid.hidden=results.length===0;grid.style.display=results.length===0?"none":"";
@@ -322,9 +322,8 @@
       accessApi=await import("/tool/frontend/tool-access.js?v=20260923-access-2");
       accessApi.onAuthStateChanged(accessApi.auth,async currentUser=>{
         user=currentUser;
-        if(!user){accountGate();return}
         await load();
-        refreshPlan();
+        if(user)refreshPlan();
       });
     }catch{
       accountGate();
