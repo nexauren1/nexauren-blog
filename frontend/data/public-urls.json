@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "generatedAt": "2026-09-26T17:53:48.193396Z",
+  "version": 4,
+  "generatedAt": "2026-09-27T21:30:00+02:00",
   "urls": [
     "/",
     "/ad-test/",
@@ -9,6 +9,7 @@
     "/legal/termos/",
     "/tool/",
     "/tool/avaliacoes/",
+    "/tool/categories/audio/",
     "/tool/categories/imagem/",
     "/tool/categories/imagem/favicon-generator/",
     "/tool/categories/imagem/image-compressor/",
