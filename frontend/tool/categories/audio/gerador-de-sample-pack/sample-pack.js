@@ -212,7 +212,7 @@ async function zipPack(info,items,password,includeCover=true){
   if(!state.zipLib)state.zipLib=await import(ZIPJS_URL);
   const {ZipWriter,BlobWriter,BlobReader,TextReader}=state.zipLib;
   const writer=new ZipWriter(new BlobWriter("application/zip"),password?{password,encryptionStrength:3,level:6}:{level:6});
-  await writer.add("README.html",new TextReader(makeReadme(info,items)));
+  await writer.add("README.html",new TextReader(makeReadme(info,items)));\n  await writer.add("README.txt",new TextReader(makeReadmeText(info,items)));
   await writer.add("pack-info.json",new TextReader(JSON.stringify(info,null,2)));
   if(includeCover)await writer.add("cover.svg",new TextReader(makeCoverSvg(info)));
   for(const item of items)await writer.add(item.folder+"/"+item.name,new BlobReader(item.blob));
@@ -221,6 +221,8 @@ async function zipPack(info,items,password,includeCover=true){
 function packInfoBase(name,author,style,bpm,key,mode){
   return {packName:name,author,style,bpm,key,mode,createdAt:new Date().toISOString(),tool:"Nexauren Sample Pack Studio",toolUrl:TOOL_URL,language:state.lang};
 }
+function trackUse(){fetch("/api/tools/events",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({tool_id:"gerador-de-sample-pack"})}).catch(()=>{})}
+function makeReadmeText(info,items){return [info.packName,"","Created with Nexauren Sample Pack Studio","",`Author: ${info.author||"—"}`,`Genre: ${info.style||"—"}`,`BPM: ${info.bpm||"—"}`,`Key: ${info.key||"—"}`,`Files: ${items.length}`,`Created: ${info.createdAt}`,"",`Nexauren: ${TOOL_URL}`,"",...items.map(x=>`${x.folder}/${x.name} · ${x.kind} · ${bytes(x.size)}`)].join("\n")}
 function getCreateItems(){
   const type=createTypeFolder();
   return state.generated.map(item=>({name:item.name,folder:safeFileName(type).replace(/\s+/g,"-").toUpperCase(),kind:item.effect,size:item.blob.size,blob:item.blob}));
@@ -232,10 +234,10 @@ async function createZip(){
   $("#download-created").disabled=true;$("#create-status").textContent=t("zipping");
   try{
     const info=packInfoBase($("#pack-name").value.trim()||"Nexauren Sample Pack",$("#pack-author").value.trim(),$("#pack-style").value.trim(),$("#pack-bpm").value.trim(),$("#pack-key").value.trim(),"create");
-    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
+    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
     info.description="Generated locally from one source sample.";
     const items=getCreateItems();state.zipBlob=await zipPack(info,items,passwordEnabled?password:"",$("#include-cover").checked);
-    $("#download-created").disabled=false;downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
+    $("#download-created").disabled=false;trackUse();downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
     $("#created-summary").textContent=t("generatedSummary",{n:items.length,type:info.typeName,duration:formatSeconds(info.sourceDuration)});
   }catch(e){console.error(e);notify(t("zipError"),true)}finally{$("#download-created").disabled=!state.zipBlob;$("#create-status").textContent=t("doneCreate",{n:state.generated.length})}
 }
@@ -271,7 +273,7 @@ async function organizeZip(){
     });
     info.fileCount=items.length;info.folders=Object.fromEntries([...counts.entries()]);info.description="Organized locally from uploaded audio files.";
     state.orgZipBlob=await zipPack(info,items,passwordEnabled?password:"",false);
-    $("#org-results").hidden=false;$("#download-organized").disabled=false;
+    $("#org-results").hidden=false;$("#download-organized").disabled=false;trackUse();
     $("#org-summary").textContent=t("orgSummary",{n:items.length,cats:counts.size});
     downloadBlob(state.orgZipBlob,slug(info.packName)+".zip");notify(t("doneOrg",{n:items.length}));
   }catch(e){console.error(e);notify(t("zipError"),true)}finally{$("#organize-pack").disabled=!state.orgFiles.length;$("#org-status").textContent=t("doneOrg",{n:state.orgFiles.length})}
