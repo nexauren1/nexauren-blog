@@ -52,7 +52,7 @@ const I18N={
     normalizeNames:"Renomear ficheiros de forma consistente",organizeSecurity:"ZIP e segurança",reviewFiles:"Rever categorias",autoDetected:"Detetado automaticamente pelo nome",
     organizeStatusHint:"Pode alterar cada categoria antes de criar o ZIP.",organizeButton:"Organizar e baixar ZIP",doneKicker:"CONCLUÍDO",packReady:"O seu pack está pronto.",
     kick:"Kick",snare:"Snare",clap:"Clap",hihat:"Hi-Hat",percussion:"Percussão",bass:"Bass",guitar:"Guitarra",pad:"Pad",melody:"Melodia",vocal:"Voz",fx:"FX",custom:"Personalizado",
-    chooseFile:"Escolha primeiro um ficheiro de áudio.",chooseMany:"Adicione pelo menos um ficheiro de áudio.",generateError:"Não foi possível processar o áudio neste navegador.",
+    chooseFile:"Escolha primeiro um ficheiro de áudio.",chooseMany:"Adicione pelo menos um ficheiro de áudio.",generateError:"Não foi possível processar o áudio pelo navegador.",
     wrongPassword:"Use uma senha com pelo menos 4 caracteres.",zipError:"Não foi possível criar o ZIP.",doneCreate:"Pack criado com {n} samples.",doneOrg:"Pack organizado criado com {n} ficheiros.",
     categoryOther:"Outros",fileCount:"{n} ficheiros",sourceLoaded:"Origem carregada · {name}",readyFiles:"{n} ficheiros prontos",creating:"A gerar samples…",zipping:"A criar ZIP…",
     generatedSummary:"{n} samples · {type} · origem com {duration}s · processamento local.",orgSummary:"{n} ficheiros organizados em {cats} pastas.",coverTitle:"Nexauren Sample Pack",
