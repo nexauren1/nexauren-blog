@@ -15,7 +15,7 @@
   const descriptionMeta=document.querySelector('meta[name="description"]');
   if(descriptionMeta)descriptionMeta.setAttribute("content",pageDescription);
 
-  const iconSvg=id=>({produtividade:"◷",texto:"Aa",imagem:"▧",tecnologia:"⌘"}[id]||"✦");
+  const iconSvg=id=>({produtividade:"◷",texto:"Aa",imagem:"▧",tecnologia:"⌘",marketplace:"🛒",pdf:"▤",audio:"♫"}[id]||"✦");
   let categories=[],tools=[],isPro=false,user=null,accessApi=null,registryReady=false;
 
   const categoryCard=c=>'<a class="tool-card category-card cat-'+esc(c.id)+' nx-spotlight nx-reveal" href="'+esc(c.path||("/tool/categories/"+c.id+"/"))+'"><div class="tool-card-top"><span class="tool-card-icon">'+iconSvg(c.id)+'</span><span class="tool-arrow">→</span></div><h2>'+esc(label(c,"name"))+"</h2><p>"+esc(label(c,"description"))+"</p><small>"+Number(c.count||0)+" "+(language==="en"?(Number(c.count||0)===1?"tool":"tools"):(Number(c.count||0)===1?"ferramenta":"ferramentas"))+"</small></a>";

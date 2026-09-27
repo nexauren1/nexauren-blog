@@ -1,6 +1,6 @@
 {
-  "version": 4,
-  "generatedAt": "2026-09-27T21:30:00+02:00",
+  "version": 5,
+  "generatedAt": "2026-09-27T21:45:00+02:00",
   "urls": [
     "/",
     "/ad-test/",
@@ -10,6 +10,7 @@
     "/tool/",
     "/tool/avaliacoes/",
     "/tool/categories/audio/",
+    "/tool/categories/audio/gerador-de-sample-pack/",
     "/tool/categories/imagem/",
     "/tool/categories/imagem/favicon-generator/",
     "/tool/categories/imagem/image-compressor/",
