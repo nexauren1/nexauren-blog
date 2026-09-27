@@ -35,7 +35,7 @@ jobs:
           ROOT = Path("frontend")
           SITEMAP_EXCLUDED = (
               "/admin", "/account", "/api", "/assets",
-              "/admin-assets", "/data", "/blog",
+              "/admin-assets", "/data",
               "/tool/frontend/templates/"
           )
 
