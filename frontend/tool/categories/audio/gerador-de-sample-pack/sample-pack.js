@@ -177,39 +177,241 @@ function normalizeBuffer(buffer){
   for(let c=0;c<out.numberOfChannels;c++){const data=out.getChannelData(c);for(let i=0;i<data.length;i++)data[i]*=gain}
   return out;
 }
-async function renderEffect(buffer,effect,amount,randomize){
-  let work=buffer;
-  if(effect==="reverse")work=reverseBuffer(buffer);
-  if(effect==="short")work=sliceBuffer(buffer,.05,.72);
-  if(effect==="punch")work=sliceBuffer(buffer,0,.92);
-  const rateBase={original:1,up:1.12,down:.89,bright:1,dark:1,punch:1,soft:1,short:1,reverse:1}[effect]||1;
-  const jitter=randomize?(Math.random()-.5)*(.1*(amount/100)):0;
-  const rate=Math.max(.55,Math.min(1.55,rateBase+jitter));
-  const duration=work.duration/rate+.12;
-  const context=new OfflineAudioContext(Math.min(2,work.numberOfChannels),Math.max(1,Math.ceil(work.sampleRate*duration)),work.sampleRate);
-  const src=context.createBufferSource();src.buffer=work;src.playbackRate.value=rate;
-  let node=src;
-  if(effect==="bright"){const f=context.createBiquadFilter();f.type="highshelf";f.frequency.value=3500;f.gain.value=4+(amount/100)*5;node.connect(f);node=f}
-  if(effect==="dark"){const f=context.createBiquadFilter();f.type="lowpass";f.frequency.value=5000-(amount/100)*2200;node.connect(f);node=f}
-  if(effect==="punch"){const f=context.createBiquadFilter();f.type="peaking";f.frequency.value=110;f.Q.value=1.2;f.gain.value=3+(amount/100)*5;node.connect(f);node=f}
-  if(effect==="soft"){const f=context.createBiquadFilter();f.type="lowpass";f.frequency.value=11000-(amount/100)*3500;node.connect(f);node=f}
-  const gain=context.createGain();gain.gain.value=effect==="soft"?.88:(.98+(amount/100)*.12);node.connect(gain);gain.connect(context.destination);
-  src.start();
-  const rendered=await context.startRendering();
-  return normalizeBuffer(rendered);
+
+function concatBuffers(parts){
+  const valid=parts.filter(Boolean);
+  if(!valid.length)return null;
+  const channels=Math.max(...valid.map(function(b){return b.numberOfChannels;}));
+  const rate=valid[0].sampleRate;
+  const length=valid.reduce(function(total,b){return total+b.length;},0);
+  const out=new AudioBuffer({length,numberOfChannels:channels,sampleRate:rate});
+  let offset=0;
+  valid.forEach(function(b){
+    for(let c=0;c<channels;c++)out.getChannelData(c).set(b.getChannelData(Math.min(c,b.numberOfChannels-1)),offset);
+    offset+=b.length;
+  });
+  return out;
 }
-const EFFECTS=["original","up","down","reverse","bright","dark","punch","soft","short"];
+function repeatSlice(buffer,start,end,count){
+  const slice=sliceBuffer(buffer,start,end);
+  const parts=[];
+  for(let i=0;i<count;i++)parts.push(i%2?reverseBuffer(slice):slice);
+  return concatBuffers(parts);
+}
+function bounceBuffer(buffer){
+  const a=sliceBuffer(buffer,0,.62);
+  const b=sliceBuffer(buffer,.18,1);
+  const parts=[];
+  for(let i=0;i<4;i++)parts.push(i%2?reverseBuffer(b):a);
+  return sliceBuffer(concatBuffers(parts),0,.78);
+}
+function chopBuffer(buffer){
+  const a=sliceBuffer(buffer,0,.2);
+  const b=sliceBuffer(buffer,.42,.58);
+  const c=sliceBuffer(buffer,.78,1);
+  return concatBuffers([a,b,reverseBuffer(a),c,b]);
+}
+function bitcrushBuffer(buffer,bits,hold){
+  const out=copyBuffer(buffer);
+  const levels=Math.pow(2,bits-1);
+  for(let c=0;c<out.numberOfChannels;c++){
+    const data=out.getChannelData(c);
+    let held=0;
+    for(let i=0;i<data.length;i++){
+      if(i%hold===0)held=Math.round(data[i]*levels)/levels;
+      data[i]=held;
+    }
+  }
+  return out;
+}
+function distortionCurve(amount){
+  const curve=new Float32Array(8192);
+  const drive=1+amount/16;
+  for(let i=0;i<curve.length;i++){
+    const x=i*2/curve.length-1;
+    curve[i]=(3+drive)*x*20*Math.PI/180/(Math.PI+drive*Math.abs(x));
+  }
+  return curve;
+}
+function makeImpulse(context,duration,decay){
+  const length=Math.floor(context.sampleRate*duration);
+  const buffer=context.createBuffer(2,length,context.sampleRate);
+  for(let c=0;c<2;c++){
+    const data=buffer.getChannelData(c);
+    for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/length,decay);
+  }
+  return buffer;
+}
+async function offlineEffect(buffer,effect,amount,randomize){
+  const source=buffer;
+  const sampleRate=source.sampleRate;
+  const intensity=Math.max(0,Math.min(100,amount));
+  let outputDuration=source.duration;
+  if(effect==="pitch-up")outputDuration/=1.18;
+  if(effect==="pitch-down")outputDuration/=.84;
+  if(effect==="long")outputDuration/=.72;
+  if(effect==="echo")outputDuration+=source.duration*.8;
+  if(effect==="delay")outputDuration+=source.duration*.5;
+  if(effect==="reverb")outputDuration+=1.2;
+  const context=new OfflineAudioContext(Math.max(1,Math.min(2,source.numberOfChannels)),Math.max(1,Math.ceil(sampleRate*outputDuration)),sampleRate);
+  const sourceNode=context.createBufferSource();
+  sourceNode.buffer=source;
+  const jitter=randomize?(Math.random()-.5)*(intensity/100)*.08:0;
+  let node=sourceNode;
+
+  if(effect==="pitch-up")sourceNode.playbackRate.value=1.18+jitter;
+  if(effect==="pitch-down")sourceNode.playbackRate.value=.84+jitter;
+  if(effect==="long")sourceNode.playbackRate.value=.72+jitter;
+
+  if(effect==="rise"||effect==="fall"||effect==="rise-fall"||effect==="fall-rise"){
+    let first=.66,last=1.34;
+    if(effect==="fall"||effect==="fall-rise"){first=1.34;last=.66;}
+    sourceNode.playbackRate.setValueAtTime(first,0);
+    if(effect==="rise-fall"||effect==="fall-rise"){
+      sourceNode.playbackRate.linearRampToValueAtTime(last,source.duration*.5);
+      sourceNode.playbackRate.linearRampToValueAtTime(first,source.duration);
+    }else{
+      sourceNode.playbackRate.linearRampToValueAtTime(last,source.duration);
+    }
+  }
+
+  if(effect==="lowpass"||effect==="highpass"){
+    const filter=context.createBiquadFilter();
+    filter.type=effect==="lowpass"?"lowpass":"highpass";
+    if(effect==="lowpass"){
+      filter.frequency.setValueAtTime(9000,0);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(700,7000-intensity*55),source.duration*.72);
+    }else{
+      filter.frequency.setValueAtTime(80,0);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(900,900+intensity*55),source.duration*.72);
+    }
+    filter.Q.value=.7+intensity/120;
+    node.connect(filter);node=filter;
+  }
+
+  if(effect==="distortion"){
+    const shaper=context.createWaveShaper();
+    shaper.curve=distortionCurve(20+intensity);
+    shaper.oversample="4x";
+    node.connect(shaper);node=shaper;
+  }
+
+  if(effect==="echo"||effect==="delay"){
+    const delay=context.createDelay(2);
+    const feedback=context.createGain();
+    const wet=context.createGain();
+    const dry=context.createGain();
+    delay.delayTime.value=effect==="echo"?.32:.16;
+    feedback.gain.value=effect==="echo"?.48:.30;
+    wet.gain.value=.45+(intensity/100)*.22;
+    dry.gain.value=.82;
+    node.connect(dry);node.connect(delay);delay.connect(wet);delay.connect(feedback);feedback.connect(delay);
+    dry.connect(context.destination);wet.connect(context.destination);
+    sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="reverb"){
+    const convolver=context.createConvolver();
+    const wet=context.createGain();
+    const dry=context.createGain();
+    convolver.buffer=makeImpulse(context,.7+(intensity/100)*1.2,2.6-(intensity/100)*.8);
+    wet.gain.value=.35+(intensity/100)*.3;
+    dry.gain.value=.78;
+    node.connect(dry);node.connect(convolver);convolver.connect(wet);
+    dry.connect(context.destination);wet.connect(context.destination);
+    sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="tremolo"){
+    const gain=context.createGain();
+    const oscillator=context.createOscillator();
+    const depth=context.createGain();
+    gain.gain.value=1;
+    oscillator.frequency.value=4+(intensity/100)*7;
+    depth.gain.value=.22+(intensity/100)*.42;
+    oscillator.connect(depth);depth.connect(gain.gain);node.connect(gain);gain.connect(context.destination);
+    oscillator.start();sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="orbit"||effect==="ping-pong"){
+    const panner=context.createStereoPanner();
+    const cycles=effect==="orbit"?3:1.6;
+    panner.pan.setValueAtTime(-1,0);
+    for(let i=1;i<=32;i++)panner.pan.linearRampToValueAtTime(Math.sin(i/32*Math.PI*2*cycles),source.duration*i/32);
+    node.connect(panner);panner.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="fade-in"||effect==="fade-out"){
+    const gain=context.createGain();
+    if(effect==="fade-in"){
+      gain.gain.setValueAtTime(0,0);
+      gain.gain.linearRampToValueAtTime(1,Math.min(.8,source.duration*.35));
+    }else{
+      gain.gain.setValueAtTime(1,source.duration*.55);
+      gain.gain.linearRampToValueAtTime(0,source.duration);
+    }
+    node.connect(gain);gain.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  node.connect(context.destination);
+  sourceNode.start();
+  return normalizeBuffer(await context.startRendering());
+}
+async function renderEffectOnce(buffer,effect,amount,randomize){
+  if(effect==="original")return copyBuffer(buffer);
+  if(effect==="reverse")return reverseBuffer(buffer);
+  if(effect==="bounce")return bounceBuffer(buffer);
+  if(effect==="stutter")return repeatSlice(buffer,.12,.3,4);
+  if(effect==="chop")return chopBuffer(buffer);
+  if(effect==="lofi")return bitcrushBuffer(await offlineEffect(buffer,"lowpass",amount,randomize),5,5);
+  if(effect==="short")return sliceBuffer(buffer,.05,.68);
+  return offlineEffect(buffer,effect,amount,randomize);
+}
+async function renderEffectPipeline(buffer,effects,amount,randomize){
+  let out=copyBuffer(buffer);
+  for(const effect of effects)out=await renderEffectOnce(out,effect,amount,randomize);
+  return normalizeBuffer(out);
+}
 function effectLabel(effect){
-  return ({original:"Original",up:"Pitch Up",down:"Pitch Down",reverse:"Reverse",bright:"Bright",dark:"Dark",punch:"Punch",soft:"Soft",short:"Short"}[effect]||effect);
+  const item=EFFECT_CATALOG.find(function(entry){return entry.id===effect;});
+  return item?I18N[state.lang][item.key]:effect;
 }
-function audioToWav(buffer){
-  const channels=Math.min(2,buffer.numberOfChannels),sampleRate=buffer.sampleRate,frames=buffer.length;
-  const dataLength=frames*channels*2,bufferOut=new ArrayBuffer(44+dataLength),view=new DataView(bufferOut);
-  const write=(o,s)=>{for(let i=0;i<s.length;i++)view.setUint8(o+i,s.charCodeAt(i))}
-  write(0,"RIFF");view.setUint32(4,36+dataLength,true);write(8,"WAVE");write(12,"fmt ");view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,channels,true);view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*channels*2,true);view.setUint16(32,channels*2,true);view.setUint16(34,16,true);write(36,"data");view.setUint32(40,dataLength,true);
-  let offset=44;
-  for(let i=0;i<frames;i++){for(let c=0;c<channels;c++){let v=buffer.getChannelData(c)[i];v=Math.max(-1,Math.min(1,v));view.setInt16(offset,(v<0?v*0x8000:v*0x7fff),true);offset+=2}}
-  return new Blob([bufferOut],{type:"audio/wav"});
+function shuffle(array){
+  const out=array.slice();
+  for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const temp=out[i];out[i]=out[j];out[j]=temp;}
+  return out;
+}
+function lengthModifier(){
+  const mode=state.generation.lengthMode||"mixed";
+  if(mode==="short")return "short";
+  if(mode==="long")return "long";
+  if(mode==="mixed"&&Math.random()<.42)return Math.random()<.5?"short":"long";
+  return null;
+}
+function makeVariationPlan(quantity,includeOriginal){
+  const plan=[];
+  if(includeOriginal)plan.push({effects:["original"]});
+  const pool=shuffle(state.selectedEffects.length?state.selectedEffects:DEFAULT_EFFECTS);
+  const wanted=Math.max(1,Math.min(3,Number(state.generation.maxEffects)||2));
+  let cursor=0;
+  for(let i=plan.length;i<quantity;i++){
+    const count=Math.min(wanted,1+(state.generation.randomize&&Math.random()<.72?Math.floor(Math.random()*wanted):0));
+    const chosen=[];
+    while(chosen.length<count){
+      const effect=pool[cursor%pool.length];
+      cursor++;
+      if(!chosen.includes(effect))chosen.push(effect);
+    }
+    const modifier=lengthModifier();
+    if(modifier&&!chosen.includes(modifier)&&chosen.length<wanted)chosen.push(modifier);
+    plan.push({effects:chosen.length?chosen:["reverse"]});
+  }
+  return plan;
 }
 async function decodeAudio(file){
   const ctx=new AudioContext();try{return await ctx.decodeAudioData(await file.arrayBuffer())}finally{await ctx.close().catch(()=>{})}
