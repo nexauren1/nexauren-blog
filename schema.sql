@@ -29,23 +29,6 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   success INTEGER NOT NULL DEFAULT 0 CHECK (success IN (0,1)),
   created_at TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS categories (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE COLLATE NOCASE,
-  slug TEXT NOT NULL UNIQUE,
-  description TEXT DEFAULT '',
-  icon TEXT DEFAULT '',
-  parent_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
-  sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS tags (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE COLLATE NOCASE,
-  slug TEXT NOT NULL UNIQUE,
-  created_at TEXT NOT NULL
-);
 CREATE TABLE IF NOT EXISTS media (
   id TEXT PRIMARY KEY,
   imagekit_file_id TEXT NOT NULL UNIQUE,
@@ -61,59 +44,7 @@ CREATE TABLE IF NOT EXISTS media (
   uploaded_by TEXT REFERENCES users(id) ON DELETE SET NULL,
   created_at TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS posts (
-  id TEXT PRIMARY KEY,
-  author_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  title TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
-  excerpt TEXT DEFAULT '',
-  content TEXT NOT NULL DEFAULT '',
-  content_format TEXT NOT NULL DEFAULT 'markdown',
-  type TEXT NOT NULL DEFAULT 'article' CHECK (type IN ('article','news','guide','tutorial','announcement','release','update','story')),
-  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','scheduled','published','archived')),
-  category_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
-  cover_media_id TEXT REFERENCES media(id) ON DELETE SET NULL,
-  social_image TEXT DEFAULT '',
-  published_at TEXT,
-  scheduled_at TEXT,
-  featured INTEGER NOT NULL DEFAULT 0 CHECK (featured IN (0,1)),
-  allow_comments INTEGER NOT NULL DEFAULT 1 CHECK (allow_comments IN (0,1)),
-  meta_title TEXT DEFAULT '',
-  meta_description TEXT DEFAULT '',
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS post_translations (
-  id TEXT PRIMARY KEY,
-  post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-  language TEXT NOT NULL CHECK (language IN ('pt','en')),
-  title TEXT NOT NULL,
-  excerpt TEXT DEFAULT '',
-  content TEXT NOT NULL DEFAULT '',
-  meta_title TEXT DEFAULT '',
-  meta_description TEXT DEFAULT '',
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  UNIQUE(post_id, language)
-);
-CREATE INDEX IF NOT EXISTS idx_post_translations_post_lang ON post_translations(post_id,language);
 
-CREATE TABLE IF NOT EXISTS post_tags (
-  post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-  tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
-  PRIMARY KEY (post_id, tag_id)
-);
-CREATE TABLE IF NOT EXISTS revisions (
-  id TEXT PRIMARY KEY,
-  post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-  editor_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  title TEXT NOT NULL,
-  excerpt TEXT DEFAULT '',
-  content TEXT NOT NULL,
-  revision_number INTEGER NOT NULL,
-  created_at TEXT NOT NULL,
-  UNIQUE(post_id, revision_number)
-);
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL,
@@ -180,13 +111,6 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_login_identifier ON login_attempts(identifier,created_at);
-CREATE INDEX IF NOT EXISTS idx_posts_status_date ON posts(status,published_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_type_status ON posts(type,status,published_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_category_status ON posts(category_id,status,published_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id,created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_featured ON posts(featured,status,published_at DESC);
-CREATE INDEX IF NOT EXISTS idx_post_tags_tag ON post_tags(tag_id,post_id);
-CREATE INDEX IF NOT EXISTS idx_revisions_post ON revisions(post_id,revision_number DESC);
 CREATE INDEX IF NOT EXISTS idx_media_created ON media(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id,read_at,created_at DESC);
