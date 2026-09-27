@@ -469,7 +469,15 @@ function normalizeToolRegistry(raw){
     description_en:text(c?.description_en||c?.descriptionEn||"",500).trim(),
     icon:text(c?.icon||"✦",20).trim(),
     sortOrder:Number.isFinite(Number(c?.sortOrder))?Number(c.sortOrder):(i+1)*10,
-    path:text(c?.path||"",500).trim()||("/tool/categories/"+slugify(c?.id||c?.name||("categoria-"+(i+1)))+"/")
+    path:text(c?.path||"",500).trim()||("/tool/categories/"+slugify(c?.id||c?.name||("categoria-"+(i+1)))+"/"),
+    showWhenEmpty:c?.showWhenEmpty===true,
+    subcategories:Array.isArray(c?.subcategories)?c.subcategories.map((s,j)=>({
+      id:slugify(s?.id||s?.name||("subcategoria-"+(j+1))),
+      name:text(s?.name||"Subcategoria",100).trim(),
+      name_en:text(s?.name_en||s?.nameEn||"",140).trim(),
+      description:text(s?.description||"",300).trim(),
+      description_en:text(s?.description_en||s?.descriptionEn||"",300).trim()
+    })).filter(s=>s.id&&s.name):[]
   })).filter(c=>c.id&&c.name):[];
   const categoryIds=new Set(categories.map(c=>c.id));
   const tools=Array.isArray(raw?.tools)?raw.tools.map((t,i)=>{
