@@ -200,6 +200,7 @@
     host.innerHTML=subNav+'<div class="tool-advanced-search"><div class="tool-search-main"><span aria-hidden="true">⌕</span><input data-category-search-input type="search" value="'+esc(state.query)+'" placeholder="'+esc(ui.searchPlaceholder)+'" autocomplete="off"><button type="button" data-category-clear aria-label="'+esc(ui.clearSearch)+'">×</button></div><div class="tool-search-controls"><select data-category-tag aria-label="'+esc(ui.filterKeyword)+'"><option value="">'+esc(ui.allKeywords)+'</option>'+keywords.map(keyword=>'<option value="'+esc(keyword)+'">'+esc(keyword)+'</option>').join("")+'</select><select data-category-access aria-label="'+esc(ui.filterAccess)+'"><option value="all">'+esc(ui.allAccess)+'</option><option value="public">'+esc(ui.free)+'</option><option value="premium">'+esc(ui.pro)+'</option></select><select data-category-sort aria-label="'+esc(ui.sort)+'"><option value="relevance">'+esc(ui.relevance)+'</option><option value="featured">'+esc(ui.featured)+'</option><option value="popular">'+esc(ui.popular)+'</option><option value="name">'+esc(ui.name)+'</option></select></div><div class="tool-search-meta"><span data-category-result-count></span><button type="button" data-category-reset>'+esc(ui.clearFilters)+'</button></div></div>';
 
     const input=root.querySelector("[data-category-search-input]");
+    const groupButtons=[...root.querySelectorAll("[data-category-group]")];
     const tag=root.querySelector("[data-category-tag]");
     const access=root.querySelector("[data-category-access]");
     const sort=root.querySelector("[data-category-sort]");
@@ -288,9 +289,10 @@
 
   async function load(){
     const cached=window.NexaurenToolRegistry.getCachedRegistry?.();
-    if(cached)render(cached);
+    const hasCurrentCategory=!!cached?.categories?.some(category=>category.id===slug||category.slug===slug);
+    if(hasCurrentCategory)render(cached);
     try{
-      const registry=await window.NexaurenToolRegistry.loadRegistry();
+      const registry=await window.NexaurenToolRegistry.refreshRegistry();
       if(user){
         try{
           const plan=await accessApi.getPlanState({force:false});
