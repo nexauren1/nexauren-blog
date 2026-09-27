@@ -130,12 +130,19 @@ function setMode(mode){state.mode=mode;$("#mode-picker").hidden=!!mode;$("#creat
 function setLanguage(){
   document.documentElement.lang=state.lang;
   $("#language-toggle").textContent=state.lang==="en"?"PT":"EN";
-  $$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
-  $$("[data-i18n-opt]").forEach(el=>el.textContent=t(el.dataset.i18nOpt));
-  $("#quantity-value").textContent=$("#quantity").value;
-  $("#variation-value").textContent=$("#variation").value+"%";
+  $$("[data-i18n]").forEach(function(el){el.textContent=t(el.dataset.i18n);});
+  $$("[data-i18n-opt]").forEach(function(el){el.textContent=t(el.dataset.i18nOpt);});
   if(state.source)renderCreateSource();
   if(state.orgFiles.length)renderOrganizerList();
+  renderSettingsSummary();
+  if(state.modalOpen==="effects")renderEffectsModal();
+  if(state.modalOpen==="options")renderOptionsModal();
+}
+function renderSettingsSummary(){
+  const count=state.selectedEffects.length;
+  $("#effects-summary").textContent=t("effectsSelected",{n:count,max:state.generation.maxEffects});
+  const lengthKey={preserve:"lengthPreserve",mixed:"lengthMixed",short:"lengthShort",long:"lengthLong"}[state.generation.lengthMode]||"lengthMixed";
+  $("#options-summary").textContent=t("optionsSummary",{n:state.generation.quantity,intensity:state.generation.variation,length:t(lengthKey)});
 }
 function fileKey(file){return [file.name,file.size,file.lastModified].join("::")}
 function categoryFromName(name){
