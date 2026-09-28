@@ -2,7 +2,7 @@
   const DATA_URL="/api/tool-registry";
   const requestedLanguage=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="en")return "en";try{return localStorage.getItem("ns_lang_v2")==="pt"?"pt":"en"}catch{return "en"}})();
   const FALLBACK_DATA_URL="/tool/data/data.json";
-  const CACHE_KEY="nexauren:tool-registry:v5";
+  const CACHE_KEY="nexauren:tool-registry:v6";
   const CACHE_SCOPE=requestedLanguage;
   const REQUEST_TIMEOUT=5000;
   let registryPromise=null;
@@ -40,24 +40,27 @@
   async function refreshRegistry(){
     if(refreshPromise)return refreshPromise;
     refreshPromise=(async()=>{
-      try{
-        const registry=await fetchFresh(DATA_URL+"?lang="+encodeURIComponent(requestedLanguage));
-        if(!registry.categories.length||!registry.tools.some(t=>t.status==="active"))throw new Error("Catálogo incompleto");
-        saveCache(registry);
-        window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
-        return registry;
-      }catch(primary){
-        try{
-          const registry=await fetchFresh(FALLBACK_DATA_URL+"?v="+Date.now());
-          if(valid(registry)){
-            saveCache(registry);
-            window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
-            return registry;
-          }
-        }catch{}
-        throw primary;
-      }finally{refreshPromise=null}
-    })();
+      const [primaryResult,assetResult]=await Promise.allSettled([
+        fetchFresh(DATA_URL+"?lang="+encodeURIComponent(requestedLanguage)),
+        fetchFresh(FALLBACK_DATA_URL+"?v="+Date.now())
+      ]);
+      const primary=primaryResult.status==="fulfilled"&&valid(primaryResult.value)?primaryResult.value:null;
+      const asset=assetResult.status==="fulfilled"&&valid(assetResult.value)?assetResult.value:null;
+      const candidates=[primary,asset].filter(Boolean).filter(r=>r.categories.length&&r.tools.some(t=>t.status==="active"));
+      if(!candidates.length)throw new Error("Catálogo incompleto");
+      const registry=candidates.reduce((best,item)=>{
+        if(!best)return item;
+        if(Number(item.version||0)>Number(best.version||0))return item;
+        if(Number(item.version||0)===Number(best.version||0)&&item===asset)return item;
+        return best;
+      },null);
+      saveCache(registry);
+      window.dispatchEvent(new CustomEvent("nexauren:tool-registry-updated",{detail:registry}));
+      return registry;
+    })().catch(error=>{
+      refreshPromise=null;
+      throw error;
+    }).finally(()=>{refreshPromise=null});
     return refreshPromise;
   }
   async function loadRegistry(){

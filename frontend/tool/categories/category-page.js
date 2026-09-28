@@ -99,7 +99,7 @@
     ? '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 17 4-10h2l4 10M8 13.5h6M16 17l1.8-4.5L20 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
     : '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.9 2.9M15.5 15.5l2.9 2.9M18.4 5.6l-2.9 2.9M8.5 15.5l-2.9 2.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/></svg>';
 
-  let state={tools:[],subcategories:[],query:"",tag:"",group:"",access:"all",sort:"relevance"};
+  let state={tools:[],query:"",tag:"",access:"all",sort:"relevance"};
   let isPro=null,user=null,accessApi=null;
 
   const scoreTool=(tool,query)=>{
@@ -152,10 +152,9 @@
   function toolResults(){
     const q=state.query;
     let results=state.tools.filter(tool=>{
-      const groupOk=!state.group||String(tool.group||"")===state.group;
-      const tagOk=!state.tag||localizedTags(tool).some(tag=>normalize(tag)===normalize(state.tag));
+        const tagOk=!state.tag||localizedTags(tool).some(tag=>normalize(tag)===normalize(state.tag));
       const accessOk=state.access==="all"||String(tool.access||"public")===state.access;
-      return groupOk&&tagOk&&accessOk;
+      return tagOk&&accessOk;
     }).map(tool=>({tool,score:scoreTool(tool,q)}));
     if(q)results=results.filter(item=>item.score>0);
     results.sort((a,b)=>{
@@ -176,8 +175,8 @@
     count.textContent=results.length+" "+(language==="en"?"of ":"de ")+state.tools.length+(state.tools.length===1?" "+ui.tool:" "+ui.toolsPlural);
     grid.innerHTML=results.map(card).join("");
     empty.hidden=results.length>0;empty.style.display=results.length>0?"none":"";
-    empty.innerHTML=state.query||state.tag||state.group||state.access!=="all"
-      ? "<strong>"+ui.noTools+"</strong><br>"+ui.noToolsHint
+    empty.innerHTML=state.query||state.tag||state.access!=="all"
+        ? "<strong>"+ui.noTools+"</strong><br>"+ui.noToolsHint
       : "<strong>"+ui.ready+"</strong><br>"+ui.empty;
     grid.hidden=results.length===0;grid.style.display=results.length===0?"none":"";
     window.NexaurenUI?.refresh?.();
@@ -188,35 +187,23 @@
     const params=new URLSearchParams(location.search);
     state.query=params.get("q")||"";
     state.tag=params.get("tag")||"";
-    state.group=params.get("group")||"";
     state.access=params.get("access")||"all";
     state.sort=params.get("sort")||"relevance";
     const host=root.querySelector("[data-category-search]");
     if(!host)return;
-    const subcategories=Array.isArray(state.subcategories)?state.subcategories:[];
-    const subNav=subcategories.length
-      ? '<div class="tool-featured-actions" aria-label="'+esc(language==="en"?"Audio subcategories":"Subcategorias de áudio")+'"><button type="button" data-category-group="" class="tool-featured-btn'+(!state.group?' tool-featured-btn-primary':'')+'">'+esc(language==="en"?"All":"Todas")+'</button>'+subcategories.map(item=>'<button type="button" data-category-group="'+esc(item.id)+'" class="tool-featured-btn'+(state.group===item.id?' tool-featured-btn-primary':'')+'">'+esc(label(item,"name"))+'</button>').join("")+'</div>'
-      : "";
-    host.innerHTML=subNav+'<div class="tool-advanced-search"><div class="tool-search-main"><span aria-hidden="true">⌕</span><input data-category-search-input type="search" value="'+esc(state.query)+'" placeholder="'+esc(ui.searchPlaceholder)+'" autocomplete="off"><button type="button" data-category-clear aria-label="'+esc(ui.clearSearch)+'">×</button></div><div class="tool-search-controls"><select data-category-tag aria-label="'+esc(ui.filterKeyword)+'"><option value="">'+esc(ui.allKeywords)+'</option>'+keywords.map(keyword=>'<option value="'+esc(keyword)+'">'+esc(keyword)+'</option>').join("")+'</select><select data-category-access aria-label="'+esc(ui.filterAccess)+'"><option value="all">'+esc(ui.allAccess)+'</option><option value="public">'+esc(ui.free)+'</option><option value="premium">'+esc(ui.pro)+'</option></select><select data-category-sort aria-label="'+esc(ui.sort)+'"><option value="relevance">'+esc(ui.relevance)+'</option><option value="featured">'+esc(ui.featured)+'</option><option value="popular">'+esc(ui.popular)+'</option><option value="name">'+esc(ui.name)+'</option></select></div><div class="tool-search-meta"><span data-category-result-count></span><button type="button" data-category-reset>'+esc(ui.clearFilters)+'</button></div></div>';
+    host.innerHTML='<div class="tool-advanced-search"><div class="tool-search-main"><span aria-hidden="true">⌕</span><input data-category-search-input type="search" value="'+esc(state.query)+'" placeholder="'+esc(ui.searchPlaceholder)+'" autocomplete="off"><button type="button" data-category-clear aria-label="'+esc(ui.clearSearch)+'">×</button></div><div class="tool-search-controls"><select data-category-tag aria-label="'+esc(ui.filterKeyword)+'"><option value="">'+esc(ui.allKeywords)+'</option>'+keywords.map(keyword=>'<option value="'+esc(keyword)+'">'+esc(keyword)+'</option>').join("")+'</select><select data-category-access aria-label="'+esc(ui.filterAccess)+'"><option value="all">'+esc(ui.allAccess)+'</option><option value="public">'+esc(ui.free)+'</option><option value="premium">'+esc(ui.pro)+'</option></select><select data-category-sort aria-label="'+esc(ui.sort)+'"><option value="relevance">'+esc(ui.relevance)+'</option><option value="featured">'+esc(ui.featured)+'</option><option value="popular">'+esc(ui.popular)+'</option><option value="name">'+esc(ui.name)+'</option></select></div><div class="tool-search-meta"><span data-category-result-count></span><button type="button" data-category-reset>'+esc(ui.clearFilters)+'</button></div></div>';
 
     const input=root.querySelector("[data-category-search-input]");
-    const groupButtons=[...root.querySelectorAll("[data-category-group]")];
     const tag=root.querySelector("[data-category-tag]");
     const access=root.querySelector("[data-category-access]");
     const sort=root.querySelector("[data-category-sort]");
     tag.value=state.tag;access.value=state.access;sort.value=state.sort;
-    groupButtons.forEach(button=>button.addEventListener("click",()=>{
-      state.group=button.dataset.categoryGroup||"";
-      groupButtons.forEach(item=>item.classList.toggle("tool-featured-btn-primary",(item.dataset.categoryGroup||"")===state.group));
-      updateUrl();
-      renderResults();
-    }));
     input.addEventListener("input",()=>{state.query=input.value;updateUrl();renderResults()});
     tag.addEventListener("change",event=>{state.tag=event.target.value;updateUrl();renderResults()});
     access.addEventListener("change",event=>{state.access=event.target.value;updateUrl();renderResults()});
     sort.addEventListener("change",event=>{state.sort=event.target.value;updateUrl();renderResults()});
     root.querySelector("[data-category-clear]").addEventListener("click",()=>{state.query="";input.value="";input.focus();updateUrl();renderResults()});
-    root.querySelector("[data-category-reset]").addEventListener("click",()=>{state={...state,query:"",tag:"",group:"",access:"all",sort:"relevance"};input.value="";tag.value="";access.value="all";sort.value="relevance";groupButtons.forEach(button=>button.classList.toggle("tool-featured-btn-primary",(button.dataset.categoryGroup||"")===""));updateUrl();renderResults();input.focus()});
+    root.querySelector("[data-category-reset]").addEventListener("click",()=>{state={...state,query:"",tag:"",access:"all",sort:"relevance"};input.value="";tag.value="";access.value="all";sort.value="relevance";updateUrl();renderResults();input.focus()});
     input.addEventListener("keydown",event=>{if(event.key==="Escape"){state.query="";input.value="";updateUrl();renderResults();input.blur()}});
     document.addEventListener("keydown",event=>{if(event.key!=="/"||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||""))return;event.preventDefault();input.focus()});
     renderResults();
@@ -227,7 +214,6 @@
     if(language!=="en")params.set("lang",language);
     if(state.query)params.set("q",state.query);
     if(state.tag)params.set("tag",state.tag);
-    if(state.group)params.set("group",state.group);
     if(state.access!=="all")params.set("access",state.access);
     if(state.sort!=="relevance")params.set("sort",state.sort);
     history.replaceState(null,"",location.pathname+(params.toString()?"?"+params.toString():""));
@@ -282,7 +268,6 @@
     document.title=label(cat,"name")+" — "+ui.tools+" — Nexauren Story";
     applySeo(cat);
     state.tools=window.NexaurenToolRegistry.getTools(registry,cat.id);
-    state.subcategories=Array.isArray(cat.subcategories)?cat.subcategories:[];
     root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+esc(label(cat,"name"))+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" "+ui.tool+" available":" "+ui.tool+" disponível"):(language==="en"?" "+ui.toolsPlural+" available":" "+ui.toolsPlural+" disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section>';
     buildSearch();
   }

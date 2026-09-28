@@ -1,9 +1,9 @@
 {
-  "version": 21,
+  "version": 22,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T17:30:00Z",
+    "updatedAt": "2026-09-28T18:15:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -76,58 +76,7 @@
       "path": "/tool/categories/audio/",
       "name_en": "Audio",
       "description_en": "Tools for converting, editing, processing, and creating audio.",
-      "showWhenEmpty": true,
-      "subcategories": [
-        {
-          "id": "conversao",
-          "name": "Conversão",
-          "description": "Mude o formato e extraia áudio de outros ficheiros.",
-          "name_en": "Conversion",
-          "description_en": "Change formats and extract audio from other files."
-        },
-        {
-          "id": "edicao",
-          "name": "Edição",
-          "description": "Corte, junte e ajuste os seus ficheiros de áudio.",
-          "name_en": "Editing",
-          "description_en": "Cut, merge, and adjust your audio files."
-        },
-        {
-          "id": "processamento",
-          "name": "Processamento",
-          "description": "Comprima, normalize e transforme a qualidade do áudio.",
-          "name_en": "Processing",
-          "description_en": "Compress, normalize, and transform audio quality."
-        },
-        {
-          "id": "voz",
-          "name": "Voz",
-          "description": "Ferramentas para gravação, transcrição e tratamento de voz.",
-          "name_en": "Voice",
-          "description_en": "Tools for recording, transcription, and voice processing."
-        },
-        {
-          "id": "criacao",
-          "name": "Criação & Samples",
-          "description": "Experiências criativas para beats, samples, loops e sound design.",
-          "name_en": "Creation & Samples",
-          "description_en": "Creative tools for beats, samples, loops, and sound design."
-        },
-        {
-          "id": "utilitarios",
-          "name": "Utilitários",
-          "description": "Análise, metadados e pequenas ferramentas para áudio.",
-          "name_en": "Utilities",
-          "description_en": "Analysis, metadata, and small audio utilities."
-        },
-        {
-          "id": "producao-musical",
-          "name": "Produção Musical",
-          "description": "BPM, tonalidade, acordes, samples, ritmo e ferramentas práticas para produtores.",
-          "name_en": "Music Production",
-          "description_en": "BPM, key, chords, samples, rhythm, and practical tools for music producers."
-        }
-      ]
+      "showWhenEmpty": true
     }
   ],
   "tools": [
