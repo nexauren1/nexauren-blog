@@ -1,9 +1,9 @@
 {
-  "version": 17,
+  "version": 18,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T04:31:43.978Z",
+    "updatedAt": "2026-09-28T04:53:04.678Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1873,6 +1873,46 @@
       "popular": false,
       "access": "public",
       "sortOrder": 20
+    },
+    {
+      "id": "audio-trimmer",
+      "name": "Audio Trimmer",
+      "name_en": "Audio Trimmer",
+      "description": "Corte áudio com precisão usando uma timeline visual, marcadores arrastáveis, fades, ganho, normalização e exportação local.",
+      "description_en": "Trim audio precisely with a visual timeline, draggable markers, fades, gain, normalization, and local export.",
+      "category": "audio",
+      "group": "edicao",
+      "icon": "⌁",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/audio-trimmer/",
+      "tags": [
+        "áudio",
+        "audio",
+        "trim",
+        "cortar",
+        "editor",
+        "waveform",
+        "fade",
+        "normalização",
+        "MP3",
+        "WAV"
+      ],
+      "tags_en": [
+        "audio",
+        "trim",
+        "cutter",
+        "editor",
+        "waveform",
+        "fade",
+        "normalization",
+        "MP3",
+        "WAV"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 30
     }
   ]
 }
