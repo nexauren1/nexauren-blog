@@ -118,9 +118,9 @@ function updateAlternates(){
 }
 function addToggle(){
   const existing=document.querySelector("[data-nx-language-toggle]");
-  const nav=document.querySelector("header nav,.nav-links,.tool-links");
+  const header=document.querySelector("header");
   if(existing){existing.textContent=current==="en"?"PT":"EN";return}
-  if(!nav)return;
+  if(!header)return;
   const b=document.createElement("button");
   b.type="button";
   b.className="nx-language-toggle";
@@ -129,7 +129,9 @@ function addToggle(){
   b.setAttribute("aria-label",current==="en"?"Switch to Portuguese":"Mudar para inglês");
   b.title=b.getAttribute("aria-label");
   b.addEventListener("click",()=>setLanguage(current==="en"?"pt":"en"));
-  nav.appendChild(b);
+  const menu=header.querySelector(".menu-toggle,.tool-menu");
+  if(menu)menu.before(b);
+  else header.querySelector("nav")?.appendChild(b);
 }
 
 function setLanguage(lang){
