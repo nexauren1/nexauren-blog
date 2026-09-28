@@ -423,6 +423,53 @@ function makeVariationPlan(quantity,includeOriginal){
   }
   return plan;
 }
+function audioToWav(buffer){
+  if(!buffer||!Number.isFinite(buffer.length)||buffer.length<1){
+    throw new Error("Invalid audio buffer.");
+  }
+  const channels=Math.max(1,Math.min(2,Number(buffer.numberOfChannels)||1));
+  const sampleRate=Math.max(1,Math.round(Number(buffer.sampleRate)||44100));
+  const frames=buffer.length;
+  const bytesPerSample=2;
+  const blockAlign=channels*bytesPerSample;
+  const dataSize=frames*blockAlign;
+  const out=new ArrayBuffer(44+dataSize);
+  const view=new DataView(out);
+  const writeString=(offset,value)=>{
+    for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));
+  };
+  writeString(0,"RIFF");
+  view.setUint32(4,36+dataSize,true);
+  writeString(8,"WAVE");
+  writeString(12,"fmt ");
+  view.setUint32(16,16,true);
+  view.setUint16(20,1,true);
+  view.setUint16(22,channels,true);
+  view.setUint32(24,sampleRate,true);
+  view.setUint32(28,sampleRate*blockAlign,true);
+  view.setUint16(32,blockAlign,true);
+  view.setUint16(34,bytesPerSample*8,true);
+  writeString(36,"data");
+  view.setUint32(40,dataSize,true);
+
+  const channelData=[];
+  for(let channel=0;channel<channels;channel++){
+    const sourceChannel=Math.min(channel,buffer.numberOfChannels-1);
+    channelData.push(buffer.getChannelData(sourceChannel));
+  }
+
+  let offset=44;
+  for(let frame=0;frame<frames;frame++){
+    for(let channel=0;channel<channels;channel++){
+      const sample=Math.max(-1,Math.min(1,channelData[channel][frame]||0));
+      const pcm=sample<0?Math.round(sample*0x8000):Math.round(sample*0x7fff);
+      view.setInt16(offset,pcm,true);
+      offset+=2;
+    }
+  }
+
+  return new Blob([out],{type:"audio/wav"});
+}
 function audioContextCtor(){return globalThis.AudioContext||globalThis.webkitAudioContext||null}
 function offlineAudioContextCtor(){return globalThis.OfflineAudioContext||globalThis.webkitOfflineAudioContext||null}
 function isAudioFile(file){
