@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-28T15:23:22.600033Z",
+  "generatedAt": "2026-09-28T16:54:30.672784Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -81,6 +81,8 @@
     "/tool/categories/tecnologia/leitor-de-qr-code/",
     "/tool/categories/tecnologia/testador-de-regex/",
     "/tool/categories/tecnologia/validador-json/",
+    "/tool/categories/tempo/",
+    "/tool/categories/tempo/countdown-studio/",
     "/tool/categories/texto/",
     "/tool/destaques/",
     "/tool/populares/"
