@@ -419,7 +419,8 @@ function decoratePublicHtmlResponse(request,response){
       out=addHeadTag(out,/__never_structured__/,'<script id="nexauren-public-structured-data" type="application/ld+json">'+safeJsonLd(structured)+'</script>');
     }
     if(/<body\b/i.test(out)&&!/class=["'][^"']*\bnx-page\b/i.test(out))out=out.replace(/<body\b([^>]*)>/i,(m,a)=>a?'<body class="nx-page"'+a+'>':'<body class="nx-page">');
-    out=replaceGlobalFooter(out,path);\n    const headers=new Headers(response.headers);
+    out=replaceGlobalFooter(out,path);
+    const headers=new Headers(response.headers);
     headers.delete("content-length");
     return new Response(out,{status:response.status,statusText:response.statusText,headers});
   });
