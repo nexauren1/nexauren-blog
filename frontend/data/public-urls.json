@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-28T04:31:40.845607Z",
+  "generatedAt": "2026-09-28T04:53:02.780765Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -10,6 +10,7 @@
     "/tool/",
     "/tool/avaliacoes/",
     "/tool/categories/audio/",
+    "/tool/categories/audio/audio-trimmer/",
     "/tool/categories/audio/conversor-de-audio/",
     "/tool/categories/audio/gerador-de-sample-pack/",
     "/tool/categories/imagem/",
