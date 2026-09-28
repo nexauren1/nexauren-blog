@@ -30,7 +30,7 @@ const I18N={
     kick:"Kick",snare:"Snare",clap:"Clap",hihat:"Hi-Hat",percussion:"Percussion",bass:"Bass",guitar:"Guitar",pad:"Pad",melody:"Melody",vocal:"Vocal",fx:"FX",custom:"Custom",
     chooseFile:"Choose a source audio file first.",chooseMany:"Add at least one audio file first.",generateError:"The audio could not be processed in this browser.",
     wrongPassword:"Use a password with at least 4 characters.",zipError:"The ZIP could not be created.",doneCreate:"Pack created with {n} samples.",doneOrg:"Organized pack created with {n} files.",
-    categoryOther:"Other",fileCount:"{n} files",sourceLoaded:"Source loaded · {name}",readyFiles:"{n} files ready",creating:"Creating samples…",zipping:"Building ZIP…",
+    categoryOther:"Other",fileCount:"{n} files",sourceLoaded:"Source loaded · {name}",readyFiles:"{n} files ready",creating:"Creating samples…",processing:"Processing sample {current} of {total} · {effect}",processingDone:"Processing complete · {n} samples.",zipping:"Building ZIP…",
     generatedSummary:"{n} samples · {type} · {duration}s source · browser-local processing.",orgSummary:"{n} files organized into {cats} folders.",coverTitle:"Nexauren Sample Pack",
     coverMade:"Made with Nexauren Sample Pack Studio",readmeTitle:"Pack information",readmeBack:"Open Nexauren Sample Pack Studio",
     noAudio:"Please choose audio files only."
@@ -54,7 +54,7 @@ const I18N={
     kick:"Kick",snare:"Snare",clap:"Clap",hihat:"Hi-Hat",percussion:"Percussão",bass:"Bass",guitar:"Guitarra",pad:"Pad",melody:"Melodia",vocal:"Voz",fx:"FX",custom:"Personalizado",
     chooseFile:"Escolha primeiro um ficheiro de áudio.",chooseMany:"Adicione pelo menos um ficheiro de áudio.",generateError:"Não foi possível processar o áudio pelo navegador.",
     wrongPassword:"Use uma senha com pelo menos 4 caracteres.",zipError:"Não foi possível criar o ZIP.",doneCreate:"Pack criado com {n} samples.",doneOrg:"Pack organizado criado com {n} ficheiros.",
-    categoryOther:"Outros",fileCount:"{n} ficheiros",sourceLoaded:"Origem carregada · {name}",readyFiles:"{n} ficheiros prontos",creating:"A gerar samples…",zipping:"A criar ZIP…",
+    categoryOther:"Outros",fileCount:"{n} ficheiros",sourceLoaded:"Origem carregada · {name}",readyFiles:"{n} ficheiros prontos",creating:"A gerar samples…",processing:"A processar sample {current} de {total} · {effect}",processingDone:"Processamento concluído · {n} samples.",zipping:"A criar ZIP…",
     generatedSummary:"{n} samples · {type} · origem com {duration}s · processamento local.",orgSummary:"{n} ficheiros organizados em {cats} pastas.",coverTitle:"Nexauren Sample Pack",
     coverMade:"Criado com o Nexauren Sample Pack Studio",readmeTitle:"Informações do pack",readmeBack:"Abrir o Nexauren Sample Pack Studio",
     noAudio:"Escolha apenas ficheiros de áudio."
@@ -409,7 +409,8 @@ function makeVariationPlan(quantity,includeOriginal){
   const wanted=Math.max(1,Math.min(3,Number(state.generation.maxEffects)||2));
   let cursor=0;
   for(let i=plan.length;i<quantity;i++){
-    const count=Math.min(wanted,1+(state.generation.randomize&&Math.random()<.72?Math.floor(Math.random()*wanted):0));
+    const available=Math.max(1,pool.length);
+    const count=Math.min(available,wanted,1+(state.generation.randomize&&Math.random()<.72?Math.floor(Math.random()*wanted):0));
     const chosen=[];
     while(chosen.length<count){
       const effect=pool[cursor%pool.length];
@@ -576,14 +577,34 @@ async function generateSamples(){
   const includeOriginal=state.generation.includeOriginal;
   const randomize=state.generation.randomize;
   const type=createTypeFolder();
+  const progress=$("#create-progress");
+  const progressBar=$("#create-progress-bar");
+  const progressText=$("#create-progress-text");
+  const progressPercent=$("#create-progress-percent");
   $("#generate-pack").disabled=true;
   $("#create-status").textContent=t("creating");
+  if(progress){
+    progress.hidden=false;
+    progress.setAttribute("aria-hidden","false");
+    if(progressBar)progressBar.style.width="0%";
+    if(progressText)progressText.textContent=t("processing",{current:0,total:quantity,effect:"—"});
+    if(progressPercent)progressPercent.textContent="0%";
+  }
   state.generated.forEach(function(item){if(item.url)URL.revokeObjectURL(item.url);});
   state.generated=[];
-  const plan=makeVariationPlan(quantity,includeOriginal);
+  let plan=[];
   try{
+    plan=makeVariationPlan(quantity,includeOriginal);
     for(let i=0;i<plan.length;i++){
       const effects=plan[i].effects;
+      const effectText=effects.map(effectLabel).join(" + ");
+      const percent=Math.round((i/plan.length)*100);
+      $("#create-status").textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
+      if(progressBar)progressBar.style.width=percent+"%";
+      if(progressText)progressText.textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
+      if(progressPercent)progressPercent.textContent=percent+"%";
+      await new Promise(function(resolve){setTimeout(resolve,0)});
+      
       let buffer;
       if(effects.length===1&&effects[0]==="original")buffer=copyBuffer(state.sourceBuffer);
       else buffer=await renderEffectPipeline(state.sourceBuffer,effects,amount,randomize);
@@ -595,12 +616,21 @@ async function generateSamples(){
       const suffix=state.generation.effectNaming?"_"+effectSlug:"";
       const filename=base+"_"+num+suffix+".wav";
       state.generated.push({name:filename,blob:blob,url:URL.createObjectURL(blob),effects:effects,duration:buffer.duration,size:blob.size,type:type});
+      
+      const donePercent=Math.round(((i+1)/plan.length)*100);
+      if(progressBar)progressBar.style.width=donePercent+"%";
+      if(progressText)progressText.textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
+      if(progressPercent)progressPercent.textContent=donePercent+"%";
+      renderGenerated();
     }
-    renderGenerated();
     $("#create-results").hidden=false;
-    $("#create-status").textContent=t("doneCreate",{n:state.generated.length});
+    $("#create-status").textContent=t("processingDone",{n:state.generated.length});
+    if(progressText)progressText.textContent=t("processingDone",{n:state.generated.length});
   }catch(error){
     console.error(error);
+    const detail=error?.message||error?.name||"Unknown processing error";
+    console.error("Sample Pack Studio processing error:",detail);
+    $("#create-status").textContent=t("generatePack");
     notify(t("generateError"),true);
   }finally{
     setGenerateState();
