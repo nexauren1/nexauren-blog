@@ -114,6 +114,15 @@
       <div><strong id="create-status" data-i18n="ready">Ready when you are.</strong><small data-i18n="createStatusHint">The source audio stays on this device while the pack is generated.</small></div>
       <button class="sp-primary" id="generate-pack" type="button" disabled><span data-i18n="generatePack">Generate Pack</span> ↗</button>
     </div>
+    <div id="create-progress" class="sp-progress" hidden aria-hidden="true">
+      <div class="sp-progress-head">
+        <strong id="create-progress-text">Processing sample 0 of 0</strong>
+        <span id="create-progress-percent">0%</span>
+      </div>
+      <div class="sp-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="create-progress-bar" class="sp-progress-bar"></div>
+      </div>
+    </div>
     <section id="create-results" class="sp-results" hidden>
       <div class="sp-results-head"><div><span class="sp-kicker" data-i18n="previewKicker">PREVIEW</span><h3 data-i18n="generatedSamples">Generated samples</h3></div><button class="sp-primary" id="download-created" type="button" disabled data-i18n="downloadZip">Download ZIP</button></div>
       <div id="generated-list" class="sp-audio-list"></div>
@@ -183,7 +192,7 @@ window.NexaurenAds?.loadBanner(document.getElementById("sp-ad-top"));
 window.NexaurenAds?.loadResponsive(document.getElementById("sp-ad-bottom"));
 document.getElementById("year").textContent=new Date().getFullYear();
 </script>
-<script src="./sample-pack.js?v=20260928-2"></script>
+<script src="./sample-pack.js?v=20260928-3"></script>
 <script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
 </body>
 </html>
