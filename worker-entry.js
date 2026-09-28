@@ -1022,10 +1022,13 @@ async function ensureSupportFeedbackSchema(env){
   const schema=[
     "CREATE TABLE IF NOT EXISTS support_feedback (",
     "id TEXT PRIMARY KEY,kind TEXT NOT NULL,subject TEXT NOT NULL,message TEXT NOT NULL,tool_id TEXT,tool_name TEXT,tool_category TEXT,tool_access TEXT,tool_path TEXT,source_path TEXT,page_url TEXT,referrer TEXT,language TEXT,locale TEXT,timezone TEXT,user_agent TEXT,platform TEXT,screen_json TEXT,viewport_json TEXT,connection_json TEXT,client_time TEXT,",
-    "touch_points INTEGER NOT NULL DEFAULT 0,online INTEGER NOT NULL DEFAULT 1,cookies_enabled INTEGER NOT NULL DEFAULT 0,color_scheme TEXT,account_id TEXT,firebase_uid TEXT,account_email TEXT,account_display_name TEXT,account_email_verified INTEGER,account_plan TEXT,ip_hash TEXT,country TEXT,cf_ray TEXT,requester_email TEXT,email_status TEXT NOT NULL DEFAULT 'pending',email_error TEXT,created_at TEXT NOT NULL",
+    "touch_points INTEGER NOT NULL DEFAULT 0,online INTEGER NOT NULL DEFAULT 1,cookies_enabled INTEGER NOT NULL DEFAULT 0,color_scheme TEXT,account_id TEXT,firebase_uid TEXT,account_email TEXT,account_display_name TEXT,account_photo_url TEXT,account_email_verified INTEGER,account_plan TEXT,firebase_provider_ids_json TEXT,firebase_creation_time TEXT,firebase_last_sign_in_time TEXT,ip_hash TEXT,country TEXT,cf_ray TEXT,requester_email TEXT,email_status TEXT NOT NULL DEFAULT 'pending',email_error TEXT,created_at TEXT NOT NULL",
     ")"
-  ].join("\\n");
+  ].join("\n");
   await env.DB.prepare(schema).run();
+  for(const column of ["account_photo_url TEXT","firebase_provider_ids_json TEXT","firebase_creation_time TEXT","firebase_last_sign_in_time TEXT"]){
+    try{await env.DB.prepare("ALTER TABLE support_feedback ADD COLUMN "+column).run();}catch{}
+  }
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_created ON support_feedback(created_at DESC)").run();
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_kind ON support_feedback(kind,created_at DESC)").run();
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_tool ON support_feedback(tool_id,created_at DESC)").run();
@@ -1040,8 +1043,9 @@ function supportEmailHtml(submission){
     ["Tool access",submission.tool_access],["Tool path",submission.tool_path],["Source path",submission.source_path],
     ["Page URL",submission.page_url],["Language",submission.language],["Account ID",submission.account_id],
     ["Firebase UID",submission.firebase_uid],["Account email",submission.account_email],
-    ["Display name",submission.account_display_name],["Email verified",submission.account_email_verified==null?"":String(!!submission.account_email_verified)],
-    ["Plan",submission.account_plan],["Timezone",submission.timezone],["Locale",submission.locale],
+    ["Display name",submission.account_display_name],["Profile photo",submission.account_photo_url],["Email verified",submission.account_email_verified==null?"":String(!!submission.account_email_verified)],
+    ["Plan",submission.account_plan],["Firebase providers",submission.firebase_provider_ids_json],["Firebase account created",submission.firebase_creation_time],["Firebase last sign-in",submission.firebase_last_sign_in_time],
+    ["Timezone",submission.timezone],["Locale",submission.locale],
     ["User agent",submission.user_agent],["Platform",submission.platform],["Screen",submission.screen_json],
     ["Viewport",submission.viewport_json],["Connection",submission.connection_json],["Touch points",String(submission.touch_points)],
     ["Online",String(!!submission.online)],["Cookies enabled",String(!!submission.cookies_enabled)],
@@ -1085,12 +1089,20 @@ async function submitSupportFeedback(env,request){
   if(Number(recent&&recent.count||0)>=5)return fail("Limite de mensagens atingido. Tente novamente mais tarde.",429,"SUPPORT_RATE_LIMIT");
 
   let account=null;
+  let firebaseClaims=null;
   if(request.headers.get("Authorization")){
     try{
-      const a=await firebaseAccountAuth(env,request,false);
-      account=a&&a.account||null;
-    }catch(error){
-      return fail(error&&error.message||"Sessão inválida ou expirada.",401,error&&error.code||"FIREBASE_TOKEN_INVALID");
+      firebaseClaims=await verifyFirebaseIdToken(bearerToken(request));
+      if(env.ACCOUNTS_DB){
+        try{
+          account=await env.ACCOUNTS_DB.prepare("SELECT id,firebase_uid,email,display_name,photo_url,status,email_verified FROM nexauren_accounts WHERE firebase_uid=? LIMIT 1").bind(String(firebaseClaims.sub)).first();
+        }catch{}
+      }
+      if(account&&account.status&&account.status!=="active"){
+        return fail("A sua conta Nexauren está suspensa.",403,"ACCOUNT_SUSPENDED");
+      }
+    }catch{
+      return fail("Sessão inválida ou expirada.",401,"FIREBASE_TOKEN_INVALID");
     }
   }
 
@@ -1137,8 +1149,12 @@ async function submitSupportFeedback(env,request){
     firebase_uid:account&&account.firebase_uid||null,
     account_email:normalizeEmail(account&&account.email||"")||null,
     account_display_name:text(account&&account.display_name||"",120)||null,
-    account_email_verified:account&&account.email_verified!=null?(account.email_verified?1:0):null,
+    account_email_verified:account&&account.email_verified!=null?(account.email_verified?1:0):(firebaseClaims?.email_verified?1:0),
+    account_photo_url:text(account?.photo_url||firebaseClaims?.picture||"",1000)||null,
     account_plan:plan,
+    firebase_provider_ids_json:JSON.stringify(Array.isArray(pc.firebase_provider_ids)?pc.firebase_provider_ids.filter(v=>typeof v==="string").slice(0,20):[]),
+    firebase_creation_time:text(pc.firebase_creation_time||"",100)||null,
+    firebase_last_sign_in_time:text(pc.firebase_last_sign_in_time||"",100)||null,
     ip_hash:ipHash,
     country:text(request.headers.get("CF-IPCountry")||"",20)||null,
     cf_ray:text(request.headers.get("CF-Ray")||"",120)||null,
