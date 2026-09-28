@@ -141,7 +141,9 @@ function slug(v){return String(v||"pack").normalize("NFKD").replace(/[\u0300-\u0
 function safeFileName(v){return String(v||"sample").replace(/[\\/:*?"<>|]+/g,"-").replace(/\s+/g," ").trim().slice(0,90)||"sample"}
 function notify(message,error=false){const el=$("#toast");el.textContent=message;el.className="sp-toast show"+(error?" error":"");clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>el.className="sp-toast",3200)}
 function setMode(mode){state.mode=mode;$("#mode-picker").hidden=!!mode;$("#create-mode").hidden=mode!=="create";$("#organize-mode").hidden=mode!=="organize";if(mode)window.scrollTo({top:0,behavior:"smooth"})}
+function syncGlobalLanguage(){const lang=window.NexaurenLanguage?.get?.();if(lang==="en"||lang==="pt")state.lang=lang;}
 function setLanguage(){
+  syncGlobalLanguage();
   document.documentElement.lang=state.lang;
   $("#language-toggle").textContent=state.lang==="en"?"PT":"EN";
   $$("[data-i18n]").forEach(function(el){el.textContent=t(el.dataset.i18n);});
@@ -913,6 +915,7 @@ async function organizeZip(){
   }catch(e){console.error(e);notify(t("zipError"),true)}finally{$("#organize-pack").disabled=!state.orgFiles.length;$("#org-status").textContent=t("doneOrg",{n:state.orgFiles.length})}
 }
 
+window.addEventListener("nexauren:language-changed",event=>{const lang=event.detail?.lang;if(lang!=="en"&&lang!=="pt")return;if(state.lang===lang)return;state.lang=lang;savePrefs();setLanguage();});
 $("#language-toggle").addEventListener("click",()=>{state.lang=state.lang==="en"?"pt":"en";setLanguage()});
 $("#effects-open").addEventListener("click",()=>openModal("effects"));
 $("#options-open").addEventListener("click",()=>openModal("options"));
