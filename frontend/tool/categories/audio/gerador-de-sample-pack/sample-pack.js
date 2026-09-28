@@ -702,6 +702,7 @@ async function generateSamples(){
 
   state.generated.forEach(item=>{if(item.url)URL.revokeObjectURL(item.url);});
   state.generated=[];
+  $("#create-results").hidden=true;
 
   const progress=$("#create-progress");
   const cancel=$("#cancel-generation");
@@ -726,25 +727,26 @@ async function generateSamples(){
 
       const effects=plan[i].effects;
       const effectText=effects.map(effectLabel).join(" + ");
-      const basePercent=Math.round((i/plan.length)*100);
-      updateCreateProgress(i+1,plan.length,effectText,basePercent);
+      const sampleStart=(i/plan.length)*100;
+      const sampleSpan=100/plan.length;
+      updateCreateProgress(i+1,plan.length,effectText,sampleStart);
       $("#create-status").textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
       await nextFrame();
 
       try{
         let buffer;
-        updateCreateProgress(i+1,plan.length,effectText,Math.min(12,basePercent+12));
+        updateCreateProgress(i+1,plan.length,effectText,sampleStart+sampleSpan*0.15);
         await nextFrame();
 
         if(effects.length===1&&effects[0]==="original")buffer=copyBuffer(state.sourceBuffer);
         else buffer=await renderEffectPipeline(state.sourceBuffer,effects,amount,randomize);
 
-        updateCreateProgress(i+1,plan.length,effectText,Math.min(90,basePercent+78));
+        updateCreateProgress(i+1,plan.length,effectText,sampleStart+sampleSpan*0.82);
         await nextFrame();
 
         if(state.generation.normalize)buffer=normalizeBuffer(buffer);
         const blob=audioToWav(buffer);
-        updateCreateProgress(i+1,plan.length,effectText,Math.min(96,basePercent+84));
+        updateCreateProgress(i+1,plan.length,effectText,sampleStart+sampleSpan*0.94);
 
         const num=String(i+1).padStart(3,"0");
         const effectSlug=effects.filter(x=>x!=="original").join("-")||"original";
@@ -796,7 +798,6 @@ async function generateSamples(){
       $("#create-status").textContent=t("processingDone",{n:state.generated.length});
     }
 
-    const totalSize=state.generated.reduce((sum,item)=>sum+item.size,0);
     const totalPercent=100;
     updateCreateProgress(state.generated.length,plan.length,"—",totalPercent);
     $("#create-progress-text").textContent=skipped?t("generationPartial",{n:state.generated.length,skipped}):t("processingDone",{n:state.generated.length});
