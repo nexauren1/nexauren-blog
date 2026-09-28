@@ -145,10 +145,24 @@ PAIRS.push(...MORE_PAIRS,...EXTRA_PAIRS,...SUPPORT_PAIRS,...SUPPORT_ERROR_PAIRS)
 const PT=new Map(PAIRS.map(([pt,en])=>[pt,en]));
 const EN=new Map(PAIRS.map(([pt,en])=>[en,pt]));
 
+function getCookieLang(){
+  try{
+    const match=document.cookie.match(/(?:^|;\\s*)nx_lang=(pt|en)(?:;|$)/i);
+    return match&&LANGS.has(match[1].toLowerCase())?match[1].toLowerCase():null;
+  }catch{return null}
+}
+function persistServerLanguage(lang){
+  try{
+    const secure=location.protocol==="https:"?"; Secure":"";
+    document.cookie="nx_lang="+encodeURIComponent(lang)+"; Max-Age=31536000; Path=/; SameSite=Lax"+secure;
+  }catch{}
+}
 function getLang(){
   const q=new URLSearchParams(location.search).get("lang");
   if(LANGS.has(q))return q;
   try{const saved=localStorage.getItem(STORAGE);if(LANGS.has(saved))return saved}catch{}
+  const cookie=getCookieLang();
+  if(cookie)return cookie;
   return "en";
 }
 let current=getLang();
@@ -295,6 +309,20 @@ function updateAlternates(){
     link.href=href;
   });
 }
+function syncLanguageLinks(){
+  const currentLang=current;
+  document.querySelectorAll("a[href]").forEach(a=>{
+    if(a.dataset.nxNoLanguageSync==="1"||a.target==="_blank"||a.hasAttribute("download"))return;
+    const raw=a.getAttribute("href");
+    if(!raw||raw.startsWith("#")||/^(mailto|tel|javascript|data):/i.test(raw))return;
+    try{
+      const u=new URL(raw,location.href);
+      if(u.origin!==location.origin||u.pathname.startsWith("/assets/")||u.pathname.startsWith("/admin")||u.pathname.startsWith("/api/"))return;
+      u.searchParams.set("lang",currentLang);
+      a.setAttribute("href",u.pathname+u.search+(u.hash||""));
+    }catch{}
+  });
+}
 function addToggle(){
   const existing=document.querySelector("[data-nx-language-toggle]");
   const header=document.querySelector("header");
@@ -317,8 +345,10 @@ function setLanguage(lang){
   if(!LANGS.has(lang))return;
   current=lang;
   try{localStorage.setItem(STORAGE,lang)}catch{}
+  persistServerLanguage(lang);
   addToggle();
   translateDom();
+  syncLanguageLinks();
   window.dispatchEvent(new CustomEvent("nexauren:language-changed",{detail:{lang}}));
 }
 
@@ -327,6 +357,8 @@ window.NexaurenLanguage={get:()=>current,set:setLanguage,toggle:()=>setLanguage(
 function refresh(){
   addToggle();
   translateDom();
+  persistServerLanguage(current);
+  syncLanguageLinks();
 }
 window.NexaurenLanguage=Object.freeze({
   get:()=>current,
@@ -416,7 +448,23 @@ function installLanguageToggleBridge(){
     setLanguage(current==="en"?"pt":"en");
   },true);
 }
+function installLanguageNavigationBridge(){
+  if(window.__nexaurenLanguageNavigationBridge)return;
+  window.__nexaurenLanguageNavigationBridge=true;
+  document.addEventListener("click",event=>{
+    const a=event.target?.closest?.("a[href]");
+    if(!a||a.dataset.nxNoLanguageSync==="1"||a.target==="_blank"||a.hasAttribute("download")||event.defaultPrevented)return;
+    const raw=a.getAttribute("href");
+    if(!raw||raw.startsWith("#")||/^(mailto|tel|javascript|data):/i.test(raw))return;
+    try{
+      const u=new URL(raw,location.href);
+      if(u.origin!==location.origin||u.pathname.startsWith("/assets/")||u.pathname.startsWith("/admin")||u.pathname.startsWith("/api/"))return;
+      u.searchParams.set("lang",current);
+      a.setAttribute("href",u.pathname+u.search+(u.hash||""));
+    }catch{}
+  },true);
+}
 window.addEventListener("nexauren:dynamic-content",refresh);
-function init(){refresh();markLanguageReady();installSafeObserver();installLanguageToggleBridge()}
+function init(){refresh();markLanguageReady();installSafeObserver();installLanguageToggleBridge();installLanguageNavigationBridge()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
