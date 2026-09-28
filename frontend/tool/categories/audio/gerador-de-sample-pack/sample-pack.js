@@ -34,7 +34,7 @@ const I18N={
     chooseFile:"Choose a source audio file first.",chooseMany:"Add at least one audio file first.",generateError:"The audio could not be processed in this browser.",
     wrongPassword:"Use a password with at least 4 characters.",zipError:"The ZIP could not be created.",doneCreate:"Pack created with {n} samples.",doneOrg:"Organized pack created with {n} files.",
     categoryOther:"Other",fileCount:"{n} files",sourceLoaded:"Source loaded · {name}",readyFiles:"{n} files ready",creating:"Creating samples…",processing:"Processing sample {current} of {total} · {effect}",processingDone:"Processing complete · {n} samples.",zipping:"Building ZIP…",
-    generatedSummary:"{n} samples · {type} · {duration}s source · browser-local processing.",orgSummary:"{n} files organized into {cats} folders.",coverTitle:"Nexauren Sample Pack",
+    generatedSummary:"{n} samples · {type} · {duration}s source · {size} total · browser-local processing.",orgSummary:"{n} files organized into {cats} folders.",coverTitle:"Nexauren Sample Pack",
     coverMade:"Made with Nexauren Sample Pack Studio",readmeTitle:"Pack information",readmeBack:"Open Nexauren Sample Pack Studio",
     noAudio:"Please choose audio files only.",loadingAudio:"Loading and decoding audio…",replaceSource:"Replace source",removeSource:"Remove source",downloadSample:"Download",cancelGeneration:"Cancel",cancelling:"Stopping after the current sample…",cancelled:"Generation cancelled · {n} samples kept.",fileTooLarge:"This file is too large. Choose an audio file under 100 MB.",generationPartial:"Pack created with {n} samples · {skipped} variation(s) skipped.",generationFailed:"No sample could be generated. Try another source or fewer effects.",generationItemFailed:"Sample {n} could not be generated. Continuing with the remaining variations.",sourceDecodeFailed:"This audio format could not be decoded by this browser. Try WAV or MP3.",sourceInfo:"{name} · {size} · {duration}s",sourceReady:"Source ready · {name}"
   },
@@ -58,7 +58,7 @@ const I18N={
     chooseFile:"Escolha primeiro um ficheiro de áudio.",chooseMany:"Adicione pelo menos um ficheiro de áudio.",generateError:"Não foi possível processar o áudio pelo navegador.",
     wrongPassword:"Use uma senha com pelo menos 4 caracteres.",zipError:"Não foi possível criar o ZIP.",doneCreate:"Pack criado com {n} samples.",doneOrg:"Pack organizado criado com {n} ficheiros.",
     categoryOther:"Outros",fileCount:"{n} ficheiros",sourceLoaded:"Origem carregada · {name}",readyFiles:"{n} ficheiros prontos",creating:"A gerar samples…",processing:"A processar sample {current} de {total} · {effect}",processingDone:"Processamento concluído · {n} samples.",zipping:"A criar ZIP…",
-    generatedSummary:"{n} samples · {type} · origem com {duration}s · processamento local.",orgSummary:"{n} ficheiros organizados em {cats} pastas.",coverTitle:"Nexauren Sample Pack",
+    generatedSummary:"{n} samples · {type} · origem com {duration}s · {size} no total · processamento local.",orgSummary:"{n} ficheiros organizados em {cats} pastas.",coverTitle:"Nexauren Sample Pack",
     coverMade:"Criado com o Nexauren Sample Pack Studio",readmeTitle:"Informações do pack",readmeBack:"Abrir o Nexauren Sample Pack Studio",
     noAudio:"Escolha apenas ficheiros de áudio.",loadingAudio:"A carregar e descodificar o áudio…",replaceSource:"Substituir origem",removeSource:"Remover origem",downloadSample:"Baixar",cancelGeneration:"Cancelar",cancelling:"A terminar o sample atual antes de parar…",cancelled:"Geração cancelada · {n} samples mantidos.",fileTooLarge:"O ficheiro é demasiado grande. Escolha um áudio com menos de 100 MB.",generationPartial:"Pack criado com {n} samples · {skipped} variação(ões) ignorada(s).",generationFailed:"Não foi possível gerar nenhum sample. Tente outro áudio ou menos efeitos.",generationItemFailed:"O sample {n} não pôde ser gerado. A geração continua com os restantes.",sourceDecodeFailed:"Este formato de áudio não pôde ser descodificado pelo navegador. Tente WAV ou MP3.",sourceInfo:"{name} · {size} · {duration}s",sourceReady:"Origem pronta · {name}"
   }
@@ -506,11 +506,49 @@ function renderCreateSource(){
   el.hidden=false;el.innerHTML='<div class="sp-file-name">'+esc(state.source.name)+'</div><div class="sp-file-meta">'+bytes(state.source.size)+' · '+esc(state.source.type||"audio")+' · '+formatSeconds(state.sourceBuffer?.duration||0)+'s</div>';
 }
 function setGenerateState(){
-  $("#generate-pack").disabled=!state.sourceBuffer||state.sourceBuffer.length<1;
+  const ready=!!state.sourceBuffer&&state.sourceBuffer.length>0;
+  $("#generate-pack").disabled=!ready||state.generating;
+  const cancel=$("#cancel-generation");
+  if(cancel)cancel.hidden=!state.generating;
+}
+function clearSource(){
+  if(state.sourcePreviewUrl){URL.revokeObjectURL(state.sourcePreviewUrl);state.sourcePreviewUrl=null;}
+  state.source=null;
+  state.sourceBuffer=null;
+  renderCreateSource();
+  setGenerateState();
+}
+function renderCreateSource(){
+  const el=$("#create-source");
+  if(state.sourcePreviewUrl){URL.revokeObjectURL(state.sourcePreviewUrl);state.sourcePreviewUrl=null;}
+  if(!state.source){el.hidden=true;el.innerHTML="";return}
+  state.sourcePreviewUrl=URL.createObjectURL(state.source);
+  el.hidden=false;
+  el.innerHTML='<div class="sp-file-name">'+esc(state.source.name)+'</div><div class="sp-file-meta">'+esc(t("sourceInfo",{name:state.source.name,size:bytes(state.source.size),duration:formatSeconds(state.sourceBuffer?.duration||0)}))+'</div><audio class="sp-source-preview" controls preload="metadata" src="'+esc(state.sourcePreviewUrl)+'"></audio><div class="sp-file-tools"><button class="sp-mini-btn" type="button" data-replace-source>'+esc(t("replaceSource"))+'</button><button class="sp-mini-btn" type="button" data-clear-source>'+esc(t("removeSource"))+'</button></div>';
+  el.querySelector("[data-replace-source]")?.addEventListener("click",()=>$("#create-file").click());
+  el.querySelector("[data-clear-source]")?.addEventListener("click",clearSource);
 }
 async function loadCreateFile(file){
   if(!isAudioFile(file)){notify(t("noAudio"),true);return}
-  try{state.source=file;state.sourceBuffer=await decodeAudio(file);renderCreateSource();setGenerateState();$("#create-status").textContent=t("sourceLoaded",{name:file.name})}catch{state.source=null;state.sourceBuffer=null;notify(t("generateError"),true);setGenerateState()}
+  if(file.size>MAX_SOURCE_BYTES){notify(t("fileTooLarge"),true);return}
+  const previousSource=state.source;
+  const previousBuffer=state.sourceBuffer;
+  $("#create-status").textContent=t("loadingAudio");
+  $("#generate-pack").disabled=true;
+  try{
+    const decoded=await decodeAudio(file);
+    state.source=file;
+    state.sourceBuffer=decoded;
+    renderCreateSource();
+    setGenerateState();
+    $("#create-status").textContent=t("sourceReady",{name:file.name});
+  }catch(error){
+    console.error("Sample Pack Studio decode error:",error);
+    state.source=previousSource;
+    state.sourceBuffer=previousBuffer;
+    setGenerateState();
+    notify(t("sourceDecodeFailed"),true);
+  }
 }
 function setCustomField(){const show=$("#sample-type").value==="custom";$("#custom-type-field").hidden=!show}
 function updateLegacyControls(){
@@ -578,7 +616,7 @@ function renderEffectsModal(){
     });
   });
   el.querySelectorAll("[data-modal-close]").forEach(function(btn){btn.addEventListener("click",closeModal);});
-  el.querySelector("[data-effects-apply]")?.addEventListener("click",function(){renderSettingsSummary();closeModal();});
+  el.querySelector("[data-effects-apply]")?.addEventListener("click",function(){savePrefs();renderSettingsSummary();closeModal();});
 }
 function renderOptionsModal(){
   const el=$("#options-modal");
@@ -626,80 +664,172 @@ function renderOptionsModal(){
     };
     setCustomField();
     updateLegacyControls();
+    savePrefs();
     renderSettingsSummary();
     closeModal();
   });
 }
-async function generateSamples(){
-  if(!state.sourceBuffer){notify(t("chooseFile"),true);return}
-  updateLegacyControls();
-  const quantity=Number(state.generation.quantity)||8;
-  const amount=Number(state.generation.variation)||55;
-  const includeOriginal=state.generation.includeOriginal;
-  const randomize=state.generation.randomize;
-  const type=createTypeFolder();
+function updateCreateProgress(current,total,effect,percent){
   const progress=$("#create-progress");
   const progressBar=$("#create-progress-bar");
   const progressText=$("#create-progress-text");
   const progressPercent=$("#create-progress-percent");
-  $("#generate-pack").disabled=true;
+  if(!progress)return;
+  progress.hidden=false;
+  progress.setAttribute("aria-hidden","false");
+  progress.setAttribute("aria-busy",state.generating?"true":"false");
+  if(progressBar){
+    progressBar.style.width=Math.max(0,Math.min(100,percent))+"%";
+    progressBar.parentElement?.setAttribute("aria-valuenow",String(Math.round(percent)));
+  }
+  if(progressText)progressText.textContent=t("processing",{current,total,effect});
+  if(progressPercent)progressPercent.textContent=Math.round(percent)+"%";
+}
+function nextFrame(){return new Promise(resolve=>setTimeout(resolve,0))}
+async function generateSamples(){
+  if(!state.sourceBuffer){notify(t("chooseFile"),true);return}
+  updateLegacyControls();
+  const quantity=Math.max(1,Number(state.generation.quantity)||8);
+  const amount=Math.max(0,Math.min(100,Number(state.generation.variation)||55));
+  const includeOriginal=state.generation.includeOriginal;
+  const randomize=state.generation.randomize;
+  const type=createTypeFolder();
+
+  state.generating=true;
+  state.cancelRequested=false;
+  setGenerateState();
   $("#create-status").textContent=t("creating");
+
+  state.generated.forEach(item=>{if(item.url)URL.revokeObjectURL(item.url);});
+  state.generated=[];
+
+  const progress=$("#create-progress");
+  const cancel=$("#cancel-generation");
+  if(cancel){
+    cancel.hidden=false;
+    cancel.disabled=false;
+  }
   if(progress){
     progress.hidden=false;
     progress.setAttribute("aria-hidden","false");
-    if(progressBar)progressBar.style.width="0%";
-    if(progressText)progressText.textContent=t("processing",{current:0,total:quantity,effect:"—"});
-    if(progressPercent)progressPercent.textContent="0%";
+    progress.setAttribute("aria-busy","true");
   }
-  state.generated.forEach(function(item){if(item.url)URL.revokeObjectURL(item.url);});
-  state.generated=[];
+
   let plan=[];
+  let skipped=0;
+  let lastError=null;
+
   try{
     plan=makeVariationPlan(quantity,includeOriginal);
     for(let i=0;i<plan.length;i++){
+      if(state.cancelRequested)break;
+
       const effects=plan[i].effects;
       const effectText=effects.map(effectLabel).join(" + ");
-      const percent=Math.round((i/plan.length)*100);
+      const basePercent=Math.round((i/plan.length)*100);
+      updateCreateProgress(i+1,plan.length,effectText,basePercent);
       $("#create-status").textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
-      if(progressBar)progressBar.style.width=percent+"%";
-      if(progressText)progressText.textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
-      if(progressPercent)progressPercent.textContent=percent+"%";
-      await new Promise(function(resolve){setTimeout(resolve,0)});
-      
-      let buffer;
-      if(effects.length===1&&effects[0]==="original")buffer=copyBuffer(state.sourceBuffer);
-      else buffer=await renderEffectPipeline(state.sourceBuffer,effects,amount,randomize);
-      if(state.generation.normalize)buffer=normalizeBuffer(buffer);
-      const blob=audioToWav(buffer);
-      const num=String(i+1).padStart(3,"0");
-      const effectSlug=effects.filter(function(x){return x!=="original";}).map(function(x){return x;}).join("-")||"original";
-      const base=safeFileName(type).toLowerCase().replace(/\s+/g,"-");
-      const suffix=state.generation.effectNaming?"_"+effectSlug:"";
-      const filename=base+"_"+num+suffix+".wav";
-      state.generated.push({name:filename,blob:blob,url:URL.createObjectURL(blob),effects:effects,duration:buffer.duration,size:blob.size,type:type});
-      
-      const donePercent=Math.round(((i+1)/plan.length)*100);
-      if(progressBar)progressBar.style.width=donePercent+"%";
-      if(progressText)progressText.textContent=t("processing",{current:i+1,total:plan.length,effect:effectText});
-      if(progressPercent)progressPercent.textContent=donePercent+"%";
-      renderGenerated();
+      await nextFrame();
+
+      try{
+        let buffer;
+        updateCreateProgress(i+1,plan.length,effectText,Math.min(12,basePercent+12));
+        await nextFrame();
+
+        if(effects.length===1&&effects[0]==="original")buffer=copyBuffer(state.sourceBuffer);
+        else buffer=await renderEffectPipeline(state.sourceBuffer,effects,amount,randomize);
+
+        updateCreateProgress(i+1,plan.length,effectText,Math.min(90,basePercent+78));
+        await nextFrame();
+
+        if(state.generation.normalize)buffer=normalizeBuffer(buffer);
+        const blob=audioToWav(buffer);
+        updateCreateProgress(i+1,plan.length,effectText,Math.min(96,basePercent+84));
+
+        const num=String(i+1).padStart(3,"0");
+        const effectSlug=effects.filter(x=>x!=="original").join("-")||"original";
+        const base=safeFileName(type).toLowerCase().replace(/\s+/g,"-");
+        const suffix=state.generation.effectNaming?"_"+effectSlug:"";
+        const filename=base+"_"+num+suffix+".wav";
+
+        state.generated.push({
+          name:filename,
+          blob,
+          url:URL.createObjectURL(blob),
+          effects,
+          duration:buffer.duration,
+          size:blob.size,
+          type
+        });
+
+        const donePercent=Math.round(((i+1)/plan.length)*100);
+        updateCreateProgress(i+1,plan.length,effectText,donePercent);
+        renderGenerated();
+      }catch(error){
+        skipped++;
+        lastError=error;
+        console.error("Sample Pack Studio variation error:",{sample:i+1,effects,error});
+        $("#create-status").textContent=t("generationItemFailed",{n:i+1});
+        await nextFrame();
+      }
     }
+
+    if(state.cancelRequested){
+      const kept=state.generated.length;
+      const percent=plan.length?Math.round((kept/plan.length)*100):0;
+      updateCreateProgress(kept,plan.length,"—",percent);
+      $("#create-progress-text").textContent=t("cancelled",{n:kept});
+      $("#create-status").textContent=t("cancelled",{n:kept});
+      if(kept)$("#create-results").hidden=false;
+      return;
+    }
+
+    if(!state.generated.length){
+      throw lastError||new Error(t("generationFailed"));
+    }
+
     $("#create-results").hidden=false;
-    $("#create-status").textContent=t("processingDone",{n:state.generated.length});
-    if(progressText)progressText.textContent=t("processingDone",{n:state.generated.length});
+    if(skipped){
+      $("#create-status").textContent=t("generationPartial",{n:state.generated.length,skipped});
+      notify(t("generationPartial",{n:state.generated.length,skipped}));
+    }else{
+      $("#create-status").textContent=t("processingDone",{n:state.generated.length});
+    }
+
+    const totalSize=state.generated.reduce((sum,item)=>sum+item.size,0);
+    const totalPercent=100;
+    updateCreateProgress(state.generated.length,plan.length,"—",totalPercent);
+    $("#create-progress-text").textContent=skipped?t("generationPartial",{n:state.generated.length,skipped}):t("processingDone",{n:state.generated.length});
+    $("#create-progress-percent").textContent="100%";
   }catch(error){
-    console.error(error);
-    const detail=error?.message||error?.name||"Unknown processing error";
-    console.error("Sample Pack Studio processing error:",detail);
-    $("#create-status").textContent=t("generatePack");
-    notify(t("generateError"),true);
+    console.error("Sample Pack Studio generation error:",error);
+    if(state.generated.length){
+      $("#create-results").hidden=false;
+      $("#create-status").textContent=t("generationPartial",{n:state.generated.length,skipped:skipped+1});
+      notify(t("generationItemFailed",{n:Math.min(plan.length,state.generated.length+1)}),true);
+    }else{
+      $("#create-status").textContent=t("generationFailed");
+      notify(t("generationFailed"),true);
+    }
   }finally{
+    state.generating=false;
+    state.cancelRequested=false;
+    if(progress)progress.setAttribute("aria-busy","false");
+    if(cancel){cancel.hidden=true;cancel.disabled=false;}
     setGenerateState();
   }
 }
+function downloadGeneratedSample(index){
+  const item=state.generated[index];
+  if(!item)return;
+  downloadBlob(item.blob,item.name);
+}
 function renderGenerated(){
-  $("#generated-list").innerHTML=state.generated.map(item=>'<div class="sp-audio-row"><div><div class="sp-audio-name">'+esc(item.name)+'</div><div class="sp-audio-meta">'+esc((item.effects||[item.effect||"original"]).map(effectLabel).join(" + "))+' · '+formatSeconds(item.duration)+'s · '+bytes(item.size)+'</div></div><audio controls preload="none" src="'+esc(item.url)+'"></audio></div>').join("");
-  $("#created-summary").textContent=t("generatedSummary",{n:state.generated.length,type:state.generated[0]?.type||"Sample",duration:formatSeconds(state.sourceBuffer?.duration||0)});
+  const list=$("#generated-list");
+  list.innerHTML=state.generated.map((item,index)=>'<div class="sp-audio-row"><div><div class="sp-audio-name">'+esc(item.name)+'</div><div class="sp-audio-meta">'+esc((item.effects||[item.effect||"original"]).map(effectLabel).join(" + "))+' · '+formatSeconds(item.duration)+'s · '+bytes(item.size)+'</div></div><div class="sp-audio-actions"><audio controls preload="none" src="'+esc(item.url)+'"></audio><button class="sp-mini-btn" type="button" data-download-generated="'+index+'">↓ '+esc(t("downloadSample"))+'</button></div></div>').join("");
+  $$("#generated-list [data-download-generated]").forEach(btn=>btn.addEventListener("click",()=>downloadGeneratedSample(Number(btn.dataset.downloadGenerated))));
+  const totalSize=state.generated.reduce((sum,item)=>sum+item.size,0);
+  $("#created-summary").textContent=t("generatedSummary",{n:state.generated.length,type:state.generated[0]?.type||"Sample",duration:formatSeconds(state.sourceBuffer?.duration||0),size:bytes(totalSize)});
   $("#download-created").disabled=!state.generated.length;
 }
 function makeCoverSvg(info){
@@ -798,6 +928,7 @@ $("#organize-files").addEventListener("change",e=>loadOrganizer(e.target.files))
 $("#organize-drop").addEventListener("dragover",e=>e.preventDefault());
 $("#organize-drop").addEventListener("drop",e=>{e.preventDefault();loadOrganizer(e.dataTransfer.files)});
 $("#generate-pack").addEventListener("click",generateSamples);
+$("#cancel-generation").addEventListener("click",()=>{if(!state.generating)return;state.cancelRequested=true;$("#cancel-generation").disabled=true;$("#create-status").textContent=t("cancelling");});
 $("#download-created").addEventListener("click",createZip);
 $("#organize-pack").addEventListener("click",organizeZip);
 $("#download-organized").addEventListener("click",()=>{if(state.orgZipBlob)downloadBlob(state.orgZipBlob,slug($("#org-pack-name").value)+".zip")});
