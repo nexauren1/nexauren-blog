@@ -3,11 +3,14 @@
 
 const ZIPJS_URL="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.18.2/+esm";
 const TOOL_URL="https://nexaurenstory.com/tool/categories/audio/gerador-de-sample-pack/";
+const PREF_KEY="nexauren-sample-pack-preferences-v2";
+const MAX_SOURCE_BYTES=100*1024*1024;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const state={
-  lang:"en",mode:null,source:null,sourceBuffer:null,generated:[],organized:[],zipBlob:null,
-  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null,selectedEffects:[],effectPreset:"diverse",modalOpen:null
+  lang:"en",mode:null,source:null,sourceBuffer:null,sourcePreviewUrl:null,generated:[],organized:[],zipBlob:null,
+  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null,selectedEffects:[],effectPreset:"diverse",modalOpen:null,
+  generating:false,cancelRequested:false
 };
 
 const I18N={
@@ -33,7 +36,7 @@ const I18N={
     categoryOther:"Other",fileCount:"{n} files",sourceLoaded:"Source loaded · {name}",readyFiles:"{n} files ready",creating:"Creating samples…",processing:"Processing sample {current} of {total} · {effect}",processingDone:"Processing complete · {n} samples.",zipping:"Building ZIP…",
     generatedSummary:"{n} samples · {type} · {duration}s source · browser-local processing.",orgSummary:"{n} files organized into {cats} folders.",coverTitle:"Nexauren Sample Pack",
     coverMade:"Made with Nexauren Sample Pack Studio",readmeTitle:"Pack information",readmeBack:"Open Nexauren Sample Pack Studio",
-    noAudio:"Please choose audio files only."
+    noAudio:"Please choose audio files only.",loadingAudio:"Loading and decoding audio…",replaceSource:"Replace source",removeSource:"Remove source",downloadSample:"Download",cancelGeneration:"Cancel",cancelling:"Stopping after the current sample…",cancelled:"Generation cancelled · {n} samples kept.",fileTooLarge:"This file is too large. Choose an audio file under 100 MB.",generationPartial:"Pack created with {n} samples · {skipped} variation(s) skipped.",generationFailed:"No sample could be generated. Try another source or fewer effects.",generationItemFailed:"Sample {n} could not be generated. Continuing with the remaining variations.",sourceDecodeFailed:"This audio format could not be decoded by this browser. Try WAV or MP3.",sourceInfo:"{name} · {size} · {duration}s",sourceReady:"Source ready · {name}"
   },
   pt:{
     backAudio:"Ferramentas de áudio",title:"Gerador de Sample Pack",lead:"Crie um sample pack a partir de um som ou organize vários ficheiros numa estrutura limpa e pronta para ZIP.",
@@ -57,7 +60,7 @@ const I18N={
     categoryOther:"Outros",fileCount:"{n} ficheiros",sourceLoaded:"Origem carregada · {name}",readyFiles:"{n} ficheiros prontos",creating:"A gerar samples…",processing:"A processar sample {current} de {total} · {effect}",processingDone:"Processamento concluído · {n} samples.",zipping:"A criar ZIP…",
     generatedSummary:"{n} samples · {type} · origem com {duration}s · processamento local.",orgSummary:"{n} ficheiros organizados em {cats} pastas.",coverTitle:"Nexauren Sample Pack",
     coverMade:"Criado com o Nexauren Sample Pack Studio",readmeTitle:"Informações do pack",readmeBack:"Abrir o Nexauren Sample Pack Studio",
-    noAudio:"Escolha apenas ficheiros de áudio."
+    noAudio:"Escolha apenas ficheiros de áudio.",loadingAudio:"A carregar e descodificar o áudio…",replaceSource:"Substituir origem",removeSource:"Remover origem",downloadSample:"Baixar",cancelGeneration:"Cancelar",cancelling:"A terminar o sample atual antes de parar…",cancelled:"Geração cancelada · {n} samples mantidos.",fileTooLarge:"O ficheiro é demasiado grande. Escolha um áudio com menos de 100 MB.",generationPartial:"Pack criado com {n} samples · {skipped} variação(ões) ignorada(s).",generationFailed:"Não foi possível gerar nenhum sample. Tente outro áudio ou menos efeitos.",generationItemFailed:"O sample {n} não pôde ser gerado. A geração continua com os restantes.",sourceDecodeFailed:"Este formato de áudio não pôde ser descodificado pelo navegador. Tente WAV ou MP3.",sourceInfo:"{name} · {size} · {duration}s",sourceReady:"Origem pronta · {name}"
   }
 };
 const types=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","melody","vocal","fx","other","custom"];Object.assign(I18N.en,{
@@ -115,6 +118,17 @@ const EFFECT_PRESETS={
 const DEFAULT_EFFECTS=EFFECT_PRESETS.diverse.slice();
 state.selectedEffects=DEFAULT_EFFECTS.slice();
 state.generation={quantity:8,variation:55,includeOriginal:true,randomize:true,maxEffects:2,lengthMode:"mixed",effectNaming:true,normalize:true};
+try{
+  const saved=JSON.parse(localStorage.getItem(PREF_KEY)||"null");
+  if(saved&&typeof saved==="object"){
+    if(saved.lang==="pt"||saved.lang==="en")state.lang=saved.lang;
+    if(Array.isArray(saved.effects)&&saved.effects.length)state.selectedEffects=saved.effects.filter(id=>EFFECT_CATALOG.some(item=>item.id===id));
+    if(saved.generation&&typeof saved.generation==="object")state.generation={...state.generation,...saved.generation};
+  }else if(/^pt(?:-|$)/i.test(navigator.language||""))state.lang="pt";
+}catch(_){if(/^pt(?:-|$)/i.test(navigator.language||""))state.lang="pt";}
+function savePrefs(){
+  try{localStorage.setItem(PREF_KEY,JSON.stringify({lang:state.lang,effects:state.selectedEffects,generation:state.generation}));}catch(_){/* storage unavailable */}
+}
 
 function t(key,vars={}){
   let value=I18N[state.lang][key]??I18N.en[key]??key;
