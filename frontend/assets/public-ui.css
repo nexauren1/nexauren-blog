@@ -778,3 +778,11 @@ body.nx-page .account-footer{
 .nx-language-toggle:focus-visible{outline:2px solid rgba(124,58,237,.45);outline-offset:2px}
 .tool-links .nx-language-toggle,.nav-links .nx-language-toggle{margin-left:3px}
 @media(max-width:960px){.nx-language-toggle{min-height:32px;padding:0 10px}}\n
+/* Nexauren global footer */
+.nx-global-footer{width:100%;margin-top:64px;background:linear-gradient(180deg,#090d15,#06090f);border-top:1px solid rgba(255,255,255,.08);color:#e9eef8}
+.nx-footer-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:46px 0 40px;display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:34px}
+.nx-footer-brand,.nx-footer-column{display:flex;flex-direction:column;align-items:flex-start}
+.nx-footer-logo{display:inline-flex;align-items:center;gap:11px;color:inherit;text-decoration:none}.nx-footer-logo img{border-radius:12px;box-shadow:0 0 32px rgba(120,92,255,.16)}.nx-footer-logo span{display:flex;flex-direction:column;line-height:1}.nx-footer-logo strong{font-size:16px}.nx-footer-logo small{color:#79859a;font-size:11px;margin-top:4px}
+.nx-footer-copy{max-width:360px;color:#8995a8;line-height:1.65;font-size:13px;margin:16px 0 9px}.nx-footer-email{color:#c5d1e5;text-decoration:none;font-size:13px;font-weight:750}.nx-footer-column strong{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#788499;margin-bottom:13px}.nx-footer-column a{color:#aeb8ca;text-decoration:none;font-size:13px;margin:0 0 10px;transition:color .16s ease}.nx-footer-column a:hover{color:#fff}
+.nx-footer-bottom{border-top:1px solid rgba(255,255,255,.07)}.nx-footer-bottom-inner{width:min(1180px,calc(100% - 32px));margin:0 auto;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:20px;color:#667287;font-size:11px}.nx-footer-bottom-inner a{color:inherit}
+@media(max-width:780px){.nx-footer-shell{grid-template-columns:1fr 1fr;gap:28px;padding:34px 0}.nx-footer-brand{grid-column:1/-1}.nx-footer-bottom-inner{min-height:58px;align-items:flex-start;justify-content:center;flex-direction:column;padding:13px 0}}
