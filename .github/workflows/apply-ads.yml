@@ -61,6 +61,18 @@ jobs:
 
           def remove_blocks(text):
               text = re.sub(
+                  r'\s*<div class="nx-auto-ad top"[^>]*>.*?</div>\s*<script>window\.NexaurenAds\?\.loadBanner\(document\.getElementById\("nx-auto-ad-top"\)\);</script>\s*',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              text = re.sub(
+                  r'\s*<div class="nx-auto-ad bottom"[^>]*>.*?</div>\s*<script>window\.NexaurenAds\?\.loadResponsive\(document\.getElementById\("nx-auto-ad-bottom"\)\);</script>\s*',
+                  '',
+                  text,
+                  flags=re.S,
+              )
+              text = re.sub(
                   r'\s*<!-- NEXAUREN-AUTO-ADS:START -->.*?<!-- NEXAUREN-AUTO-ADS:END -->\s*',
                   '',
                   text,
@@ -108,6 +120,8 @@ jobs:
               # Only actual tool pages: frontend/tool/categories/<category>/<tool>/...
               if len(rel.parts) < 3:
                   continue
+              if "countdown-studio" in rel.parts:
+                  continue
 
               text = path.read_text(encoding="utf-8")
               text = remove_blocks(text)
@@ -154,7 +168,8 @@ jobs:
           tools = []
 
           for path in sorted(root.rglob("*.html")):
-              if len(path.relative_to(root).parts) < 3:
+              rel = path.relative_to(root)
+              if len(rel.parts) < 3 or "countdown-studio" in rel.parts:
                   continue
               tools.append(path)
               text = path.read_text(encoding="utf-8")
