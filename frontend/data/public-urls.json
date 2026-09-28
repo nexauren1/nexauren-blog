@@ -1,6 +1,6 @@
 {
-  "version": 4,
-  "generatedAt": "2026-09-28T07:26:15.711Z",
+  "version": 3,
+  "generatedAt": "2026-09-28T15:23:22.600033Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -15,6 +15,11 @@
     "/tool/categories/audio/audio-trimmer/",
     "/tool/categories/audio/conversor-de-audio/",
     "/tool/categories/audio/gerador-de-sample-pack/",
+    "/tool/categories/audio/producao-musical/calculadora-de-bpm/",
+    "/tool/categories/audio/producao-musical/calculadora-de-pitch-time/",
+    "/tool/categories/audio/producao-musical/finder-de-escala-e-tonalidade/",
+    "/tool/categories/audio/producao-musical/gerador-de-drum-pattern/",
+    "/tool/categories/audio/producao-musical/gerador-de-progressao-de-acordes/",
     "/tool/categories/imagem/",
     "/tool/categories/imagem/adicionar-bordas/",
     "/tool/categories/imagem/desfocar-pixelizar/",
