@@ -1,9 +1,9 @@
 {
-  "version": 22,
+  "version": 23,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T18:15:00Z",
+    "updatedAt": "2026-09-28T16:55:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -77,6 +77,16 @@
       "name_en": "Audio",
       "description_en": "Tools for converting, editing, processing, and creating audio.",
       "showWhenEmpty": true
+    },
+    {
+      "id": "tempo",
+      "name": "Tempo & Contadores",
+      "description": "Countdowns, cronómetros, contadores, intervalos e sessões de tempo.",
+      "icon": "◴",
+      "sortOrder": 55,
+      "path": "/tool/categories/tempo/",
+      "name_en": "Time & Counters",
+      "description_en": "Countdowns, stopwatches, counters, intervals, and timing sessions."
     }
   ],
   "tools": [
@@ -2147,6 +2157,45 @@
       "popular": false,
       "access": "public",
       "sortOrder": 50
+    },
+    {
+      "id": "countdown-studio",
+      "name": "Countdown Studio",
+      "name_en": "Countdown Studio",
+      "description": "Painel profissional para countdowns, eventos, cronómetro, contador, intervalos, links partilháveis e embeds.",
+      "description_en": "Professional dashboard for countdowns, events, stopwatch, counter, intervals, shareable links, and embeds.",
+      "category": "tempo",
+      "icon": "◴",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/tempo/countdown-studio/",
+      "tags": [
+        "countdown",
+        "timer",
+        "cronómetro",
+        "stopwatch",
+        "contador",
+        "counter",
+        "intervalos",
+        "embed",
+        "share",
+        "tempo"
+      ],
+      "tags_en": [
+        "countdown",
+        "timer",
+        "stopwatch",
+        "counter",
+        "intervals",
+        "embed",
+        "share",
+        "time",
+        "events"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 10
     }
   ]
 }
