@@ -362,7 +362,7 @@ function decoratePublicHtmlResponse(request,response){
     const queryLang=url.searchParams.get("lang");
     const requestedLang=queryLang==="pt"?"pt":(queryLang==="en"?"en":(cookieLang==="pt"?"pt":"en"));
   return response.text().then(html=>{
-    html=html.replaceAll("/assets/nexauren-language.js?v=20260928-10","/assets/nexauren-language.js?v=20260928-10");
+    html=html.replaceAll("/assets/nexauren-language.js?v=20260928-11","/assets/nexauren-language.js?v=20260928-11");
     html=html.replace(/<body(\s[^>]*)?>/i,(match,attrs="")=>{if(/\bclass\s*=/.test(attrs)){return match.replace(/class\s*=\s*(['"])(.*?)\1/i,(m,q,v)=>/\bnx-page\b/.test(v)?m:'class='+q+'nx-page '+v+q);}return '<body class="nx-page"'+attrs+'>';});
     html=html.replace(/<html\b([^>]*)>/i,(match,attrs="")=>{if(/\blang\s*=/.test(attrs))return match.replace(/lang\s*=\s*(['"])[^'"]*\1/i,'lang="'+requestedLang+'"');return '<html lang="'+requestedLang+'"'+attrs+'>';});
     const titleMatch=html.match(/<title>\s*([\s\S]*?)\s*<\/title>/i);
@@ -1471,7 +1471,7 @@ async function decorateToolHtmlResponse(request,response){
   const type=response.headers.get("content-type")||"";
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   let html=await response.text();
-  html=html.replaceAll("/assets/nexauren-language.js?v=20260928-10","/assets/nexauren-language.js?v=20260928-10");
+  html=html.replaceAll("/assets/nexauren-language.js?v=20260928-11","/assets/nexauren-language.js?v=20260928-11");
   if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
   if(!/public-ui\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/assets/public-ui.css?v=20260928-support-1">\n</head>');
   if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-6" defer></script>\n</body>');
