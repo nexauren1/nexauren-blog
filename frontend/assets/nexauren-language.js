@@ -109,7 +109,7 @@ const EXTRA_PAIRS=[
 ["Não foi possível abrir a imagem escolhida.","Could not open the selected image."],
 ["Pronto. Use a câmara ou escolha uma imagem.","Ready. Use the camera or choose an image."],
 ["Não há resultado para copiar.","There is no result to copy."]
-];
+,["Sem avaliações","No reviews"],["AVALIAÇÕES","REVIEWS"],["AVALIAR FERRAMENTA","RATE TOOL"],["Escolha de 1 a 5 estrelas.","Choose 1 to 5 stars."],["Escolha um nome anónimo entre 2 e 40 caracteres.","Choose an anonymous name between 2 and 40 characters."],["A guardar…","Saving…"],["Não foi possível guardar a avaliação.","Could not save the review."],["Não foi possível atualizar o favorito.","Could not update the favorite."],["Nenhuma avaliação corresponde à pesquisa.","No reviews match the search."],["Ainda não existem avaliações públicas.","There are no public reviews yet."],["Anónimo","Anonymous"],["Utilizador Nexauren","Nexauren user"],["Não foi possível carregar as avaliações.","Could not load the reviews."],["Não foi possível iniciar as ferramentas.","Could not start the tools."],["Não foi possível carregar a seleção.","Could not load the selection."],["MAIS USADOS","MOST USED"],["SELEÇÃO NEXAUREN","NEXAUREN SELECTION"],["Ferramentas mais procuradas e utilizadas.","Most searched and used tools."],["Ferramentas escolhidas para começar rapidamente.","Tools selected for a quick start."],["Subcategorias de áudio","Audio subcategories"],["Todas","All"]];
 PAIRS.push(...EXTRA_PAIRS);
 const PT=new Map(PAIRS.map(([pt,en])=>[pt,en]));
 const EN=new Map(PAIRS.map(([pt,en])=>[en,pt]));
@@ -132,6 +132,11 @@ function pairText(raw,lang){
     return text.slice(0,text.indexOf(trimmed))+replacement+text.slice(text.indexOf(trimmed)+trimmed.length);
   }
   if(lang==="en"){
+    const reviewPatterns=[
+      [/^(\d+)\s+avaliaç(?:ão|ões)$/i,(_,n)=>n+" review"+(Number(n)===1?"":"s")],
+      [/^([0-9]+)\s+review(?:s)?$/i,(_,n)=>n+" avaliaç"+(Number(n)===1?"ão":"ões")]
+    ];
+    for(const [re,fn] of reviewPatterns)if(re.test(trimmed))return text.replace(trimmed,trimmed.replace(re,fn));
     const patterns=[
       [/^(\d+)\s+imagens?\s+na fila\.?$/i,(_,n)=>n+" image"+(Number(n)===1?"":"s")+" in queue"],
       [/^(\d+)\s+imagens?$/i,(_,n)=>n+" image"+(Number(n)===1?"":"s")],
