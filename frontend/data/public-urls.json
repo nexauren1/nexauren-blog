@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-28T04:53:02.780765Z",
+  "generatedAt": "2026-09-28T05:08:38.762487Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -22,6 +22,7 @@
     "/tool/categories/imagem/image-palette-extractor/",
     "/tool/categories/imagem/image-resizer/",
     "/tool/categories/imagem/image-watermark/",
+    "/tool/categories/imagem/juntar-imagens/",
     "/tool/categories/imagem/social-image-resizer/",
     "/tool/categories/marketplace/",
     "/tool/categories/marketplace/marketplace-fee-calculator/",
