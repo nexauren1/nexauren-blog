@@ -6,7 +6,7 @@
   const countEl=document.querySelector("[data-tool-count]");
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const norm=v=>String(v??"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"");
-  const language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="en")return "en";try{return localStorage.getItem("ns_lang")==="en"?"en":"pt"}catch{return "pt"}})();
+  let language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="pt")return "pt";if(q==="en")return "en";try{return localStorage.getItem("ns_lang")==="pt"?"pt":"en"}catch{return "en"}})();
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const tags=v=>language==="en"?(Array.isArray(v?.tags_en)&&v.tags_en.length?v.tags_en:(v?.tags||[])):(v?.tags||[]);
   const pageTitle=language==="en"?"Tools | Nexauren Story":"Ferramentas | Nexauren Story";
@@ -146,7 +146,7 @@
 
   document.addEventListener("click",handleToolClick,true);
   search?.addEventListener("input",updateSearch);
-  window.addEventListener("nexauren:tool-registry-updated",event=>{if(event.detail)applyRegistry(event.detail)});
+  window.addEventListener("nexauren:tool-registry-updated",event=>{if(event.detail)applyRegistry(event.detail)});\n  window.addEventListener("nexauren:language-changed",event=>{language=event.detail?.lang||language;if(registryReady)updateSearch()});
   window.addEventListener("pageshow",()=>{closeAccessDialog();if(user)refreshPlan(true)});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden){closeAccessDialog();if(user)refreshPlan(true)}});
 
