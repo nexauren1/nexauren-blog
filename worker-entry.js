@@ -1021,12 +1021,12 @@ const SUPPORT_KINDS=new Set(["problem","support","suggestion","feature","other"]
 async function ensureSupportFeedbackSchema(env){
   const schema=[
     "CREATE TABLE IF NOT EXISTS support_feedback (",
-    "id TEXT PRIMARY KEY,kind TEXT NOT NULL,subject TEXT NOT NULL,message TEXT NOT NULL,tool_id TEXT,tool_name TEXT,tool_category TEXT,tool_access TEXT,tool_path TEXT,source_path TEXT,page_url TEXT,referrer TEXT,language TEXT,locale TEXT,timezone TEXT,user_agent TEXT,platform TEXT,screen_json TEXT,viewport_json TEXT,connection_json TEXT,client_time TEXT,",
-    "touch_points INTEGER NOT NULL DEFAULT 0,online INTEGER NOT NULL DEFAULT 1,cookies_enabled INTEGER NOT NULL DEFAULT 0,color_scheme TEXT,account_id TEXT,firebase_uid TEXT,account_email TEXT,account_display_name TEXT,account_photo_url TEXT,account_email_verified INTEGER,account_plan TEXT,firebase_provider_ids_json TEXT,firebase_creation_time TEXT,firebase_last_sign_in_time TEXT,ip_hash TEXT,country TEXT,cf_ray TEXT,requester_email TEXT,email_status TEXT NOT NULL DEFAULT 'pending',email_error TEXT,created_at TEXT NOT NULL",
+    "id TEXT PRIMARY KEY,kind TEXT NOT NULL,subject TEXT NOT NULL,message TEXT NOT NULL,tool_id TEXT,tool_name TEXT,tool_description TEXT,tool_category TEXT,tool_access TEXT,tool_path TEXT,source_path TEXT,page_url TEXT,referrer TEXT,language TEXT,locale TEXT,timezone TEXT,user_agent TEXT,platform TEXT,screen_json TEXT,viewport_json TEXT,connection_json TEXT,client_time TEXT,",
+    "touch_points INTEGER NOT NULL DEFAULT 0,online INTEGER NOT NULL DEFAULT 1,cookies_enabled INTEGER NOT NULL DEFAULT 0,color_scheme TEXT,account_id TEXT,firebase_uid TEXT,account_email TEXT,account_display_name TEXT,account_photo_url TEXT,account_email_verified INTEGER,account_plan TEXT,firebase_provider_ids_json TEXT,firebase_sign_in_provider TEXT,firebase_auth_time TEXT,firebase_creation_time TEXT,firebase_last_sign_in_time TEXT,ip_hash TEXT,country TEXT,cf_ray TEXT,requester_email TEXT,email_status TEXT NOT NULL DEFAULT 'pending',email_error TEXT,created_at TEXT NOT NULL",
     ")"
   ].join("\n");
   await env.DB.prepare(schema).run();
-  for(const column of ["account_photo_url TEXT","firebase_provider_ids_json TEXT","firebase_creation_time TEXT","firebase_last_sign_in_time TEXT"]){
+  for(const column of ["account_photo_url TEXT","tool_description TEXT","firebase_provider_ids_json TEXT","firebase_sign_in_provider TEXT","firebase_auth_time TEXT","firebase_creation_time TEXT","firebase_last_sign_in_time TEXT"]){
     try{await env.DB.prepare("ALTER TABLE support_feedback ADD COLUMN "+column).run();}catch{}
   }
   await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_created ON support_feedback(created_at DESC)").run();
@@ -1039,12 +1039,12 @@ function supportEmailHtml(submission){
   const line=(label,value)=>"<tr><td style='padding:5px 12px 5px 0;color:#6b7280;vertical-align:top'><strong>"+esc(label)+"</strong></td><td style='padding:5px 0;white-space:pre-wrap'>"+esc(value||"—")+"</td></tr>";
   const rows=[
     ["Reference",submission.id],["Type",submission.kind],["Subject",submission.subject],
-    ["Tool ID",submission.tool_id],["Tool name",submission.tool_name],["Tool category",submission.tool_category],
+    ["Tool ID",submission.tool_id],["Tool name",submission.tool_name],["Tool description",submission.tool_description],["Tool category",submission.tool_category],
     ["Tool access",submission.tool_access],["Tool path",submission.tool_path],["Source path",submission.source_path],
     ["Page URL",submission.page_url],["Language",submission.language],["Account ID",submission.account_id],
     ["Firebase UID",submission.firebase_uid],["Account email",submission.account_email],
     ["Display name",submission.account_display_name],["Profile photo",submission.account_photo_url],["Email verified",submission.account_email_verified==null?"":String(!!submission.account_email_verified)],
-    ["Plan",submission.account_plan],["Firebase providers",submission.firebase_provider_ids_json],["Firebase account created",submission.firebase_creation_time],["Firebase last sign-in",submission.firebase_last_sign_in_time],
+    ["Plan",submission.account_plan],["Firebase providers",submission.firebase_provider_ids_json],["Firebase sign-in provider",submission.firebase_sign_in_provider],["Firebase auth time",submission.firebase_auth_time],["Firebase account created",submission.firebase_creation_time],["Firebase last sign-in",submission.firebase_last_sign_in_time],
     ["Timezone",submission.timezone],["Locale",submission.locale],
     ["User agent",submission.user_agent],["Platform",submission.platform],["Screen",submission.screen_json],
     ["Viewport",submission.viewport_json],["Connection",submission.connection_json],["Touch points",String(submission.touch_points)],
@@ -1126,6 +1126,7 @@ async function submitSupportFeedback(env,request){
     kind,subject,message,
     tool_id:tool&&tool.id||rawToolId||null,
     tool_name:text(tool&& (tool.name_en||tool.name)||"",180)||null,
+    tool_description:text(tool&& (tool.description_en||tool.description||tool.description_pt)||"",1200)||null,
     tool_category:text(tool&&tool.category||"",80)||null,
     tool_access:text(tool&&tool.access||"",40)||null,
     tool_path:text(tool&&tool.path||sourcePath,500)||null,
@@ -1153,6 +1154,8 @@ async function submitSupportFeedback(env,request){
     account_photo_url:text(firebaseClaims?.picture||account?.photo_url||"",1000)||null,
     account_plan:plan,
     firebase_provider_ids_json:JSON.stringify(Array.isArray(pc.firebase_provider_ids)?pc.firebase_provider_ids.filter(v=>typeof v==="string").slice(0,20):[]),
+    firebase_sign_in_provider:text(firebaseClaims?.firebase?.sign_in_provider||"",100)||null,
+    firebase_auth_time:firebaseClaims?.auth_time?new Date(Number(firebaseClaims.auth_time)*1000).toISOString():null,
     firebase_creation_time:text(pc.firebase_creation_time||"",100)||null,
     firebase_last_sign_in_time:text(pc.firebase_last_sign_in_time||"",100)||null,
     ip_hash:ipHash,
