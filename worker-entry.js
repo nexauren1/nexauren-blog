@@ -1470,13 +1470,22 @@ async function api(env,request,url,ctx){
 async function decorateToolHtmlResponse(request,response){
   const type=response.headers.get("content-type")||"";
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
+  const url=new URL(request.url);
+  const view=url.searchParams.get("view")||"";
+  const standalone=view==="event"||view==="embed";
   let html=await response.text();
   html=html.replaceAll("/assets/nexauren-language.js?v=20260928-12","/assets/nexauren-language.js?v=20260928-12");
-  if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
   if(!/public-ui\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/assets/public-ui.css?v=20260928-support-1">\n</head>');
-  if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-6" defer></script>\n</body>');
-  if(!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=replaceGlobalFooter(html,new URL(request.url).pathname);
-  const headers=new Headers(response.headers);headers.delete("content-length");
+  if(!standalone&&!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
+  if(!standalone&&!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-7" defer></script>\n</body>');
+  if(standalone){
+    html=html.replace(/<script[^>]+src=["'][^"']*public-ui\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
+    html=html.replace(/<script[^>]+src=["'][^"']*tool-engagement\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
+    html=html.replace(/<link[^>]+href=["'][^"']*tool-engagement\.css(?:\?[^"']*)?["'][^>]*>/gi,"");
+    if(!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=html.replace(/<body([^>]*)>/i,'<body$1 data-skip-global-footer="true">');
+  }
+  if(!standalone&&!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=replaceGlobalFooter(html,url.pathname);
+  const headers=new Headers(response.headers);headers.delete("content-length");headers.set("cache-control",standalone?"no-store":"public, max-age=60, must-revalidate");
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
 }
 
