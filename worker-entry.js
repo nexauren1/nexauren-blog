@@ -1482,6 +1482,7 @@ async function decorateToolHtmlResponse(request,response){
     html=html.replace(/<script[^>]+src=["'][^"']*public-ui\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
     html=html.replace(/<script[^>]+src=["'][^"']*tool-engagement\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
     html=html.replace(/<link[^>]+href=["'][^"']*tool-engagement\.css(?:\?[^"']*)?["'][^>]*>/gi,"");
+    html=html.replace(/<link[^>]+href=["'][^"']*public-ui\.css(?:\?[^"']*)?["'][^>]*>/gi,"");
     if(!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=html.replace(/<body([^>]*)>/i,'<body$1 data-skip-global-footer="true">');
   }
   if(!standalone&&!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=replaceGlobalFooter(html,url.pathname);
