@@ -437,19 +437,11 @@ function installSafeObserver(){
     if(busy){scheduleFlush();return;}
     const records=pendingRecords.splice(0);
     for(const record of records){
-      if(record.type==="attributes"){
-        if(record.attributeName==="lang" && record.target===document.documentElement && document.documentElement.lang!==current){
-          document.documentElement.lang=current;
-          translateDom();
-        }
-      }else if(record.type==="characterData"){
-        translateTextNode(record.target);
-      }else if(record.type==="childList"){
-        record.addedNodes.forEach(node=>{
-          if(node.nodeType===Node.TEXT_NODE)translateTextNode(node);
-          else if(node.nodeType===Node.ELEMENT_NODE)translateElement(node);
-        });
-      }
+      if(record.type!=="childList")continue;
+      record.addedNodes.forEach(node=>{
+        if(node.nodeType===Node.TEXT_NODE)translateTextNode(node);
+        else if(node.nodeType===Node.ELEMENT_NODE)translateElement(node);
+      });
     }
     translateHead();
   };
@@ -471,15 +463,9 @@ function installSafeObserver(){
 
   observer.observe(document.documentElement,{
     subtree:true,
-    childList:true,
-    characterData:true,
-    attributes:true,
-    attributeFilter:["lang","class"]
+    childList:true
   });
 
-  // Chrome/Google Translate can add its marker asynchronously. Once detected,
-  // permanently suspend the Nexauren DOM translator for this page so the two
-  // translators cannot fight each other.
   if(detectExternalTranslation())pendingRecords.length=0;
 }
 function installLanguageToggleBridge(){
