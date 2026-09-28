@@ -44,6 +44,7 @@
   }
 
   function render(){
+    if(document.body?.matches("[data-skip-global-footer]"))return;
     if(document.querySelector("footer.nx-global-footer"))return;
     const year=new Date().getFullYear();
     const footer=document.createElement("footer");
