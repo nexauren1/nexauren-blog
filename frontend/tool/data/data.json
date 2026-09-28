@@ -1,9 +1,9 @@
 {
-  "version": 18,
+  "version": 19,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T04:53:04.678Z",
+    "updatedAt": "2026-09-28T11:30:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -119,6 +119,13 @@
           "description": "Análise, metadados e pequenas ferramentas para áudio.",
           "name_en": "Utilities",
           "description_en": "Analysis, metadata, and small audio utilities."
+        },
+        {
+          "id": "producao-musical",
+          "name": "Produção Musical",
+          "description": "BPM, tonalidade, acordes, samples, ritmo e ferramentas práticas para produtores.",
+          "name_en": "Music Production",
+          "description_en": "BPM, key, chords, samples, rhythm, and practical tools for music producers."
         }
       ]
     }
@@ -2051,6 +2058,141 @@
       "popular": false,
       "access": "public",
       "sortOrder": 140
+    },
+    {
+      "id": "calculadora-de-bpm",
+      "name": "Calculadora de BPM & Tempo",
+      "name_en": "BPM & Tempo Calculator",
+      "description": "Converta BPM em milissegundos, segundos, frequência e durações musicais sincronizadas.",
+      "description_en": "Convert BPM into milliseconds, seconds, frequency, and synchronized musical note lengths.",
+      "category": "audio",
+      "group": "producao-musical",
+      "icon": "◷",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/producao-musical/calculadora-de-bpm/",
+      "tags": [
+        "produção musical",
+        "music production",
+        "produtor",
+        "producer"
+      ],
+      "tags_en": [
+        "music production",
+        "producer"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 10
+    },
+    {
+      "id": "calculadora-de-pitch-time",
+      "name": "Calculadora de Pitch & Time Stretch",
+      "name_en": "Pitch & Time Stretch Calculator",
+      "description": "Calcule mudança de BPM, duração, percentagem de speed e razão de pitch por semitons.",
+      "description_en": "Calculate BPM changes, duration, speed percentage, and pitch ratio in semitones.",
+      "category": "audio",
+      "group": "producao-musical",
+      "icon": "↕",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/producao-musical/calculadora-de-pitch-time/",
+      "tags": [
+        "produção musical",
+        "music production",
+        "produtor",
+        "producer"
+      ],
+      "tags_en": [
+        "music production",
+        "producer"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 20
+    },
+    {
+      "id": "finder-de-escala-e-tonalidade",
+      "name": "Finder de Escala & Tonalidade",
+      "name_en": "Key & Scale Finder",
+      "description": "Encontre as notas de uma escala, acordes diatónicos e graus para qualquer tonalidade.",
+      "description_en": "Find scale notes, diatonic chords, and scale degrees for any key.",
+      "category": "audio",
+      "group": "producao-musical",
+      "icon": "♭",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/producao-musical/finder-de-escala-e-tonalidade/",
+      "tags": [
+        "produção musical",
+        "music production",
+        "produtor",
+        "producer"
+      ],
+      "tags_en": [
+        "music production",
+        "producer"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 30
+    },
+    {
+      "id": "gerador-de-progressao-de-acordes",
+      "name": "Gerador de Progressões de Acordes",
+      "name_en": "Chord Progression Generator",
+      "description": "Gere progressões para pop, trap, house, lo-fi, R&B e outros estilos com graus romanos e acordes.",
+      "description_en": "Generate progressions for pop, trap, house, lo-fi, R&B, and more with roman numerals and chord names.",
+      "category": "audio",
+      "group": "producao-musical",
+      "icon": "♬",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/producao-musical/gerador-de-progressao-de-acordes/",
+      "tags": [
+        "produção musical",
+        "music production",
+        "produtor",
+        "producer"
+      ],
+      "tags_en": [
+        "music production",
+        "producer"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 40
+    },
+    {
+      "id": "gerador-de-drum-pattern",
+      "name": "Gerador de Drum Patterns",
+      "name_en": "Drum Pattern Generator",
+      "description": "Monte grooves de 16 passos, gere variações e reproduza o padrão diretamente no navegador.",
+      "description_en": "Build 16-step grooves, generate variations, and audition the pattern directly in your browser.",
+      "category": "audio",
+      "group": "producao-musical",
+      "icon": "▦",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/producao-musical/gerador-de-drum-pattern/",
+      "tags": [
+        "produção musical",
+        "music production",
+        "produtor",
+        "producer"
+      ],
+      "tags_en": [
+        "music production",
+        "producer"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 50
     }
   ]
 }
