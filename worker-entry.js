@@ -358,6 +358,7 @@ function decoratePublicHtmlResponse(request,response){
   const lowerPath=path.toLowerCase();if(lowerPath==="/admin"||lowerPath.startsWith("/admin/"))return response;
   const requestedLang=url.searchParams.get("lang")==="pt"?"pt":"en";
   return response.text().then(html=>{
+    html=html.replaceAll("/assets/nexauren-language.js?v=20260928-6","/assets/nexauren-language.js?v=20260928-7");
     html=html.replace(/<body(\s[^>]*)?>/i,(match,attrs="")=>{if(/\bclass\s*=/.test(attrs)){return match.replace(/class\s*=\s*(['"])(.*?)\1/i,(m,q,v)=>/\bnx-page\b/.test(v)?m:'class='+q+'nx-page '+v+q);}return '<body class="nx-page"'+attrs+'>';});
     html=html.replace(/<html\b([^>]*)>/i,(match,attrs="")=>{if(/\blang\s*=/.test(attrs))return match.replace(/lang\s*=\s*(['"])[^'"]*\1/i,'lang="'+requestedLang+'"');return '<html lang="'+requestedLang+'"'+attrs+'>';});
     const titleMatch=html.match(/<title>\s*([\s\S]*?)\s*<\/title>/i);
@@ -412,7 +413,7 @@ function decoratePublicHtmlResponse(request,response){
     if(!/<meta[^>]+name=["']description["']/i.test(out))out=addHeadTag(out,/__never_description__/,'<meta name="description" content="'+esc(desc)+'">');
     if(!/<script[^>]+src=["']\/assets\/site\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/site.js?v=20260922-1" defer></script>\n</body>');
     if(!/<script[^>]+src=["']\/assets\/i18n\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/i18n.js?v=20260925-static-17" defer></script>\n</body>');
-    if(!/<script[^>]+src=["']\/assets\/public-ui\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/public-ui.js?v=20260922-6" defer></script>\n</body>');
+    if(!/<script[^>]+src=["']\/assets\/public-ui\.js/i.test(out))out=out.replace(/<\/body>/i,'<script src="/assets/public-ui.js?v=20260928-support-1" defer></script>\n</body>');
     if(!/<script[^>]+id=["']nexauren-public-structured-data["']/i.test(out)){
       const structured={ "@context":"https://schema.org", "@type":"WebPage", "name":title, "url":canonical, "description":desc, "isPartOf":{"@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/"} };
       out=addHeadTag(out,/__never_structured__/,'<script id="nexauren-public-structured-data" type="application/ld+json">'+safeJsonLd(structured)+'</script>');
@@ -1444,6 +1445,7 @@ async function decorateToolHtmlResponse(request,response){
   const type=response.headers.get("content-type")||"";
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   let html=await response.text();
+  html=html.replaceAll("/assets/nexauren-language.js?v=20260928-6","/assets/nexauren-language.js?v=20260928-7");
   if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
   if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-6" defer></script>\n</body>');
   html=replaceGlobalFooter(html,new URL(request.url).pathname);\n  const headers=new Headers(response.headers);headers.delete("content-length");
