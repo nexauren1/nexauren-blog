@@ -153,6 +153,7 @@ window.NexaurenLanguage=Object.freeze({
   toggle:()=>setLanguage(current==="en"?"pt":"en"),
   refresh
 });
+window.addEventListener("nexauren:dynamic-content",refresh);
 function init(){refresh()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
