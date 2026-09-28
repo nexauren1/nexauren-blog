@@ -27,8 +27,10 @@ function setFeedback(text,type=""){feedback.textContent=text;feedback.className=
 function validEmail(v){return !v||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
 function context(){
   const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  const user=currentUser;
   return {
     page_url:location.href,
+    page_title:document.title||"",
     referrer:document.referrer||"",
     language:document.documentElement.lang||window.NexaurenLanguage?.get?.()||"en",
     timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"",
@@ -42,6 +44,9 @@ function context(){
     online:navigator.onLine===true,
     color_scheme:window.matchMedia?.("(prefers-color-scheme: dark)").matches?"dark":"light",
     connection:connection?{effectiveType:connection.effectiveType||"",downlink:connection.downlink??null,rtt:connection.rtt??null,saveData:!!connection.saveData}:{},
+    firebase_provider_ids:user?.providerData?.map(p=>p?.providerId).filter(Boolean).slice(0,20)||[],
+    firebase_creation_time:user?.metadata?.creationTime||"",
+    firebase_last_sign_in_time:user?.metadata?.lastSignInTime||"",
     client_time:new Date().toISOString()
   };
 }
@@ -68,6 +73,7 @@ function prefillUser(user){
   currentUser=user||null;
   if(user?.email){email.value=user.email;email.readOnly=true}
   if(user&& !subject.value && kind.value==="support")subject.value="Support request";
+  if(user&&window.NexaurenLanguage?.refresh)window.NexaurenLanguage.refresh();
 }
 async function submit(event){
   event.preventDefault();
