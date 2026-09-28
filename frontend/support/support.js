@@ -89,7 +89,7 @@ async function submit(event){
       include_diagnostics:!!diagnostics?.checked,
       page_context:context(),
       tool_id:currentTool?.id||params.get("tool_id")||params.get("tool")||"",
-      source_path:location.pathname
+      source_path:params.get("from")||location.pathname
     };
     const response=await fetch("/api/support/submit",{method:"POST",credentials:"same-origin",headers,body:JSON.stringify(payload)});
     const data=await response.json().catch(()=>({}));
