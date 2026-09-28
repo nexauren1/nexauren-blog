@@ -341,7 +341,7 @@ function drumTool(){
     trap:{kick:[0,3,7,10,14],snare:[4,12],hat:[0,2,4,6,8,10,12,14],clap:[12]},
     boombap:{kick:[0,7,8,10,14],snare:[4,12],hat:[0,2,4,6,8,10,12,14],clap:[12]}
   };
-  let pattern=structuredClone?structuredClone(presets.basic):JSON.parse(JSON.stringify(presets.basic));
+  let pattern=typeof structuredClone==="function"?structuredClone(presets.basic):JSON.parse(JSON.stringify(presets.basic));
   let playing=false,currentStep=-1,timer=null,audio=null,noiseBuffer=null;
   const clone=o=>JSON.parse(JSON.stringify(o));
   function draw(){
