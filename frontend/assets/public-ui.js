@@ -280,17 +280,3 @@
   function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");ensureLegalNavigation();setActiveNavigation();ensureResponsiveMenus();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
-/* Refresh translations after user actions that may create dynamic UI text. */
-if(!window.__nexaurenLanguageActionRefresh){
-  window.__nexaurenLanguageActionRefresh=true;
-  const scheduleLanguageRefresh=()=>{
-    if(!window.NexaurenLanguage?.refresh)return;
-    setTimeout(()=>window.NexaurenLanguage?.refresh?.(),350);
-    setTimeout(()=>window.NexaurenLanguage?.refresh?.(),1200);
-  };
-  document.addEventListener("click",event=>{
-    if(event.target?.closest?.("button,a,[role='button'],summary"))scheduleLanguageRefresh();
-  },true);
-  document.addEventListener("change",scheduleLanguageRefresh,true);
-  document.addEventListener("submit",scheduleLanguageRefresh,true);
-}
