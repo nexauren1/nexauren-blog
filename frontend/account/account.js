@@ -104,6 +104,7 @@ function loginView(prefill = "", notice = "") {
       <div class="error" id="error" role="alert"></div>
     </form>
   `;
+  window.NexaurenLanguage?.refresh?.();
   wireTabs();
   wireLogin();
 }
@@ -128,6 +129,7 @@ function registerView() {
       <p class="hint">Vamos enviar uma mensagem para confirmar o seu email. A conta fica disponível no ecossistema Nexauren.</p>
     </form>
   `;
+  window.NexaurenLanguage?.refresh?.();
   wireTabs();
   wireRegister();
 }
@@ -147,6 +149,7 @@ function forgotView(prefill = "") {
       <div class="hint-box">Por segurança, esta página não confirma se o email está registado.</div>
     </form>
   `;
+  window.NexaurenLanguage?.refresh?.();
   $("[data-back-login]").onclick = () => loginView(prefill);
   $("#forgot-form").addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -301,6 +304,7 @@ function userView(user, syncMessage = "") {
     </div>
   `;
 
+  window.NexaurenLanguage?.refresh?.();
   loadAccountDashboard(user);
 
   $("#logout").onclick = async () => {
