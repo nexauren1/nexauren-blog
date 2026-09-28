@@ -1,6 +1,5 @@
 import app from "./worker-entry.js";
 
-
 const ICON = '<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">';
 const OG = '<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
 const OG_SECURE = '<meta property="og:image:secure_url" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
@@ -8,6 +7,7 @@ const OG_WIDTH = '<meta property="og:image:width" content="1200">';
 const OG_HEIGHT = '<meta property="og:image:height" content="630">';
 const OG_TYPE = '<meta property="og:image:type" content="image/png">';
 const TW = '<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
+const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-1" defer></script>';
 
 function upsert(html, regex, tag) {
   return regex.test(html)
@@ -23,7 +23,6 @@ export default {
 
     const path = new URL(request.url).pathname.toLowerCase();
 
-    // Never rewrite individual posts/articles, nor the admin area.
     if (
       path === "/articles" || path.startsWith("/articles/") ||
       path === "/article" || path.startsWith("/article/") ||
@@ -45,6 +44,7 @@ export default {
     html = upsert(html, /<meta[^>]+property=["']og:image:height["'][^>]*>/i, OG_HEIGHT);
     html = upsert(html, /<meta[^>]+property=["']og:image:type["'][^>]*>/i, OG_TYPE);
     html = upsert(html, /<meta[^>]+name=["']twitter:image["'][^>]*>/i, TW);
+    html = upsert(html, /<script[^>]+src=["'][^"']*nexauren-footer\.js(?:\?[^"']*)?["'][^>]*><\/script>/i, FOOTER_SCRIPT);
 
     const headers = new Headers(response.headers);
     headers.delete("content-length");
