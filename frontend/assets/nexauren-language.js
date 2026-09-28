@@ -180,6 +180,11 @@ function pairText(raw,lang){
     ];
     for(const [re,fn] of patterns)if(re.test(trimmed))return text.replace(trimmed,trimmed.replace(re,fn));
   }else{
+    const supportPatterns=[
+      [/^Your message was sent to Nexauren Support\. Reference: (.+)$/i,(_,ref)=>"A sua mensagem foi enviada para o Suporte Nexauren. Referência: "+ref],
+      [/^Message received, but the email could not be delivered yet\. Keep this reference: (.+)$/i,(_,ref)=>"Mensagem recebida, mas o email ainda não pôde ser entregue. Guarde esta referência: "+ref]
+    ];
+    for(const [re,fn] of supportPatterns)if(re.test(trimmed))return text.replace(trimmed,trimmed.replace(re,fn));
     const patterns=[
       [/^(\d+)\s+images?\s+in queue$/i,(_,n)=>n+" imagem"+(Number(n)===1?"":"s")+" na fila"],
       [/^(\d+)\s+images?$/i,(_,n)=>n+" imagem"+(Number(n)===1?"":"s")],
