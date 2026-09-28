@@ -435,13 +435,17 @@ async function decodeAudio(file){
   const ctx=new Ctor();
   try{
     const data=await file.arrayBuffer();
+    const result=ctx.decodeAudioData(data);
+    if(result&&typeof result.then==="function")return await result;
     return await new Promise(function(resolve,reject){
-      const done=buffer=>resolve(buffer);
-      const fail=error=>reject(error||new Error("Audio decoding failed."));
-      const result=ctx.decodeAudioData(data,done,fail);
-      if(result&&typeof result.then==="function")result.then(done).catch(fail);
+      ctx.decodeAudioData(data,resolve,reject);
     });
-  }finally{await ctx.close().catch(()=>{})}
+  }finally{
+    try{
+      const closing=ctx.close?.();
+      if(closing&&typeof closing.then==="function")await closing.catch(()=>{});
+    }catch{}
+  }
 }
 function renderCreateSource(){
   const el=$("#create-source");if(!state.source){el.hidden=true;return}
