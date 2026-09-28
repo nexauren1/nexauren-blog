@@ -94,7 +94,6 @@
     document.body.appendChild(footer);
     injectStyles();
     applyLanguage();
-    window.NexaurenLanguage?.refresh?.();
     window.addEventListener("nexauren:language-changed",applyLanguage);
   }
 
