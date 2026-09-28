@@ -2018,6 +2018,39 @@
       "popular": false,
       "access": "public",
       "sortOrder": 130
+    },
+    {
+      "id": "adicionar-bordas",
+      "name": "Adicionar Bordas",
+      "name_en": "Add Image Borders",
+      "description": "Adicione molduras às imagens com espessura, cor, estilo, margem e cantos arredondados configuráveis.",
+      "description_en": "Add frames to images with configurable thickness, color, style, padding, and rounded corners.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "□",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/adicionar-bordas/",
+      "tags": [
+        "imagem",
+        "image",
+        "bordas",
+        "moldura",
+        "frame",
+        "border",
+        "design"
+      ],
+      "tags_en": [
+        "image",
+        "borders",
+        "frame",
+        "border",
+        "design"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 140
     }
   ]
 }
