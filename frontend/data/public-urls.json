@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-28T05:28:16.826406Z",
+  "generatedAt": "2026-09-28T05:34:18.084680Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -14,6 +14,7 @@
     "/tool/categories/audio/conversor-de-audio/",
     "/tool/categories/audio/gerador-de-sample-pack/",
     "/tool/categories/imagem/",
+    "/tool/categories/imagem/adicionar-bordas/",
     "/tool/categories/imagem/desfocar-pixelizar/",
     "/tool/categories/imagem/favicon-generator/",
     "/tool/categories/imagem/girar-espelhar/",
