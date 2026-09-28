@@ -39,32 +39,20 @@ function validEmail(v){return !v||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
 
 function context(){
   const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  const user=currentUser;
   return {
     page_url:location.href,
-    page_title:document.title||"",
-    referrer:document.referrer||"",
     language:document.documentElement.lang||window.NexaurenLanguage?.get?.()||"en",
     timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"",
-    locale:navigator.language||"",
-    user_agent:navigator.userAgent||"",
+    browser:navigator.userAgent||"",
     platform:navigator.platform||"",
-    screen:{width:screen.width,height:screen.height,colorDepth:screen.colorDepth,pixelRatio:window.devicePixelRatio||1},
     viewport:{width:window.innerWidth,height:window.innerHeight},
-    touch_points:navigator.maxTouchPoints||0,
-    cookies_enabled:navigator.cookieEnabled===true,
-    online:navigator.onLine===true,
-    color_scheme:window.matchMedia?.("(prefers-color-scheme: dark)").matches?"dark":"light",
-    connection:connection?{effectiveType:connection.effectiveType||"",downlink:connection.downlink??null,rtt:connection.rtt??null,saveData:!!connection.saveData}:{},
-    firebase_provider_ids:user?.providerData?.map(p=>p?.providerId).filter(Boolean).slice(0,20)||[],
-    firebase_uid:user?.uid||"",
-    firebase_email:user?.email||"",
-    firebase_display_name:user?.displayName||"",
-    firebase_photo_url:user?.photoURL||"",
-    firebase_email_verified:user?.emailVerified===true,
-    firebase_creation_time:user?.metadata?.creationTime||"",
-    firebase_last_sign_in_time:user?.metadata?.lastSignInTime||"",
-    client_time:new Date().toISOString()
+    connection:connection?{
+      effectiveType:connection.effectiveType||"",
+      downlink:connection.downlink??null,
+      rtt:connection.rtt??null
+    }:{},
+    firebase_provider_ids:currentUser?.providerData?.map(p=>p?.providerId).filter(Boolean).slice(0,10)||[],
+    firebase_email_verified:currentUser?.emailVerified===true
   };
 }
 
@@ -97,18 +85,6 @@ function prefillUser(user){
   if(user&&!subject.value&&kind.value==="support")subject.value="Support request";
 }
 
-async function firebaseClaims(){
-  if(!currentUser)return {};
-  try{
-    const result=await currentUser.getIdTokenResult();
-    const claims=result?.claims||{};
-    return {
-      sign_in_provider:claims.firebase?.sign_in_provider||"",
-      auth_time:claims.auth_time||""
-    };
-  }catch{return {}}
-}
-
 function makeReference(){
   const stamp=new Date().toISOString().slice(0,10).replace(/-/g,"");
   const random=Math.random().toString(36).slice(2,10).toUpperCase();
@@ -117,59 +93,40 @@ function makeReference(){
 
 function toolLines(){
   const fallbackId=params.get("tool_id")||params.get("tool")||"";
-  const fallbackPath=params.get("from")||location.pathname||"";
   const t=currentTool||{};
+  const hasTool=!!(t.id||t.name_en||t.name||t.path||fallbackId);
+  if(!hasTool)return "No specific tool was attached.";
   return [
     line("Tool ID",t.id||fallbackId),
     line("Tool name",t.name_en||t.name),
-    line("Tool description",t.description_en||t.description),
     line("Category",t.category_en||t.category),
     line("Access",t.access),
-    line("Tool path",t.path),
-    line("Source path",t.source_path),
-    line("Source page",fallbackPath)
+    line("Path",t.path)
   ].join("\n");
-}
-
-function diagnosticLines(ctx){
+}function diagnosticLines(ctx){
   return [
-    line("Page URL",ctx.page_url),
-    line("Page title",ctx.page_title),
-    line("Referrer",ctx.referrer),
-    line("Language",ctx.language),
-    line("Locale",ctx.locale),
-    line("Timezone",ctx.timezone),
-    line("User agent",ctx.user_agent),
+    line("Browser",ctx.browser),
     line("Platform",ctx.platform),
-    line("Screen",JSON.stringify(ctx.screen)),
-    line("Viewport",JSON.stringify(ctx.viewport)),
-    line("Touch points",ctx.touch_points),
-    line("Online",ctx.online),
-    line("Cookies enabled",ctx.cookies_enabled),
-    line("Color scheme",ctx.color_scheme),
-    line("Connection",JSON.stringify(ctx.connection)),
-    line("Client time",ctx.client_time)
+    line("Viewport",ctx.viewport.width+" × "+ctx.viewport.height),
+    line("Language",ctx.language),
+    line("Timezone",ctx.timezone),
+    line("Connection",ctx.connection.effectiveType||"unknown"),
+    line("Page",ctx.page_url)
   ].join("\n");
-}
-
-async function buildEmail(){
+}async function buildEmail(){
   const ctx=context();
-  const claims=await firebaseClaims();
   const reference=makeReference();
+  const isProblem=kind.value==="problem";
   const subjectText="[Nexauren Support] "+(KIND_LABELS[kind.value]||"Support")+" — "+subject.value.trim();
+
   const accountBlock=currentUser?[
-    line("Firebase UID",currentUser.uid),
-    line("Firebase email",currentUser.email),
-    line("Display name",currentUser.displayName),
-    line("Photo URL",currentUser.photoURL),
-    line("Email verified",currentUser.emailVerified===true),
-    line("Provider IDs",ctx.firebase_provider_ids.join(", ")),
-    line("Sign-in provider",claims.sign_in_provider),
-    line("Auth time",claims.auth_time),
-    line("Account created",currentUser.metadata?.creationTime),
-    line("Last sign-in",currentUser.metadata?.lastSignInTime)
-  ].join("\n"):"No authenticated Firebase user.";
-  const body=[
+    line("Name",currentUser.displayName),
+    line("Email",currentUser.email),
+    line("Provider",ctx.firebase_provider_ids.map(v=>v.replace(".com","")).join(", ")||"Firebase"),
+    line("Email verified",ctx.firebase_email_verified)
+  ].join("\n"):"No authenticated account.";
+
+  const sections=[
     "NEXAUREN SUPPORT",
     "Reference: "+reference,
     "",
@@ -181,22 +138,29 @@ async function buildEmail(){
     "MESSAGE",
     message.value.trim(),
     "",
-    "TOOL CONTEXT",
-    toolLines(),
-    "",
-    "FIREBASE / ACCOUNT",
+    "ACCOUNT",
     accountBlock,
     "",
-    "TECHNICAL CONTEXT",
-    diagnostics?.checked?diagnosticLines(ctx):"Technical diagnostics were not requested.",
-    "",
-    "PRIVACY NOTE",
-    "This email includes support context that helps diagnose or answer the request. It does not include passwords, authentication tokens, refresh tokens, cookie contents, payment credentials or private file contents."
-  ].join("\n");
-  return {reference,subjectText,body};
-}
+    "TOOL",
+    toolLines()
+  ];
 
-async function submit(event){
+  if(isProblem&&diagnostics?.checked){
+    sections.push(
+      "",
+      "TECHNICAL CONTEXT",
+      diagnosticLines(ctx)
+    );
+  }
+
+  sections.push(
+    "",
+    "NOTE",
+    "Passwords, authentication tokens, refresh tokens, cookie contents, payment credentials and private file contents are not included."
+  );
+
+  return {reference,subjectText,body:sections.join("\n")};
+}async function submit(event){
   event.preventDefault();
   setFeedback("");
   const msg=message.value.trim(),sub=subject.value.trim(),mail=email.value.trim();
