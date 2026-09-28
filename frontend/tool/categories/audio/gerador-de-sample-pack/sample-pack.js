@@ -436,12 +436,20 @@ async function decodeAudio(file){
   try{
     const data=await file.arrayBuffer();
     return await new Promise(function(resolve,reject){
-      const done=buffer=>resolve(buffer);
-      const fail=error=>reject(error||new Error("Audio decoding failed."));
-      const result=ctx.decodeAudioData(data,done,fail);
-      if(result&&typeof result.then==="function")result.then(done).catch(fail);
+      let settled=false;
+      const done=function(buffer){if(!settled){settled=true;resolve(buffer)}};
+      const fail=function(error){if(!settled){settled=true;reject(error||new Error("Audio decoding failed."))}};
+      try{
+        const result=ctx.decodeAudioData(data,done,fail);
+        if(result&&typeof result.then==="function")result.then(done).catch(fail);
+      }catch(error){fail(error)}
     });
-  }finally{await ctx.close().catch(()=>{})}
+  }finally{
+    try{
+      const closing=typeof ctx.close==="function"?ctx.close():null;
+      if(closing&&typeof closing.then==="function")await closing.catch(()=>{});
+    }catch{}
+  }
 }
 function renderCreateSource(){
   const el=$("#create-source");if(!state.source){el.hidden=true;return}
