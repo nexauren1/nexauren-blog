@@ -116,8 +116,8 @@
     </div>
     <div id="create-progress" class="sp-progress" hidden aria-hidden="true">
       <div class="sp-progress-head">
-        <strong id="create-progress-text">Processing sample 0 of 0</strong>
-        <span id="create-progress-percent">0%</span>
+        <div class="sp-progress-label"><strong id="create-progress-text">Processing sample 0 of 0</strong></div>
+        <div class="sp-progress-actions"><span id="create-progress-percent">0%</span><button id="cancel-generation" class="sp-progress-cancel" type="button" hidden data-i18n="cancelGeneration">Cancel</button></div>
       </div>
       <div class="sp-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div id="create-progress-bar" class="sp-progress-bar"></div>
@@ -192,7 +192,7 @@ window.NexaurenAds?.loadBanner(document.getElementById("sp-ad-top"));
 window.NexaurenAds?.loadResponsive(document.getElementById("sp-ad-bottom"));
 document.getElementById("year").textContent=new Date().getFullYear();
 </script>
-<script src="./sample-pack.js?v=20260928-4"></script>
+<script src="./sample-pack.js?v=20260928-5"></script>
 <script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
 </body>
 </html>
