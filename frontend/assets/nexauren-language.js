@@ -105,6 +105,16 @@ function updateTitle(){
   if(titles[p])document.title=titles[p];
 }
 
+function updateAlternates(){
+  const base=new URL(location.pathname,location.origin).href;
+  const pt=new URL(location.pathname,location.origin);pt.searchParams.set("lang","pt");
+  const values={en:base,pt:pt.href,"x-default":base};
+  Object.entries(values).forEach(([lang,href])=>{
+    let link=document.querySelector('link[rel="alternate"][hreflang="'+lang+'"]');
+    if(!link){link=document.createElement("link");link.rel="alternate";link.hreflang=lang;document.head.appendChild(link)}
+    link.href=href;
+  });
+}
 function addToggle(){
   const existing=document.querySelector("[data-nx-language-toggle]");
   const nav=document.querySelector("header nav,.nav-links,.tool-links");
