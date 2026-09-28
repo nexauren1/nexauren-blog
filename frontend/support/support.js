@@ -51,11 +51,12 @@ function setContextFromUrl(){
 }
 async function loadTool(){
   const toolId=params.get("tool_id")||params.get("tool");
-  if(!toolId)return;
+  const fromPath=params.get("from");
+  if(!toolId&&!fromPath)return;
   try{
     const response=await fetch("/api/tool-registry",{credentials:"same-origin"});
     const data=await response.json();
-    currentTool=(data.tools||[]).find(t=>String(t.id)===String(toolId));
+    currentTool=(data.tools||[]).find(t=>toolId?String(t.id)===String(toolId):String(t.path||"")===String(fromPath));
     if(currentTool){
       toolContext.hidden=false;
       toolContext.textContent="Tool: "+(currentTool.name_en||currentTool.name||currentTool.id);
