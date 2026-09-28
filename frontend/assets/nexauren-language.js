@@ -146,6 +146,8 @@ window.NexaurenLanguage=Object.freeze({
 function installSafeObserver(){
   if(window.__nexaurenLanguageObserverInstalled||!document.body)return;
   window.__nexaurenLanguageObserverInstalled=true;
+  let scheduled=false;
+
   const translateTextNode=node=>{
     if(!node||node.nodeType!==Node.TEXT_NODE)return;
     const parent=node.parentElement;
@@ -154,44 +156,28 @@ function installSafeObserver(){
     const replacement=pairText(node.nodeValue,current);
     if(replacement!==null&&replacement!==node.nodeValue)node.nodeValue=replacement;
   };
+
   const translateElement=element=>{
     if(!element||element.nodeType!==Node.ELEMENT_NODE)return;
     if(element.matches("script,style,noscript,pre,code,textarea,input,[contenteditable='true'],[data-i18n-skip]"))return;
     const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
     while(walker.nextNode())translateTextNode(walker.currentNode);
-    if(element.matches("input[placeholder],textarea[placeholder],[title]")||element.querySelector("input[placeholder],textarea[placeholder],[title]")){
-      element.querySelectorAll?.("input[placeholder],textarea[placeholder],[title]").forEach(el=>{
-        for(const attr of ["placeholder","title"]){
-          const value=el.getAttribute(attr);
-          const replacement=pairText(value,current);
-          if(replacement!==null&&replacement!==value)el.setAttribute(attr,replacement);
-        }
-      });
-    }
-    if(element.matches("[aria-label],[title]")){
-      for(const attr of ["aria-label","title"]){
-        const value=element.getAttribute(attr);
-        const replacement=pairText(value,current);
-        if(replacement!==null&&replacement!==value)element.setAttribute(attr,replacement);
-      }
-    }
-    element.querySelectorAll?.("[aria-label],[title]").forEach(el=>{
-      for(const attr of ["aria-label","title"]){
+
+    element.querySelectorAll?.("input[placeholder],textarea[placeholder],[aria-label],[title]").forEach(el=>{
+      for(const attr of ["placeholder","aria-label","title"]){
         const value=el.getAttribute(attr);
         const replacement=pairText(value,current);
         if(replacement!==null&&replacement!==value)el.setAttribute(attr,replacement);
       }
     });
   };
-  const observer=new MutationObserver(records=>{
+
+  const flush=records=>{
+    scheduled=false;
     if(busy)return;
     for(const record of records){
-      if(record.type==="characterData")translateTextNode(record.target);
-      else if(record.type==="attributes"){
-        if(record.attributeName==="lang"){document.documentElement.lang=current;continue;}
-        const value=record.target.getAttribute(record.attributeName);
-        const replacement=pairText(value,current);
-        if(replacement!==null&&replacement!==value)record.target.setAttribute(record.attributeName,replacement);
+      if(record.type==="characterData"){
+        translateTextNode(record.target);
       }else if(record.type==="childList"){
         record.addedNodes.forEach(node=>{
           if(node.nodeType===Node.TEXT_NODE)translateTextNode(node);
@@ -200,8 +186,19 @@ function installSafeObserver(){
       }
     }
     translateHead();
+  };
+
+  const observer=new MutationObserver(records=>{
+    if(busy||scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>flush(records));
   });
-  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title","lang"]});
+
+  observer.observe(document.documentElement,{
+    subtree:true,
+    childList:true,
+    characterData:true
+  });
 }
 function installLanguageToggleBridge(){
   if(window.__nexaurenLanguageToggleBridge)return;
