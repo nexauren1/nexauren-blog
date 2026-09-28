@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171416">
+<meta name="description" content="Gire e espelhe imagens no navegador com rotação precisa, flip horizontal e vertical, preview imediato e exportação local.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/imagem/girar-espelhar/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./girar-espelhar.css?v=20260928-1">
+<title>Girar &amp; Espelhar — Nexauren</title>
+<script src="/assets/ads.js?v=20260925-auto3"></script>
+</head>
+<body class="nx-page ge-page">
+<div class="ge-ad"><span>ADVERTISEMENT</span><div id="ge-ad-top"></div></div>
+
+<header class="ge-header">
+  <div class="ge-shell ge-nav">
+    <a class="ge-brand" href="/tool/categories/imagem/"><span class="ge-mark">↻</span><span><strong>NEXAUREN</strong><small>IMAGE TRANSFORM</small></span></a>
+    <div class="ge-nav-right"><a href="/tool/categories/imagem/" class="ge-back">← Ferramentas de imagem</a><button id="lang-toggle" class="ge-lang" type="button">EN</button></div>
+  </div>
+</header>
+
+<main class="ge-shell">
+<section class="ge-hero">
+  <div>
+    <div class="ge-kicker">TRANSFORM / 01</div>
+    <h1>Girar &amp;<br>Espelhar</h1>
+    <p>Rode a imagem em passos de 90° ou faça flip horizontal e vertical. Veja o resultado na hora e exporte diretamente do seu dispositivo.</p>
+  </div>
+  <div class="ge-dial"><span>ROTATION</span><b id="angle-readout">0°</b><small>transformação local</small></div>
+</section>
+
+<section class="ge-layout">
+  <div class="ge-main">
+    <section class="ge-card ge-upload-card">
+      <div class="ge-head"><div><span class="ge-kicker">SOURCE / 02</span><h2>Imagem</h2></div><span id="state" class="ge-state">IDLE</span></div>
+      <label id="drop" class="ge-drop">
+        <input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp">
+        <span class="ge-drop-icon">↥</span>
+        <span><b>Escolher uma imagem</b><small>JPG, PNG, WebP, GIF ou BMP</small></span>
+      </label>
+      <div id="file-row" class="ge-file-row" hidden>
+        <div class="ge-file-icon">IMG</div>
+        <div><strong id="file-name">—</strong><small id="file-meta">—</small></div>
+        <button id="clear" type="button">×</button>
+      </div>
+    </section>
+
+    <section class="ge-card ge-preview-card">
+      <div class="ge-head"><div><span class="ge-kicker">PREVIEW / 03</span><h2>Resultado</h2></div><span id="dimension" class="ge-dimension">—</span></div>
+      <div class="ge-stage"><canvas id="canvas"></canvas><div id="empty" class="ge-empty">A imagem transformada aparece aqui.</div></div>
+    </section>
+  </div>
+
+  <aside class="ge-side">
+    <section class="ge-card ge-controls">
+      <div class="ge-head"><div><span class="ge-kicker">ROTATE</span><h2>Rotação</h2></div></div>
+      <div class="ge-rotate-grid">
+        <button type="button" data-rotate="-90"><span>↺</span><small>-90°</small></button>
+        <button type="button" data-rotate="90"><span>↻</span><small>+90°</small></button>
+        <button type="button" data-rotate="180"><span>⟳</span><small>180°</small></button>
+        <button type="button" id="reset-rotate"><span>0</span><small>Reset</small></button>
+      </div>
+
+      <div class="ge-divider"></div>
+      <div class="ge-head"><div><span class="ge-kicker">MIRROR</span><h2>Espelhar</h2></div></div>
+      <div class="ge-mirror-grid">
+        <button type="button" id="flip-x"><span>↔</span>Horizontal</button>
+        <button type="button" id="flip-y"><span>↕</span>Vertical</button>
+      </div>
+
+      <label class="ge-toggle"><input id="preserve" type="checkbox" checked><span><b>Qualidade original</b><small>Exporta no tamanho total da imagem.</small></span></label>
+      <button id="apply-reset" class="ge-secondary" type="button" disabled>Repor tudo</button>
+    </section>
+
+    <section class="ge-card ge-export">
+      <div class="ge-head"><div><span class="ge-kicker">EXPORT / 04</span><h2>Saída</h2></div></div>
+      <select id="format">
+        <option value="image/png">PNG · qualidade máxima</option>
+        <option value="image/jpeg">JPG · compatibilidade</option>
+        <option value="image/webp">WebP · compacto</option>
+      </select>
+      <label id="jpg-wrap" class="ge-bg"><span>Fundo para JPG</span><input id="jpg-bg" type="color" value="#ffffff"></label>
+      <button id="download" class="ge-primary" type="button" disabled>Baixar imagem</button>
+      <p id="status" class="ge-status">Escolha uma imagem para começar.</p>
+    </section>
+  </aside>
+</section>
+
+<section id="result" class="ge-result" hidden>
+  <div class="ge-head"><div><span class="ge-kicker">READY / 05</span><h2>Ficheiro pronto</h2></div><b id="result-meta">—</b></div>
+  <div class="ge-result-row"><span class="ge-ok">✓</span><div><strong id="result-name">nexauren-transformado.png</strong><small>processado localmente</small></div><button id="download-2" class="ge-primary small" type="button">Baixar</button></div>
+</section>
+</main>
+
+<div class="ge-ad"><span>ADVERTISEMENT</span><div id="ge-ad-bottom"></div></div>
+<footer class="ge-footer ge-shell"><span>© <span id="year"></span> Nexauren Story · Image Transform</span><span><a href="/tool/categories/imagem/">Imagem</a> · <a href="/tool/">Tools</a> · <a href="/legal/privacidade/">Privacy</a></span></footer>
+<div id="toast" class="ge-toast" role="status" aria-live="polite"></div>
+
+<script>
+window.NexaurenAds&&NexaurenAds.loadBanner(document.getElementById("ge-ad-top"));
+window.NexaurenAds&&NexaurenAds.loadResponsive(document.getElementById("ge-ad-bottom"));
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+<script src="./girar-espelhar.js?v=20260928-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
