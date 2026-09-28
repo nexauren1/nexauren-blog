@@ -1,159 +1,1126 @@
 (()=>{"use strict";
-const STORAGE="ns_lang";
-const LANGS=new Set(["en","pt"]);
-const PAIRS=[
-["Ferramentas","Tools"],["Conta","Account"],["Planos","Plans"],["Legal","Legal"],["Início","Home"],["Privacidade","Privacy"],["Termos","Terms"],["Cookies","Cookies"],["Blog","Blog"],["Destaques","Featured"],["Populares","Popular"],["Avaliações","Reviews"],["Ferramenta","Tool"],["ferramenta","tool"],["ferramentas","tools"],["Ferramentas online","Online tools"],
-["Abrir menu","Open menu"],["Fechar menu","Close menu"],["Saltar para o conteúdo","Skip to content"],["Voltar ao topo","Back to top"],
-["EXPLORAR","EXPLORE"],["Categorias","Categories"],["Sempre a crescer","Always growing"],["Pesquisar ferramentas ou categorias…","Search tools or categories…"],["Ler avaliações →","Read reviews →"],
-["Ferramentas para fazer mais, sem complicar.","Tools to get more done, without the complication."],["Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer.","Small utilities for writing, calculating, organizing, and creating. Fast on mobile, simple on desktop, and built to grow."],
-["Ferramentas a iniciar","Tools are starting"],["A verificação de acesso ainda está a iniciar. Tente novamente.","Access verification is still starting. Please try again."],["Tentar novamente","Try again"],
-["É necessária uma conta","An account is required"],["Crie uma conta ou entre na sua conta Nexauren para usar as ferramentas.","Create an account or sign in to your Nexauren account to use the tools."],["Entrar ou criar conta","Sign in or create an account"],
-["Não foi possível verificar o acesso","Could not verify access"],["Não conseguimos confirmar o estado do seu plano agora. Tente novamente.","We couldn't confirm your plan status right now. Please try again."],
-["Ferramenta exclusiva do Pro","Pro-only tool"],["O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso.","Your current plan doesn't include this tool. Upgrade to Nexauren Pro to unlock access."],["Ir para o plano Pro","Go to Pro"],["Agora não","Not now"],["Continuar","Continue"],["Fechar","Close"],
-["A preparar o catálogo…","Preparing the catalog…"],["Nenhuma categoria encontrada.","No category found."],["Não foi possível carregar o catálogo.","Could not load the catalog."],["Não foi possível iniciar as ferramentas.","Could not start the tools."],
-["CATEGORIA","CATEGORY"],["Todas as categorias","All categories"],["Ferramentas da categoria","Category tools"],["Pesquisa avançada de ferramentas","Advanced tool search"],["Filtrar por palavra-chave","Filter by keyword"],["Filtrar por acesso","Filter by access"],["Todas as palavras-chave","All keywords"],["Todos os acessos","All access"],["Grátis","Free"],["Pro","Pro"],["Ordenar resultados","Sort results"],["Mais relevantes","Most relevant"],["Mais populares","Most popular"],["Nome A–Z","Name A–Z"],["Limpar filtros","Clear filters"],["Limpar pesquisa","Clear search"],["Nenhuma ferramenta encontrada.","No tools found."],["Tente outro termo, remova um filtro ou pesquise por uma funcionalidade.","Try another term, remove a filter, or search by feature."],["A categoria está pronta.","The category is ready."],["Ainda não existem ferramentas publicadas aqui.","No tools have been published here yet."],["Destaque","Featured"],["disponível","available"],["disponíveis","available"],
-["PUBLICIDADE","ADVERTISEMENT"],["Publicidade","Advertisement"],
-["Uma experiência mais ","A "],["rápida, elegante e útil.","faster, more elegant, more useful experience."],["O Nexauren Story reúne conteúdo editorial, ferramentas online e uma conta central numa experiência pensada para crescer sem ficar complicada.","Nexauren Story brings editorial content, online tools, and one central account together in an experience designed to grow without becoming complicated."],["Explorar ferramentas","Explore tools"],["Ler o Ferramentas","Read Tools"],["Experiência móvel","Mobile experience"],["Ferramentas online","Online tools"],["Conta Nexauren","Nexauren Account"],["Conteúdo","Content"],
-["Tudo organizado para chegar ao próximo passo.","Everything organized for the next step."],["Interfaces claras, navegação direta e uma base preparada para novas ferramentas e experiências.","Clear interfaces, direct navigation, and a foundation ready for new tools and experiences."],["Abrir ferramentas","Open tools"],["Utilitários para escrever, calcular, organizar e criar, com pesquisa, categorias e acesso Free/Pro.","Utilities for writing, calculating, organizing, and creating, with search, categories, and Free/Pro access."],["Abrir conta","Open account"],["Perfil, atividade, segurança e acesso ao plano num painel central para a sua utilização.","Profile, activity, security, and plan access in one central dashboard."],
-["01 · Desempenho","01 · Performance"],["Experiência leve e responsiva, com atenção ao uso no telemóvel.","A light, responsive experience designed with mobile use in mind."],["02 · Clareza","02 · Clarity"],["Menus, categorias e ações desenhados para reduzir fricção.","Menus, categories, and actions designed to reduce friction."],["03 · Evolução","03 · Evolution"],["O catálogo pode crescer sem perder a organização visual.","The catalog can grow without losing visual organization."],
-["O próximo passo começa aqui.","Your next step starts here."],["Explore uma ferramenta agora ou entre na sua conta para continuar a experiência Nexauren.","Explore a tool now or sign in to continue your Nexauren experience."],["Explorar o catálogo","Explore the catalog"],["Construído para evoluir.","Built to evolve."],["Ferramentas rápidas para escrever, organizar, calcular e criar.","Fast tools for writing, organizing, calculating, and creating."],
-["Ferramentas para escrever, calcular, organizar e criar.","Tools for writing, calculating, organizing, and creating."],["CATÁLOGO NEXAUREN","NEXAUREN CATALOG"],["ferramentas disponíveis","tools available"],["Pesquise, escolha uma categoria e abra a ferramenta quando precisar.","Search, choose a category, and open a tool when you need it."],["Experiência dos utilizadores","User experience"],["Veja o que está a funcionar.","See what's working."],
-["A sua conta, com tudo no lugar.","Your account, everything in its place."],["Um painel central para acompanhar atividade, gerir o perfil, proteger o acesso e entrar rapidamente nas experiências Nexauren.","A central dashboard to track activity, manage your profile, protect access, and quickly reach Nexauren experiences."],["A preparar o seu espaço Nexauren…","Preparing your Nexauren space…"],["Uma conta central para ferramentas, atividade e experiências Nexauren.","One central account for tools, activity, and Nexauren experiences."],["Explorar","Explore"],["Dashboard","Dashboard"],["Plano Pro","Pro plan"],
-["NEXAUREN · ACCOUNT CENTER","NEXAUREN · ACCOUNT CENTER"],["Bem-vindo de volta.","Welcome back."],["A sua conta Nexauren funciona em todo o ecossistema de ferramentas.","Your Nexauren account works across the entire tools ecosystem."],["ENTRAR","SIGN IN"],["CRIAR CONTA","CREATE ACCOUNT"],["Email","Email"],["Palavra-passe","Password"],["Confirmar palavra-passe","Confirm password"],["Nome","Name"],["Nome de apresentação","Display name"],["Entrar","Sign in"],["Criar conta","Create account"],["Continuar com Google","Continue with Google"],["Criar com Google","Sign up with Google"],["Esqueci a minha palavra-passe","Forgot my password"],["Voltar para entrar","Back to sign in"],["ou","or"],["A ligar…","Connecting…"],["A entrar…","Signing in…"],["A preparar PayPal…","Preparing PayPal…"],["Enviar recuperação","Send reset"],["Recuperação","Recovery"],["PEDIDO ENVIADO","REQUEST SENT"],["Verifique o seu email.","Check your email."],["Já confirmei","I have confirmed"],["Reenviar email","Resend email"],["Confirme o seu email","Confirm your email"],["Email verificado","Email verified"],["A sua identidade de email foi confirmada.","Your email identity has been confirmed."],["Terminar sessão","Sign out"],["Sessão","Session"],["Terminar a sessão neste dispositivo.","Sign out on this device."],
-["CONTA NEXAUREN","NEXAUREN ACCOUNT"],["O seu painel Nexauren","Your Nexauren dashboard"],["Acompanhe a sua conta, perfil e acesso aos recursos Nexauren.","Track your account, profile, and access to Nexauren resources."],["Ativa","Active"],["ATIVIDADE","ACTIVITY"],["Resumo da sua conta","Your account summary"],["O histórico aparece aqui à medida que utiliza o Nexauren Story.","Your history will appear here as you use Nexauren Story."],["A carregar…","Loading…"],["Conta","Account"],["Autenticação protegida","Protected authentication"],["Acesso","Access"],["Ferramentas e recursos","Tools and resources"],["Experiência","Experience"],["Pronta para utilizar","Ready to use"],["Plano","Plan"],["Nexauren Free","Nexauren Free"],["Nexauren Pro","Nexauren Pro"],["Plano e faturação","Plan and billing"],["Gerir assinatura e recursos Pro.","Manage your subscription and Pro features."],["Abrir gestão →","Open management →"],["Consulte o seu plano, pagamento e benefícios.","View your plan, payment, and benefits."],["Gerir →","Manage →"],["Perfil","Profile"],["Informações visíveis na sua conta.","Information visible on your account."],["Guardar alterações","Save changes"],["Segurança","Security"],["Proteja o acesso à sua conta.","Protect access to your account."],["Alterar","Change"],["Fechar","Close"],["Palavra-passe atual","Current password"],["Nova palavra-passe","New password"],["Confirmar nova palavra-passe","Confirm new password"],["Atualizar palavra-passe","Update password"],["Autenticação Google","Google authentication"],["A palavra-passe é gerida pela sua conta Google.","Your password is managed by your Google account."],["Recursos","Resources"],["Aceda rapidamente ao ecossistema.","Quickly access the ecosystem."],["Utilize as ferramentas Nexauren.","Use Nexauren tools."],["Recursos e assinatura.","Features and subscription."],["Consulte os seus direitos e dados.","View your rights and data."],["Falta:","Missing:"],["✓ Palavra-passe forte.","✓ Strong password."],["As palavras-passe não coincidem.","Passwords do not match."],["Nome atualizado.","Name updated."],["Email de verificação reenviado.","Verification email resent."],["Palavra-passe atualizada com sucesso.","Password updated successfully."],["A sua conta está pronta.","Your account is ready."],["Use as ferramentas Nexauren diretamente no navegador e consulte o seu plano e faturação quando precisar.","Use Nexauren tools directly in your browser and check your plan and billing whenever you need."],["Explorar ferramentas","Explore tools"],["Dados temporariamente indisponíveis.","Data temporarily unavailable."],["Por segurança, esta página não confirma se o email está registado.","For security, this page does not confirm whether the email is registered."],
-["Escolha o seu plano.","Choose your plan."],["Comece grátis ou desbloqueie os recursos Pro por $5/mês.","Start for free or unlock Pro features for $5/month."],["Escolha o seu plano","Choose your plan"],["para sempre","forever"],["Acesso às ferramentas gratuitas","Access to free tools"],["Conta Nexauren","Nexauren account"],["Recursos essenciais","Essential features"],["Plano atual","Current plan"],["Mais recursos e funcionalidades Pro à medida que forem disponibilizados.","More Pro features and capabilities as they become available."],["Recursos premium","Premium features"],["Experiências Pro","Pro experiences"],["Pagamento recorrente seguro via PayPal","Secure recurring PayPal payment"],["Assinar Pro por $5","Subscribe to Pro for $5"],["Cancelar Pro","Cancel Pro"],["Próxima cobrança:","Next billing date:"],["Pro ativo","Pro active"],["A aguardar ativação","Waiting for activation"],["A aguardar aprovação","Waiting for approval"],["Pagamento suspenso","Payment suspended"],["Cancelado","Cancelled"],["Free","Free"],["ATUAL","CURRENT"],["NEXAUREN PLANS","NEXAUREN PLANS"],["A confirmar a sua assinatura PayPal…","Confirming your PayPal subscription…"],["Assinatura Pro ativada com sucesso.","Pro subscription activated successfully."],["O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo.","PayPal received the approval. Activation will complete when the subscription becomes active."],["O processo PayPal foi cancelado. A sua conta continua no plano Free.","The PayPal process was canceled. Your account remains on the Free plan."],["Erro ao carregar assinatura:","Error loading subscription:"],["Não foi possível abrir o PayPal.","Could not open PayPal."],["Não foi possível iniciar o pagamento.","Could not start payment."],["Não foi possível cancelar.","Could not cancel."],["Cancelar a assinatura Pro agora?","Cancel the Pro subscription now?"],
-["← Início","← Home"],["NEXAUREN · LEGAL CENTER","NEXAUREN · LEGAL CENTER"],["Política de Privacidade","Privacy Policy"],["Termos de Utilização","Terms of Use"],["Política de Cookies","Cookie Policy"],["Atualizada em 22 de setembro de 2026","Updated September 22, 2026"],["Documentos","Documents"],["O que são cookies?","What are cookies?"],["Cookies e tecnologias semelhantes podem manter sessões, guardar preferências e medir o funcionamento das páginas.","Cookies and similar technologies may maintain sessions, save preferences, and measure how pages work."],["Cookies essenciais","Essential cookies"],["Alguns são necessários para autenticação e segurança.","Some are necessary for authentication and security."],["Medição","Analytics"],["Algumas páginas públicas podem utilizar ferramentas de medição para compreender visitas e melhorar a experiência.","Some public pages may use analytics tools to understand visits and improve the experience."],["Controlo","Control"],["Pode controlar ou eliminar cookies através das definições do seu navegador. Desativar cookies essenciais pode impedir algumas funcionalidades.","You can control or delete cookies through your browser settings. Disabling essential cookies may prevent some features."],["1. Visão geral","1. Overview"],["A Nexauren Story respeita a privacidade de quem utiliza os seus sites, contas e ferramentas.","Nexauren Story respects the privacy of people who use its sites, accounts, and tools."],["2. Dados","2. Data"],["Podem ser tratados nome, email, fotografia de perfil, preferências e dados necessários ao funcionamento e segurança da conta.","We may process your name, email, profile photo, preferences, and data required for account operation and security."],["3. Utilização","3. Use"],["Os dados são utilizados para autenticação, funcionamento, personalização, segurança, suporte e melhoria dos serviços.","Data is used for authentication, operation, personalization, security, support, and service improvement."],["4. Serviços técnicos","4. Technical services"],["Algumas funcionalidades dependem de fornecedores técnicos. O objetivo é limitar os dados partilhados ao necessário.","Some features depend on technical providers. The goal is to limit shared data to what is necessary."],["5. Direitos","5. Rights"],["Pode solicitar informações, correção ou eliminação dos seus dados quando aplicável.","You may request information, correction, or deletion of your data where applicable."],["6. Alterações","6. Changes"],["Esta política pode ser atualizada. A data indicada acima identifica a versão atual.","This policy may be updated. The date above identifies the current version."],["1. Aceitação","1. Acceptance"],["Ao utilizar a Nexauren Story, concorda em utilizar os serviços de forma legal, responsável e respeitosa.","By using Nexauren Story, you agree to use the services lawfully, responsibly, and respectfully."],["2. Ferramentas","2. Tools"],["As ferramentas são disponibilizadas para fins gerais e podem ser melhoradas, alteradas ou descontinuadas. Verifique resultados antes de os utilizar em decisões importantes.","Tools are provided for general purposes and may be improved, changed, or discontinued. Check results before using them for important decisions."],["3. Conta","3. Account"],["É responsável por manter os dados da sua conta corretos e por proteger o acesso à mesma.","You are responsible for keeping your account information accurate and protecting access to it."],["4. Uso proibido","4. Prohibited use"],["Não utilize os serviços para fraude, abuso, tentativa de comprometer sistemas ou violação de direitos.","Do not use the services for fraud, abuse, attempts to compromise systems, or infringement of rights."],["5. Disponibilidade","5. Availability"],["Podem ocorrer interrupções para manutenção, segurança ou outras razões técnicas.","Interruptions may occur for maintenance, security, or other technical reasons."],
-["Voltar à conta","Back to account"],["Pagamento recorrente seguro via PayPal. Pode cancelar a assinatura a qualquer momento.","Secure recurring PayPal billing via PayPal. You can cancel your subscription at any time."],
-["Email ou palavra-passe inválidos.","Invalid email or password."],["Esta conta está desativada.","This account is disabled."],["Este email já está associado a uma conta.","This email is already associated with an account."],["A palavra-passe não cumpre os requisitos.","The password does not meet the requirements."],["Introduza um email válido.","Enter a valid email address."],["Foram detetadas muitas tentativas. Tente novamente mais tarde.","Too many attempts were detected. Please try again later."],["Não foi possível contactar o serviço. Verifique a ligação à internet.","Could not contact the service. Check your internet connection."],["A autenticação foi cancelada.","Authentication was canceled."],["Já existe uma conta Nexauren com este email. Entre primeiro com o método usado anteriormente.","A Nexauren account already exists with this email. Sign in with the method you used previously."],["Por segurança, volte a entrar e tente novamente.","For security, sign in again and try again."],["Este método de acesso não está disponível neste momento.","This sign-in method is not available right now."],["Não foi possível concluir a operação. Tente novamente.","The operation could not be completed. Please try again."],["Introduza o seu email.","Enter your email address."],["Email e palavra-passe são obrigatórios.","Email and password are required."],["O nome precisa de pelo menos 2 caracteres.","The name must contain at least 2 characters."],["As palavras-passe não coincidem.","Passwords do not match."],["A palavra-passe precisa de","The password must include"],["Não foi possível concluir o acesso. Tente novamente.","Could not complete sign-in. Please try again."],["A janela de autenticação do Google foi fechada.","The Google sign-in window was closed."],["O navegador bloqueou a janela do Google. Tente novamente ou permita pop-ups para este site.","The browser blocked the Google window. Try again or allow pop-ups for this site."],["Não foi possível concluir o acesso. Tente novamente.","Could not complete sign-in. Please try again."],["Introduza o seu nome.","Enter your name."],["A palavra-passe precisa de 12+ caracteres, incluindo maiúscula, minúscula, número e símbolo.","The password must contain 12+ characters, including uppercase, lowercase, a number, and a symbol."]
-];
+const PT=
+{
+  "Início": "Home",
+  "Ferramentas": "Tools",
+  "Conta": "Account",
+  "Planos": "Plans",
+  "Legal": "Legal",
+  "Privacidade": "Privacy",
+  "Termos": "Terms",
+  "Cookies": "Cookies",
+  "Menu": "Menu",
+  "Pesquisar": "Search",
+  "Voltar": "Back",
+  "Limpar": "Clear",
+  "Fechar": "Close",
+  "Guardar alterações": "Save changes",
+  "Continuar": "Continue",
+  "Tentar novamente": "Try again",
+  "Agora não": "Not now",
+  "Destaque": "Featured",
+  "Popular": "Popular",
+  "Grátis": "Free",
+  "Ferramentas que acompanham o seu trabalho.": "Tools that fit your work.",
+  "Pequenos utilitários para escrever, calcular, organizar e criar. Rápidos no telemóvel, simples no computador e preparados para crescer.": "Small utilities for writing, calculating, organizing and creating. Fast on mobile, simple on desktop and ready to grow.",
+  "Pesquisar ferramentas ou categorias…": "Search tools or categories…",
+  "Destaques": "Highlights",
+  "Populares": "Popular",
+  "Catálogo Nexauren": "Nexauren catalog",
+  "ferramentas disponíveis": "available tools",
+  "Abra, use e volte quando precisar.": "Open, use and come back whenever you need.",
+  "Resultados": "Results",
+  "Categorias": "Categories",
+  "Sempre a crescer": "Always growing",
+  "A verificar a sua conta…": "Checking your account…",
+  "Nenhuma categoria encontrada.": "No categories found.",
+  "1 ferramenta encontrada": "1 tool found",
+  "ferramentas encontradas": "tools found",
+  "Não foi possível carregar o catálogo.": "Could not load the catalog.",
+  "Pesquisar por nome, função, descrição ou palavra-chave…": "Search by name, function, description or keyword…",
+  "Todas as palavras-chave": "All keywords",
+  "Todos os acessos": "All access",
+  "Pro": "Pro",
+  "Mais relevantes": "Most relevant",
+  "Em destaque": "Featured",
+  "Mais populares": "Most popular",
+  "Nome A–Z": "Name A–Z",
+  "Limpar pesquisa": "Clear search",
+  "Limpar filtros": "Clear filters",
+  "Nenhuma ferramenta encontrada.": "No tools found.",
+  "A categoria está pronta.": "The category is ready.",
+  "Ainda não existem ferramentas publicadas aqui.": "No tools have been published here yet.",
+  "Crie uma conta para usar as ferramentas": "Create an account to use the tools",
+  "As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados.": "Nexauren tools are available only to authenticated users.",
+  "Entrar ou criar conta": "Sign in or create an account",
+  "A carregar…": "Loading…",
+  "Criar conta": "Create account",
+  "Esqueci a minha palavra-passe": "Forgot my password",
+  "Email verificado": "Email verified",
+  "Reenviar email": "Resend email",
+  "Já confirmei": "I have confirmed",
+  "Visão geral": "Overview",
+  "Perfil": "Profile",
+  "Segurança": "Security",
+  "Plano e faturação": "Plan and billing",
+  "Gerir assinatura e recursos Pro.": "Manage your subscription and Pro resources.",
+  "Abrir gestão →": "Open management →",
+  "Atualizar palavra-passe": "Update password",
+  "Nome atualizado.": "Name updated.",
+  "Palavra-passe atualizada com sucesso.": "Password updated successfully.",
+  "Terminar sessão": "Sign out",
+  "Política de Privacidade": "Privacy Policy",
+  "Atualizada em 22 de setembro de 2026": "Updated September 22, 2026",
+  "Dados": "Data",
+  "Utilização": "Usage",
+  "Serviços técnicos": "Technical services",
+  "Direitos": "Rights",
+  "Alterações": "Changes",
+  "Termos de Utilização": "Terms of Use",
+  "Aceitação": "Acceptance",
+  "Uso proibido": "Prohibited use",
+  "Disponibilidade": "Availability",
+  "Política de Cookies": "Cookie Policy",
+  "O que são cookies?": "What are cookies?",
+  "Cookies essenciais": "Essential cookies",
+  "Medição": "Measurement",
+  "Controlo": "Control",
+  "A Nexauren Story respeita a privacidade de quem utiliza os seus sites, contas e ferramentas.": "Nexauren Story respects the privacy of people who use its websites, accounts and tools.",
+  "Podem ser tratados nome, email, fotografia de perfil, preferências e dados necessários ao funcionamento e segurança da conta.": "Name, email, profile photo, preferences and data necessary for account operation and security may be processed.",
+  "Os dados são utilizados para autenticação, funcionamento, personalização, segurança, suporte e melhoria dos serviços.": "Data is used for authentication, operation, personalization, security, support and service improvement.",
+  "Algumas funcionalidades dependem de fornecedores técnicos. O objetivo é limitar os dados partilhados ao necessário.": "Some features depend on technical providers. The goal is to limit shared data to what is necessary.",
+  "Pode solicitar informações, correção ou eliminação dos seus dados quando aplicável.": "You may request information, correction or deletion of your data where applicable.",
+  "Esta política pode ser atualizada. A data indicada acima identifica a versão atual.": "This policy may be updated. The date above identifies the current version.",
+  "Ao utilizar a Nexauren Story, concorda em utilizar os serviços de forma legal, responsável e respeitosa.": "By using Nexauren Story, you agree to use the services legally, responsibly and respectfully.",
+  "As ferramentas são disponibilizadas para fins gerais e podem ser melhoradas, alteradas ou descontinuadas. Verifique resultados antes de os utilizar em decisões importantes.": "Tools are provided for general purposes and may be improved, changed or discontinued. Verify results before using them for important decisions.",
+  "É responsável por manter os dados da sua conta corretos e por proteger o acesso à mesma.": "You are responsible for keeping your account information accurate and protecting access to it.",
+  "Não utilize os serviços para fraude, abuso, tentativa de comprometer sistemas ou violação de direitos.": "Do not use the services for fraud, abuse, attempts to compromise systems, or rights violations.",
+  "Podem ocorrer interrupções para manutenção, segurança ou outras razões técnicas.": "Interruptions may occur for maintenance, security, or other technical reasons.",
+  "Os termos podem ser atualizados para refletir mudanças nos serviços ou requisitos legais.": "The terms may be updated to reflect service changes or legal requirements.",
+  "Cookies e tecnologias semelhantes podem manter sessões, guardar preferências e medir o funcionamento das páginas.": "Cookies and similar technologies may maintain sessions, store preferences, and measure how pages work.",
+  "Alguns são necessários para autenticação e segurança.": "Some are necessary for authentication and security.",
+  "Algumas páginas públicas podem utilizar ferramentas de medição para compreender visitas e melhorar a experiência.": "Some public pages may use measurement tools to understand visits and improve the experience.",
+  "Pode controlar ou eliminar cookies através das definições do seu navegador. Desativar cookies essenciais pode impedir algumas funcionalidades.": "You can control or delete cookies through your browser settings. Disabling essential cookies may prevent some features."
+,
+    "Um só espaço.": "One place.",
+    "Ferramentas e novas experiências.": "Content, tools and new experiences.",
+    "Explorar ferramentas": "Explore tools",
+    "Ferramentas online": "Online tools",
+    "Conta Nexauren": "Nexauren account",
+    "Ecossistema Nexauren": "Nexauren ecosystem",
+    "Escolha o que precisa agora.": "Choose what you need now.",
+    "Uma navegação clara para o ecossistema inteiro.": "Clear navigation for the entire ecosystem.",
+    "Utilitários rápidos para escrever, organizar, calcular e resolver tarefas no navegador.": "Quick utilities for writing, organizing, calculating, and solving tasks in your browser.",
+    "Abrir conta": "Open account",
+    "Um único acesso para guardar preferências e preparar novas experiências do ecossistema.": "One login to save preferences and prepare for new ecosystem experiences.",
+    "Rápido": "Fast",
+    "Páginas leves e responsivas, desenhadas para telemóvel e computador.": "Lightweight, responsive pages designed for mobile and desktop.",
+    "Organizado": "Organized",
+    "Uma identidade visual única para navegar entre as áreas públicas.": "A unified visual identity for navigating the public areas.",
+    "Em evolução": "Evolving",
+    "Novas ferramentas e experiências podem entrar sem mudar a estrutura principal.": "New tools and experiences can be added without changing the main structure.",
+    "Continue dentro do Nexauren.": "Continue in Nexauren.",
+    "Abrir Conta Nexauren": "Open Nexauren Account",
+    "Conteúdo, ferramentas e novas experiências num único ecossistema público.": "Content, tools, and new experiences in one public ecosystem.",
+    "Uma experiência Nexauren.": "A Nexauren experience.",
+    "Explorar": "Explore",
+    "Explorar seleções": "Explore selections",
+    "Resumo do catálogo": "Catalog summary",
+    "Pesquisa avançada de ferramentas": "Advanced tool search",
+    "Ferramentas da categoria": "Category tools",
+    "CATEGORIA": "CATEGORY",
+    "← Todas as categorias": "← All categories",
+    "Categoria não encontrada.": "Category not found.",
+    "ferramenta disponível": "tool available",
+    "ferramentas disponíveis": "tools available",
+    "Nenhuma categoria encontrada.": "No categories found.",
+    "Tente outro termo, remova um filtro ou pesquise por uma funcionalidade.": "Try another term, remove a filter, or search for a feature.",
+    "A categoria está pronta.": "The category is ready.",
+    "Ainda não existem ferramentas publicadas aqui.": "No tools have been published here yet.",
+    "Crie uma conta para usar as ferramentas": "Create an account to use the tools",
+    "As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados.": "Nexauren tools are available only to authenticated users.",
+    "Entrar ou criar conta": "Sign in or create an account",
+    "É necessária uma conta": "An account is required",
+    "Crie uma conta ou entre na sua conta Nexauren para usar as ferramentas.": "Create an account or sign in to your Nexauren account to use the tools.",
+    "Não foi possível verificar o acesso": "Could not verify access",
+    "Não conseguimos confirmar o estado do seu plano agora. Tente novamente.": "We couldn't confirm your plan status right now. Please try again.",
+    "Ferramenta exclusiva do Pro": "Pro-only tool",
+    "O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso.": "Your current plan does not include this tool. Upgrade to Nexauren Pro to unlock access.",
+    "Ir para o plano Pro": "Go to the Pro plan",
+    "Definições da conta": "Account settings",
+    "Navegação principal": "Main navigation",
+    "Autenticação Nexauren": "Nexauren authentication",
+    "A sua conta Nexauren.": "Your Nexauren account.",
+    "Um único acesso para ferramentas, experiências e recursos do ecossistema Nexauren.": "One login for tools, experiences, and resources across the Nexauren ecosystem.",
+    "ENTRAR": "SIGN IN",
+    "Bem-vindo de volta.": "Welcome back.",
+    "A sua conta Nexauren funciona em todo o ecossistema de ferramentas.": "Your Nexauren account works across the entire tools ecosystem.",
+    "Palavra-passe": "Password",
+    "Continuar com Google": "Continue with Google",
+    "Esqueci a minha palavra-passe": "I forgot my password",
+    "CRIAR CONTA": "CREATE ACCOUNT",
+    "Crie o seu acesso Nexauren.": "Create your Nexauren access.",
+    "Uma identidade para usar ferramentas, preferências e recursos personalizados.": "An identity for using tools, preferences, and personalized resources.",
+    "Nome": "Name",
+    "Use 12+ caracteres, incluindo maiúscula, minúscula, número e símbolo.": "Use 12+ characters, including uppercase, lowercase, a number, and a symbol.",
+    "Confirmar palavra-passe": "Confirm password",
+    "Criar com Google": "Create with Google",
+    "Vamos enviar uma mensagem para confirmar o seu email. A conta fica disponível no ecossistema Nexauren.": "We'll send a message to confirm your email. Your account will then be available across the Nexauren ecosystem.",
+    "RECUPERAÇÃO": "RECOVERY",
+    "Esqueceu a palavra-passe?": "Forgot your password?",
+    "Introduza o email da sua conta e enviaremos as instruções para criar uma nova palavra-passe.": "Enter your account email and we'll send instructions to create a new password.",
+    "Enviar recuperação": "Send reset email",
+    "Por segurança, esta página não confirma se o email está registado.": "For security, this page does not confirm whether the email is registered.",
+    "PEDIDO ENVIADO": "REQUEST SENT",
+    "Verifique o seu email.": "Check your email.",
+    "Se o endereço estiver associado a uma conta Nexauren, receberá as instruções de recuperação.": "If the address is associated with a Nexauren account, you'll receive recovery instructions.",
+    "Email verificado": "Email verified",
+    "A sua identidade de email foi confirmada.": "Your email identity has been confirmed.",
+    "Confirme o seu email": "Confirm your email",
+    "Enviámos uma mensagem de verificação para": "We sent a verification message to",
+    "Gira o seu perfil, segurança e acesso aos recursos Nexauren.": "Manage your profile, security, and access to Nexauren resources.",
+    "Ativa": "Active",
+    "Plano e faturação": "Plan and billing",
+    "Consulte o seu plano, pagamento e benefícios.": "View your plan, payment, and benefits.",
+    "Gerir →": "Manage →",
+    "Perfil": "Profile",
+    "Informações visíveis na sua conta.": "Information visible on your account.",
+    "Nome de apresentação": "Display name",
+    "Segurança": "Security",
+    "Proteja o acesso à sua conta.": "Protect access to your account.",
+    "Alterar": "Change",
+    "Palavra-passe atual": "Current password",
+    "Nova palavra-passe": "New password",
+    "12+ caracteres, maiúscula, minúscula, número e símbolo.": "12+ characters, uppercase, lowercase, number, and symbol.",
+    "Confirmar nova palavra-passe": "Confirm new password",
+    "Autenticação Google": "Google authentication",
+    "A palavra-passe é gerida pela sua conta Google.": "Your password is managed by your Google account.",
+    "Recursos": "Resources",
+    "Aceda rapidamente ao ecossistema.": "Quickly access the ecosystem.",
+    "Utilize as ferramentas Nexauren.": "Use Nexauren tools.",
+    "Plano Pro": "Pro plan",
+    "Recursos e assinatura.": "Resources and subscription.",
+    "Consulte os seus direitos e dados.": "View your rights and data.",
+    "Sessão": "Session",
+    "Terminar a sessão neste dispositivo.": "Sign out on this device.",
+    "Email ou palavra-passe inválidos.": "Email or password is incorrect.",
+    "Esta conta está desativada.": "This account is disabled.",
+    "Este email já está associado a uma conta.": "This email is already associated with an account.",
+    "A palavra-passe não cumpre os requisitos.": "The password does not meet the requirements.",
+    "Introduza um email válido.": "Enter a valid email address.",
+    "Foram detetadas muitas tentativas. Tente novamente mais tarde.": "Too many attempts were detected. Please try again later.",
+    "Não foi possível contactar o serviço. Verifique a ligação à internet.": "Could not contact the service. Check your internet connection.",
+    "O navegador bloqueou a janela do Google. Tente novamente ou permita pop-ups para este site.": "The browser blocked the Google window. Try again or allow pop-ups for this site.",
+    "A janela de autenticação do Google foi fechada.": "The Google sign-in window was closed.",
+    "A autenticação foi cancelada.": "Authentication was cancelled.",
+    "Por segurança, volte a entrar e tente novamente.": "For security, sign in again and try again.",
+    "Este método de acesso não está disponível neste momento.": "This sign-in method is not available right now.",
+    "O acesso com Google ainda não está disponível neste domínio.": "Google sign-in is not yet available on this domain.",
+    "O armazenamento do navegador não está disponível. Abra o Nexauren Story num navegador normal, não numa janela privada bloqueada.": "Browser storage is unavailable. Open Nexauren Story in a normal browser, not a blocked private window.",
+    "Não foi possível concluir o acesso. Tente novamente.": "Could not complete sign-in. Please try again.",
+    "Este navegador não conseguiu abrir a janela de acesso. Vamos tentar uma alternativa.": "This browser could not open the sign-in window. We'll try an alternative.",
+    "Conta criada com sucesso.": "Account created successfully.",
+    "Sincronização:": "Synchronization:",
+    "erro desconhecido": "unknown error",
+    "O nome precisa de pelo menos 2 caracteres.": "The name must contain at least 2 characters.",
+    "Nome atualizado.": "Name updated.",
+    "Email de verificação reenviado.": "Verification email resent.",
+    "Falta:": "Missing:",
+    "✓ Palavra-passe forte.": "✓ Strong password.",
+    "As palavras-passe não coincidem.": "Passwords do not match.",
+    "Email e palavra-passe são obrigatórios.": "Email and password are required.",
+    "A entrar…": "Signing in…",
+    "A ligar…": "Connecting…",
+    "Já existe uma conta Nexauren com este email. Entre primeiro com o método usado anteriormente.": "A Nexauren account already exists with this email. Sign in first with the method used previously.",
+    "Já existe uma conta Nexauren com este email. Entre com email e palavra-passe para associar o Google.": "A Nexauren account already exists with this email. Sign in with email and password to link Google.",
+    "Já existe uma conta com este email. Entre com o método usado anteriormente para continuar.": "An account already exists with this email. Sign in with the method used previously to continue.",
+    "O Google não conseguiu abrir a janela de acesso. Toque novamente para tentar.": "Google could not open the sign-in window. Tap again to retry.",
+    "Escolha o seu plano": "Choose your plan",
+    "Comece grátis ou desbloqueie os recursos Pro por $5/mês.": "Start free or unlock Pro resources for $5/month.",
+    "Pro ativo": "Pro active",
+    "A aguardar ativação": "Awaiting activation",
+    "A aguardar aprovação": "Awaiting approval",
+    "Pagamento suspenso": "Payment suspended",
+    "Cancelado": "Cancelled",
+    "para sempre": "forever",
+    "ATUAL": "CURRENT",
+    "Acesso às ferramentas gratuitas": "Access to free tools",
+    "Recursos essenciais": "Essential resources",
+    "Plano atual": "Current plan",
+    "Mais recursos e funcionalidades Pro à medida que forem disponibilizados.": "More Pro resources and features as they become available.",
+    "Recursos premium": "Premium resources",
+    "Experiências Pro": "Pro experiences",
+    "Pagamento recorrente seguro via PayPal": "Secure recurring payment via PayPal",
+    "Pagamento recorrente seguro via PayPal. Pode cancelar a assinatura a qualquer momento.": "Secure recurring payment via PayPal. You can cancel the subscription at any time.",
+    "Assinar Pro por $5": "Subscribe to Pro for $5",
+    "Cancelar Pro": "Cancel Pro",
+    "Próxima cobrança:": "Next charge:",
+    "A confirmar a sua assinatura PayPal…": "Confirming your PayPal subscription…",
+    "Assinatura Pro ativada com sucesso.": "Pro subscription activated successfully.",
+    "O PayPal recebeu a aprovação. A ativação será concluída assim que o estado da assinatura ficar ativo.": "PayPal received the approval. Activation will complete once the subscription status becomes active.",
+    "O processo PayPal foi cancelado. A sua conta continua no plano Free.": "The PayPal process was cancelled. Your account remains on the Free plan.",
+    "Erro ao carregar assinatura:": "Error loading subscription:",
+    "A preparar PayPal…": "Preparing PayPal…",
+    "Não foi possível abrir o PayPal.": "Could not open PayPal.",
+    "A cancelar…": "Cancelling…",
+    "Cancelar a assinatura Pro agora?": "Cancel the Pro subscription now?",
+    "Não foi possível iniciar o pagamento.": "Could not start the payment.",
+    "Não foi possível cancelar.": "Could not cancel.",
+    "Escolha o seu plano.": "Choose your plan.",
+    "Voltar à conta": "Back to account",
+    "A carregar os planos…": "Loading plans…",
+    "Voltar ao início": "Back to home",
+    "Abrir ferramentas": "Open tools",
+    "Esta página saiu do mapa.": "This page is off the map.",
+    "O endereço pode estar incorreto, ter sido movido ou já não existir. Volte ao início ou continue a explorar o ecossistema Nexauren.": "The address may be incorrect, moved, or no longer exist. Return home or continue exploring the Nexauren ecosystem.",
 
-const PT=new Map(PAIRS.map(([pt,en])=>[pt,en]));
-const EN=new Map(PAIRS.map(([pt,en])=>[en,pt]));
+  "NEXAUREN TOOL · PRODUTIVIDADE": "NEXAUREN TOOL · PRODUCTIVITY",
+  "NEXAUREN PRO · PRODUTIVIDADE": "NEXAUREN PRO · PRODUCTIVITY",
+  "Contador de Palavras — Nexauren Tools": "Word Counter — Nexauren Tools",
+  "Conte palavras, caracteres, linhas e tempo de leitura gratuitamente.": "Count words, characters, lines, and reading time for free.",
+  "Contador de Palavras": "Word Counter",
+  "Cole ou escreva o seu texto e veja as estatísticas instantaneamente.": "Paste or type your text and see the statistics instantly.",
+  "Entre para usar esta ferramenta": "Sign in to use this tool",
+  "Comece a escrever ou cole o seu texto aqui…": "Start typing or paste your text here…",
+  "Palavras": "Words",
+  "Caracteres": "Characters",
+  "Sem espaços": "Without spaces",
+  "Linhas": "Lines",
+  "Leitura": "Reading",
+  "Copiar texto": "Copy text",
+  "Copiado ✓": "Copied ✓",
+  "A ferramenta funciona localmente no navegador; o texto não precisa ser enviado para um servidor.": "This tool runs locally in your browser; your text does not need to be sent to a server.",
+  "Gerador de Orçamentos Pro — Nexauren Tools": "Pro Quote Generator — Nexauren Tools",
+  "Gerador de Orçamentos Pro — crie orçamentos profissionais e prontos para imprimir.": "Pro Quote Generator — create professional, print-ready quotes.",
+  "Gerador de Orçamentos Pro": "Pro Quote Generator",
+  "Crie propostas comerciais profissionais, calcule totais automaticamente e imprima ou guarde em PDF.": "Create professional quotes, calculate totals automatically, and print or save as PDF.",
+  "PLANO PRO": "PRO PLAN",
+  "Recurso exclusivo do Pro": "Pro-only feature",
+  "Esta ferramenta está incluída no plano Nexauren Pro. Ative uma assinatura Pro para ter acesso.": "This tool is included in the Nexauren Pro plan. Activate a Pro subscription to access it.",
+  "Ver plano Pro": "View Pro plan",
+  "Acesso liberado automaticamente enquanto o plano Pro estiver ativo.": "Access is automatically enabled while the Pro plan is active.",
+  "Orçamento profissional": "Professional quote",
+  "Preencha os dados e use “Imprimir / PDF” para gerar o documento.": "Fill in the details and use “Print / PDF” to generate the document.",
+  "Imprimir / PDF": "Print / PDF",
+  "Empresa / profissional": "Company / professional",
+  "Nexauren, Lda.": "Nexauren, Ltd.",
+  "Cliente": "Client",
+  "Nome do cliente": "Client name",
+  "Email do cliente": "Client email",
+  "N.º do orçamento": "Quote no.",
+  "Itens": "Items",
+  "+ Adicionar item": "+ Add item",
+  "Descrição do serviço/produto": "Service/product description",
+  "Remover": "Remove",
+  "Desconto (%)": "Discount (%)",
+  "Imposto (%)": "Tax (%)",
+  "Subtotal": "Subtotal",
+  "Desconto": "Discount",
+  "Imposto": "Tax",
+  "Total": "Total",
+  "Notas / condições": "Notes / terms",
+  "Prazo, condições de pagamento, observações…": "Deadline, payment terms, notes…",
+  "A verificar o seu acesso…": "Checking your access…",
+  "É necessária uma conta.": "An account is required.",
+  "Esta ferramenta é exclusiva do Pro.": "This tool is Pro-only.",
+  "O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso.": "Your current plan does not include this tool. Upgrade to Nexauren Pro to unlock access.",
+  "Ir para o plano Pro": "Go to the Pro plan",
+  "Não foi possível verificar o acesso.": "Could not verify access.",
+  "Não conseguimos confirmar o estado do seu plano agora. Tente novamente.": "We couldn't confirm your plan status right now. Please try again.",
+  "PUBLICIDADE": "ADVERTISEMENT",
+  "NEXAUREN TOOL · TECNOLOGIA": "NEXAUREN TOOL · TECHNOLOGY",
+  "Gerador de QR Code — Nexauren Tools": "QR Code Generator — Nexauren Tools",
+  "Gerador de QR Code — crie QR Codes para URLs, texto, Wi-Fi e contactos.": "QR Code Generator — create QR Codes for URLs, text, Wi-Fi, and contacts.",
+  "Gerador de QR Code": "QR Code Generator",
+  "Gerador de QR Code.": "QR Code Generator.",
+  "Crie códigos QR prontos para partilhar. Gere tudo no seu navegador, sem enviar o conteúdo para um servidor.": "Create QR Codes ready to share. Generate everything in your browser without sending content to a server.",
+  "LOCAL · RÁPIDO · PRIVADO": "LOCAL · FAST · PRIVATE",
+  "← Tecnologia": "← Technology",
+  "Conteúdo": "Content",
+  "Escolha o que o QR Code vai transportar.": "Choose what the QR Code will carry.",
+  "Tipo de QR Code": "QR Code type",
+  "Texto": "Text",
+  "Contacto": "Contact",
+  "Nome da rede": "Network name",
+  "Palavra-passe": "Password",
+  "Sem palavra-passe": "No password",
+  "Rede oculta": "Hidden network",
+  "Tamanho": "Size",
+  "Correção de erro": "Error correction",
+  "M — Equilibrada": "M — Balanced",
+  "Q — Alta": "Q — High",
+  "H — Muito alta": "H — Very high",
+  "L — Básica": "L — Basic",
+  "Gerar QR Code": "Generate QR Code",
+  "Repor": "Reset",
+  "Pré-visualização": "Preview",
+  "Pronto para guardar ou partilhar.": "Ready to save or share.",
+  "QR Code gerado": "Generated QR Code",
+  "O seu QR Code aparece aqui.": "Your QR Code will appear here.",
+  "CONTEÚDO": "CONTENT",
+  "↓ Guardar PNG": "↓ Save PNG",
+  "Privacidade local.": "Local privacy.",
+  "O Nexauren gera o QR Code no próprio navegador. O texto, Wi-Fi ou contacto não é enviado para o servidor.": "Nexauren generates the QR Code directly in your browser. Text, Wi-Fi, or contact data is not sent to the server.",
+  "Introduza algum conteúdo para gerar o código.": "Enter some content to generate the code.",
+  "O motor QR não ficou disponível. Verifique a ligação e tente novamente.": "The QR engine is unavailable. Check your connection and try again.",
+  "QR Code atualizado.": "QR Code updated.",
+  "Não foi possível gerar este QR Code. Reduza o conteúdo e tente novamente.": "Could not generate this QR Code. Reduce the content and try again.",
+  "Pronto para gerar.": "Ready to generate.",
+  "Leitor de QR Code — Nexauren Tools": "QR Code Reader — Nexauren Tools",
+  "Leitor de QR Code Nexauren — leia QR Codes usando a câmara ou uma imagem, diretamente no navegador.": "Nexauren QR Code Reader — scan QR Codes using your camera or an image, directly in your browser.",
+  "Leia um": "Scan a",
+  "Use a câmara do telemóvel ou escolha uma imagem. A leitura acontece localmente no navegador.": "Use your phone camera or choose an image. Scanning happens locally in your browser.",
+  "SCANNER LOCAL": "LOCAL SCANNER",
+  "CONTA NEXAUREN": "NEXAUREN ACCOUNT",
+  "Entre para usar esta ferramenta.": "Sign in to use this tool.",
+  "Scanner": "Scanner",
+  "Enquadre o QR Code dentro da área.": "Frame the QR Code inside the area.",
+  "Pré-visualização da câmara": "Camera preview",
+  "Câmara pronta": "Camera ready",
+  "Toque em iniciar para começar a leitura.": "Tap start to begin scanning.",
+  "A aguardar câmara…": "Waiting for camera…",
+  "Iniciar câmara": "Start camera",
+  "Escolher imagem": "Choose image",
+  "Resultado": "Result",
+  "Conteúdo detetado pelo scanner.": "Content detected by the scanner.",
+  "Nenhum QR detetado": "No QR detected",
+  "O conteúdo lido aparecerá aqui.": "The scanned content will appear here.",
+  "Abrir URL": "Open URL",
+  "Câmara ativa. Aponte para o código.": "Camera active. Point it at the code.",
+  "A procurar um QR Code…": "Looking for a QR Code…",
+  "QR Code detetado com sucesso.": "QR Code detected successfully.",
+  "O motor de leitura não ficou disponível. Verifique a ligação e tente novamente.": "The scanning engine is unavailable. Check your connection and try again.",
+  "O motor de leitura ainda não ficou disponível. Verifique a ligação e tente novamente.": "The scanning engine is not available yet. Check your connection and try again.",
+  "Este navegador não disponibiliza acesso à câmara.": "This browser does not provide camera access.",
+  "Permissão da câmara recusada. Autorize a câmara nas definições do navegador.": "Camera permission was denied. Allow camera access in your browser settings.",
+  "Não foi possível iniciar a câmara. Tente selecionar uma imagem.": "Could not start the camera. Try selecting an image.",
+  "A analisar a imagem…": "Analyzing the image…",
+  "A analisar imagem…": "Analyzing image…",
+  "Não foi encontrado nenhum QR Code nesta imagem.": "No QR Code was found in this image.",
+  "Não foi possível analisar esta imagem.": "Could not analyze this image.",
+  "Não foi possível abrir a imagem escolhida.": "Could not open the selected image.",
+  "Resultado copiado para a área de transferência.": "Result copied to the clipboard.",
+  "Não foi possível copiar automaticamente. Selecione o resultado manualmente.": "Could not copy automatically. Select the result manually.",
+  "Câmara parada.": "Camera stopped.",
+  "Pronto. Use a câmara ou escolha uma imagem.": "Ready. Use the camera or choose an image.",
+  "Parar": "Stop",
+  "Gerador de Código de Barras — Nexauren Tools": "Barcode Generator — Nexauren Tools",
+  "Gerador de Código de Barras Nexauren — crie códigos EAN, UPC e Code 128.": "Nexauren Barcode Generator — create EAN, UPC, and Code 128 barcodes.",
+  "Transforme dados em": "Turn data into",
+  "Gere códigos de barras prontos para imprimir, guardar ou utilizar em sistemas.": "Generate barcodes ready to print, save, or use in systems.",
+  "CONTA NECESSÁRIA": "ACCOUNT REQUIRED",
+  "A geração acontece no navegador depois da autenticação.": "Generation happens in the browser after authentication.",
+  "Configuração": "Configuration",
+  "Escolha o padrão e introduza o valor.": "Choose the format and enter the value.",
+  "Alfanumérico": "Alphanumeric",
+  "13 dígitos": "13 digits",
+  "8 dígitos": "8 digits",
+  "12 dígitos": "12 digits",
+  "Legado": "Legacy",
+  "Conteúdo": "Content",
+  "Code 128 aceita números, letras e vários símbolos.": "Code 128 accepts numbers, letters, and various symbols.",
+  "EAN-13 exige exatamente 12 ou 13 dígitos.": "EAN-13 requires exactly 12 or 13 digits.",
+  "EAN-8 exige exatamente 7 ou 8 dígitos.": "EAN-8 requires exactly 7 or 8 digits.",
+  "UPC-A exige exatamente 11 ou 12 dígitos.": "UPC-A requires exactly 11 or 12 digits.",
+  "Code 39 usa letras maiúsculas, números e símbolos específicos.": "Code 39 uses uppercase letters, numbers, and specific symbols.",
+  "Largura": "Width",
+  "Altura": "Height",
+  "Mostrar texto": "Show text",
+  "Gerar código": "Generate code",
+  "Campos limpos.": "Fields cleared.",
+  "Motor de código de barras indisponível.": "Barcode engine unavailable.",
+  "EAN-13 precisa de 12 ou 13 dígitos.": "EAN-13 requires 12 or 13 digits.",
+  "EAN-8 precisa de 7 ou 8 dígitos.": "EAN-8 requires 7 or 8 digits.",
+  "UPC-A precisa de 11 ou 12 dígitos.": "UPC-A requires 11 or 12 digits.",
+  "Há caracteres inválidos para Code 39.": "There are invalid characters for Code 39.",
+  "Introduza um valor válido.": "Enter a valid value.",
+  "Introduza um valor para gerar o código.": "Enter a value to generate the code.",
+  "Não foi possível gerar este código.": "Could not generate this code.",
+  "Aguardando conteúdo.": "Waiting for content.",
+  "Pronto para gerar.": "Ready to generate.",
+  "Pré-visualização": "Preview",
+  "Resultado pronto para saída.": "Result ready for output.",
+  "Código de barras": "Barcode",
+  "Aguardando dados": "Waiting for data",
+  "O código aparecerá nesta área.": "The code will appear here.",
+  "Download SVG": "Download SVG",
+  "Imprimir": "Print",
+  "Validação:": "Validation:",
+  "Escolha um formato para ver as regras de entrada.": "Choose a format to see the input rules.",
+  "✓ Código válido. Pronto para gerar.": "✓ Valid code. Ready to generate.",
+  "Gerador de UUID | Nexauren": "UUID Generator | Nexauren",
+  "IDENTIDADE DIGITAL": "DIGITAL IDENTITY",
+  "Gerador de UUID": "UUID Generator",
+  "Crie identificadores únicos localmente no navegador.": "Create unique identifiers locally in your browser.",
+  "Quantidade": "Quantity",
+  "Gerar UUID": "Generate UUID",
+  "Nenhum UUID gerado.": "No UUID generated.",
+  "Copiar": "Copy",
+  "Código de Barras": "Barcode",
+  "Ex.: NEXAUREN-2026": "e.g. NEXAUREN-2026",
+  "Code 128 gerado.": "Code 128 generated.",
+  "EAN-13 gerado.": "EAN-13 generated.",
+  "EAN-8 gerado.": "EAN-8 generated.",
+  "UPC-A gerado.": "UPC-A generated.",
+  "Code 39 gerado.": "Code 39 generated.",
+  "Gerador de Hash | Nexauren": "Hash Generator | Nexauren",
+  "Gerador de Hash": "Hash Generator",
+  "Crie resumos criptográficos localmente no navegador.": "Create cryptographic digests locally in your browser.",
+  "CRYPTO TOOLS": "CRYPTO TOOLS",
+  "Texto": "Text",
+  "Digite o conteúdo": "Enter the content",
+  "Algoritmo": "Algorithm",
+  "SHA-1 (legado)": "SHA-1 (legacy)",
+  "Gerar Hash": "Generate Hash",
+  "Nenhum hash gerado.": "No hash generated.",
+  "Base64 Encoder / Decoder": "Base64 Encoder / Decoder",
+  "Base64 Lab": "Base64 Lab",
+  "Codificador / Descodificador Base64": "Base64 Encoder / Decoder",
+  "Codifique e descodifique texto localmente.": "Encode and decode text locally.",
+  "Digite o texto ou Base64": "Enter text or Base64",
+  "Codificar": "Encode",
+  "Descodificar": "Decode",
+  "Resultado": "Result",
+  "Codificado com sucesso.": "Encoded successfully.",
+  "Erro ao codificar.": "Encoding error.",
+  "Descodificado com sucesso.": "Decoded successfully.",
+  "Base64 inválido.": "Invalid Base64.",
+  "JWT Decoder": "JWT Decoder",
+  "Analise Header, Payload e Signature localmente.": "Inspect JWT Header, Payload, and Signature locally.",
+  "Cole o JWT aqui": "Paste the JWT here",
+  "Descodificar": "Decode",
+  "Header": "Header",
+  "Payload": "Payload",
+  "Signature": "Signature",
+  "Não foi possível interpretar": "Could not interpret",
+  "JWT inválido": "Invalid JWT",
+  "Navegação": "Navigation",
+  "Publicidade": "Advertisement",
+  "Saltar para o conteúdo": "Skip to content",
+  "← Produtividade": "← Productivity",
+  "Formatador JSON · Nexauren Tools": "JSON Formatter · Nexauren Tools",
+  "Formatador JSON": "JSON Formatter",
+  "Formate, compacte e valide JSON com controlo de indentação.": "Format, minify, and validate JSON with configurable indentation.",
+  "NEXAUREN / DATA LAB": "NEXAUREN / DATA LAB",
+  "Indentação": "Indentation",
+  "2 espaços": "2 spaces",
+  "4 espaços": "4 spaces",
+  "1 espaço": "1 space",
+  "Formatar": "Format",
+  "Compactar": "Minify",
+  "Cole o JSON aqui...": "Paste JSON here...",
+  "JSON válido · formatado com sucesso.": "Valid JSON · formatted successfully.",
+  "JSON válido · compactado com sucesso.": "Valid JSON · minified successfully.",
+  "JSON inválido:": "Invalid JSON:",
+  "Introduza um JSON para continuar.": "Enter JSON to continue.",
+  "Resultado copiado.": "Result copied.",
+  "Não foi possível copiar automaticamente.": "Could not copy automatically.",
+  "Formatador XML · Nexauren Tools": "XML Formatter · Nexauren Tools",
+  "Formatador XML": "XML Formatter",
+  "Organize, compacte e valide documentos XML no navegador.": "Format, minify, and validate XML documents in your browser.",
+  "NEXAUREN / XML WORKBENCH": "NEXAUREN / XML WORKBENCH",
+  "Cole o XML aqui...": "Paste XML here...",
+  "XML válido · compactado com sucesso.": "Valid XML · minified successfully.",
+  "XML válido · formatado com sucesso.": "Valid XML · formatted successfully.",
+  "XML inválido:": "Invalid XML:",
+  "Introduza um XML para continuar.": "Enter XML to continue.",
+  "Validador JSON · Nexauren Tools": "JSON Validator · Nexauren Tools",
+  "Validador JSON": "JSON Validator",
+  "NEXAUREN / JSON INSPECTOR": "NEXAUREN / JSON INSPECTOR",
+  "Cole o JSON, valide a estrutura e encontre rapidamente o ponto do erro.": "Paste JSON, validate the structure, and quickly find the error.",
+  "Validador JSON": "JSON Validator",
+  "LOCAL": "LOCAL",
+  "Entrada": "Input",
+  "linha": "line",
+  "linhas": "lines",
+  "caracteres": "characters",
+  "Validar JSON": "Validate JSON",
+  "Inserir exemplo": "Insert example",
+  "Diagnóstico": "Diagnostics",
+  "Aguardando validação": "Waiting for validation",
+  "Pronto para analisar": "Ready to analyze",
+  "O resultado da validação aparecerá aqui.": "The validation result will appear here.",
+  "STATUS": "STATUS",
+  "Erro encontrado": "Error found",
+  "Linha —": "Line —",
+  "Coluna —": "Column —",
+  "Posição —": "Position —",
+  "Objetos": "Objects",
+  "Arrays": "Arrays",
+  "Chaves": "Keys",
+  "Valores": "Values",
+  "Copiar JSON": "Copy JSON",
+  "Abrir no Formatador": "Open in Formatter",
+  "Entre para usar esta ferramenta.": "Sign in to use this tool.",
+  "JSON válido": "Valid JSON",
+  "A estrutura foi reconhecida sem erros de sintaxe.": "The structure was recognized without syntax errors.",
+  "Válido": "Valid",
+  "JSON inválido": "Invalid JSON",
+  "Foi encontrado um problema de sintaxe.": "A syntax problem was found.",
+  "Erro": "Error",
+  "Posição": "Position",
+  "Copiado ✓": "Copied ✓",
+  "Copie manualmente": "Copy manually",
+  "Testador de Regex": "Regex Tester",
+  "Teste padrões, encontre correspondências, veja grupos e simule substituições.": "Test patterns, find matches, inspect groups, and simulate replacements.",
+  "NEXAUREN / REGEX LAB": "NEXAUREN / REGEX LAB",
+  "Expressão regular": "Regular expression",
+  "Regex válida": "Valid regex",
+  "Regex inválida": "Invalid regex",
+  "Flags": "Flags",
+  "g global": "g global",
+  "i ignorar maiúsculas": "i ignore case",
+  "m multilinha": "m multiline",
+  "s dotAll": "s dotAll",
+  "u Unicode": "u Unicode",
+  "TEXTO DE TESTE": "TEST TEXT",
+  "Testar": "Test",
+  "Escapar regex": "Escape regex",
+  "Correspondências": "Matches",
+  "Execute um teste para ver os resultados.": "Run a test to see the results.",
+  "SUBSTITUIÇÃO": "REPLACEMENT",
+  "Texto de substituição, ex.: $1": "Replacement text, e.g. $1",
+  "A pré-visualização aparecerá aqui.": "The preview will appear here.",
+  "Copiar resultado": "Copy result",
+  "Corrija a expressão para visualizar a substituição.": "Fix the expression to preview the replacement.",
+  "A expressão regular contém um erro.": "The regular expression contains an error.",
+  "Nenhuma correspondência encontrada.": "No matches found.",
+  "posição": "position",
+  "JSON ↔ CSV · Nexauren Tools": "JSON ↔ CSV · Nexauren Tools",
+  "JSON ↔ CSV": "JSON ↔ CSV",
+  "Converta dados entre JSON e CSV com controlo de cabeçalhos, delimitador e formatação.": "Convert data between JSON and CSV with control over headers, delimiters, and formatting.",
+  "NEXAUREN / DATA BRIDGE": "NEXAUREN / DATA BRIDGE",
+  "Direção da conversão": "Conversion direction",
+  "JSON → CSV": "JSON → CSV",
+  "CSV → JSON": "CSV → JSON",
+  "Delimitador": "Delimiter",
+  "Automático": "Automatic",
+  "Vírgula ,": "Comma ,",
+  "Ponto e vírgula ;": "Semicolon ;",
+  "Tabulação": "Tab",
+  "Primeira linha como cabeçalho": "First row as header",
+  "JSON formatado": "Formatted JSON",
+  "Trocar direção": "Swap direction",
+  "JSON DE ENTRADA": "INPUT JSON",
+  "CSV DE ENTRADA": "INPUT CSV",
+  "CSV DE SAÍDA": "OUTPUT CSV",
+  "JSON DE SAÍDA": "OUTPUT JSON",
+  "Concluído": "Completed",
+  "Vazio": "Empty",
+  "Pronto para converter.": "Ready to convert.",
+  "Conversão concluída localmente.": "Conversion completed locally.",
+  "Nenhum dado para converter.": "No data to convert.",
+  "Direção alterada. Insira os dados e converta.": "Direction changed. Enter the data and convert.",
+  "Direção JSON → CSV selecionada.": "JSON → CSV direction selected.",
+  "Direção CSV → JSON selecionada.": "CSV → JSON direction selected.",
+  "CSV inválido: aspas não fechadas.": "Invalid CSV: unclosed quotes.",
+  "O JSON precisa ser um array de objetos.": "JSON must be an array of objects.",
+  "Use um array contendo objetos, por exemplo [{\"nome\":\"Nexauren\"}].": "Use an array containing objects, for example [{\"name\":\"Nexauren\"}].",
+  "CSV vazio.": "Empty CSV.",
+  "Não foi possível ler o cabeçalho.": "Could not read the header.",
+  "Gerador de Lorem Ipsum": "Lorem Ipsum Generator",
+  "Crie texto fictício para protótipos, interfaces e testes de layout em segundos.": "Create placeholder text for prototypes, interfaces, and layout tests in seconds.",
+  "NEXAUREN / TEXT FOUNDRY": "NEXAUREN / TEXT FOUNDRY",
+  "Tipo": "Type",
+  "Parágrafos": "Paragraphs",
+  "Frases": "Sentences",
+  "Começar com “Lorem ipsum”": "Start with “Lorem ipsum”",
+  "Gerar HTML": "Generate HTML",
+  "Gerar texto": "Generate text",
+  "Exemplo": "Example",
+  "RESULTADO": "RESULT",
+  "Pronto": "Ready",
+  "O texto gerado aparecerá aqui…": "Generated text will appear here…",
+  "Gerado": "Generated",
+  "Gerador de Meta Tags": "Meta Tag Generator",
+  "Monte metadados essenciais para páginas web e veja a prévia antes de copiar o HTML.": "Build essential metadata for web pages and preview it before copying the HTML.",
+  "NEXAUREN / HEAD BUILDER": "NEXAUREN / HEAD BUILDER",
+  "CONFIGURAÇÃO": "CONFIGURATION",
+  "Título": "Title",
+  "Descrição": "Description",
+  "URL canónica": "Canonical URL",
+  "Robots": "Robots",
+  "noindex,nofollow": "noindex,nofollow",
+  "index,nofollow": "index,nofollow",
+  "noindex,follow": "noindex,follow",
+  "Idioma": "Language",
+  "Imagem social": "Social image",
+  "Gerar meta tags": "Generate meta tags",
+  "HTML · LOCAL": "HTML · LOCAL",
+  "PRÉ-VISUALIZAÇÃO": "PREVIEW",
+  "RESULTADO DE PESQUISA": "SEARCH RESULT",
+  "Título da página": "Page title",
+  "A descrição aparecerá aqui.": "The description will appear here.",
+  "HTML GERADO": "GENERATED HTML",
+  "Copiar HTML": "Copy HTML",
+  "Gerador de Sitemap": "Sitemap Generator",
+  "Transforme uma lista de URLs em um sitemap.xml limpo, válido e pronto para publicar.": "Turn a list of URLs into a clean, valid sitemap.xml ready to publish.",
+  "NEXAUREN / SITE MAP STUDIO": "NEXAUREN / SITE MAP STUDIO",
+  "URL base": "Base URL",
+  "Change frequency": "Change frequency",
+  "Prioridade": "Priority",
+  "Última atualização": "Last updated",
+  "URLs": "URLs",
+  "uma por linha": "one per line",
+  "Gerar sitemap": "Generate sitemap",
+  "XML · LOCAL": "XML · LOCAL",
+  "SITEMAP.XML": "SITEMAP.XML",
+  "Baixar sitemap.xml": "Download sitemap.xml",
+  "O sitemap aparecerá aqui.": "The sitemap will appear here.",
+  "Sitemap gerado com sucesso.": "Sitemap generated successfully.",
+  "XML copiado.": "XML copied.",
+  "Informe a URL base ou use URLs absolutas.": "Enter the base URL or use absolute URLs.",
+  "A URL base precisa começar por http:// ou https://.": "The base URL must start with http:// or https://.",
+  "Adicione pelo menos uma URL.": "Add at least one URL.",
+  "NEXAUREN TOOLS · Regex Lab · Execução local no navegador": "NEXAUREN TOOLS · Regex Lab · Local execution in the browser",
+  "NEXAUREN TOOLS · Data Bridge · Processamento local no navegador": "NEXAUREN TOOLS · Data Bridge · Local processing in the browser",
+  "NEXAUREN TOOLS · Text Foundry · Processamento local": "NEXAUREN TOOLS · Text Foundry · Local processing",
+  "NEXAUREN TOOLS · Head Builder · Geração local no navegador": "NEXAUREN TOOLS · Head Builder · Local generation in the browser",
+  "NEXAUREN TOOLS · Site Map Studio · Execução local": "NEXAUREN TOOLS · Site Map Studio · Local execution",
+  "Aguardando": "Waiting",
+  "encontradas": "found",
+  "Entre ou crie uma conta Nexauren para usar esta ferramenta.": "Sign in or create a Nexauren account to use this tool.",
+  "Introduza um JSON para validar.": "Enter JSON to validate.",
+  "Gerador de Robots.txt": "Robots.txt Generator",
+  "Defina regras de rastreamento para bots e produza um robots.txt pronto para publicar.": "Set crawling rules for bots and generate a robots.txt ready to publish.",
+  "NEXAUREN / CRAWLER CONTROL": "NEXAUREN / CRAWLER CONTROL",
+  "REGRAS": "RULES",
+  "Permitir": "Allow",
+  "Bloquear": "Block",
+  "+ Permitir": "+ Allow",
+  "+ Bloquear": "+ Block",
+  "Nenhuma regra adicionada.": "No rules added.",
+  "Gerar robots.txt": "Generate robots.txt",
+  "PRÉVIA EM TEMPO REAL": "REAL-TIME PREVIEW",
+  "Copiar TXT": "Copy TXT",
+  "Baixar robots.txt": "Download robots.txt",
+  "Configure as regras e gere o ficheiro.": "Configure the rules and generate the file.",
+  "robots.txt atualizado.": "robots.txt updated.",
+  "Remover regra": "Remove rule",
+  "Codificador / Descodificador URL": "URL Encoder / Decoder",
+  "Codifique ou descodifique texto para uso seguro em URLs, parâmetros e queries.": "Encode or decode text for safe use in URLs, parameters, and queries.",
+  "NEXAUREN / URL CODEC": "NEXAUREN / URL CODEC",
+  "ENTRADA": "INPUT",
+  "Executar": "Run",
+  "Pronto.": "Ready.",
+  "Texto codificado com sucesso.": "Text encoded successfully.",
+  "Texto descodificado com sucesso.": "Text decoded successfully.",
+  "Não foi possível descodificar:": "Could not decode:",
+  "Modo ENCODE selecionado.": "ENCODE mode selected.",
+  "Modo DECODE selecionado.": "DECODE mode selected.",
+  "Conversor de Timestamp": "Timestamp Converter",
+  "Converta Unix timestamps para datas e horas legíveis, ou faça o caminho inverso.": "Convert Unix timestamps to readable dates and times, or convert in the other direction.",
+  "NEXAUREN / TIME SIGNAL": "NEXAUREN / TIME SIGNAL",
+  "Agora": "Now",
+  "Usar agora": "Use now",
+  "TIMESTAMP → DATA": "TIMESTAMP → DATE",
+  "DATA → TIMESTAMP": "DATE → TIMESTAMP",
+  "milissegundos ou segundos": "milliseconds or seconds",
+  "data e hora": "date and time",
+  "Hora local": "Local time",
+  "Escolha a direção e converta.": "Choose a direction and convert.",
+  "Modo timestamp → data selecionado.": "Timestamp → date mode selected.",
+  "Modo data → timestamp selecionado.": "Date → timestamp mode selected.",
+  "Introduza um timestamp numérico.": "Enter a numeric timestamp.",
+  "Timestamp fora do intervalo.": "Timestamp out of range.",
+  "Escolha uma data e hora.": "Choose a date and time.",
+  "Data inválida.": "Invalid date.",
+  "Formatador HTML": "HTML Formatter",
+  "Organize, compacte e valide HTML com uma saída limpa para copiar diretamente para o projeto.": "Format, minify, and validate HTML with clean output ready to copy into your project.",
+  "NEXAUREN / MARKUP WORKSHOP": "NEXAUREN / MARKUP WORKSHOP",
+  "Preservar texto": "Preserve text",
+  "Cole o HTML e escolha uma operação.": "Paste HTML and choose an operation.",
+  "Insira HTML para validar.": "Enter HTML to validate.",
+  "HTML inválido.": "Invalid HTML.",
+  "HTML analisado com sucesso.": "HTML analyzed successfully.",
+  "Compactado": "Minified",
+  "Formatado": "Formatted",
+  "HTML compactado com sucesso.": "HTML minified successfully.",
+  "HTML formatado com sucesso.": "HTML formatted successfully.",
+  "Não foi possível processar o HTML:": "Could not process HTML:",
+  "HTML copiado.": "HTML copied.",
+  "Analisador de URL": "URL Analyzer",
+  "Inspecione uma URL por partes e visualize protocolo, domínio, caminho, parâmetros, fragmento e porta.": "Inspect a URL by parts and view its protocol, domain, path, parameters, fragment, and port.",
+  "NEXAUREN / URL FORENSICS": "NEXAUREN / URL FORENSICS",
+  "ENDEREÇO": "ADDRESS",
+  "Analisar": "Analyze",
+  "Introduza uma URL e analise.": "Enter a URL and analyze it.",
+  "COMPONENTES": "COMPONENTS",
+  "PARÂMETROS": "PARAMETERS",
+  "Nenhum parâmetro analisado.": "No parameters analyzed.",
+  "Aguardando uma URL.": "Waiting for a URL.",
+  "Introduza uma URL.": "Enter a URL.",
+  "Protocolo": "Protocol",
+  "Hostname": "Hostname",
+  "Porta": "Port",
+  "(padrão)": "(default)",
+  "Origem": "Origin",
+  "Caminho": "Path",
+  "Fragmento": "Fragment",
+  "URL completa": "Full URL",
+  "Nenhum parâmetro de consulta.": "No query parameters.",
+  "Sem parâmetros.": "No parameters.",
+  "URL analisada com sucesso.": "URL analyzed successfully.",
+  "Não foi possível analisar.": "Could not analyze.",
+  "Todos os parâmetros": "All parameters",
+  "Nome completo": "Full name",
+  "Empresa": "Company",
+  "Guardado PNG": "Save PNG",
+  "Guardar PNG": "Save PNG",
+  "Leia um QR Code.": "Read a QR code.",
+  "01 · IDENTIDADE DIGITAL": "01 · DIGITAL IDENTITY",
+  "02 · CRYPTO TOOLS": "02 · CRYPTO TOOLS",
+  "Escreva a mensagem…": "Write the message…",
+  "Minha Wi-Fi": "My Wi-Fi",
+  "Leitor de QR Code": "QR Code Reader",
+  "Leia um QR Code": "Read a QR code",
+  "Transforme dados em barras.": "Turn data into barcodes.",
+  "← Ferramentas": "← Tools",
+  "Formatador CSS / Minifier · Nexauren Tools": "CSS Formatter / Minifier · Nexauren Tools",
+  "Organize regras CSS, compacte a saída e visualize rapidamente o tamanho antes e depois.": "Organize CSS rules, minify the output, and quickly compare the size before and after.",
+  "Formatar CSS": "Format CSS",
+  "Copiar saída": "Copy output",
+  "manter comentários": "keep comments",
+  "PRONTO": "READY",
+  "regras": "rules",
+  "redução": "reduction",
+  "declarações": "declarations",
+  "Cole o CSS e escolha uma operação.": "Paste the CSS and choose an operation.",
+  "Insira CSS para processar.": "Enter CSS to process.",
+  "CSS compactado com sucesso.": "CSS minified successfully.",
+  "CSS formatado com sucesso.": "CSS formatted successfully.",
+  "Não foi possível processar o CSS:": "Could not process CSS:",
+  "ERRO": "ERROR",
+  "Não há saída para copiar.": "There is no output to copy.",
+  "CSS copiado para a área de transferência.": "CSS copied to the clipboard.",
+  "NEXAUREN TOOLS · Style Engine · Processamento local": "NEXAUREN TOOLS · Style Engine · Local processing",
+  "Formatador JS / Minifier · Nexauren Tools": "JS Formatter / Minifier · Nexauren Tools",
+  "Reorganize JavaScript, compacte o código e mantenha strings, comentários e blocos sensíveis intactos.": "Reformat JavaScript, minify the code, and keep strings, comments, and sensitive blocks intact.",
+  "Validar": "Validate",
+  "Aguardando código.": "Waiting for code.",
+  "Insira JavaScript para processar.": "Enter JavaScript to process.",
+  "JavaScript compactado com sucesso.": "JavaScript minified successfully.",
+  "JavaScript formatado com sucesso.": "JavaScript formatted successfully.",
+  "Insira JavaScript para validar.": "Enter JavaScript to validate.",
+  "Sintaxe JavaScript analisada sem erros.": "JavaScript syntax analyzed without errors.",
+  "Possível erro de sintaxe:": "Possible syntax error:",
+  "JavaScript copiado.": "JavaScript copied.",
+  "Não foi possível copiar neste navegador.": "Could not copy in this browser.",
+  "NEXAUREN TOOLS · Script Lab · Processamento local": "NEXAUREN TOOLS · Script Lab · Local processing",
+  "Diff Checker · Nexauren Tools": "Diff Checker · Nexauren Tools",
+  "Compare dois textos linha a linha e encontre rapidamente adições, remoções e trechos iguais.": "Compare two texts line by line and quickly find additions, removals, and unchanged sections.",
+  "Comparar": "Compare",
+  "Trocar lados": "Swap sides",
+  "VERSÃO A": "VERSION A",
+  "VERSÃO B": "VERSION B",
+  "adicionadas": "added",
+  "removidas": "removed",
+  "iguais": "unchanged",
+  "alterações": "changes",
+  "Compare dois textos para ver as diferenças.": "Compare two texts to see the differences.",
+  "O resultado é processado localmente.": "The result is processed locally.",
+  "Introduza conteúdo nos dois lados.": "Enter content on both sides.",
+  "Diferenças encontradas.": "Differences found.",
+  "Os conteúdos são idênticos.": "The contents are identical.",
+  "Não foi possível copiar.": "Could not copy.",
+  "Não há resultado para copiar.": "There is no result to copy.",
+  "NEXAUREN TOOLS · Difference Matrix · Processamento local": "NEXAUREN TOOLS · Difference Matrix · Local processing",
+  "Conversor de Cores · Nexauren Tools": "Color Converter · Nexauren Tools",
+  "Converta uma cor entre HEX, RGB, HSL, HSV e CMYK e veja a amostra em tempo real.": "Convert a color between HEX, RGB, HSL, HSV, and CMYK and see the preview in real time.",
+  "COR DE ENTRADA": "INPUT COLOR",
+  "Violeta": "Purple",
+  "Verde": "Green",
+  "Laranja": "Orange",
+  "Azul": "Blue",
+  "Amostra da cor": "Color preview",
+  "Contraste sobre branco": "Contrast on white",
+  "Contraste sobre preto": "Contrast on black",
+  "Introduza uma cor CSS válida.": "Enter a valid CSS color.",
+  "Cor inválida. Use #RRGGBB, rgb(...) ou hsl(...).": "Invalid color. Use #RRGGBB, rgb(...), or hsl(...).",
+  "Valor HEX copiado.": "HEX value copied.",
+  "NEXAUREN TOOLS · Color Lab · Processamento local": "NEXAUREN TOOLS · Color Lab · Local processing",
+  "Gerador de Cores e Paletas · Nexauren Tools": "Color & Palette Generator · Nexauren Tools",
+  "Gerador de Cores / Paletas": "Color / Palette Generator",
+  "Gere paletas harmoniosas a partir de uma cor-base, ajuste a família visual e copie os valores para o seu projeto.": "Generate harmonious palettes from a base color, adjust the visual family, and copy the values into your project.",
+  "COR-BASE": "BASE COLOR",
+  "MODO": "MODE",
+  "Complementar": "Complementary",
+  "Análoga": "Analogous",
+  "Triádica": "Triadic",
+  "Complementar dividida": "Split complementary",
+  "Monocromática": "Monochromatic",
+  "QUANTIDADE": "QUANTITY",
+  "Gerar paleta": "Generate palette",
+  "Cor aleatória": "Random color",
+  "Copiar CSS": "Copy CSS",
+  "CORES": "COLORS",
+  "A paleta é processada localmente.": "The palette is processed locally.",
+  "Paleta gerada localmente.": "Palette generated locally.",
+  "Tokens CSS copiados.": "CSS tokens copied.",
+  "Use uma cor HEX válida, por exemplo #7C5CFC.": "Use a valid HEX color, for example #7C5CFC.",
+  "/* Gere uma paleta para criar tokens CSS. */": "/* Generate a palette to create CSS tokens. */",
+  "NEXAUREN TOOLS · Palette Studio · Processamento local": "NEXAUREN TOOLS · Palette Studio · Local processing",
+  "Conversor de Dados / Bytes · Nexauren Tools": "Data / Byte Converter · Nexauren Tools",
+  "Converta rapidamente bytes entre unidades SI e binárias, confira o valor exato e compare escalas.": "Quickly convert bytes between SI and binary units, check the exact value, and compare scales.",
+  "VALOR": "VALUE",
+  "UNIDADE DE ENTRADA": "INPUT UNIT",
+  "ESCALA DE SAÍDA": "OUTPUT SCALE",
+  "BYTES EXATOS": "EXACT BYTES",
+  "Valor exato copiado.": "Exact value copied.",
+  "NEXAUREN TOOLS · Data Scale · Processamento local": "NEXAUREN TOOLS · Data Scale · Local processing",
+  "Gerador de API Key Pro · Nexauren Tools": "Pro API Key Generator · Nexauren Tools",
+  "Gerador de API Key": "API Key Generator",
+  "Gere chaves aleatórias fortes para projetos e ambientes de desenvolvimento, com formato e comprimento configuráveis.": "Generate strong random keys for projects and development environments, with configurable format and length.",
+  "A verificar acesso Pro…": "Checking Pro access…",
+  "A ferramenta consulta a sua sessão e o estado do plano antes de liberar qualquer geração.": "The tool checks your session and plan status before allowing any generation.",
+  "A confirmar autenticação, plano e autorização desta ferramenta.": "Confirming authentication, plan, and authorization for this tool.",
+  "Esta é uma ferramenta Pro e exige uma conta autenticada.": "This is a Pro tool and requires an authenticated account.",
+  "Ferramenta exclusiva Pro": "Pro-only tool",
+  "O seu plano atual não tem acesso a esta ferramenta. Faça upgrade para desbloquear.": "Your current plan does not include this tool. Upgrade to unlock it.",
+  "Acesso Pro não confirmado": "Pro access not confirmed",
+  "O sistema não confirmou um plano Pro ativo para esta ferramenta. A geração permanece bloqueada.": "The system did not confirm an active Pro plan for this tool. Generation remains locked.",
+  "COMPRIMENTO": "LENGTH",
+  "FORMATO": "FORMAT",
+  "PREFIXO": "PREFIX",
+  "Gerar chave": "Generate key",
+  "As chaves são geradas localmente com": "Keys are generated locally using",
+  "AGUARDANDO": "WAITING",
+  "Nenhuma chave gerada.": "No keys generated.",
+  "Acesso confirmado pelo sistema Pro.": "Access confirmed by the Pro system.",
+  "Chave copiada.": "Key copied.",
+  "Geração concluída localmente.": "Generation completed locally.",
+  "NEXAUREN TOOLS · Pro Security Lab · API Key": "NEXAUREN TOOLS · Pro Security Lab · API Key",
+  "Gerador de Secret Pro · Nexauren Tools": "Pro Secret Generator · Nexauren Tools",
+  "Gerador de Secret": "Secret Generator",
+  "Verificando plano Pro": "Checking Pro plan",
+  "O Nexauren está a confirmar a sessão, a subscrição e a autorização desta ferramenta.": "Nexauren is confirming the session, subscription, and authorization for this tool.",
+  "A confirmar sessão, plano e autorização no backend.": "Confirming session, plan, and authorization on the backend.",
+  "O Gerador de Secret é exclusivo do plano Pro.": "The Secret Generator is exclusive to the Pro plan.",
+  "Acesso exclusivo Pro": "Pro-only access",
+  "O plano atual não inclui esta ferramenta. Faça upgrade para desbloquear.": "The current plan does not include this tool. Upgrade to unlock it.",
+  "Abrir Pro": "Open Pro",
+  "Acesso não confirmado": "Access not confirmed",
+  "O backend não confirmou um plano Pro ativo. O gerador permanece bloqueado.": "The backend did not confirm an active Pro plan. The generator remains locked.",
+  "TAMANHO": "SIZE",
+  "Gerar secret": "Generate secret",
+  "SEGURANÇA": "SECURITY",
+  "Geração local. O conteúdo não é enviado nem guardado pelo Nexauren.": "Local generation. The content is not sent to or stored by Nexauren.",
+  "MATERIAL GERADO": "GENERATED MATERIAL",
+  "Nenhum secret gerado.": "No secret generated.",
+  "Acesso Pro confirmado.": "Pro access confirmed.",
+  "Secret copiado.": "Secret copied.",
+  "Secret(s) gerado(s) localmente.": "Secret(s) generated locally.",
+  "NEXAUREN TOOLS · Private Material Generator · Pro": "NEXAUREN TOOLS · Private Material Generator · Pro",
+};
+const ATTR_MAP={
+  "Navegação principal":"Main navigation",
+  "Abrir menu":"Open menu",
+  "Fechar":"Close",
+  "Definições da conta":"Account settings",
+  "Autenticação Nexauren":"Nexauren authentication",
+  "Pesquisa avançada de ferramentas":"Advanced tool search",
+  "Filtrar por palavra-chave":"Filter by keyword",
+  "Filtrar por acesso":"Filter by access",
+  "Ordenar resultados":"Sort results",
+  "Resumo do catálogo":"Catalog summary",
+  "Explorar seleções":"Explore selections",
+  "Ferramentas da categoria":"Category tools",
+  "Saltar para o conteúdo":"Skip to content",
+  "Voltar ao topo":"Back to top"
+};
+const STORAGE="ns_lang_v2";
+let lang="en";
 
-function getLang(){
+const readLang=()=>{
   const q=new URLSearchParams(location.search).get("lang");
-  if(LANGS.has(q))return q;
-  try{const saved=localStorage.getItem(STORAGE);if(LANGS.has(saved))return saved}catch{}
-  return "en";
-}
-let current=getLang();
-let busy=false;
+  if(q==="en"||q==="pt")return q;
+  try{return localStorage.getItem(STORAGE)==="pt"?"pt":"en"}catch{return "en"}
+};
 
-function pairText(raw,lang){
-  const text=String(raw??"");
-  const trimmed=text.trim();
-  const map=lang==="en"?PT:EN;
-  if(map.has(trimmed)){
-    const replacement=map.get(trimmed);
-    return text.slice(0,text.indexOf(trimmed))+replacement+text.slice(text.indexOf(trimmed)+trimmed.length);
-  }
-  if(lang==="en"){
-    if(/^Falta:\s*/.test(trimmed))return text.replace(trimmed,trimmed.replace(/^Falta:\s*/,"Missing: "));
-    if(/^A preparar o histórico/.test(trimmed))return text.replace(trimmed,"Preparing history…");
-    if(/^A preparar o seu espaço/.test(trimmed))return text.replace(trimmed,"Preparing your Nexauren space…");
-    if(/^A carregar os planos/.test(trimmed))return text.replace(trimmed,"Loading plans…");
-    if(/^A carregar assinatura/.test(trimmed))return text.replace(trimmed,trimmed.replace(/^A carregar assinatura/,"Loading subscription"));
-  }else{
-    if(/^Missing:\s*/.test(trimmed))return text.replace(trimmed,trimmed.replace(/^Missing:\s*/,"Falta: "));
-    if(/^Preparing history/.test(trimmed))return text.replace(trimmed,"A preparar o histórico…");
-    if(/^Preparing your Nexauren space/.test(trimmed))return text.replace(trimmed,"A preparar o seu espaço Nexauren…");
-    if(/^Loading plans/.test(trimmed))return text.replace(trimmed,"A carregar os planos…");
-    if(/^Loading subscription/.test(trimmed))return text.replace(trimmed,trimmed.replace(/^Loading subscription/,"A carregar assinatura"));
-  }
+function localizeUrl(href){
+  try{
+    const u=new URL(href,location.origin);
+    if(u.origin!==location.origin)return href;
+    if(lang==="en")u.searchParams.delete("lang");else u.searchParams.set("lang","pt");
+    return u.pathname+(u.search||"")+(u.hash||"");
+  }catch{return href}
+}
+
+function t(key,fallback=key){return lang==="en"?(PT[key]||fallback):fallback}
+
+function shouldSkip(node){
+  const p=node.parentElement;
+  if(!p)return true;
+  return !!p.closest("script,style,noscript,template,pre,code,textarea,input,select,option,[data-i18n-skip]");
+}
+
+function translateDynamicText(raw){
+  if(lang!=="en")return null;
+  let m;
+  if(m=raw.match(/^JSON inválido:\s+/i))return raw.replace(m[0],"Invalid JSON: ");
+  if(m=raw.match(/^Linha (\d+)$/i))return "Line "+m[1];
+  if(m=raw.match(/^Coluna (\d+)$/i))return "Column "+m[1];
+  if(m=raw.match(/^Posição (\d+)$/i))return "Position "+m[1];
+  if(m=raw.match(/^(\d+) encontradas?$/i))return m[1]+" found";
+  if(m=raw.match(/^(\d+) caracteres$/i))return m[1]+" characters";
+  if(m=raw.match(/^(\d+) linhas?$/i))return m[1]+(m[1]==="1"?" line":" lines");
+  if(m=raw.match(/^(\d+) alterações$/i))return m[1]+" "+(m[1]==="1"?"change":"changes");
+  if(m=raw.match(/^(\d+) CHAVES? · (.+)$/i))return m[1]+" "+(m[1]==="1"?"KEY":"KEYS")+" · "+m[2];
+  if(m=raw.match(/^(\d+) CORES$/i))return m[1]+" COLORS";
+  if(m=raw.match(/^COR (\d+)$/i))return "COLOR "+m[1];
+  if(m=raw.match(/^(#[0-9a-f]{6}) copiado\.$/i))return m[1]+" copied.";
+  if(m=raw.match(/^Valor (HEX|RGB|HSL|HSV|CMYK) copiado\.$/i))return m[1]+" value copied.";
+  if(m=raw.match(/^Secret\(s\) gerado\(s\) localmente\.$/i))return "Secret(s) generated locally.";
+  if(m=raw.match(/^(\d+) linhas · (\d+) caracteres$/i))return m[1]+" lines · "+m[2]+" characters";
+  if(m=raw.match(/^(\d+) linha · (\d+) caracteres$/i))return m[1]+" line · "+m[2]+" characters";
   return null;
 }
 
-function translateDom(){
-  if(busy)return;
-  busy=true;
-  try{
-    document.documentElement.lang=current;
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
-    const nodes=[];
-    while(walker.nextNode()){
-      const n=walker.currentNode,parent=n.parentElement;
-      if(!parent||["SCRIPT","STYLE","NOSCRIPT","TEXTAREA","PRE","CODE"].includes(parent.tagName))continue;
-      if(parent.closest('input,textarea,[contenteditable="true"]'))continue;
-      nodes.push(n);
-    }
-    for(const n of nodes){const replacement=pairText(n.nodeValue,current);if(replacement!==null)n.nodeValue=replacement}
-    document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{const r=pairText(el.getAttribute("placeholder"),current);if(r!==null)el.setAttribute("placeholder",r)});
-    document.querySelectorAll("[aria-label]").forEach(el=>{const r=pairText(el.getAttribute("aria-label"),current);if(r!==null)el.setAttribute("aria-label",r)});
-    updateTitle();
-    updateAlternates();
-  }finally{busy=false}
+function translateTextNodes(){
+  if(lang!=="en")return;
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  while(walker.nextNode())nodes.push(walker.currentNode);
+  for(const n of nodes){
+    if(shouldSkip(n))continue;
+    const raw=n.nodeValue||"",key=raw.trim();
+    if(!key)continue;
+    const translated=PT[key]||translateDynamicText(key)||null;
+    if(translated&&translated!==key)n.nodeValue=raw.replace(key,translated);
+  }
 }
 
-function updateTitle(){
-  const p=location.pathname;
-  const titles=current==="en"?{
-    "/":"Nexauren Story — Content and tools",
-    "/tool/":"Tools — Nexauren Story",
-    "/account":"Account — Nexauren Story",
-    "/account/upgrade/":"Upgrade — Nexauren Story",
-    "/legal/privacidade/":"Privacy Policy — Nexauren Story",
-    "/legal/termos/":"Terms of Use — Nexauren Story",
-    "/legal/cookies/":"Cookie Policy — Nexauren Story"
-  }:{
-    "/":"Nexauren Story — Conteúdo e ferramentas",
-    "/tool/":"Ferramentas — Nexauren Story",
-    "/account":"Conta — Nexauren Story",
-    "/account/upgrade/":"Upgrade — Nexauren Story",
-    "/legal/privacidade/":"Política de Privacidade — Nexauren Story",
-    "/legal/termos/":"Termos de Utilização — Nexauren Story",
-    "/legal/cookies/":"Política de Cookies — Nexauren Story"
-  };
-  if(titles[p])document.title=titles[p];
-}
-
-function updateAlternates(){
-  const base=new URL(location.pathname,location.origin).href;
-  const pt=new URL(location.pathname,location.origin);pt.searchParams.set("lang","pt");
-  const values={en:base,pt:pt.href,"x-default":base};
-  Object.entries(values).forEach(([lang,href])=>{
-    let link=document.querySelector('link[rel="alternate"][hreflang="'+lang+'"]');
-    if(!link){link=document.createElement("link");link.rel="alternate";link.hreflang=lang;document.head.appendChild(link)}
-    link.href=href;
+function translateOptions(){
+  if(lang!=="en")return;
+  document.querySelectorAll("select option").forEach(el=>{
+    const value=(el.textContent||"").trim();
+    const translated=PT[value]||null;
+    if(translated&&translated!==value)el.textContent=translated;
   });
 }
-function addToggle(){
-  const existing=document.querySelector("[data-nx-language-toggle]");
-  const nav=document.querySelector("header nav,.nav-links,.tool-links");
-  if(existing){existing.textContent=current==="en"?"PT":"EN";return}
-  if(!nav)return;
-  const b=document.createElement("button");
-  b.type="button";
-  b.className="nx-language-toggle";
-  b.dataset.nxLanguageToggle="1";
-  b.textContent=current==="en"?"PT":"EN";
-  b.setAttribute("aria-label",current==="en"?"Switch to Portuguese":"Mudar para inglês");
-  b.title=b.getAttribute("aria-label");
-  b.addEventListener("click",()=>setLanguage(current==="en"?"pt":"en"));
-  nav.appendChild(b);
+
+function translateToolFragments(){
+  if(lang!=="en")return;
+  const qrTitle=document.querySelector(".qr-tool-page .qr-hero h1");
+  if(qrTitle&&qrTitle.textContent.trim()==="Gerador de QR Code."){
+    const span=qrTitle.querySelector("span");
+    if(span){qrTitle.firstChild&& (qrTitle.firstChild.nodeValue="QR Code ");span.textContent="Generator";}
+  }
+  const readerTitle=document.querySelector(".qr-reader-page .reader-hero h1");
+  if(readerTitle&&readerTitle.textContent.trim()==="Leia um QR Code."){
+    const span=readerTitle.querySelector("span");
+    if(span){readerTitle.firstChild&& (readerTitle.firstChild.nodeValue="Read a ");span.textContent="QR code.";}
+  }
+  const paletteOutput=document.querySelector(".palette-app #cssOutput");
+  if(paletteOutput&&paletteOutput.textContent.trim()==="/* Gere uma paleta para criar tokens CSS. */")paletteOutput.textContent="/* Generate a palette to create CSS tokens. */";
+  const barcodeTitle=document.querySelector(".barcode-page .hero h1");
+  if(barcodeTitle&&barcodeTitle.textContent.trim()==="Transforme dados em barras."){
+    const span=barcodeTitle.querySelector("em");
+    if(span){barcodeTitle.firstChild&&(barcodeTitle.firstChild.nodeValue="Turn data into ");span.textContent="barcodes.";}
+  }
 }
 
-function setLanguage(lang){
-  if(!LANGS.has(lang))return;
-  current=lang;
+function translateAttrs(){
+  if(lang!=="en")return;
+  document.querySelectorAll("input[placeholder],textarea[placeholder],[aria-label],title").forEach(el=>{
+    for(const attr of ["placeholder","aria-label","title"]){
+      if(!el.hasAttribute(attr))continue;
+      const value=el.getAttribute(attr)||"";
+      const dynamicCopy=value.match(/^Copiar (#[0-9a-f]{6})$/i);
+      const translated=dynamicCopy ? "Copy "+dynamicCopy[1] : (ATTR_MAP[value]||PT[value]||null);
+      if(translated&&translated!==value)el.setAttribute(attr,translated);
+    }
+  });
+}
+
+function translateHead(){
+  if(lang!=="en")return;
+  document.querySelectorAll("title,meta[name=\"description\"],meta[property=\"og:title\"],meta[property=\"og:description\"],meta[name=\"twitter:title\"],meta[name=\"twitter:description\"],meta[property=\"og:image:alt\"],meta[name=\"twitter:image:alt\"]").forEach(el=>{
+    const isMeta=el.tagName==="META";
+    const value=isMeta?(el.getAttribute("content")||""):(el.textContent||"");
+    const translated=PT[value]||null;
+    if(translated&&translated!==value){
+      if(isMeta)el.setAttribute("content",translated);else el.textContent=translated;
+    }
+  });
+}
+
+function ensureLanguageButton(){
+  const header=document.querySelector("header");
+  if(!header)return;
+  let button=header.querySelector("[data-nx-language]");
+  if(!button){
+    button=document.createElement("button");
+    button.type="button";
+    button.dataset.nxLanguage="1";
+    button.className="nx-language-toggle";
+    button.addEventListener("click",()=>{
+      const next=lang==="en"?"pt":"en";
+      const u=new URL(location.href);
+      if(next==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");
+      try{localStorage.setItem(STORAGE,next)}catch{}
+      document.cookie=STORAGE+"=""+next+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
+      location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"");
+    });
+    const target=header.querySelector(".menu-toggle,.tool-menu");
+    if(target)target.before(button);else header.firstElementChild?.appendChild(button);
+  }
+  const label=lang==="en"?"PT":"EN";
+  const aria=lang==="en"?"Switch to Portuguese":"Switch to English";
+  const title=lang==="en"?"Português":"English";
+  if(button.textContent!==label)button.textContent=label;
+  if(button.getAttribute("aria-label")!==aria)button.setAttribute("aria-label",aria);
+  if(button.title!==title)button.title=title;
+}
+
+let applying=false;
+function apply(){
+  if(applying)return;
+  applying=true;
+  try{
+    document.documentElement.lang=lang;
+    ensureLanguageButton();
+    translateTextNodes();
+    translateOptions();
+    translateToolFragments();
+    translateAttrs();
+    translateHead();
+    document.querySelectorAll("a[href]").forEach(a=>{
+      const href=a.getAttribute("href");
+      if(href&&href.startsWith("/"))a.setAttribute("href",localizeUrl(href));
+    });
+  }finally{applying=false;}
+}
+
+function setLanguage(next){
+  lang=next==="en"?"en":"pt";
   try{localStorage.setItem(STORAGE,lang)}catch{}
-  addToggle();
-  translateDom();
-  window.dispatchEvent(new CustomEvent("nexauren:language-changed",{detail:{lang}}));
+  document.cookie=STORAGE+"=""+lang+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
+  const u=new URL(location.href);
+  if(lang==="en")u.searchParams.delete("lang");else u.searchParams.set("lang","pt");
+  location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"");
 }
 
-window.NexaurenLanguage={get:()=>current,set:setLanguage,toggle:()=>setLanguage(current==="en"?"pt":"en")};
-
-function refresh(){
-  addToggle();
-  translateDom();
+function init(){
+  lang=readLang();
+  apply();
 }
+
 window.NexaurenLanguage=Object.freeze({
-  get:()=>current,
+  get:()=>lang,
   set:setLanguage,
-  toggle:()=>setLanguage(current==="en"?"pt":"en"),
-  refresh
+  toggle:()=>setLanguage(lang==="en"?"pt":"en"),
+  refresh:apply
 });
-window.addEventListener("nexauren:dynamic-content",refresh);
-function init(){refresh()}
+window.NexaurenI18n=Object.freeze({
+  getLanguage:()=>lang,
+  t,
+  setLanguage,
+  localizeUrl,
+  apply
+});
+
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+window.addEventListener("nexauren:dynamic-content",apply);
+
 })();
