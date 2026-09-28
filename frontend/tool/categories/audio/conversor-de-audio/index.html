@@ -3,246 +3,203 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090b0f">
-<meta name="description" content="Nexauren Audio Converter: converta áudio no navegador com preview visual, MP3, WAV, FLAC, OGG e M4A, corte, normalize e ajuste qualidade.">
+<meta name="theme-color" content="#070a0f">
+<meta name="description" content="Audio Converter da Nexauren: converta, corte, normalize e exporte áudio com preview profissional.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/audio/conversor-de-audio/">
 <link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
 <link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
-<link rel="stylesheet" href="./audio-converter.css?v=20260928-1">
+<link rel="stylesheet" href="./audio-converter.css?v=20260928-2">
 <title>Audio Converter — Nexauren</title>
 <script src="/assets/ads.js?v=20260925-auto3"></script>
 </head>
-<body class="nx-page ac-page">
-<div class="ac-ad top" aria-label="Advertisement"><span>ADVERTISEMENT</span><div id="ac-ad-top"></div></div>
+<body class="nx-page ac2-page">
+<div class="ac2-ad"><span>ADVERTISEMENT</span><div id="ac2-ad-top"></div></div>
 
-<header class="ac-header">
-  <div class="ac-wrap ac-nav">
-    <a class="ac-brand" href="/tool/categories/audio/" aria-label="Voltar para ferramentas de áudio">
-      <span class="ac-mark">⇄</span>
-      <span><strong>NEXAUREN</strong><small>AUDIO · CONVERTER</small></span>
+<header class="ac2-header">
+  <div class="ac2-shell ac2-nav">
+    <a class="ac2-brand" href="/tool/categories/audio/" aria-label="Nexauren Audio">
+      <span class="ac2-brand-mark">◎</span>
+      <span><strong>NEXAUREN</strong><small>AUDIO CONVERTER</small></span>
     </a>
-    <div class="ac-nav-actions">
-      <a href="/tool/categories/audio/" class="ac-back">← <span data-i18n="audioTools">Ferramentas de áudio</span></a>
-      <button id="language-toggle" class="ac-lang" type="button">EN</button>
+    <div class="ac2-nav-actions">
+      <a href="/tool/categories/audio/" class="ac2-back">← <span data-i18n="audioTools">Ferramentas de áudio</span></a>
+      <button id="lang-toggle" class="ac2-lang" type="button">EN</button>
     </div>
   </div>
 </header>
 
-<main class="ac-wrap">
-  <section class="ac-hero">
-    <div class="ac-eyebrow">NEXAUREN · AUDIO TOOLKIT</div>
-    <h1><span data-i18n="title">Audio Converter</span><span class="ac-hero-dot">.</span></h1>
-    <p data-i18n="lead">Converta, ajuste e exporte áudio com controlo profissional — diretamente no navegador.</p>
-    <div class="ac-trust-row">
-      <span>◉ <b data-i18n="local">Processamento local</b></span>
-      <span>◈ <b data-i18n="formats">WAV · MP3 · FLAC · OGG · M4A</b></span>
-      <span>◌ <b data-i18n="noUpload">Sem enviar o áudio para um servidor</b></span>
+<main class="ac2-shell">
+  <section class="ac2-intro">
+    <div>
+      <div class="ac2-eyebrow">AUDIO LAB / 01</div>
+      <h1 data-i18n="title">Audio Converter</h1>
+      <p data-i18n="lead">Um conversor com controlos de estúdio, preview visual e exportação profissional — sem abandonar o navegador.</p>
+    </div>
+    <div class="ac2-intro-meter" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
     </div>
   </section>
 
-  <section class="ac-workspace">
-    <div class="ac-left">
-      <section class="ac-card ac-source-card">
-        <div class="ac-card-head">
-          <div><span class="ac-step">01</span><h2 data-i18n="source">Source audio</h2></div>
-          <span class="ac-chip">INPUT</span>
-        </div>
-
-        <label id="drop-zone" class="ac-drop">
-          <input id="file-input" type="file" accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a,.aac,.opus,.webm">
-          <div class="ac-drop-orb"><span>↑</span></div>
-          <strong data-i18n="dropTitle">Solte o áudio aqui</strong>
-          <small data-i18n="dropCopy">WAV, MP3, FLAC, OGG, M4A, AAC, OPUS e formatos suportados pelo navegador</small>
-          <b data-i18n="browse">Escolher ficheiro</b>
-        </label>
-
-        <div id="source-panel" class="ac-source-panel" hidden>
-          <div class="ac-file-line">
-            <div class="ac-file-icon">♫</div>
-            <div class="ac-file-main">
-              <strong id="file-name">—</strong>
-              <span id="file-meta">—</span>
-            </div>
-            <button id="replace-file" class="ac-ghost-btn" type="button" data-i18n="replace">Substituir</button>
-            <button id="remove-file" class="ac-icon-btn" type="button" aria-label="Remover áudio">×</button>
-          </div>
-
-          <div class="ac-player-shell">
-            <audio id="source-audio" controls preload="metadata"></audio>
-          </div>
-
-          <div class="ac-wave-shell">
-            <div class="ac-wave-top"><span data-i18n="waveform">WAVEFORM</span><span id="wave-status">—</span></div>
-            <canvas id="waveform" height="180"></canvas>
-            <div class="ac-wave-foot">
-              <span id="current-time">00:00</span>
-              <span id="duration-time">00:00</span>
-            </div>
-          </div>
-
-          <div id="source-stats" class="ac-stats-grid"></div>
-        </div>
-
-        <div id="source-empty" class="ac-source-empty" data-i18n="sourceHint">Escolha um ficheiro para ativar o estúdio de conversão.</div>
-      </section>
-
-      <section class="ac-card ac-preview-card">
-        <div class="ac-card-head">
-          <div><span class="ac-step">03</span><h2 data-i18n="preview">Preview</h2></div>
-          <span id="engine-chip" class="ac-chip soft">READY</span>
-        </div>
-        <div id="preview-empty" class="ac-preview-empty">
-          <div class="ac-eq-icon"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <strong data-i18n="previewReady">O resultado aparecerá aqui.</strong>
-          <span data-i18n="previewReadyCopy">Depois de converter, compare o ficheiro final, veja os detalhes e faça o download.</span>
-        </div>
-        <div id="result-panel" hidden>
-          <div class="ac-result-banner">
-            <div>
-              <span class="ac-kicker" data-i18n="converted">CONVERTED OUTPUT</span>
-              <strong id="result-name">output.mp3</strong>
-              <small id="result-meta">—</small>
-            </div>
-            <button id="download-result" class="ac-primary small" type="button" data-i18n="download">Download</button>
-          </div>
-          <div class="ac-player-shell result">
-            <audio id="result-audio" controls preload="metadata"></audio>
-          </div>
-          <div class="ac-wave-shell result-wave">
-            <div class="ac-wave-top"><span data-i18n="outputWaveform">OUTPUT WAVEFORM</span><span id="result-wave-status">—</span></div>
-            <canvas id="result-waveform" height="150"></canvas>
-          </div>
-          <div id="result-stats" class="ac-stats-grid"></div>
-        </div>
-      </section>
+  <section class="ac2-console">
+    <div class="ac2-console-head">
+      <div>
+        <span class="ac2-console-id">SOURCE DECK</span>
+        <strong data-i18n="sourceDeck">Áudio de entrada</strong>
+      </div>
+      <span id="engine-state" class="ac2-state">READY</span>
     </div>
 
-    <aside class="ac-right">
-      <section class="ac-card ac-settings-card">
-        <div class="ac-card-head">
-          <div><span class="ac-step">02</span><h2 data-i18n="settings">Conversion settings</h2></div>
-          <span class="ac-chip">OUTPUT</span>
+    <div class="ac2-upload-row">
+      <label class="ac2-pick">
+        <input id="audio-file" type="file" accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a,.aac,.opus,.webm">
+        <span class="ac2-pick-icon">↑</span>
+        <span><strong data-i18n="chooseAudio">Escolher áudio</strong><small data-i18n="chooseHint">WAV, MP3, FLAC, OGG, M4A, AAC, OPUS…</small></span>
+      </label>
+      <div id="file-card" class="ac2-file-card empty">
+        <div class="ac2-file-symbol">♫</div>
+        <div class="ac2-file-data">
+          <strong id="file-name" data-i18n="noAudio">Nenhum áudio selecionado</strong>
+          <span id="file-meta">—</span>
         </div>
+        <button id="clear-file" class="ac2-clear" type="button" hidden aria-label="Remover áudio">×</button>
+      </div>
+    </div>
 
-        <div class="ac-section-label" data-i18n="format">FORMAT</div>
-        <div id="format-grid" class="ac-format-grid">
-          <button type="button" class="ac-format-btn active" data-format="mp3"><strong>MP3</strong><span>Music · compact</span></button>
-          <button type="button" class="ac-format-btn" data-format="wav"><strong>WAV</strong><span>PCM · lossless</span></button>
-          <button type="button" class="ac-format-btn" data-format="flac"><strong>FLAC</strong><span>Lossless · smaller</span></button>
-          <button type="button" class="ac-format-btn" data-format="ogg"><strong>OGG</strong><span>Vorbis · web</span></button>
-          <button type="button" class="ac-format-btn" data-format="m4a"><strong>M4A</strong><span>AAC · mobile</span></button>
-        </div>
+    <div class="ac2-wave-stage">
+      <div class="ac2-wave-head">
+        <span><b data-i18n="waveform">WAVEFORM</b><i id="wave-label">READY</i></span>
+        <span id="time-readout">00:00 / 00:00</span>
+      </div>
+      <canvas id="source-wave" height="210" aria-label="Waveform do áudio"></canvas>
+      <div class="ac2-wave-line"><span></span></div>
+    </div>
 
-        <div class="ac-setting-grid">
-          <label>
-            <span data-i18n="quality">Bitrate / quality</span>
-            <select id="bitrate">
-              <option value="128">128 kbps</option>
-              <option value="160">160 kbps</option>
-              <option value="192" selected>192 kbps</option>
-              <option value="256">256 kbps</option>
-              <option value="320">320 kbps</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="sampleRate">Sample rate</span>
-            <select id="sample-rate">
-              <option value="auto" selected>Auto</option>
-              <option value="22050">22.05 kHz</option>
-              <option value="44100">44.1 kHz</option>
-              <option value="48000">48 kHz</option>
-              <option value="96000">96 kHz</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="channels">Channels</span>
-            <select id="channels">
-              <option value="auto" selected>Keep source</option>
-              <option value="1">Mono</option>
-              <option value="2">Stereo</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="speed">Speed</span>
-            <select id="speed">
-              <option value="0.5">0.50×</option>
-              <option value="0.75">0.75×</option>
-              <option value="1" selected>1.00×</option>
-              <option value="1.25">1.25×</option>
-              <option value="1.5">1.50×</option>
-              <option value="2">2.00×</option>
-            </select>
-          </label>
-        </div>
+    <div class="ac2-player">
+      <audio id="source-player" controls preload="metadata"></audio>
+    </div>
 
-        <div class="ac-section-label" data-i18n="range">RANGE & TIMING</div>
-        <div class="ac-time-grid">
-          <label><span data-i18n="start">Start</span><input id="trim-start" type="text" inputmode="decimal" value="0:00" placeholder="0:00"></label>
-          <label><span data-i18n="end">End</span><input id="trim-end" type="text" inputmode="decimal" value="" placeholder="0:00"></label>
-        </div>
+    <div id="source-metrics" class="ac2-metrics">
+      <div><small data-i18n="duration">Duration</small><strong>—</strong></div>
+      <div><small data-i18n="sampleRate">Sample rate</small><strong>—</strong></div>
+      <div><small data-i18n="channels">Channels</small><strong>—</strong></div>
+      <div><small data-i18n="size">Size</small><strong>—</strong></div>
+    </div>
+  </section>
 
-        <div class="ac-feature-row">
-          <label class="ac-toggle"><input id="normalize" type="checkbox"><span><b data-i18n="normalize">Normalize loudness</b><small data-i18n="normalizeCopy">Target a controlled listening level</small></span></label>
-          <label class="ac-toggle"><input id="reverse" type="checkbox"><span><b data-i18n="reverse">Reverse</b><small data-i18n="reverseCopy">Play the rendered audio backwards</small></span></label>
-        </div>
+  <section class="ac2-format-section">
+    <div class="ac2-section-head">
+      <div><span class="ac2-eyebrow">OUTPUT / 02</span><h2 data-i18n="formatTitle">Escolha o formato</h2></div>
+      <span id="format-note">MP3 · 192 kbps</span>
+    </div>
+    <div class="ac2-format-rail" role="radiogroup" aria-label="Formato de saída">
+      <button class="ac2-format active" type="button" data-format="mp3" aria-checked="true"><b>MP3</b><span>Universal</span><i>Lossy</i></button>
+      <button class="ac2-format" type="button" data-format="wav" aria-checked="false"><b>WAV</b><span>Studio</span><i>PCM</i></button>
+      <button class="ac2-format" type="button" data-format="flac" aria-checked="false"><b>FLAC</b><span>Archive</span><i>Lossless</i></button>
+      <button class="ac2-format" type="button" data-format="ogg" aria-checked="false"><b>OGG</b><span>Web</span><i>Vorbis</i></button>
+      <button class="ac2-format" type="button" data-format="m4a" aria-checked="false"><b>M4A</b><span>Mobile</span><i>AAC</i></button>
+    </div>
+  </section>
 
-        <div class="ac-inline-slider">
-          <div><span data-i18n="gain">Gain</span><output id="gain-value">0 dB</output></div>
-          <input id="gain" type="range" min="-12" max="12" step="0.5" value="0">
-        </div>
+  <section class="ac2-control-layout">
+    <div class="ac2-control-main">
+      <div class="ac2-section-head compact">
+        <div><span class="ac2-eyebrow">PROCESS / 03</span><h2 data-i18n="controls">Controlo de áudio</h2></div>
+        <span data-i18n="localEngine">100% local</span>
+      </div>
 
-        <div class="ac-inline-slider">
-          <div><span data-i18n="fadeIn">Fade in</span><output id="fade-in-value">0.0 s</output></div>
-          <input id="fade-in" type="range" min="0" max="10" step="0.1" value="0">
-        </div>
+      <div class="ac2-control-grid">
+        <label class="ac2-control">
+          <span data-i18n="bitrate">Bitrate</span>
+          <select id="bitrate"><option>128</option><option>160</option><option selected>192</option><option>256</option><option>320</option></select>
+          <small>kbps</small>
+        </label>
+        <label class="ac2-control">
+          <span data-i18n="sampleRateOut">Sample rate</span>
+          <select id="sample-rate"><option value="auto" selected>Auto</option><option value="22050">22.05 kHz</option><option value="44100">44.1 kHz</option><option value="48000">48 kHz</option><option value="96000">96 kHz</option></select>
+        </label>
+        <label class="ac2-control">
+          <span data-i18n="channelOut">Channels</span>
+          <select id="channels"><option value="auto" selected>Original</option><option value="1">Mono</option><option value="2">Stereo</option></select>
+        </label>
+        <label class="ac2-control">
+          <span data-i18n="speed">Speed</span>
+          <select id="speed"><option value=".5">0.50×</option><option value=".75">0.75×</option><option value="1" selected>1.00×</option><option value="1.25">1.25×</option><option value="1.5">1.50×</option><option value="2">2.00×</option></select>
+        </label>
+      </div>
 
-        <div class="ac-inline-slider">
-          <div><span data-i18n="fadeOut">Fade out</span><output id="fade-out-value">0.0 s</output></div>
-          <input id="fade-out" type="range" min="0" max="10" step="0.1" value="0">
+      <div class="ac2-timing">
+        <div class="ac2-timing-head"><span data-i18n="trim">TRIM RANGE</span><small data-i18n="trimHint">Use seconds or mm:ss</small></div>
+        <div class="ac2-time-fields">
+          <label><span data-i18n="start">Start</span><input id="trim-start" inputmode="decimal" placeholder="0:00"></label>
+          <span class="ac2-arrow">→</span>
+          <label><span data-i18n="end">End</span><input id="trim-end" inputmode="decimal" placeholder="auto"></label>
         </div>
+      </div>
 
-        <details class="ac-details">
-          <summary><span data-i18n="metadata">Metadata</span><span>+</span></summary>
-          <div class="ac-metadata-grid">
-            <label><span data-i18n="titleMeta">Title</span><input id="meta-title" type="text" maxlength="120" placeholder="Converted audio"></label>
-            <label><span data-i18n="artist">Artist</span><input id="meta-artist" type="text" maxlength="120"></label>
-            <label><span data-i18n="album">Album</span><input id="meta-album" type="text" maxlength="120"></label>
-            <label><span data-i18n="year">Year</span><input id="meta-year" type="number" min="1900" max="2100"></label>
-          </div>
-        </details>
-      </section>
+      <div class="ac2-slider-list">
+        <label><div><span data-i18n="gain">Gain</span><output id="gain-value">0 dB</output></div><input id="gain" type="range" min="-12" max="12" step=".5" value="0"></label>
+        <label><div><span data-i18n="fadeIn">Fade in</span><output id="fade-in-value">0.0 s</output></div><input id="fade-in" type="range" min="0" max="10" step=".1" value="0"></label>
+        <label><div><span data-i18n="fadeOut">Fade out</span><output id="fade-out-value">0.0 s</output></div><input id="fade-out" type="range" min="0" max="10" step=".1" value="0"></label>
+      </div>
 
-      <section class="ac-card ac-action-card">
-        <div class="ac-engine-row">
-          <div class="ac-engine-orb"><span></span><span></span><span></span></div>
-          <div><strong data-i18n="engine">Browser audio engine</strong><small data-i18n="engineCopy">Decode, process and export on this device.</small></div>
+      <div class="ac2-switches">
+        <label><input id="normalize" type="checkbox"><span><b data-i18n="normalize">Normalize</b><small data-i18n="normalizeHint">Controlled loudness</small></span></label>
+        <label><input id="reverse" type="checkbox"><span><b data-i18n="reverse">Reverse</b><small data-i18n="reverseHint">Reverse the rendered signal</small></span></label>
+      </div>
+
+      <details class="ac2-meta">
+        <summary><span data-i18n="metadata">Metadata</span><b>+</b></summary>
+        <div class="ac2-meta-grid">
+          <label><span data-i18n="metaTitle">Title</span><input id="meta-title" maxlength="120"></label>
+          <label><span data-i18n="artist">Artist</span><input id="meta-artist" maxlength="120"></label>
+          <label><span data-i18n="album">Album</span><input id="meta-album" maxlength="120"></label>
+          <label><span data-i18n="year">Year</span><input id="meta-year" inputmode="numeric"></label>
         </div>
-        <button id="convert-btn" class="ac-primary" type="button" disabled><span data-i18n="convert">Convert audio</span> ↗</button>
-        <div class="ac-progress" hidden>
-          <div class="ac-progress-top"><span id="progress-label" data-i18n="ready">Ready</span><b id="progress-percent">0%</b></div>
-          <div class="ac-progress-track"><div id="progress-bar"></div></div>
-          <button id="cancel-btn" class="ac-cancel" type="button" hidden data-i18n="cancel">Cancel</button>
-        </div>
-        <p id="status" class="ac-status" data-i18n="readyHint">Escolha um áudio para começar.</p>
-      </section>
+      </details>
+    </div>
+
+    <aside class="ac2-action">
+      <div class="ac2-action-ring"><span>◎</span></div>
+      <div class="ac2-action-copy">
+        <span class="ac2-eyebrow">EXPORT</span>
+        <strong id="action-format">MP3</strong>
+        <small data-i18n="privacy">Processamento feito neste dispositivo.</small>
+      </div>
+      <button id="convert" class="ac2-convert" type="button" disabled data-i18n="convert">Converter áudio</button>
+      <div id="progress" class="ac2-progress" hidden>
+        <div><span id="progress-label">Preparing…</span><b id="progress-pct">0%</b></div>
+        <div class="ac2-progress-bar"><i id="progress-fill"></i></div>
+        <button id="cancel" type="button" data-i18n="cancel">Cancelar</button>
+      </div>
+      <p id="status" class="ac2-status" data-i18n="readyHint">Escolha um áudio para começar.</p>
     </aside>
+  </section>
+
+  <section id="output" class="ac2-output" hidden>
+    <div class="ac2-output-head">
+      <div><span class="ac2-eyebrow">RESULT / 04</span><h2 data-i18n="result">Resultado</h2></div>
+      <button id="download" class="ac2-download" type="button" data-i18n="download">Download</button>
+    </div>
+    <div class="ac2-output-file"><span class="ac2-output-orb">✓</span><div><strong id="output-name">converted.mp3</strong><small id="output-meta">—</small></div></div>
+    <div class="ac2-wave-stage result">
+      <div class="ac2-wave-head"><span><b>OUTPUT WAVEFORM</b><i id="output-wave-label">READY</i></span><span id="output-time">00:00</span></div>
+      <canvas id="output-wave" height="180"></canvas>
+    </div>
+    <div class="ac2-player"><audio id="output-player" controls preload="metadata"></audio></div>
   </section>
 </main>
 
-<div class="ac-ad bottom" aria-label="Advertisement"><span>ADVERTISEMENT</span><div id="ac-ad-bottom"></div></div>
-<footer class="ac-footer ac-wrap">
-  <span>© <span id="year"></span> Nexauren Story · Audio Converter</span>
-  <span><a href="/tool/categories/audio/">Audio</a> · <a href="/tool/">Tools</a> · <a href="/legal/privacidade/">Privacy</a></span>
-</footer>
-<div id="toast" class="ac-toast" role="status" aria-live="polite"></div>
+<div class="ac2-ad"><span>ADVERTISEMENT</span><div id="ac2-ad-bottom"></div></div>
+<footer class="ac2-footer ac2-shell"><span>© <span id="year"></span> Nexauren Story · Audio Converter</span><span><a href="/tool/categories/audio/">Audio</a> · <a href="/tool/">Tools</a> · <a href="/legal/privacidade/">Privacy</a></span></footer>
+<div id="toast" class="ac2-toast" role="status" aria-live="polite"></div>
 
 <script>
-window.NexaurenAds?.loadBanner(document.getElementById("ac-ad-top"));
-window.NexaurenAds?.loadResponsive(document.getElementById("ac-ad-bottom"));
+window.NexaurenAds&&NexaurenAds.loadBanner(document.getElementById("ac2-ad-top"));
+window.NexaurenAds&&NexaurenAds.loadResponsive(document.getElementById("ac2-ad-bottom"));
 document.getElementById("year").textContent=new Date().getFullYear();
 </script>
-<script src="./audio-converter.js?v=20260928-1"></script>
+<script src="./audio-converter.js?v=20260928-2"></script>
 <script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
 </body>
 </html>
