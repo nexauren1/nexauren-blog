@@ -25,7 +25,6 @@
     if(search)search.disabled=false;
     grid.innerHTML=list.length?list.map(categoryCard).join(""):'<div class="tool-empty">Nenhuma categoria encontrada.</div>';
     window.NexaurenUI?.refresh?.();
-    window.dispatchEvent(new CustomEvent("nexauren:dynamic-content"));
   }
 
   function closeAccessDialog(){
@@ -147,7 +146,8 @@
 
   document.addEventListener("click",handleToolClick,true);
   search?.addEventListener("input",updateSearch);
-  window.addEventListener("nexauren:tool-registry-updated",event=>{if(event.detail)applyRegistry(event.detail)});\n  window.addEventListener("nexauren:language-changed",event=>{language=event.detail?.lang||language;if(registryReady)updateSearch()});
+  window.addEventListener("nexauren:tool-registry-updated",event=>{if(event.detail)applyRegistry(event.detail)}); 
+  window.addEventListener("nexauren:language-changed",event=>{language=event.detail?.lang||language;if(registryReady)updateSearch()});
   window.addEventListener("pageshow",()=>{closeAccessDialog();if(user)refreshPlan(true)});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden){closeAccessDialog();if(user)refreshPlan(true)}});
 
