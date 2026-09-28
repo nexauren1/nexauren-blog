@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 21,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
@@ -2068,7 +2068,7 @@
       "category": "audio",
       "group": "producao-musical",
       "icon": "◷",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "status": "active",
       "path": "/tool/categories/audio/producao-musical/calculadora-de-bpm/",
       "tags": [
@@ -2079,10 +2079,11 @@
       ],
       "tags_en": [
         "music production",
-        "producer"
+        "producer",
+        "music tools"
       ],
       "featured": true,
-      "popular": true,
+      "popular": false,
       "access": "public",
       "sortOrder": 10
     },
@@ -2095,7 +2096,7 @@
       "category": "audio",
       "group": "producao-musical",
       "icon": "↕",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "status": "active",
       "path": "/tool/categories/audio/producao-musical/calculadora-de-pitch-time/",
       "tags": [
@@ -2106,10 +2107,11 @@
       ],
       "tags_en": [
         "music production",
-        "producer"
+        "producer",
+        "music tools"
       ],
-      "featured": true,
-      "popular": true,
+      "featured": false,
+      "popular": false,
       "access": "public",
       "sortOrder": 20
     },
@@ -2122,7 +2124,7 @@
       "category": "audio",
       "group": "producao-musical",
       "icon": "♭",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "status": "active",
       "path": "/tool/categories/audio/producao-musical/finder-de-escala-e-tonalidade/",
       "tags": [
@@ -2133,10 +2135,11 @@
       ],
       "tags_en": [
         "music production",
-        "producer"
+        "producer",
+        "music tools"
       ],
-      "featured": true,
-      "popular": true,
+      "featured": false,
+      "popular": false,
       "access": "public",
       "sortOrder": 30
     },
@@ -2149,8 +2152,8 @@
       "category": "audio",
       "group": "producao-musical",
       "icon": "♬",
-      "version": "1.0.0",
-      "status": "draft",
+      "version": "1.1.0",
+      "status": "active",
       "path": "/tool/categories/audio/producao-musical/gerador-de-progressao-de-acordes/",
       "tags": [
         "produção musical",
@@ -2160,9 +2163,10 @@
       ],
       "tags_en": [
         "music production",
-        "producer"
+        "producer",
+        "music tools"
       ],
-      "featured": true,
+      "featured": false,
       "popular": false,
       "access": "public",
       "sortOrder": 40
@@ -2176,8 +2180,8 @@
       "category": "audio",
       "group": "producao-musical",
       "icon": "▦",
-      "version": "1.0.0",
-      "status": "draft",
+      "version": "1.1.0",
+      "status": "active",
       "path": "/tool/categories/audio/producao-musical/gerador-de-drum-pattern/",
       "tags": [
         "produção musical",
@@ -2187,10 +2191,11 @@
       ],
       "tags_en": [
         "music production",
-        "producer"
+        "producer",
+        "music tools"
       ],
-      "featured": true,
-      "popular": true,
+      "featured": false,
+      "popular": false,
       "access": "public",
       "sortOrder": 50
     }
