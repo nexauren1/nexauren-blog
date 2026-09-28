@@ -1,4 +1,4 @@
-(()=>{if(window.__nexaurenLanguageBootstrap)return;window.__nexaurenLanguageBootstrap=true;if(window.NexaurenLanguage||document.querySelector('script[data-nx-language-loader]'))return;const s=document.createElement("script");s.src="/assets/nexauren-language.js?v=20260928-5";s.async=false;s.dataset.nxLanguageLoader="1";document.head.appendChild(s);})();
+(()=>{if(window.__nexaurenLanguageBootstrap)return;window.__nexaurenLanguageBootstrap=true;if(window.NexaurenLanguage||document.querySelector('script[data-nx-language-loader]'))return;const s=document.createElement("script");s.src="/assets/nexauren-language.js?v=20260928-6";s.async=false;s.dataset.nxLanguageLoader="1";document.head.appendChild(s);})();
 /* Nexauren Public Experience — shared behavior. */
 (() => {
   "use strict";
