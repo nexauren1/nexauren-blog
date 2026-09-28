@@ -1,4 +1,6 @@
 (()=>{"use strict";
+if(window.__nexaurenLanguageRuntime)return;
+window.__nexaurenLanguageRuntime=true;
 const NX_READY_ATTR="data-nx-language-ready";
 const NX_CLOAK_STYLE="nexauren-language-cloak";
 function markLanguageReady(){try{document.documentElement.setAttribute(NX_READY_ATTR,"1")}catch{}}
