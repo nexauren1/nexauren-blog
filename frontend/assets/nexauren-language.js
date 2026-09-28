@@ -1057,9 +1057,9 @@ function ensureLanguageButton(){
     button.addEventListener("click",()=>{
       const next=lang==="en"?"pt":"en";
       const u=new URL(location.href);
-      if(next==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");
+      if(next==="en")u.searchParams.delete("lang");else u.searchParams.set("lang","pt");
       try{localStorage.setItem(STORAGE,next)}catch{}
-      document.cookie=STORAGE+"=""+next+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
+      document.cookie=STORAGE+"="+next+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
       location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"");
     });
     const target=header.querySelector(".menu-toggle,.tool-menu");
@@ -1095,7 +1095,7 @@ function apply(){
 function setLanguage(next){
   lang=next==="en"?"en":"pt";
   try{localStorage.setItem(STORAGE,lang)}catch{}
-  document.cookie=STORAGE+"=""+lang+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
+  document.cookie=STORAGE+"="+lang+"; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
   const u=new URL(location.href);
   if(lang==="en")u.searchParams.delete("lang");else u.searchParams.set("lang","pt");
   location.href=u.pathname+(u.search?"?"+u.searchParams.toString():"");
