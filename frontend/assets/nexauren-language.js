@@ -147,6 +147,7 @@ function installSafeObserver(){
   if(window.__nexaurenLanguageObserverInstalled||!document.body)return;
   window.__nexaurenLanguageObserverInstalled=true;
   let scheduled=false;
+  let pendingRecords=[];
 
   const translateTextNode=node=>{
     if(!node||node.nodeType!==Node.TEXT_NODE)return;
@@ -172,9 +173,10 @@ function installSafeObserver(){
     });
   };
 
-  const flush=records=>{
+  const flush=()=>{
     scheduled=false;
-    if(busy)return;
+    if(busy){scheduleFlush();return;}
+    const records=pendingRecords.splice(0);
     for(const record of records){
       if(record.type==="characterData"){
         translateTextNode(record.target);
@@ -188,10 +190,15 @@ function installSafeObserver(){
     translateHead();
   };
 
-  const observer=new MutationObserver(records=>{
-    if(busy||scheduled)return;
+  const scheduleFlush=()=>{
+    if(scheduled)return;
     scheduled=true;
-    requestAnimationFrame(()=>flush(records));
+    requestAnimationFrame(flush);
+  };
+
+  const observer=new MutationObserver(records=>{
+    if(records?.length)pendingRecords.push(...records);
+    scheduleFlush();
   });
 
   observer.observe(document.documentElement,{
