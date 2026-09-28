@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d14">
+<meta name="robots" content="index,follow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="canonical" href="https://nexaurenstory.com/support/">
+<meta name="description" content="Nexauren Support — help, troubleshooting, suggestions and technical assistance.">
+<title>Support — Nexauren Story</title>
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260928-support-1">
+<link rel="stylesheet" href="/assets/nexauren-premium-ui.css?v=20260926-premium-1">
+<link rel="stylesheet" href="/support/support.css?v=20260928-1">
+<script src="/assets/nexauren-language.js?v=20260928-7"></script>
+</head>
+<body class="nx-page nx-support-page">
+<header class="support-header">
+  <div class="support-wrap support-nav">
+    <a class="support-brand" href="/" aria-label="Nexauren Story"><img src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="38" height="38"><span><strong>Nexauren</strong><small>Story</small></span></a>
+    <nav aria-label="Main navigation">
+      <a href="/tool/">Tools</a>
+      <a href="/account">Account</a>
+      <a class="active" href="/support/">Support</a>
+    </nav>
+    <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span></button>
+  </div>
+</header>
+
+<main class="support-wrap support-main">
+  <section class="support-hero">
+    <div class="support-kicker">NEXAUREN · SUPPORT</div>
+    <h1>Help that stays connected to your experience.</h1>
+    <p>Report a problem, ask for help, or tell us what Nexauren should build next. When your message comes from a tool, we automatically attach the relevant tool and technical context.</p>
+    <div class="support-actions">
+      <a class="support-action primary" href="#support-form">Get support</a>
+      <a class="support-action secondary" href="/feedback/">Suggestions & feedback</a>
+    </div>
+  </section>
+
+  <section class="support-grid">
+    <article class="support-card"><span>01</span><h2>Report a problem</h2><p>Tell us exactly what happened. Tool ID, page, browser and useful technical diagnostics can travel with the report.</p><a href="#support-form" data-kind-link="problem">Report an issue →</a></article>
+    <article class="support-card"><span>02</span><h2>Get help</h2><p>Ask about an account, access, billing, a tool, or anything else that is blocking your Nexauren experience.</p><a href="#support-form" data-kind-link="support">Ask for help →</a></article>
+    <article class="support-card"><span>03</span><h2>Suggest an idea</h2><p>Suggest a new tool, a feature, or an improvement. Useful ideas go directly to the Nexauren support inbox.</p><a href="/feedback/">Share an idea →</a></article>
+  </section>
+
+  <section id="support-form" class="support-form-card">
+    <div class="support-form-head">
+      <div><div class="support-kicker">SEND A MESSAGE</div><h2>How can we help?</h2></div>
+      <div id="tool-context" class="tool-context" hidden></div>
+    </div>
+
+    <form id="support-form-element" novalidate>
+      <div class="support-field-grid">
+        <label>Request type
+          <select id="kind" name="kind">
+            <option value="problem">Report a problem</option>
+            <option value="support">Support request</option>
+            <option value="suggestion">Suggestion</option>
+            <option value="feature">Feature request</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label>Subject
+          <input id="subject" name="subject" maxlength="180" autocomplete="off" placeholder="What do you need help with?">
+        </label>
+      </div>
+
+      <label>Message
+        <textarea id="message" name="message" rows="9" maxlength="12000" placeholder="Describe the problem, suggestion or request. Include the steps that led to it when useful."></textarea>
+        <small><span id="message-count">0</span>/12000</small>
+      </label>
+
+      <label>Email for reply
+        <input id="email" name="email" type="email" maxlength="180" autocomplete="email" placeholder="you@example.com">
+      </label>
+
+      <div class="support-diagnostics">
+        <div>
+          <strong>Technical context</strong>
+          <p>For problem reports, Nexauren can include your current page, tool context, browser, device, language, timezone and other diagnostics that help reproduce the issue. Passwords, authentication tokens and cookie contents are never submitted.</p>
+        </div>
+        <label class="support-check"><input id="include-diagnostics" type="checkbox" checked><span>Include technical diagnostics</span></label>
+      </div>
+
+      <div id="support-feedback" class="support-feedback" role="status" aria-live="polite"></div>
+      <div class="support-submit-row">
+        <span>Messages are sent securely to <strong>nexaurenx@gmail.com</strong>.</span>
+        <button id="submit-support" class="support-submit" type="submit">Send message →</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="support-security">
+    <div><span>PRIVACY</span><strong>Useful context, not secrets.</strong></div>
+    <p>We collect enough context to understand and answer your request, but never ask you to provide passwords, authentication tokens, payment credentials or private file contents in this form.</p>
+  </section>
+</main>
+
+<div id="toast" aria-live="polite"></div>
+<script type="module" src="/support/support.js?v=20260928-1"></script>
+<script src="/assets/public-ui.js?v=20260928-support-1" defer></script>
+</body>
+</html>
