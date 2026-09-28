@@ -73,6 +73,7 @@ async function initBilling(root){
     }
     const result=await workerFetch("/api/account/billing");
     host.innerHTML=billingMarkup(result.billing,notice);
+    window.NexaurenLanguage?.refresh?.();
   }catch(error){
     host.innerHTML=billingMarkup({plan:"free",status:"FREE"},"Erro ao carregar assinatura: " + (error?.message || "erro desconhecido") + (error?.code ? " [" + error.code + "]" : ""));
     if(paypal)history.replaceState({},document.title,"/account/upgrade/");
