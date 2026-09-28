@@ -131,48 +131,47 @@ function pairText(raw,lang){
     const replacement=map.get(trimmed);
     return text.slice(0,text.indexOf(trimmed))+replacement+text.slice(text.indexOf(trimmed)+trimmed.length);
   }
-
   if(lang==="en"){
     const patterns=[
-      [/^(\\d+)\\s+imagens?\\s+na fila\\.?$/i,(_,_n)=>`${_n} image${Number(_n)===1?"":"s"} in queue`],
-      [/^(\\d+)\\s+imagens?$/i,(_,_n)=>`${_n} image${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+ficheiros?$/i,(_,_n)=>`${_n} file${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+ficheiros? prontos$/i,(_,_n)=>`${_n} file${Number(_n)===1?"":"s"} ready`],
-      [/^(\\d+)\\s+páginas?$/i,(_,_n)=>`${_n} page${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+caracteres?$/i,(_,_n)=>`${_n} character${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+encontradas$/i,(_,_n)=>`${_n} found`],
-      [/^Até\\s+(.+)\\s+imagens? · (.+) MB\\/ficheiro$/i,(_,_a,_b)=>`Up to ${_a} images · ${_b} MB/file`],
-      [/^Ficheiro acima de (.+)\\.$/i,(_,_a)=>`File exceeds ${_a}.`],
-      [/^Valor (.+) copiado\\.$/i,(_,_a)=>`Value ${_a} copied.`],
-      [/^Chave (\\d+) copiada\\.$/i,(_,_n)=>`Key ${_n} copied.`],
-      [/^A expressão regular contém um erro\\.?$/i,()=>`The regular expression contains an error.`],
-      [/^Não foi possível processar o CSS: ?(.*)$/i,(_,_e)=>`Could not process CSS: ${_e}`],
-      [/^Não foi possível processar o JavaScript: ?(.*)$/i,(_,_e)=>`Could not process JavaScript: ${_e}`],
-      [/^Possível erro de sintaxe: ?(.*)$/i,(_,_e)=>`Possible syntax error: ${_e}`],
-      [/^Status: (.+)$/i,(_,_v)=>`Status: ${_v}`]
+      [/^(\d+)\s+imagens?\s+na fila\.?$/i,(_,n)=>n+" image"+(Number(n)===1?"":"s")+" in queue"],
+      [/^(\d+)\s+imagens?$/i,(_,n)=>n+" image"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+ficheiros?$/i,(_,n)=>n+" file"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+ficheiros? prontos$/i,(_,n)=>n+" file"+(Number(n)===1?"":"s")+" ready"],
+      [/^(\d+)\s+páginas?$/i,(_,n)=>n+" page"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+caracteres?$/i,(_,n)=>n+" character"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+encontradas$/i,(_,n)=>n+" found"],
+      [/^Até\s+(.+)\s+imagens? · (.+) MB\/ficheiro$/i,(_,a,b)=>"Up to "+a+" images · "+b+" MB/file"],
+      [/^Ficheiro acima de (.+)\.$/i,(_,a)=>"File exceeds "+a+"."],
+      [/^Valor (.+) copiado\.$/i,(_,a)=>"Value "+a+" copied."],
+      [/^Chave (\d+) copiada\.$/i,(_,n)=>"Key "+n+" copied."],
+      [/^A expressão regular contém um erro\.?$/i,()=>"The regular expression contains an error."],
+      [/^Não foi possível processar o CSS: ?(.*)$/i,(_,e)=>"Could not process CSS: "+e],
+      [/^Não foi possível processar o JavaScript: ?(.*)$/i,(_,e)=>"Could not process JavaScript: "+e],
+      [/^Possível erro de sintaxe: ?(.*)$/i,(_,e)=>"Possible syntax error: "+e]
     ];
     for(const [re,fn] of patterns)if(re.test(trimmed))return text.replace(trimmed,trimmed.replace(re,fn));
   }else{
     const patterns=[
-      [/^(\\d+)\\s+image(?:s)?\\s+in queue$/i,(_,_n)=>`${_n} imagem${Number(_n)===1?"":"s"} na fila`],
-      [/^(\\d+)\\s+image(?:s)?$/i,(_,_n)=>`${_n} imagem${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+file(?:s)?$/i,(_,_n)=>`${_n} ficheiro${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+file(?:s)? ready$/i,(_,_n)=>`${_n} ficheiro${Number(_n)===1?"":"s"} prontos`],
-      [/^(\\d+)\\s+page(?:s)?$/i,(_,_n)=>`${_n} página${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+character(?:s)?$/i,(_,_n)=>`${_n} caractere${Number(_n)===1?"":"s"}`],
-      [/^(\\d+)\\s+found$/i,(_,_n)=>`${_n} encontradas`],
-      [/^Up to (.+) images · (.+) MB\\/file$/i,(_,_a,_b)=>`Até ${_a} imagens · ${_b} MB/ficheiro`],
-      [/^File exceeds (.+)\\.$/i,(_,_a)=>`Ficheiro acima de ${_a}.`],
-      [/^Value (.+) copied\\.$/i,(_,_a)=>`Valor ${_a} copiado.`],
-      [/^Key (\\d+) copied\\.$/i,(_,_n)=>`Chave ${_n} copiada.`],
-      [/^Could not process CSS: ?(.*)$/i,(_,_e)=>`Não foi possível processar o CSS: ${_e}`],
-      [/^Could not process JavaScript: ?(.*)$/i,(_,_e)=>`Não foi possível processar o JavaScript: ${_e}`],
-      [/^Possible syntax error: ?(.*)$/i,(_,_e)=>`Possível erro de sintaxe: ${_e}`]
+      [/^(\d+)\s+images?\s+in queue$/i,(_,n)=>n+" imagem"+(Number(n)===1?"":"s")+" na fila"],
+      [/^(\d+)\s+images?$/i,(_,n)=>n+" imagem"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+files?$/i,(_,n)=>n+" ficheiro"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+files? ready$/i,(_,n)=>n+" ficheiro"+(Number(n)===1?"":"s")+" prontos"],
+      [/^(\d+)\s+pages?$/i,(_,n)=>n+" página"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+characters?$/i,(_,n)=>n+" caractere"+(Number(n)===1?"":"s")],
+      [/^(\d+)\s+found$/i,(_,n)=>n+" encontradas"],
+      [/^Up to (.+) images · (.+) MB\/file$/i,(_,a,b)=>"Até "+a+" imagens · "+b+" MB/ficheiro"],
+      [/^File exceeds (.+)\.$/i,(_,a)=>"Ficheiro acima de "+a+"."],
+      [/^Value (.+) copied\.$/i,(_,a)=>"Valor "+a+" copiado."],
+      [/^Key (\d+) copied\.$/i,(_,n)=>"Chave "+n+" copiada."],
+      [/^Could not process CSS: ?(.*)$/i,(_,e)=>"Não foi possível processar o CSS: "+e],
+      [/^Could not process JavaScript: ?(.*)$/i,(_,e)=>"Não foi possível processar o JavaScript: "+e],
+      [/^Possible syntax error: ?(.*)$/i,(_,e)=>"Possível erro de sintaxe: "+e]
     ];
     for(const [re,fn] of patterns)if(re.test(trimmed))return text.replace(trimmed,trimmed.replace(re,fn));
   }
   return null;
 }
+
 
 function translateDom(){
   if(busy)return;
