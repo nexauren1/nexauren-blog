@@ -146,42 +146,61 @@ window.NexaurenLanguage=Object.freeze({
 function installSafeObserver(){
   if(window.__nexaurenLanguageObserverInstalled||!document.body)return;
   window.__nexaurenLanguageObserverInstalled=true;
-  const seen=new WeakMap();
-  const scan=()=>{
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
-    while(walker.nextNode()){
-      const node=walker.currentNode,parent=node.parentElement;
-      if(!parent||["SCRIPT","STYLE","NOSCRIPT","PRE","CODE"].includes(parent.tagName))continue;
-      if(parent.closest('textarea,input,[contenteditable="true"],[data-i18n-skip]'))continue;
-      const value=node.nodeValue??"";
-      const prev=seen.get(node);
-      if(prev&&prev.lang===current&&prev.value===value)continue;
-      const replacement=pairText(value,current);
-      if(replacement!==null&&replacement!==value){
-        seen.set(node,{lang:current,value:replacement});
-        node.nodeValue=replacement;
-      }else{
-        seen.set(node,{lang:current,value});
+  const translateTextNode=node=>{
+    if(!node||node.nodeType!==Node.TEXT_NODE)return;
+    const parent=node.parentElement;
+    if(!parent||["SCRIPT","STYLE","NOSCRIPT","PRE","CODE","TEXTAREA","INPUT"].includes(parent.tagName))return;
+    if(parent.closest('[contenteditable="true"],[data-i18n-skip]'))return;
+    const replacement=pairText(node.nodeValue,current);
+    if(replacement!==null&&replacement!==node.nodeValue)node.nodeValue=replacement;
+  };
+  const translateElement=element=>{
+    if(!element||element.nodeType!==Node.ELEMENT_NODE)return;
+    if(element.matches("script,style,noscript,pre,code,textarea,input,[contenteditable='true'],[data-i18n-skip]"))return;
+    const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+    while(walker.nextNode())translateTextNode(walker.currentNode);
+    if(element.matches("input[placeholder],textarea[placeholder],[title]")||element.querySelector("input[placeholder],textarea[placeholder],[title]")){
+      element.querySelectorAll?.("input[placeholder],textarea[placeholder],[title]").forEach(el=>{
+        for(const attr of ["placeholder","title"]){
+          const value=el.getAttribute(attr);
+          const replacement=pairText(value,current);
+          if(replacement!==null&&replacement!==value)el.setAttribute(attr,replacement);
+        }
+      });
+    }
+    if(element.matches("[aria-label],[title]")){
+      for(const attr of ["aria-label","title"]){
+        const value=element.getAttribute(attr);
+        const replacement=pairText(value,current);
+        if(replacement!==null&&replacement!==value)element.setAttribute(attr,replacement);
       }
     }
-  };
-  let queued=false;
-  const queue=()=>{
-    if(queued)return;
-    queued=true;
-    setTimeout(()=>{
-      queued=false;
-      if(!busy)refresh();
-    },50);
+    element.querySelectorAll?.("[aria-label],[title]").forEach(el=>{
+      for(const attr of ["aria-label","title"]){
+        const value=el.getAttribute(attr);
+        const replacement=pairText(value,current);
+        if(replacement!==null&&replacement!==value)el.setAttribute(attr,replacement);
+      }
+    });
   };
   const observer=new MutationObserver(records=>{
     if(busy)return;
     for(const record of records){
-      if(record.type==="characterData"||record.type==="childList"){queue();return}
+      if(record.type==="characterData")translateTextNode(record.target);
+      else if(record.type==="attributes"){
+        const value=record.target.getAttribute(record.attributeName);
+        const replacement=pairText(value,current);
+        if(replacement!==null&&replacement!==value)record.target.setAttribute(record.attributeName,replacement);
+      }else if(record.type==="childList"){
+        record.addedNodes.forEach(node=>{
+          if(node.nodeType===Node.TEXT_NODE)translateTextNode(node);
+          else if(node.nodeType===Node.ELEMENT_NODE)translateElement(node);
+        });
+      }
     }
+    translateHead();
   });
-  observer.observe(document.body,{subtree:true,childList:true,characterData:true});
-  scan();
+  observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title"]});
 }
 function installLanguageToggleBridge(){
   if(window.__nexaurenLanguageToggleBridge)return;
