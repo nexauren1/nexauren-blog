@@ -295,6 +295,7 @@ function loop(){
   };
   frame();
 }
+function render(){renderDisplay();renderSecondary();updateShareUi()}
 function renderDisplay(){
   const display=document.querySelector("[data-display]");if(!display)return;
   let text="00:00:00",sub="",total=0,rem=0;
