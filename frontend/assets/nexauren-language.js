@@ -143,7 +143,58 @@ window.NexaurenLanguage=Object.freeze({
   toggle:()=>setLanguage(current==="en"?"pt":"en"),
   refresh
 });
+function installSafeObserver(){
+  if(window.__nexaurenLanguageObserverInstalled||!document.body)return;
+  window.__nexaurenLanguageObserverInstalled=true;
+  const seen=new WeakMap();
+  const scan=()=>{
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    while(walker.nextNode()){
+      const node=walker.currentNode,parent=node.parentElement;
+      if(!parent||["SCRIPT","STYLE","NOSCRIPT","PRE","CODE"].includes(parent.tagName))continue;
+      if(parent.closest('textarea,input,[contenteditable="true"],[data-i18n-skip]'))continue;
+      const value=node.nodeValue??"";
+      const prev=seen.get(node);
+      if(prev&&prev.lang===current&&prev.value===value)continue;
+      const replacement=pairText(value,current);
+      if(replacement!==null&&replacement!==value){
+        seen.set(node,{lang:current,value:replacement});
+        node.nodeValue=replacement;
+      }else{
+        seen.set(node,{lang:current,value});
+      }
+    }
+  };
+  let queued=false;
+  const queue=()=>{
+    if(queued)return;
+    queued=true;
+    setTimeout(()=>{
+      queued=false;
+      if(!busy)refresh();
+    },50);
+  };
+  const observer=new MutationObserver(records=>{
+    if(busy)return;
+    for(const record of records){
+      if(record.type==="characterData"||record.type==="childList"){queue();return}
+    }
+  });
+  observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  scan();
+}
+function installLanguageToggleBridge(){
+  if(window.__nexaurenLanguageToggleBridge)return;
+  window.__nexaurenLanguageToggleBridge=true;
+  document.addEventListener("click",event=>{
+    const target=event.target?.closest?.("#lang-toggle,#language-toggle,.language-toggle,[data-language-toggle],[data-lang-toggle]");
+    if(!target||target.matches("[data-nx-language-toggle]"))return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    setLanguage(current==="en"?"pt":"en");
+  },true);
+}
 window.addEventListener("nexauren:dynamic-content",refresh);
-function init(){refresh()}
+function init(){refresh();installSafeObserver();installLanguageToggleBridge()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
