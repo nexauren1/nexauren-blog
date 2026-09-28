@@ -25,6 +25,7 @@
     if(search)search.disabled=false;
     grid.innerHTML=list.length?list.map(categoryCard).join(""):'<div class="tool-empty">Nenhuma categoria encontrada.</div>';
     window.NexaurenUI?.refresh?.();
+    window.dispatchEvent(new CustomEvent("nexauren:dynamic-content"));
   }
 
   function closeAccessDialog(){
