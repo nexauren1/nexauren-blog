@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-09-28T05:15:00.029545Z",
+  "generatedAt": "2026-09-28T05:28:16.826406Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -16,6 +16,7 @@
     "/tool/categories/imagem/",
     "/tool/categories/imagem/desfocar-pixelizar/",
     "/tool/categories/imagem/favicon-generator/",
+    "/tool/categories/imagem/girar-espelhar/",
     "/tool/categories/imagem/image-compressor/",
     "/tool/categories/imagem/image-converter/",
     "/tool/categories/imagem/image-cropper/",
