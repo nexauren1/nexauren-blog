@@ -72,7 +72,7 @@ function translateDom(){
     while(walker.nextNode()){
       const n=walker.currentNode,parent=n.parentElement;
       if(!parent||["SCRIPT","STYLE","NOSCRIPT","TEXTAREA","PRE","CODE"].includes(parent.tagName))continue;
-      if(parent.closest("input,textarea,[contenteditable="true"]"))continue;
+      if(parent.closest('input,textarea,[contenteditable="true"]'))continue;
       nodes.push(n);
     }
     for(const n of nodes){const replacement=pairText(n.nodeValue,current);if(replacement!==null)n.nodeValue=replacement}
