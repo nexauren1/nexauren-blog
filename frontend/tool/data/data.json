@@ -1984,6 +1984,40 @@
       "popular": false,
       "access": "public",
       "sortOrder": 120
+    },
+    {
+      "id": "girar-espelhar",
+      "name": "Girar & Espelhar",
+      "name_en": "Rotate & Flip Image",
+      "description": "Gire imagens em passos de 90° e espelhe horizontal ou verticalmente, com pré-visualização imediata e exportação local.",
+      "description_en": "Rotate images in 90° steps and flip them horizontally or vertically with live preview and local export.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "↻",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/girar-espelhar/",
+      "tags": [
+        "imagem",
+        "image",
+        "girar",
+        "rotação",
+        "espelhar",
+        "flip",
+        "transformação"
+      ],
+      "tags_en": [
+        "image",
+        "rotate",
+        "rotation",
+        "flip",
+        "mirror",
+        "transform"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 130
     }
   ]
 }
