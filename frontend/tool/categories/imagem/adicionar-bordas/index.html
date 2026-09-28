@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f8f7f3">
+<meta name="description" content="Adicione bordas e molduras às suas imagens com espessura, cor, estilo, margem e cantos arredondados configuráveis.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/imagem/adicionar-bordas/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./adicionar-bordas.css?v=20260928-1">
+<title>Adicionar Bordas — Nexauren</title>
+<script src="/assets/ads.js?v=20260925-auto3"></script>
+</head>
+<body class="nx-page ab-page">
+<div class="ab-ad"><span>ADVERTISEMENT</span><div id="ab-ad-top"></div></div>
+
+<header class="ab-header">
+  <div class="ab-shell ab-nav">
+    <a href="/tool/categories/imagem/" class="ab-brand"><span class="ab-mark">□</span><span><strong>NEXAUREN</strong><small>IMAGE FRAMES</small></span></a>
+    <div class="ab-nav-right"><a href="/tool/categories/imagem/" class="ab-back">← Ferramentas de imagem</a><button id="lang-toggle" class="ab-lang" type="button">EN</button></div>
+  </div>
+</header>
+
+<main class="ab-shell">
+<section class="ab-hero">
+  <div>
+    <div class="ab-kicker">FRAME STUDIO / 01</div>
+    <h1>Adicionar<br>Bordas</h1>
+    <p>Crie uma moldura à volta da imagem com controlo preciso da espessura, cor, estilo, margem e cantos. Tudo funciona diretamente no navegador.</p>
+  </div>
+  <div class="ab-swatch"><span>FRAME</span><i id="swatch"></i><b id="size-readout">24 px</b><small>espessura atual</small></div>
+</section>
+
+<section class="ab-layout">
+  <div class="ab-main">
+    <section class="ab-card ab-upload">
+      <div class="ab-head"><div><span class="ab-kicker">SOURCE / 02</span><h2>Imagem</h2></div><span id="state" class="ab-state">IDLE</span></div>
+      <label id="drop" class="ab-drop">
+        <input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp">
+        <span class="ab-drop-icon">＋</span>
+        <span><b>Escolher imagem</b><small>JPG, PNG, WebP, GIF ou BMP</small></span>
+      </label>
+      <div id="file-row" class="ab-file-row" hidden>
+        <div class="ab-file-icon">IMG</div><div><strong id="file-name">—</strong><small id="file-meta">—</small></div><button id="clear" type="button">×</button>
+      </div>
+    </section>
+
+    <section class="ab-card ab-preview">
+      <div class="ab-head"><div><span class="ab-kicker">PREVIEW / 03</span><h2>Moldura</h2></div><span id="dimension" class="ab-dimension">—</span></div>
+      <div class="ab-stage"><canvas id="canvas"></canvas><div id="empty" class="ab-empty">A pré-visualização aparece aqui.</div></div>
+    </section>
+  </div>
+
+  <aside class="ab-side">
+    <section class="ab-card ab-controls">
+      <div class="ab-head"><div><span class="ab-kicker">STYLE</span><h2>Configuração</h2></div></div>
+
+      <div class="ab-preset-grid">
+        <button type="button" data-preset="clean"><b>Clean</b><small>leve</small></button>
+        <button type="button" data-preset="bold" class="active"><b>Bold</b><small>forte</small></button>
+        <button type="button" data-preset="soft"><b>Soft</b><small>arredondado</small></button>
+        <button type="button" data-preset="mono"><b>Mono</b><small>preto</small></button>
+      </div>
+
+      <label class="ab-field"><span>Espessura <b id="thickness-value">24 px</b></span><input id="thickness" type="range" min="2" max="100" value="24"></label>
+      <label class="ab-field"><span>Margem exterior <b id="padding-value">24 px</b></span><input id="padding" type="range" min="0" max="120" value="24"></label>
+      <label class="ab-field"><span>Cantos <b id="radius-value">0 px</b></span><input id="radius" type="range" min="0" max="120" value="0"></label>
+
+      <div class="ab-color-row"><span>Cor da borda</span><input id="border-color" type="color" value="#1f2937"><b id="border-hex">#1F2937</b></div>
+      <div class="ab-color-row"><span>Fundo da margem</span><input id="bg-color" type="color" value="#f7f5ef"><b id="bg-hex">#F7F5EF</b></div>
+
+      <label class="ab-field"><span>Estilo</span>
+        <select id="style">
+          <option value="solid">Sólida</option>
+          <option value="dashed">Tracejada</option>
+          <option value="dotted">Pontilhada</option>
+          <option value="double">Dupla</option>
+        </select>
+      </label>
+
+      <label class="ab-toggle"><input id="transparent" type="checkbox"><span><b>Fundo transparente</b><small>Ignora a cor da margem e exporta transparência quando suportado.</small></span></label>
+
+      <button id="reset" class="ab-secondary" type="button" disabled>Repor configuração</button>
+    </section>
+
+    <section class="ab-card ab-output">
+      <div class="ab-head"><div><span class="ab-kicker">EXPORT / 04</span><h2>Saída</h2></div></div>
+      <select id="format">
+        <option value="image/png">PNG · recomendado</option>
+        <option value="image/jpeg">JPG · compatível</option>
+        <option value="image/webp">WebP · compacto</option>
+      </select>
+      <button id="download" class="ab-primary" type="button" disabled>Baixar imagem</button>
+      <p id="status" class="ab-status">Escolha uma imagem para começar.</p>
+    </section>
+  </aside>
+</section>
+
+<section id="result" class="ab-result" hidden>
+  <div class="ab-head"><div><span class="ab-kicker">READY / 05</span><h2>Ficheiro pronto</h2></div><b id="result-meta">—</b></div>
+  <div class="ab-result-row"><span class="ab-ok">✓</span><div><strong id="result-name">nexauren-moldura.png</strong><small>processado localmente</small></div><button id="download-2" class="ab-primary small" type="button">Baixar</button></div>
+</section>
+</main>
+
+<div class="ab-ad"><span>ADVERTISEMENT</span><div id="ab-ad-bottom"></div></div>
+<footer class="ab-footer ab-shell"><span>© <span id="year"></span> Nexauren Story · Image Frames</span><span><a href="/tool/categories/imagem/">Imagem</a> · <a href="/tool/">Tools</a> · <a href="/legal/privacidade/">Privacy</a></span></footer>
+<div id="toast" class="ab-toast" role="status" aria-live="polite"></div>
+
+<script>
+window.NexaurenAds&&NexaurenAds.loadBanner(document.getElementById("ab-ad-top"));
+window.NexaurenAds&&NexaurenAds.loadResponsive(document.getElementById("ab-ad-bottom"));
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+<script src="./adicionar-bordas.js?v=20260928-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
