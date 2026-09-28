@@ -55,9 +55,21 @@ function translateDom(){
     for(const n of nodes){const replacement=pairText(n.nodeValue,current);if(replacement!==null)n.nodeValue=replacement}
     document.querySelectorAll("input[placeholder],textarea[placeholder],[title]").forEach(el=>{const r=pairText(el.getAttribute("placeholder"),current);if(r!==null)el.setAttribute("placeholder",r)});
     document.querySelectorAll("[aria-label],[title]").forEach(el=>{const r=pairText(el.getAttribute("aria-label"),current);if(r!==null)el.setAttribute("aria-label",r)});
+    translateHead();
     updateTitle();
     updateAlternates();
   }finally{busy=false}
+}
+
+function translateHead(){
+  document.querySelectorAll("title,meta[name=\"description\"],meta[property=\"og:title\"],meta[property=\"og:description\"],meta[name=\"twitter:title\"],meta[name=\"twitter:description\"],meta[property=\"og:image:alt\"],meta[name=\"twitter:image:alt\"]").forEach(el=>{
+    const isMeta=el.tagName==="META";
+    const value=isMeta?(el.getAttribute("content")||""):(el.textContent||"");
+    const replacement=pairText(value,current);
+    if(replacement!==null){
+      if(isMeta)el.setAttribute("content",replacement);else el.textContent=replacement;
+    }
+  });
 }
 
 function updateTitle(){
