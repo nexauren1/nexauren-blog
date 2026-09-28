@@ -1,9 +1,9 @@
 {
-  "version": 23,
+  "version": 24,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T16:55:00Z",
+    "updatedAt": "2026-09-28T17:20:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -39,13 +39,13 @@
     },
     {
       "id": "tecnologia",
-      "name": "Tecnologia",
-      "description": "Ferramentas para desenvolvimento e tarefas técnicas.",
+      "name": "Developer Tools",
+      "description": "Ferramentas para desenvolvimento, debugging, dados, APIs e tarefas técnicas.",
       "icon": "⌘",
       "sortOrder": 40,
       "path": "/tool/categories/tecnologia/",
-      "name_en": "Technology",
-      "description_en": "Tools for development and technical tasks."
+      "name_en": "Developer Tools",
+      "description_en": "Tools for development, debugging, data, APIs, and technical tasks."
     },
     {
       "id": "marketplace",
@@ -77,16 +77,6 @@
       "name_en": "Audio",
       "description_en": "Tools for converting, editing, processing, and creating audio.",
       "showWhenEmpty": true
-    },
-    {
-      "id": "tempo",
-      "name": "Tempo & Contadores",
-      "description": "Countdowns, cronómetros, contadores, intervalos e sessões de tempo.",
-      "icon": "◴",
-      "sortOrder": 55,
-      "path": "/tool/categories/tempo/",
-      "name_en": "Time & Counters",
-      "description_en": "Countdowns, stopwatches, counters, intervals, and timing sessions."
     }
   ],
   "tools": [
@@ -2164,11 +2154,11 @@
       "name_en": "Countdown Studio",
       "description": "Painel profissional para countdowns, eventos, cronómetro, contador, intervalos, links partilháveis e embeds.",
       "description_en": "Professional dashboard for countdowns, events, stopwatch, counter, intervals, shareable links, and embeds.",
-      "category": "tempo",
+      "category": "produtividade",
       "icon": "◴",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "status": "active",
-      "path": "/tool/categories/tempo/countdown-studio/",
+      "path": "/tool/categories/produtividade/countdown-studio/",
       "tags": [
         "countdown",
         "timer",
