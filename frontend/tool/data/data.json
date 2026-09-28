@@ -1951,6 +1951,39 @@
       "popular": false,
       "access": "public",
       "sortOrder": 110
+    },
+    {
+      "id": "desfocar-pixelizar",
+      "name": "Desfocar & Pixelizar",
+      "name_en": "Blur & Pixelate",
+      "description": "Desfoque ou pixelize imagens inteiras ou áreas selecionadas, com intensidade ajustável e processamento totalmente local.",
+      "description_en": "Blur or pixelate whole images or selected areas with adjustable intensity and fully local processing.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "◌",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/desfocar-pixelizar/",
+      "tags": [
+        "imagem",
+        "image",
+        "privacidade",
+        "blur",
+        "desfoque",
+        "pixelizar",
+        "pixelate"
+      ],
+      "tags_en": [
+        "image",
+        "privacy",
+        "blur",
+        "pixelate",
+        "redaction"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 120
     }
   ]
 }
