@@ -13,7 +13,7 @@ const MORE_PAIRS=[
 ["Sem correspondência","No match"],
 ["Correspondência","Match"],
 ["Correspondências","Matches"]
-];
+,["O navegador não conseguiu gerar o ficheiro.","The browser could not generate the file."],["O navegador não conseguiu descodificar esta imagem JPEG. O ficheiro pode estar corrompido ou usar uma codificação JPEG não suportada pelo dispositivo.","The browser could not decode this JPEG image. The file may be corrupted or use a JPEG encoding unsupported by this device."],["Intervalo de páginas inválido.","Invalid page range."],["Selecione um ficheiro PDF válido.","Select a valid PDF file."],["Selecione um PDF primeiro.","Select a PDF first."],["Não foi possível ler as dimensões da imagem.","Could not read the image dimensions."],["O acesso ainda não está pronto.","Access is not ready yet."],["Não foi possível carregar as avaliações.","Could not load the reviews."],["Não foi possível atualizar o favorito.","Could not update the favorite."]];
 const EXTRA_PAIRS=[
 ["Escolha um ficheiro de áudio válido","Choose a valid audio file."],
 ["Carregue um áudio primeiro","Load an audio file first."],
