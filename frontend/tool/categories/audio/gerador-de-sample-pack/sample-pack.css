@@ -54,3 +54,9 @@ body.sp-modal-open{overflow:hidden}
 .sp-options-grid .sp-check{display:flex;align-items:center;gap:8px}.sp-options-grid .sp-check input{width:auto}
 @media(max-width:900px){.sp-effect-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.sp-selection-grid,.sp-options-grid,.sp-effect-grid{grid-template-columns:1fr}.sp-modal{padding:8px}.sp-modal-panel{padding:16px;max-height:94vh}.sp-modal-head h2{font-size:24px}.sp-modal-foot{align-items:flex-start;flex-direction:column}.sp-modal-foot>div{width:100%}.sp-modal-foot button{flex:1}.sp-preset-row{align-items:flex-start;flex-direction:column}.sp-preset-row>span{margin-bottom:2px}}
+
+.sp-progress{margin:10px 0 18px;border:1px solid var(--sp-line);border-radius:14px;padding:12px 14px;background:#0c1015}
+.sp-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;font-size:12px}
+.sp-progress-head strong{font-size:12px}.sp-progress-head span{color:var(--sp-accent);font-weight:900}
+.sp-progress-track{height:8px;border-radius:999px;background:#151b23;overflow:hidden}
+.sp-progress-bar{width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--sp-accent),#a7a2ff);transition:width .18s ease}
