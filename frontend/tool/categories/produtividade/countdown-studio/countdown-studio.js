@@ -266,7 +266,7 @@ document.querySelectorAll("[data-fullscreen]").forEach(b=>b.onclick=fullscreen);
 document.querySelector("[data-share]").onclick=()=>copy(buildShareUrl(cfg.mode==="event"?"event":"embed"));
 document.querySelector("[data-copy-link]").onclick=()=>copy(buildShareUrl(cfg.mode==="event"?"event":"embed"));
 document.querySelector("[data-copy-embed]").onclick=()=>copy(document.querySelector("[data-embed-code]").value);
-document.querySelector("[data-open-viewer]").onclick=()=>window.open(buildShareUrl("embed"),"_blank","noopener,noreferrer");
+document.querySelector("[data-open-viewer]").onclick=()=>window.open(buildShareUrl(cfg.mode==="event"?"event":"embed"),"_blank","noopener,noreferrer");
 document.querySelector("[data-save-preset]").onclick=savePreset;
 document.querySelector("[data-export]").onclick=downloadConfig;
 document.querySelector("[data-import]").onclick=()=>document.querySelector("[data-import-file]").click();
@@ -341,6 +341,7 @@ bindBuilder();
 }
 function bindBuilder(){
 const b=document.querySelector("[data-builder]");if(!b)return;
+ b.querySelectorAll("[data-theme]").forEach(btn=>btn.addEventListener("click",()=>setTheme(btn.dataset.theme)));
 b.querySelectorAll("[data-key]").forEach(el=>{
 const key=el.dataset.key;
 const evt=el.type==="checkbox"||el.type==="range"||el.tagName==="SELECT"?"change":"input";
