@@ -188,6 +188,7 @@ function installSafeObserver(){
     for(const record of records){
       if(record.type==="characterData")translateTextNode(record.target);
       else if(record.type==="attributes"){
+        if(record.attributeName==="lang"){document.documentElement.lang=current;continue;}
         const value=record.target.getAttribute(record.attributeName);
         const replacement=pairText(value,current);
         if(replacement!==null&&replacement!==value)record.target.setAttribute(record.attributeName,replacement);
@@ -200,7 +201,7 @@ function installSafeObserver(){
     }
     translateHead();
   });
-  observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title"]});
+  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title","lang"]});
 }
 function installLanguageToggleBridge(){
   if(window.__nexaurenLanguageToggleBridge)return;
