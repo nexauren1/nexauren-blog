@@ -42,6 +42,7 @@
     ]
   },
   "vars": {
-    "PAYPAL_ENV": "live"
+    "PAYPAL_ENV": "live",
+    "SUPPORT_FROM_EMAIL": "Nexauren Support <noreply@nexaurenstory.com>"
   }
 }
