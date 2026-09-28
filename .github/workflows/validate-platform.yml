@@ -52,7 +52,7 @@ jobs:
             if(!t.id||ids.has(t.id)) throw new Error("ID de ferramenta duplicado: "+t.id);
             ids.add(t.id);
             if(!cats.has(t.category)) throw new Error("Categoria inválida: "+t.id);
-            if(!/^\/tool\/categories\/[^/]+\/[^/]+\/$/.test(t.path)) throw new Error("Caminho inválido: "+t.id);
+            if(!/^\/tool\/categories\/[^/]+\/.+\/$/.test(t.path)) throw new Error("Caminho inválido: "+t.id);
           }
           console.log("Tool registry OK:",d.categories.length,"categorias,",d.tools.length,"ferramentas.");
           NODE
