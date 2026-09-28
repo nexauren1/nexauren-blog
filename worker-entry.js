@@ -338,13 +338,25 @@ async function uploadAuth(env,request){
 function addHeadTag(html, test, tag){
   return test.test(html) ? html : html.replace(/<\/head>/i, tag+"\n</head>");
 }
+
+function globalFooterHtml(path){
+  const toolContext=String(path||"").startsWith("/tool/categories/")?"?kind=problem&from="+encodeURIComponent(path):"";
+  const supportProblem="/support/"+toolContext;
+  return '<footer class="nx-global-footer"><div class="nx-footer-shell"><div class="nx-footer-brand"><a class="nx-footer-logo" href="/"><img src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="42" height="42"><span><strong>Nexauren</strong><small>Story</small></span></a><p class="nx-footer-copy">Content, tools, and new experiences in one digital ecosystem.</p><a class="nx-footer-email" href="mailto:nexaurenx@gmail.com">nexaurenx@gmail.com</a></div><div class="nx-footer-column"><strong>Explore</strong><a href="/tool/">Tools</a><a href="/tool/destaques/">Featured</a><a href="/tool/populares/">Popular</a><a href="/account">Account</a></div><div class="nx-footer-column"><strong>Support</strong><a href="/support/">Support Center</a><a href="'+supportProblem+'">Report a problem</a><a href="/feedback/">Suggestions & feedback</a><a href="mailto:nexaurenx@gmail.com">Email support</a></div><div class="nx-footer-column"><strong>Legal</strong><a href="/legal/privacidade/">Privacy</a><a href="/legal/termos/">Terms</a><a href="/legal/cookies/">Cookies</a></div></div><div class="nx-footer-bottom"><div class="nx-footer-bottom-inner"><span>© <span id="year"></span> Nexauren Story</span><span>Built to evolve.</span></div></div></footer>';
+}
+function replaceGlobalFooter(html,path){
+  const footer=globalFooterHtml(path);
+  if(/<footer\b[\s\S]*?<\/footer>/i.test(html))return html.replace(/<footer\b[\s\S]*?<\/footer>/i,footer);
+  return html.replace(/<\/body>/i,footer+'\\n</body>');
+}
+
 function decoratePublicHtmlResponse(request,response){
   const type=response.headers.get("content-type")||"";
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   const url=new URL(request.url);
   const path=url.pathname;
   const lowerPath=path.toLowerCase();if(lowerPath==="/admin"||lowerPath.startsWith("/admin/"))return response;
-  const requestedLang=url.searchParams.get("lang")==="en"?"en":"pt";
+  const requestedLang=url.searchParams.get("lang")==="pt"?"pt":"en";
   return response.text().then(html=>{
     html=html.replace(/<body(\s[^>]*)?>/i,(match,attrs="")=>{if(/\bclass\s*=/.test(attrs)){return match.replace(/class\s*=\s*(['"])(.*?)\1/i,(m,q,v)=>/\bnx-page\b/.test(v)?m:'class='+q+'nx-page '+v+q);}return '<body class="nx-page"'+attrs+'>';});
     html=html.replace(/<html\b([^>]*)>/i,(match,attrs="")=>{if(/\blang\s*=/.test(attrs))return match.replace(/lang\s*=\s*(['"])[^'"]*\1/i,'lang="'+requestedLang+'"');return '<html lang="'+requestedLang+'"'+attrs+'>';});
@@ -406,7 +418,7 @@ function decoratePublicHtmlResponse(request,response){
       out=addHeadTag(out,/__never_structured__/,'<script id="nexauren-public-structured-data" type="application/ld+json">'+safeJsonLd(structured)+'</script>');
     }
     if(/<body\b/i.test(out)&&!/class=["'][^"']*\bnx-page\b/i.test(out))out=out.replace(/<body\b([^>]*)>/i,(m,a)=>a?'<body class="nx-page"'+a+'>':'<body class="nx-page">');
-    const headers=new Headers(response.headers);
+    out=replaceGlobalFooter(out,path);\n    const headers=new Headers(response.headers);
     headers.delete("content-length");
     return new Response(out,{status:response.status,statusText:response.statusText,headers});
   });
@@ -1000,8 +1012,160 @@ async function handlePaypalWebhook(env,request){
   return json({ok:true});
 }
 
+
+const SUPPORT_TO_EMAIL="nexaurenx@gmail.com";
+const SUPPORT_KINDS=new Set(["problem","support","suggestion","feature","other"]);
+
+async function ensureSupportFeedbackSchema(env){
+  const schema=[
+    "CREATE TABLE IF NOT EXISTS support_feedback (",
+    "id TEXT PRIMARY KEY,kind TEXT NOT NULL,subject TEXT NOT NULL,message TEXT NOT NULL,tool_id TEXT,tool_name TEXT,tool_category TEXT,tool_access TEXT,tool_path TEXT,source_path TEXT,page_url TEXT,referrer TEXT,language TEXT,locale TEXT,timezone TEXT,user_agent TEXT,platform TEXT,screen_json TEXT,viewport_json TEXT,connection_json TEXT,client_time TEXT,",
+    "touch_points INTEGER NOT NULL DEFAULT 0,online INTEGER NOT NULL DEFAULT 1,cookies_enabled INTEGER NOT NULL DEFAULT 0,color_scheme TEXT,account_id TEXT,firebase_uid TEXT,account_email TEXT,account_display_name TEXT,account_email_verified INTEGER,account_plan TEXT,ip_hash TEXT,country TEXT,cf_ray TEXT,requester_email TEXT,email_status TEXT NOT NULL DEFAULT 'pending',email_error TEXT,created_at TEXT NOT NULL",
+    ")"
+  ].join("\\n");
+  await env.DB.prepare(schema).run();
+  await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_created ON support_feedback(created_at DESC)").run();
+  await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_kind ON support_feedback(kind,created_at DESC)").run();
+  await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_tool ON support_feedback(tool_id,created_at DESC)").run();
+  await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_support_feedback_account ON support_feedback(account_id,created_at DESC)").run();
+}
+
+function supportEmailHtml(submission){
+  const line=(label,value)=>"<tr><td style='padding:5px 12px 5px 0;color:#6b7280;vertical-align:top'><strong>"+esc(label)+"</strong></td><td style='padding:5px 0;white-space:pre-wrap'>"+esc(value||"—")+"</td></tr>";
+  const rows=[
+    ["Reference",submission.id],["Type",submission.kind],["Subject",submission.subject],
+    ["Tool ID",submission.tool_id],["Tool name",submission.tool_name],["Tool category",submission.tool_category],
+    ["Tool access",submission.tool_access],["Tool path",submission.tool_path],["Source path",submission.source_path],
+    ["Page URL",submission.page_url],["Language",submission.language],["Account ID",submission.account_id],
+    ["Firebase UID",submission.firebase_uid],["Account email",submission.account_email],
+    ["Display name",submission.account_display_name],["Email verified",submission.account_email_verified==null?"":String(!!submission.account_email_verified)],
+    ["Plan",submission.account_plan],["Timezone",submission.timezone],["Locale",submission.locale],
+    ["User agent",submission.user_agent],["Platform",submission.platform],["Screen",submission.screen_json],
+    ["Viewport",submission.viewport_json],["Connection",submission.connection_json],["Touch points",String(submission.touch_points)],
+    ["Online",String(!!submission.online)],["Cookies enabled",String(!!submission.cookies_enabled)],
+    ["Color scheme",submission.color_scheme],["Referrer",submission.referrer],["Country",submission.country],
+    ["CF-Ray",submission.cf_ray],["Client time",submission.client_time],["Server time",submission.created_at]
+  ].map(([a,b])=>line(a,b)).join("");
+  return "<!doctype html><html><body style='font-family:Inter,Arial,sans-serif;color:#111827'><div style='max-width:760px;margin:0 auto;padding:24px'><h2>Nexauren Support — "+esc(submission.kind)+"</h2><p style='color:#6b7280'>Reference <strong>"+esc(submission.id)+"</strong></p><h3>"+esc(submission.subject)+"</h3><div style='padding:16px;background:#f3f4f6;border-radius:10px;white-space:pre-wrap;line-height:1.55'>"+esc(submission.message)+"</div><h3 style='margin-top:26px'>Context</h3><table>"+rows+"</table><p style='margin-top:26px;color:#6b7280;font-size:12px'>Passwords, authentication tokens and cookie contents are intentionally excluded.</p></div></body></html>";
+}
+
+async function sendSupportEmail(env,submission){
+  const apiKey=String(env.RESEND_API_KEY||"").trim();
+  if(!apiKey)throw Object.assign(new Error("Email delivery is not configured."),{code:"EMAIL_NOT_CONFIGURED"});
+  const from=String(env.SUPPORT_FROM_EMAIL||"Nexauren Support <noreply@nexaurenstory.com>").trim();
+  const replyTo=String(submission.requester_email||"").trim();
+  const response=await fetch("https://api.resend.com/emails",{
+    method:"POST",
+    headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},
+    body:JSON.stringify({from,to:[SUPPORT_TO_EMAIL],subject:("[Nexauren Support] "+(submission.tool_name?submission.tool_name+" — ":"")+submission.subject).slice(0,250),html:supportEmailHtml(submission),...(replyTo?{reply_to:replyTo}:{}),headers:{"X-Nexauren-Reference":submission.id}})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw Object.assign(new Error(String(data&&data.message||"Email delivery failed.").slice(0,300)),{code:"EMAIL_DELIVERY_FAILED"});
+}
+
+async function submitSupportFeedback(env,request){
+  if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
+  const data=await bodyJson(request)||{};
+  const kind=text(data.kind||"",30).toLowerCase();
+  if(!SUPPORT_KINDS.has(kind))return fail("Tipo de mensagem inválido.",422,"SUPPORT_KIND_INVALID");
+  const subject=text(data.subject||"",180).trim();
+  const message=text(data.message||"",12000).trim();
+  if(subject.length<2)return fail("Introduza um assunto.",422,"SUPPORT_SUBJECT_REQUIRED");
+  if(message.length<8)return fail("Descreva o pedido com mais detalhe.",422,"SUPPORT_MESSAGE_REQUIRED");
+
+  const suppliedEmail=normalizeEmail(data.email||"");
+  if(suppliedEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(suppliedEmail))return fail("Email inválido.",422,"SUPPORT_EMAIL_INVALID");
+
+  const ip=request.headers.get("CF-Connecting-IP")||"";
+  const ipHash=await sha256(ip||"unknown");
+  await ensureSupportFeedbackSchema(env);
+  const recent=await env.DB.prepare("SELECT COUNT(*) AS count FROM support_feedback WHERE ip_hash=? AND created_at>=?").bind(ipHash,new Date(Date.now()-3600000).toISOString()).first();
+  if(Number(recent&&recent.count||0)>=5)return fail("Limite de mensagens atingido. Tente novamente mais tarde.",429,"SUPPORT_RATE_LIMIT");
+
+  let account=null;
+  if(request.headers.get("Authorization")){
+    try{
+      const a=await firebaseAccountAuth(env,request,false);
+      account=a&&a.account||null;
+    }catch(error){
+      return fail(error&&error.message||"Sessão inválida ou expirada.",401,error&&error.code||"FIREBASE_TOKEN_INVALID");
+    }
+  }
+
+  const registry=await loadToolRegistry(env,request);
+  const rawToolId=text(data.tool_id||"",180).trim();
+  const sourcePath=text(data.source_path||"",500).trim();
+  let tool=rawToolId?registry&&registry.tools&&registry.tools.find(t=>t.id===slugify(rawToolId)&&t.status==="active"):null;
+  if(!tool&&sourcePath)tool=registry&&registry.tools&&registry.tools.find(t=>String(t.path||"")===sourcePath&&t.status==="active")||null;
+
+  let plan="free";
+  if(account&&env.ACCOUNTS_DB){
+    try{
+      const billing=await env.ACCOUNTS_DB.prepare("SELECT plan,status FROM nexauren_subscriptions WHERE account_id=? LIMIT 1").bind(account.id).first();
+      if(String(billing&&billing.plan||"").toLowerCase()==="pro"&&String(billing&&billing.status||"").toUpperCase()==="ACTIVE")plan="pro";
+    }catch{}
+  }
+
+  const pc=data.include_diagnostics===false?{}:(data.page_context&&typeof data.page_context==="object"?data.page_context:{});
+  const submission={
+    id:"NX-"+new Date().toISOString().slice(0,10).replaceAll("-","")+"-"+crypto.randomUUID().slice(0,8).toUpperCase(),
+    kind,subject,message,
+    tool_id:tool&&tool.id||rawToolId||null,
+    tool_name:text(tool&& (tool.name_en||tool.name)||"",180)||null,
+    tool_category:text(tool&&tool.category||"",80)||null,
+    tool_access:text(tool&&tool.access||"",40)||null,
+    tool_path:text(tool&&tool.path||sourcePath,500)||null,
+    source_path:sourcePath||null,
+    page_url:text(pc.page_url||"",1000)||null,
+    referrer:text(pc.referrer||"",1000)||null,
+    language:text(pc.language||"en",10),
+    locale:text(pc.locale||"",40)||null,
+    timezone:text(pc.timezone||"",100)||null,
+    user_agent:text(pc.user_agent||request.headers.get("User-Agent")||"",1000)||null,
+    platform:text(pc.platform||"",200)||null,
+    screen_json:JSON.stringify(pc.screen||{}),
+    viewport_json:JSON.stringify(pc.viewport||{}),
+    connection_json:JSON.stringify(pc.connection||{}),
+    client_time:text(pc.client_time||"",80)||null,
+    touch_points:Number(pc.touch_points||0),
+    online:pc.online===false?0:1,
+    cookies_enabled:pc.cookies_enabled===true?1:0,
+    color_scheme:text(pc.color_scheme||"",20)||null,
+    account_id:account&&account.id||null,
+    firebase_uid:account&&account.firebase_uid||null,
+    account_email:normalizeEmail(account&&account.email||"")||null,
+    account_display_name:text(account&&account.display_name||"",120)||null,
+    account_email_verified:account&&account.email_verified!=null?(account.email_verified?1:0):null,
+    account_plan:plan,
+    ip_hash:ipHash,
+    country:text(request.headers.get("CF-IPCountry")||"",20)||null,
+    cf_ray:text(request.headers.get("CF-Ray")||"",120)||null,
+    requester_email:normalizeEmail(account&&account.email||suppliedEmail||"")||null,
+    email_status:"pending",
+    email_error:null,
+    created_at:nowIso()
+  };
+
+  const cols=Object.keys(submission);
+  const sql="INSERT INTO support_feedback ("+cols.join(",")+") VALUES ("+cols.map(()=>"?").join(",")+")";
+  await env.DB.prepare(sql).bind(...cols.map(k=>submission[k])).run();
+
+  try{
+    await sendSupportEmail(env,submission);
+    await env.DB.prepare("UPDATE support_feedback SET email_status=?,email_error=NULL WHERE id=?").bind("sent",submission.id).run();
+    return json({ok:true,reference:submission.id,email_sent:true});
+  }catch(error){
+    const code=error&&error.code||"EMAIL_DELIVERY_FAILED";
+    const message=error&&error.message||"Email delivery failed.";
+    await env.DB.prepare("UPDATE support_feedback SET email_status=?,email_error=? WHERE id=?").bind(code,message.slice(0,300),submission.id).run();
+    const status=code==="EMAIL_NOT_CONFIGURED"?503:502;
+    return fail("Mensagem recebida, mas o email ainda não pôde ser entregue. Guarde esta referência: "+submission.id,status,code);
+  }
+}
+
 async function api(env,request,url,ctx){
   const p=url.pathname,m=request.method;
+  if(p==="/api/support/submit"&&m==="POST"){try{return await submitSupportFeedback(env,request);}catch(error){console.error("support submission",error);return fail(error&&error.message||"Não foi possível enviar a mensagem.",503,error&&error.code||"SUPPORT_SUBMIT_ERROR");}}
   if(p==="/api/paypal/webhook"&&m==="POST"){
     try{return await handlePaypalWebhook(env,request);}catch(error){
       const code=error?.code||"PAYPAL_WEBHOOK_ERROR";
@@ -1282,7 +1446,7 @@ async function decorateToolHtmlResponse(request,response){
   let html=await response.text();
   if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
   if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-6" defer></script>\n</body>');
-  const headers=new Headers(response.headers);headers.delete("content-length");
+  html=replaceGlobalFooter(html,new URL(request.url).pathname);\n  const headers=new Headers(response.headers);headers.delete("content-length");
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
 }
 
@@ -1294,13 +1458,14 @@ async function page(env,request,url){
   if(url.pathname==="/social-preview.png")return env.ASSETS.fetch(new Request(new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url),request));
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||url.pathname==="/manifest.json")return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
+  if(url.pathname==="/support"||url.pathname==="/support/"||url.pathname==="/feedback"||url.pathname==="/feedback/"){const path=url.pathname==="/feedback"||url.pathname==="/feedback/"?"/feedback/index.html":"/support/index.html";return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL(path,request.url))));}
   const adminPath=url.pathname.toLowerCase();
   if(adminPath==="/admin"||adminPath.startsWith("/admin/")){
     const rr=await env.ASSETS.fetch(new Request(new URL("/admin/index.html",request.url)));
     const h=new Headers(rr.headers);h.set("X-Robots-Tag","noindex, nofollow");h.set("Cache-Control","no-store,no-cache,must-revalidate,max-age=0");
     return decoratePublicHtmlResponse(request,new Response(rr.body,{status:rr.status,headers:h}));
   }
-  if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname.startsWith("/tool/")){
+  if(url.pathname==="/"||url.pathname.startsWith("/legal/")||url.pathname==="/support"||url.pathname.startsWith("/support/")||url.pathname==="/feedback"||url.pathname.startsWith("/feedback/")||url.pathname==="/account"||url.pathname.startsWith("/account/")||url.pathname==="/tool"||url.pathname.startsWith("/tool/")){
     if(url.pathname.startsWith("/legal/")){let rr=await env.ASSETS.fetch(request);if(!rr.ok&&url.pathname.endsWith("/"))rr=await env.ASSETS.fetch(new Request(new URL(url.pathname+"index.html",request.url)));if(rr.ok)return decoratePublicHtmlResponse(request,rr)}
     if(url.pathname==="/account"||url.pathname==="/account/"){const rr=await env.ASSETS.fetch(new Request(new URL("/account/index.html",request.url)));const h=new Headers(rr.headers);h.set("X-Robots-Tag","noindex, nofollow");return decoratePublicHtmlResponse(request,new Response(rr.body,{status:rr.status,headers:h}))}
     if(url.pathname==="/")return decoratePublicHtmlResponse(request,await env.ASSETS.fetch(new Request(new URL("/index.html",request.url))));
