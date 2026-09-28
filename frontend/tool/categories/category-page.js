@@ -285,7 +285,6 @@
     state.subcategories=Array.isArray(cat.subcategories)?cat.subcategories:[];
     root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+esc(label(cat,"name"))+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" "+ui.tool+" available":" "+ui.tool+" disponível"):(language==="en"?" "+ui.toolsPlural+" available":" "+ui.toolsPlural+" disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section>';
     buildSearch();
-    window.dispatchEvent(new CustomEvent("nexauren:dynamic-content"));
   }
 
   async function load(){
@@ -316,7 +315,8 @@
   }
 
   document.addEventListener("click",handleToolClick,true);
-  window.addEventListener("nexauren:tool-registry-updated",event=>{if(user&&event.detail)render(event.detail)});\n  window.addEventListener("nexauren:language-changed",async event=>{language=event.detail?.lang||language;const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
+  window.addEventListener("nexauren:tool-registry-updated",event=>{if(user&&event.detail)render(event.detail)}); 
+  window.addEventListener("nexauren:language-changed",async event=>{language=event.detail?.lang||language;const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
   window.addEventListener("pageshow",()=>{if(user)refreshPlan()});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&user)refreshPlan()});
 
