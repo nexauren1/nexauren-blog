@@ -1913,6 +1913,44 @@
       "popular": false,
       "access": "public",
       "sortOrder": 30
+    },
+    {
+      "id": "juntar-imagens",
+      "name": "Juntar Imagens",
+      "name_en": "Image Combiner",
+      "description": "Combine várias imagens numa única composição vertical, horizontal ou em grelha, com ordem, espaçamento, margem, fundo e formato configuráveis.",
+      "description_en": "Combine multiple images into a single vertical, horizontal, or grid composition with configurable order, spacing, padding, background, and output format.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "⊞",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/juntar-imagens/",
+      "tags": [
+        "imagem",
+        "image",
+        "juntar",
+        "combinar",
+        "colagem",
+        "grid",
+        "PNG",
+        "JPG",
+        "WebP"
+      ],
+      "tags_en": [
+        "image",
+        "combine",
+        "merge",
+        "collage",
+        "grid",
+        "PNG",
+        "JPG",
+        "WebP"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 110
     }
   ]
 }
