@@ -434,21 +434,9 @@ async function decodeAudio(file){
   if(!Ctor)throw new Error("Web Audio API is not supported by this browser.");
   const ctx=new Ctor();
   try{
-    const data=await file.arrayBuffer();
-    return await new Promise(function(resolve,reject){
-      let settled=false;
-      const done=function(buffer){if(!settled){settled=true;resolve(buffer)}};
-      const fail=function(error){if(!settled){settled=true;reject(error||new Error("Audio decoding failed."))}};
-      try{
-        const result=ctx.decodeAudioData(data,done,fail);
-        if(result&&typeof result.then==="function")result.then(done).catch(fail);
-      }catch(error){fail(error)}
-    });
+    return await ctx.decodeAudioData(await file.arrayBuffer());
   }finally{
-    try{
-      const closing=typeof ctx.close==="function"?ctx.close():null;
-      if(closing&&typeof closing.then==="function")await closing.catch(()=>{});
-    }catch{}
+    await ctx.close().catch(()=>{});
   }
 }
 function renderCreateSource(){
