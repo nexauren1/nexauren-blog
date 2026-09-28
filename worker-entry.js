@@ -1448,6 +1448,7 @@ async function decorateToolHtmlResponse(request,response){
   let html=await response.text();
   html=html.replaceAll("/assets/nexauren-language.js?v=20260928-6","/assets/nexauren-language.js?v=20260928-7");
   if(!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
+  if(!/public-ui\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/assets/public-ui.css?v=20260928-support-1">\n</head>');
   if(!/tool-engagement\.js/i.test(html))html=html.replace(/<\/body>/i,'<script src="/tool/frontend/tool-engagement.js?v=20260926-6" defer></script>\n</body>');
   html=replaceGlobalFooter(html,new URL(request.url).pathname);
   const headers=new Headers(response.headers);headers.delete("content-length");
