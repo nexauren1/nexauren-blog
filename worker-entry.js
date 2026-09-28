@@ -347,7 +347,7 @@ function globalFooterHtml(path){
 function replaceGlobalFooter(html,path){
   const footer=globalFooterHtml(path);
   if(/<footer\b[\s\S]*?<\/footer>/i.test(html))return html.replace(/<footer\b[\s\S]*?<\/footer>/i,footer);
-  return html.replace(/<\/body>/i,footer+'\\n</body>');
+  return html.replace(/<\/body>/i,footer+'\n</body>');
 }
 
 function decoratePublicHtmlResponse(request,response){
