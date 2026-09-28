@@ -2,11 +2,13 @@
 const root=document.getElementById("countdown-studio");
 if(!root)return;
 const params=new URLSearchParams(location.search);
-const STANDALONE=params.get("view")==="event"||params.get("embed")==="1";
+const VIEW=params.get("view")||"";
+const STANDALONE=VIEW==="event"||VIEW==="embed"||params.get("embed")==="1";
 const EVENT_VIEW=params.get("view")==="event";
 const LANG=()=>window.NexaurenLanguage?.get?.()==="en"?"en":"pt";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const safeUrl=v=>{try{const u=new URL(String(v||""),location.origin);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return""}};
 const THEMES=["classic","midnight","neon","aurora","sunset","forest","paper"];
 const tr={
 pt:{
@@ -17,7 +19,7 @@ quickStart:"Início rápido",recent:"Recentes",saved:"guardados",runs:"execuçõ
 title:"Título",duration:"Duração",days:"Dias",hours:"Horas",minutes:"Minutos",seconds:"Segundos",target:"Data e hora alvo",
 timezone:"Fuso horário",localTime:"Hora local",utc:"UTC",description:"Descrição",location:"Local",link:"Link do evento",
 repeat:"Repetição",none:"Não repetir",daily:"Diário",weekly:"Semanal",monthly:"Mensal",showSeconds:"Mostrar segundos",
-step:"Incremento",minimum:"Mínimo",maximum:"Máximo",auto:"Auto tick",work:"Trabalho",rest:"Pausa",rounds:"Rondas",
+initial:"Valor inicial",step:"Incremento",minimum:"Mínimo",maximum:"Máximo",auto:"Auto tick",work:"Trabalho",rest:"Pausa",rounds:"Rondas",
 sound:"Som",volume:"Volume",notification:"Notificação",progress:"Barra de progresso",loop:"Repetir",wake:"Manter ecrã ativo",
 format:"Formato",theme:"Tema",onFinish:"Ao terminar",stop:"Parar",repeatTimer:"Repetir timer",countUp:"Continuar a contar",
 classic:"Clássico",minimal:"Minimal",neon:"Neon",midnight:"Midnight",aurora:"Aurora",sunset:"Sunset",forest:"Forest",paper:"Paper",
@@ -41,7 +43,7 @@ quickStart:"Quick start",recent:"Recent",saved:"saved",runs:"runs",completed:"co
 title:"Title",duration:"Duration",days:"Days",hours:"Hours",minutes:"Minutes",seconds:"Seconds",target:"Target date & time",
 timezone:"Timezone",localTime:"Local time",utc:"UTC",description:"Description",location:"Location",link:"Event link",
 repeat:"Repeat",none:"No repeat",daily:"Daily",weekly:"Weekly",monthly:"Monthly",showSeconds:"Show seconds",
-step:"Step",minimum:"Minimum",maximum:"Maximum",auto:"Auto tick",work:"Work",rest:"Rest",rounds:"Rounds",
+initial:"Initial value",step:"Step",minimum:"Minimum",maximum:"Maximum",auto:"Auto tick",work:"Work",rest:"Rest",rounds:"Rounds",
 sound:"Sound",volume:"Volume",notification:"Notification",progress:"Progress bar",loop:"Loop",wake:"Keep screen awake",
 format:"Format",theme:"Theme",onFinish:"On finish",stop:"Stop",repeatTimer:"Repeat timer",countUp:"Count up",
 classic:"Classic",minimal:"Minimal",neon:"Neon",midnight:"Midnight",aurora:"Aurora",sunset:"Sunset",forest:"Forest",paper:"Paper",
@@ -81,7 +83,7 @@ target:params.get("target")||"",
 timezone:params.get("tz")||"local",
 description:params.get("desc")||"",
 location:params.get("location")||"",
-eventLink:params.get("link")||"",
+eventLink:safeUrl(params.get("link")||""),
 repeat:params.get("repeat")||"none",
 eventShowSeconds:params.get("eventSeconds")!=="0",
 counter:Number(params.get("counter")||0),
@@ -98,7 +100,7 @@ pomoRest:Number(params.get("prest")||5),
 pomoRounds:Number(params.get("prounds")||4)
 };
 
-let timer={running:false,endAt:0,remaining:0,total:0,elapsed:0,startAt:0,phase:"work",round:1,phaseEnd:0,current:cfg.counter,laps:[],lastCounter:0};
+let timer={running:false,endAt:0,remaining:0,total:0,elapsed:0,startAt:0,phase:"work",round:1,phaseEnd:0,current:cfg.counter,laps:[],lastCounter:0,countingUp:false};
 let loopHandle=null,wakeLock=null;
 
 function durationMs(){
@@ -156,7 +158,7 @@ async function requestNotify(){
 if(cfg.notify&&"Notification" in window&&Notification.permission==="default"){try{await Notification.requestPermission()}catch{}}
 }
 function notify(){
-if(!cfg.notify||!"Notification" in window||Notification.permission!=="granted")return;
+if(!cfg.notify||!("Notification" in window)||Notification.permission!=="granted")return;
 try{new Notification(cfg.title||T().countdown,{body:cfg.mode==="event"?eventDateText():T().finished})}catch{}
 }
 async function setWake(on){
@@ -296,7 +298,7 @@ return '<details class="cs-settings" open><summary>'+esc(T().settings)+'</summar
 '<div class="cs-field full"><label>'+esc(T().title)+'</label><input class="cs-input" data-key="title" value="'+esc(cfg.title)+'" maxlength="100"></div>'+
 selectField(T().theme,"theme",cfg.theme,THEMES.map(k=>[k,themeName(k)]))+
 selectField(T().format,"format",cfg.format,[["hhmmss","HH:MM:SS"],["ddhhmmss","DD:HH:MM:SS"],["mmss","MM:SS"],["mss","M:SS"]])+
-'<div class="cs-checks">'+checkField("progress",T().progress,cfg.progress)+checkField("loop",T().loop,cfg.loop)+checkField("notify",T().notification,cfg.notify)+checkField("wake",T().wake,cfg.wake)+'</div>'+
+'<div class="cs-checks">'+checkField("progress",T().progress,cfg.progress)+checkField("notify",T().notification,cfg.notify)+checkField("wake",T().wake,cfg.wake)+'</div>'+
 selectField(T().sound,"sound",cfg.sound,[["none",T().stop],["beep","Beep"],["chime","Chime"],["alarm","Alarm"]])+
 '<div class="cs-field"><label>'+esc(T().volume)+'</label><div class="cs-range-row"><input class="cs-range" data-key="volume" type="range" min="0" max="1" step=".01" value="'+cfg.volume+'"><output>'+Math.round(cfg.volume*100)+'%</output></div></div>'+
 '<div class="cs-field full"><label>'+esc(T().theme)+'</label><div class="cs-theme-inline">'+themeCards()+'</div></div>'+
@@ -323,7 +325,7 @@ selectField(T().repeat,"repeat",cfg.repeat,[["none",T().none],["daily",T().daily
 }else if(cfg.mode==="stopwatch"){
 form='<div class="cs-info-box"><strong>'+esc(T().stopwatch)+'</strong><span>'+esc(T().keyboard)+'</span></div>';
 }else if(cfg.mode==="counter"){
-form='<div class="cs-form-grid">'+inputNumber(T().title,"counter",cfg.counter,-999999999,999999999,1)+inputNumber(T().step,"step",cfg.step,-999999999,999999999,1)+inputNumber(T().minimum,"min",cfg.min,-999999999,999999999,1)+inputNumber(T().maximum,"max",cfg.max,-999999999,999999999,1)+
+form='<div class="cs-form-grid">'+inputNumber(T().initial,"counter",cfg.counter,-999999999,999999999,1)+inputNumber(T().step,"step",cfg.step,-999999999,999999999,1)+inputNumber(T().minimum,"min",cfg.min,-999999999,999999999,1)+inputNumber(T().maximum,"max",cfg.max,-999999999,999999999,1)+
 '<div class="cs-checks">'+checkField("auto",T().auto,cfg.auto)+checkField("loop",T().loop,cfg.loop)+'</div>'+inputNumber("Interval · ms","autoMs",cfg.autoMs,50,60000,50)+'</div>';
 }else if(cfg.mode==="pomodoro"){
 form='<div class="cs-mode-intro"><span class="cs-mode-icon">◒</span><div><strong>'+esc(T().pomodoro)+'</strong><small>25 / 5 · '+esc(T().rounds)+'</small></div></div><div class="cs-form-grid">'+inputNumber(T().work+" · min","pomoWork",cfg.pomoWork,1,240,1)+inputNumber(T().rest+" · min","pomoRest",cfg.pomoRest,0,120,1)+inputNumber(T().rounds,"pomoRounds",cfg.pomoRounds,1,99,1)+'</div>';
@@ -350,6 +352,7 @@ el.addEventListener(evt,()=>{
 cfg[key]=el.type==="checkbox"?el.checked:el.type==="range"?Number(el.value):el.type==="number"?Number(el.value):el.value;
 if(["minutes","seconds"].includes(key))cfg[key]=clamp(Number(cfg[key])||0,0,59);
 if(key==="theme"){applyTheme();document.querySelectorAll("[data-theme]").forEach(x=>x.classList.toggle("active",x.dataset.theme===cfg.theme))}
+if(key==="eventLink")cfg.eventLink=safeUrl(cfg.eventLink);
 saveUrl();resetTimer(false);render();
 });
 });
@@ -378,7 +381,7 @@ p.set("volume",String(cfg.volume));
 if(cfg.loop)p.set("loop","1");if(cfg.notify)p.set("notify","1");if(cfg.progress)p.set("progress","1");if(cfg.wake)p.set("wake","1");if(cfg.onFinish!=="stop")p.set("onFinish",cfg.onFinish);
 if(cfg.mode==="countdown"){p.set("d",cfg.days);p.set("h",cfg.hours);p.set("m",cfg.minutes);p.set("s",cfg.seconds)}
 if(cfg.mode==="event"){
-if(cfg.target)p.set("target",cfg.target);p.set("tz",cfg.timezone);p.set("desc",cfg.description);p.set("location",cfg.location);p.set("link",cfg.eventLink);p.set("repeat",cfg.repeat);if(!cfg.eventShowSeconds)p.set("eventSeconds","0");
+if(cfg.target)p.set("target",cfg.target);p.set("tz",cfg.timezone);p.set("desc",cfg.description);p.set("location",cfg.location);if(cfg.eventLink)p.set("link",cfg.eventLink);p.set("repeat",cfg.repeat);if(!cfg.eventShowSeconds)p.set("eventSeconds","0");
 }
 if(cfg.mode==="counter"){p.set("counter",cfg.counter);p.set("step",cfg.step);p.set("min",cfg.min);p.set("max",cfg.max);if(cfg.auto)p.set("auto","1");p.set("autoMs",cfg.autoMs)}
 if(cfg.mode==="intervals"){p.set("work",cfg.work);p.set("rest",cfg.rest);p.set("rounds",cfg.rounds)}
@@ -437,7 +440,7 @@ function escapeICS(s){return String(s||"").replace(/\\/g,"\\\\").replace(/;/g,"\
 
 function resetTimer(renderNow=true){
 stopLoop();setWake(false);
-timer.running=false;timer.endAt=0;timer.remaining=0;timer.total=0;timer.elapsed=0;timer.startAt=0;timer.phase="work";timer.round=1;timer.phaseEnd=0;timer.current=cfg.counter;timer.laps=[];timer.lastCounter=Date.now();
+timer.running=false;timer.endAt=0;timer.remaining=0;timer.total=0;timer.elapsed=0;timer.startAt=0;timer.phase="work";timer.round=1;timer.phaseEnd=0;timer.current=cfg.counter;timer.laps=[];timer.lastCounter=Date.now();timer.countingUp=false;
 if(cfg.mode==="countdown")timer.remaining=durationMs();
 if(cfg.mode==="event")timer.remaining=Math.max(0,targetMs()-Date.now());
 if(cfg.mode==="intervals"){timer.total=Math.max(1,Number(cfg.work)||30)*1000}
@@ -445,6 +448,7 @@ if(cfg.mode==="pomodoro"){timer.total=Math.max(1,Number(cfg.pomoWork)||25)*60000
 if(renderNow)render();
 }
 function startCountdown(){
+timer.countingUp=false;
 const ms=timer.remaining>0?timer.remaining:durationMs();if(ms<=0){toast(T().invalid);return}
 timer.remaining=ms;timer.total=Math.max(timer.total,ms);timer.endAt=Date.now()+ms;timer.running=true;registerRun();requestNotify();setWake(cfg.wake);loop();
 }
@@ -490,6 +494,8 @@ return d;
 }
 function finish(){
 timer.running=false;stopLoop();setWake(false);registerCompleted();tickSound();notify();
+if(cfg.onFinish==="countup"&&cfg.mode!=="event"){timer.countingUp=true;timer.startAt=Date.now();timer.elapsed=0;timer.running=true;setWake(cfg.wake);loop();return}
+
 if(cfg.mode==="event"&&cfg.repeat!=="none"){const next=nextEventTarget(targetMs());if(cfg.timezone==="utc"){cfg.target=next.toISOString().slice(0,16)}else{const p=n=>String(n).padStart(2,"0");cfg.target=next.getFullYear()+"-"+p(next.getMonth()+1)+"-"+p(next.getDate())+"T"+p(next.getHours())+":"+p(next.getMinutes());}resetTimer();startEvent();return}
 if(cfg.onFinish==="repeatTimer"&&(cfg.mode==="countdown"||cfg.mode==="intervals"||cfg.mode==="pomodoro")){setTimeout(()=>{resetTimer(false);timer.remaining=cfg.mode==="countdown"?durationMs():0;if(cfg.mode==="countdown")startCountdown();else if(cfg.mode==="pomodoro")startPomodoro();else startIntervals()},250);return}
 render();
@@ -511,7 +517,8 @@ stopLoop();
 const frame=()=>{
 if(!timer.running)return;
 const now=Date.now();
-if(cfg.mode==="countdown"||cfg.mode==="event"){timer.remaining=Math.max(0,timer.endAt-now);if(timer.remaining<=0){finish();return}}
+if(timer.countingUp){timer.elapsed=now-timer.startAt}
+else if(cfg.mode==="countdown"||cfg.mode==="event"){timer.remaining=Math.max(0,timer.endAt-now);if(timer.remaining<=0){finish();return}}
 else if(cfg.mode==="stopwatch"){timer.elapsed=now-timer.startAt}
 else if(cfg.mode==="counter"&&cfg.auto){
 const every=Math.max(50,Number(cfg.autoMs)||1000);
@@ -529,7 +536,8 @@ renderDisplay();renderSecondary();updateShareUi();renderDashboardStats();
 function renderDisplay(){
 const display=document.querySelector("[data-display]");if(!display)return;
 let text="00:00:00",sub="",total=0,rem=0;
-if(cfg.mode==="countdown"){rem=timer.running?Math.max(0,timer.endAt-Date.now()):timer.remaining;total=timer.total||durationMs();text=formatDuration(rem)}
+if(timer.countingUp){text=formatDuration(timer.elapsed);sub=T().countUp}
+else if(cfg.mode==="countdown"){rem=timer.running?Math.max(0,timer.endAt-Date.now()):timer.remaining;total=timer.total||durationMs();text=formatDuration(rem)}
 else if(cfg.mode==="event"){rem=timer.running?Math.max(0,timer.endAt-Date.now()):Math.max(0,targetMs()-Date.now());total=timer.total||Math.max(1,targetMs()-Date.now());text=cfg.eventShowSeconds?formatDuration(rem):formatEventCompact(rem);sub=eventDateText()}
 else if(cfg.mode==="stopwatch"){text=formatStopwatch(timer.elapsed);sub=timer.laps.length?timer.laps[timer.laps.length-1]:""}
 else if(cfg.mode==="counter"){text=String(timer.current);sub=cfg.auto?T().auto:T().counter}
@@ -544,7 +552,7 @@ const start=document.querySelector("[data-start]");if(start)start.textContent=ti
 if(EVENT_VIEW){
 const standTitle=document.querySelector("[data-event-title]");const standDate=document.querySelector("[data-event-date]");const standDesc=document.querySelector("[data-event-desc]");const standLoc=document.querySelector("[data-event-location]");const standLink=document.querySelector("[data-event-link]");
 if(standTitle)standTitle.textContent=cfg.title;
-if(standDate)standDate.textContent=eventDateText()+" · "+eventZoneText();
+if(standDate)standDate.textContent=targetMs()>0?eventDateText()+" · "+eventZoneText():T().invalid;
 if(standDesc)standDesc.textContent=cfg.description;
 if(standLoc)standLoc.textContent=cfg.location;
 if(standLink){standLink.href=cfg.eventLink||"#";standLink.hidden=!cfg.eventLink}
@@ -590,7 +598,8 @@ if(EVENT_VIEW){
 root.innerHTML='<div class="cs-event-view '+esc(cfg.theme)+'"><div class="cs-event-mark">NEXAUREN / EVENT</div><div class="cs-event-card"><div class="cs-event-top"><span class="cs-event-pill">'+esc(T().liveEvent)+'</span><span>'+esc(eventZoneText())+'</span></div><div class="cs-event-title" data-event-title>'+esc(cfg.title)+'</div><div class="cs-event-display" data-display>00:00:00</div><div class="cs-event-date" data-event-date></div><div class="cs-event-progress"><span data-progress></span></div><div class="cs-event-desc" data-event-desc></div><div class="cs-event-meta"><span data-event-location></span><a data-event-link target="_blank" rel="noopener" hidden>'+esc(T().openLink)+'</a></div><div class="cs-event-actions"><button class="cs-event-btn" type="button" data-calendar>'+esc(T().calendar)+'</button><button class="cs-event-btn" type="button" data-fullscreen>'+esc(T().fullscreen)+'</button></div></div><div class="cs-event-note">'+esc(T().eventViewNote)+'</div></div>';
 document.querySelector("[data-calendar]")?.addEventListener("click",downloadICS);
 document.querySelector("[data-fullscreen]")?.addEventListener("click",fullscreen);
-startEvent();
+if(targetMs()>Date.now())startEvent();
+else toast(T().invalid);
 }else{
 root.innerHTML='<div class="cs-embed-view '+esc(cfg.theme)+'"><div class="cs-embed-title" data-view-title></div><div class="cs-embed-display" data-display>00:00:00</div><div class="cs-embed-sub" data-view-sub></div><div class="cs-progress"><span data-progress></span></div></div>';
 if(cfg.mode==="countdown")startCountdown();else if(cfg.mode==="event")startEvent();else if(cfg.mode==="stopwatch")startStopwatch();else if(cfg.mode==="counter"){cfg.auto=true;startCounter()}else if(cfg.mode==="pomodoro")startPomodoro();else startIntervals();

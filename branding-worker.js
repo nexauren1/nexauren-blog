@@ -7,7 +7,7 @@ const OG_WIDTH = '<meta property="og:image:width" content="1200">';
 const OG_HEIGHT = '<meta property="og:image:height" content="630">';
 const OG_TYPE = '<meta property="og:image:type" content="image/png">';
 const TW = '<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
-const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-3" defer></script>';
+const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-4" defer></script>';
 
 function upsert(html, regex, tag) {
   return regex.test(html)
@@ -33,9 +33,6 @@ export default {
       return response;
     }
 
-    const query = new URL(request.url).searchParams;
-    const standalone = query.get("view") === "event" || query.get("view") === "embed";
-
     let html = await response.text();
 
     html = html.replace(/<link[^>]+href=["\'][^"\']*nexauren-story-favicon\.svg(?:\?[^"\']*)?["\'][^>]*>/gi, "");
@@ -47,11 +44,11 @@ export default {
     html = upsert(html, /<meta[^>]+property=["']og:image:height["'][^>]*>/i, OG_HEIGHT);
     html = upsert(html, /<meta[^>]+property=["']og:image:type["'][^>]*>/i, OG_TYPE);
     html = upsert(html, /<meta[^>]+name=["']twitter:image["'][^>]*>/i, TW);
-    if (!standalone) html = upsert(html, /<script[^>]+src=["'][^"']*nexauren-footer\.js(?:\?[^"']*)?["'][^>]*><\/script>/i, FOOTER_SCRIPT);
+    html = upsert(html, /<script[^>]+src=["'][^"']*nexauren-footer\.js(?:\?[^"']*)?["'][^>]*><\/script>/i, FOOTER_SCRIPT);
 
     const headers = new Headers(response.headers);
     headers.delete("content-length");
-    headers.set("cache-control", standalone ? "no-store, no-cache, must-revalidate" : "public, max-age=300, must-revalidate");
+    headers.set("cache-control", "public, max-age=300, must-revalidate");
 
     return new Response(html, {
       status: response.status,
