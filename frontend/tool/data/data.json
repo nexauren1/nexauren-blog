@@ -1,9 +1,9 @@
 {
-  "version": 24,
+  "version": 25,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T17:20:00Z",
+    "updatedAt": "2026-09-28T18:00:59.128Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -2152,11 +2152,11 @@
       "id": "countdown-studio",
       "name": "Countdown Studio",
       "name_en": "Countdown Studio",
-      "description": "Painel profissional para countdowns, eventos, cronómetro, contador, intervalos, links partilháveis e embeds.",
-      "description_en": "Professional dashboard for countdowns, events, stopwatch, counter, intervals, shareable links, and embeds.",
+      "description": "Dashboard profissional para countdowns, eventos públicos, cronómetro, contador, intervalos, Pomodoro, temas, presets, partilha e embeds.",
+      "description_en": "Professional dashboard for countdowns, public events, stopwatch, counter, intervals, Pomodoro, themes, presets, sharing, and embeds.",
       "category": "produtividade",
       "icon": "◴",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/produtividade/countdown-studio/",
       "tags": [
@@ -2169,7 +2169,12 @@
         "intervalos",
         "embed",
         "share",
-        "tempo"
+        "tempo",
+        "pomodoro",
+        "temas",
+        "presets",
+        "calendário",
+        "eventos"
       ],
       "tags_en": [
         "countdown",
@@ -2180,7 +2185,11 @@
         "embed",
         "share",
         "time",
-        "events"
+        "events",
+        "pomodoro",
+        "themes",
+        "presets",
+        "calendar"
       ],
       "featured": true,
       "popular": false,
