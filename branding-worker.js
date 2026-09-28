@@ -33,6 +33,9 @@ export default {
       return response;
     }
 
+    const query = new URL(request.url).searchParams;
+    const standalone = query.get("view") === "event" || query.get("view") === "embed";
+
     let html = await response.text();
 
     html = html.replace(/<link[^>]+href=["\'][^"\']*nexauren-story-favicon\.svg(?:\?[^"\']*)?["\'][^>]*>/gi, "");
@@ -44,11 +47,11 @@ export default {
     html = upsert(html, /<meta[^>]+property=["']og:image:height["'][^>]*>/i, OG_HEIGHT);
     html = upsert(html, /<meta[^>]+property=["']og:image:type["'][^>]*>/i, OG_TYPE);
     html = upsert(html, /<meta[^>]+name=["']twitter:image["'][^>]*>/i, TW);
-    html = upsert(html, /<script[^>]+src=["'][^"']*nexauren-footer\.js(?:\?[^"']*)?["'][^>]*><\/script>/i, FOOTER_SCRIPT);
+    if (!standalone) html = upsert(html, /<script[^>]+src=["'][^"']*nexauren-footer\.js(?:\?[^"']*)?["'][^>]*><\/script>/i, FOOTER_SCRIPT);
 
     const headers = new Headers(response.headers);
     headers.delete("content-length");
-    headers.set("cache-control", "public, max-age=300, must-revalidate");
+    headers.set("cache-control", standalone ? "no-store, no-cache, must-revalidate" : "public, max-age=300, must-revalidate");
 
     return new Response(html, {
       status: response.status,
