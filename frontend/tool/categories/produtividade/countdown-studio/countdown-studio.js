@@ -21,7 +21,7 @@ timezone:"Fuso horário",localTime:"Hora local",utc:"UTC",description:"Descriç�
 repeat:"Repetição",none:"Não repetir",daily:"Diário",weekly:"Semanal",monthly:"Mensal",showSeconds:"Mostrar segundos",
 initial:"Valor inicial",step:"Incremento",minimum:"Mínimo",maximum:"Máximo",auto:"Auto tick",work:"Trabalho",rest:"Pausa",rounds:"Rondas",
 sound:"Som",volume:"Volume",notification:"Notificação",progress:"Barra de progresso",loop:"Repetir",wake:"Manter ecrã ativo",
-format:"Formato",theme:"Tema",onFinish:"Ao terminar",stop:"Parar",repeatTimer:"Repetir timer",countUp:"Continuar a contar",
+format:"Formato",theme:"Tema",onFinish:"Ao terminar",stop:"Parar",repeatTimer:"Repetir timer",countUp:"Continuar a contar",skip:"Saltar",
 classic:"Clássico",minimal:"Minimal",neon:"Neon",midnight:"Midnight",aurora:"Aurora",sunset:"Sunset",forest:"Forest",paper:"Paper",
 start:"Iniciar",pause:"Pausar",resume:"Continuar",reset:"Repor",lap:"Volta",test:"Testar",savePreset:"Guardar preset",
 saveEvent:"Criar evento",openViewer:"Abrir visualizador",share:"Partilhar",copyLink:"Copiar link",embed:"Embed",
@@ -45,7 +45,7 @@ timezone:"Timezone",localTime:"Local time",utc:"UTC",description:"Description",l
 repeat:"Repeat",none:"No repeat",daily:"Daily",weekly:"Weekly",monthly:"Monthly",showSeconds:"Show seconds",
 initial:"Initial value",step:"Step",minimum:"Minimum",maximum:"Maximum",auto:"Auto tick",work:"Work",rest:"Rest",rounds:"Rounds",
 sound:"Sound",volume:"Volume",notification:"Notification",progress:"Progress bar",loop:"Loop",wake:"Keep screen awake",
-format:"Format",theme:"Theme",onFinish:"On finish",stop:"Stop",repeatTimer:"Repeat timer",countUp:"Count up",
+format:"Format",theme:"Theme",onFinish:"On finish",stop:"Stop",repeatTimer:"Repeat timer",countUp:"Count up",skip:"Skip",
 classic:"Classic",minimal:"Minimal",neon:"Neon",midnight:"Midnight",aurora:"Aurora",sunset:"Sunset",forest:"Forest",paper:"Paper",
 start:"Start",pause:"Pause",resume:"Resume",reset:"Reset",lap:"Lap",test:"Test",savePreset:"Save preset",
 saveEvent:"Create event",openViewer:"Open viewer",share:"Share",copyLink:"Copy link",embed:"Embed",
@@ -466,6 +466,7 @@ const w=Math.max(1,Number(cfg.pomoWork)||25)*60000;timer.phase="work";timer.roun
 }
 function toggleRun(){
 if(timer.running){pauseTimer();return}
+if(timer.countingUp){timer.startAt=Date.now()-timer.elapsed;timer.running=true;setWake(cfg.wake);loop();return}
 if(cfg.mode==="countdown")startCountdown();
 else if(cfg.mode==="event")startEvent();
 else if(cfg.mode==="stopwatch")startStopwatch();
@@ -475,8 +476,9 @@ else startIntervals();
 }
 function pauseTimer(){
 if(!timer.running)return;
-if(cfg.mode==="countdown"||cfg.mode==="event")timer.remaining=Math.max(0,timer.endAt-Date.now());
-if(cfg.mode==="stopwatch")timer.elapsed=Date.now()-timer.startAt;
+if(timer.countingUp)timer.elapsed=Date.now()-timer.startAt;
+else if(cfg.mode==="countdown"||cfg.mode==="event")timer.remaining=Math.max(0,timer.endAt-Date.now());
+if(cfg.mode==="stopwatch"&&!timer.countingUp)timer.elapsed=Date.now()-timer.startAt;
 timer.running=false;stopLoop();setWake(false);render();
 }
 function addTime(ms){
@@ -574,7 +576,8 @@ s.innerHTML='<div class="cs-mini-head"><span class="cs-eyebrow">'+esc(T().counte
 s.querySelectorAll("[data-counter]").forEach(b=>b.onclick=()=>{timer.current=clamp(timer.current+Number(b.dataset.counter)*(Number(cfg.step)||1),cfg.min,cfg.max);renderDisplay()});
 }else{
 const p=cfg.mode==="pomodoro"?[cfg.pomoWork,cfg.pomoRest,cfg.pomoRounds]:[cfg.work,cfg.rest,cfg.rounds];
-s.innerHTML='<div class="cs-shortcuts"><span>'+esc(T().keyboard)+'</span><b>'+esc(T().space)+'</b><b>'+esc(T().r)+'</b><b>'+esc(T().f)+'</b></div><div class="cs-summary">'+esc(String(p[0])+(cfg.mode==="pomodoro"?" / ":" · ")+String(p[1])+" · "+String(p[2]))+'</div>';
+s.innerHTML='<div class="cs-shortcuts"><span>'+esc(T().keyboard)+'</span><b>'+esc(T().space)+'</b><b>'+esc(T().r)+'</b><b>'+esc(T().f)+'</b><button class="cs-secondary" type="button" data-skip-phase>'+esc(T().skip)+'</button></div><div class="cs-summary">'+esc(String(p[0])+(cfg.mode==="pomodoro"?" / ":" · ")+String(p[1])+" · "+String(p[2]))+'</div>';
+s.querySelector("[data-skip-phase]")?.addEventListener("click",()=>{if(timer.running){intervalAdvance();render()}});
 }
 }
 function renderDashboardStats(){
@@ -615,7 +618,7 @@ restoreThemeSelection();
 window.addEventListener("keydown",e=>{
 if(STANDALONE)return;
 if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||""))return;
-if(e.code==="Space"){e.preventDefault();toggleRun()}else if(e.key.toLowerCase()==="r"){e.preventDefault();resetTimer()}else if(e.key.toLowerCase()==="f"){e.preventDefault();fullscreen()}
+if(e.code==="Space"){e.preventDefault();toggleRun()}else if(e.key.toLowerCase()==="r"){e.preventDefault();resetTimer()}else if(e.key.toLowerCase()==="f"){e.preventDefault();fullscreen()}else if(e.key.toLowerCase()==="s"&&(cfg.mode==="intervals"||cfg.mode==="pomodoro")){e.preventDefault();if(timer.running){intervalAdvance();render()}}
 });
 window.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&timer.running&&cfg.wake)setWake(true)});
 window.addEventListener("nexauren:language-changed",()=>location.reload());
