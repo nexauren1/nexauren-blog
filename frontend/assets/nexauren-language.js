@@ -178,7 +178,12 @@ function installSafeObserver(){
     if(busy){scheduleFlush();return;}
     const records=pendingRecords.splice(0);
     for(const record of records){
-      if(record.type==="characterData"){
+      if(record.type==="attributes"){
+        if(record.attributeName==="lang" && record.target===document.documentElement && document.documentElement.lang!==current){
+          document.documentElement.lang=current;
+          translateDom();
+        }
+      }else if(record.type==="characterData"){
         translateTextNode(record.target);
       }else if(record.type==="childList"){
         record.addedNodes.forEach(node=>{
@@ -204,7 +209,9 @@ function installSafeObserver(){
   observer.observe(document.documentElement,{
     subtree:true,
     childList:true,
-    characterData:true
+    characterData:true,
+    attributes:true,
+    attributeFilter:["lang"]
   });
 }
 function installLanguageToggleBridge(){
