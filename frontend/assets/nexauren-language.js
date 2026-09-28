@@ -143,12 +143,16 @@ function setLanguage(lang){
 
 window.NexaurenLanguage={get:()=>current,set:setLanguage,toggle:()=>setLanguage(current==="en"?"pt":"en")};
 
-let observer;
-function init(){
+function refresh(){
   addToggle();
   translateDom();
-  observer=new MutationObserver(()=>translateDom());
-  observer.observe(document.body,{subtree:true,childList:true,characterData:true});
 }
+window.NexaurenLanguage=Object.freeze({
+  get:()=>current,
+  set:setLanguage,
+  toggle:()=>setLanguage(current==="en"?"pt":"en"),
+  refresh
+});
+function init(){refresh()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
