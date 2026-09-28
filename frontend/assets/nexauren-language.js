@@ -80,6 +80,7 @@ function translateDom(){
     document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{const r=pairText(el.getAttribute("placeholder"),current);if(r!==null)el.setAttribute("placeholder",r)});
     document.querySelectorAll("[aria-label]").forEach(el=>{const r=pairText(el.getAttribute("aria-label"),current);if(r!==null)el.setAttribute("aria-label",r)});
     updateTitle();
+    updateAlternates();
   }finally{busy=false}
 }
 
