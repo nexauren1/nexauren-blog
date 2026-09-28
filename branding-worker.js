@@ -7,7 +7,7 @@ const OG_WIDTH = '<meta property="og:image:width" content="1200">';
 const OG_HEIGHT = '<meta property="og:image:height" content="630">';
 const OG_TYPE = '<meta property="og:image:type" content="image/png">';
 const TW = '<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
-const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-2" defer></script>';
+const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-3" defer></script>';
 
 function upsert(html, regex, tag) {
   return regex.test(html)
