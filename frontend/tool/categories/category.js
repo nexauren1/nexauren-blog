@@ -2,7 +2,7 @@
   const DATA_URL="/api/tool-registry";
   const requestedLanguage=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="en")return "en";try{return localStorage.getItem("ns_lang_v2")==="pt"?"pt":"en"}catch{return "en"}})();
   const FALLBACK_DATA_URL="/tool/data/data.json";
-  const CACHE_KEY="nexauren:tool-registry:v7";
+  const CACHE_KEY="nexauren:tool-registry:v8";
   const CACHE_SCOPE=requestedLanguage;
   const REQUEST_TIMEOUT=5000;
   let registryPromise=null;
