@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f0e8">
+<meta name="description" content="Junte várias imagens numa única composição vertical, horizontal ou em grelha, com ordem, espaçamento, fundo e formato configuráveis.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/imagem/juntar-imagens/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./juntar-imagens.css?v=20260928-1">
+<title>Juntar Imagens — Nexauren</title>
+<script src="/assets/ads.js?v=20260925-auto3"></script>
+</head>
+<body class="nx-page ji-page">
+<div class="ji-ad"><span>ADVERTISEMENT</span><div id="ji-ad-top"></div></div>
+
+<header class="ji-header">
+  <div class="ji-shell ji-nav">
+    <a href="/tool/categories/imagem/" class="ji-brand">
+      <span class="ji-mark">✦</span>
+      <span><strong>NEXAUREN</strong><small>IMAGE ASSEMBLY</small></span>
+    </a>
+    <a href="/tool/categories/imagem/" class="ji-back">← Ferramentas de imagem</a>
+  </div>
+</header>
+
+<main class="ji-shell">
+  <section class="ji-hero">
+    <div>
+      <div class="ji-kicker">IMAGE ASSEMBLY / 01</div>
+      <h1>Juntar Imagens</h1>
+      <p>Transforme várias imagens numa só composição. Escolha a ordem, o layout, o espaçamento e o formato sem instalar nada.</p>
+    </div>
+    <div class="ji-hero-spec"><span>LOCAL</span><b>NO UPLOAD</b><small>os ficheiros ficam no seu dispositivo</small></div>
+  </section>
+
+  <section class="ji-workspace">
+    <div class="ji-main">
+      <section class="ji-card ji-input-card">
+        <div class="ji-card-head">
+          <div><span class="ji-kicker">SOURCE / 01</span><h2>Adicionar imagens</h2></div>
+          <span id="state" class="ji-state">IDLE</span>
+        </div>
+        <label id="drop" class="ji-drop">
+          <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp" multiple>
+          <span class="ji-drop-icon">＋</span>
+          <span class="ji-drop-copy"><b>Arraste várias imagens aqui</b><small>JPG, PNG, WebP, GIF ou BMP · a ordem pode ser alterada depois</small></span>
+          <span class="ji-drop-button">Escolher imagens</span>
+        </label>
+        <div id="queue" class="ji-queue">
+          <div class="ji-empty"><span>01</span><div><strong>Nenhuma imagem na fila</strong><small>Adicione pelo menos duas imagens para começar a montar.</small></div></div>
+        </div>
+      </section>
+
+      <section class="ji-card ji-preview-card">
+        <div class="ji-card-head">
+          <div><span class="ji-kicker">PREVIEW / 02</span><h2>Composição</h2></div>
+          <div class="ji-preview-meta"><strong id="output-size">—</strong><span id="output-count">0 imagens</span></div>
+        </div>
+        <div class="ji-canvas-frame">
+          <canvas id="preview" width="1200" height="900"></canvas>
+          <div id="preview-empty" class="ji-preview-empty">A pré-visualização aparece aqui.</div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="ji-side">
+      <section class="ji-card ji-controls">
+        <div class="ji-card-head">
+          <div><span class="ji-kicker">LAYOUT / 03</span><h2>Montagem</h2></div>
+        </div>
+
+        <label class="ji-field"><span>Layout</span>
+          <select id="layout">
+            <option value="vertical">Vertical · uma abaixo da outra</option>
+            <option value="horizontal">Horizontal · lado a lado</option>
+            <option value="grid">Grelha · duas colunas</option>
+          </select>
+        </label>
+
+        <label class="ji-field" id="columns-field" hidden><span>Colunas <b id="columns-value">2</b></span>
+          <input id="columns" type="range" min="2" max="4" step="1" value="2">
+        </label>
+
+        <label class="ji-field"><span>Espaço <b id="gap-value">16 px</b></span>
+          <input id="gap" type="range" min="0" max="60" step="1" value="16">
+        </label>
+
+        <label class="ji-field"><span>Margem <b id="padding-value">24 px</b></span>
+          <input id="padding" type="range" min="0" max="80" step="1" value="24">
+        </label>
+
+        <label class="ji-field"><span>Fundo</span>
+          <div class="ji-color-row"><input id="background" type="color" value="#f7f2ea"><span id="background-value">#F7F2EA</span></div>
+        </label>
+
+        <div class="ji-divider"></div>
+
+        <div class="ji-card-head ji-export-head">
+          <div><span class="ji-kicker">EXPORT / 04</span><h2>Saída</h2></div>
+        </div>
+
+        <label class="ji-field"><span>Formato</span>
+          <select id="format">
+            <option value="image/png">PNG · qualidade máxima</option>
+            <option value="image/jpeg">JPG · ficheiro menor</option>
+            <option value="image/webp">WebP · compacto</option>
+          </select>
+        </label>
+
+        <label class="ji-field" id="quality-field"><span>Qualidade <b id="quality-value">90</b></span>
+          <input id="quality" type="range" min="50" max="100" step="1" value="90">
+        </label>
+
+        <button id="build" class="ji-primary" type="button" disabled>Preparar ficheiro</button>
+        <button id="download" class="ji-secondary" type="button" disabled>Baixar imagem</button>
+        <p id="status" class="ji-status">Adicione imagens para começar.</p>
+      </section>
+
+      <section class="ji-card ji-note">
+        <span class="ji-kicker">WORKFLOW</span>
+        <p><b>1.</b> Adicione imagens<br><b>2.</b> Ajuste a ordem e o layout<br><b>3.</b> Exporte uma única imagem</p>
+      </section>
+    </aside>
+  </section>
+
+  <section id="result" class="ji-card ji-result" hidden>
+    <div><span class="ji-kicker">READY / 05</span><h2>Imagem pronta</h2></div>
+    <div class="ji-result-row">
+      <div class="ji-result-icon">✓</div>
+      <div class="ji-result-info"><strong id="result-name">nexauren-juntas.png</strong><small id="result-meta">—</small></div>
+      <button id="download-result" class="ji-primary small" type="button">Baixar</button>
+    </div>
+  </section>
+</main>
+
+<div class="ji-ad"><span>ADVERTISEMENT</span><div id="ji-ad-bottom"></div></div>
+<footer class="ji-footer ji-shell">
+  <span>© <span id="year"></span> Nexauren Story · Image Assembly</span>
+  <span><a href="/tool/categories/imagem/">Imagem</a> · <a href="/tool/">Tools</a> · <a href="/legal/privacidade/">Privacy</a></span>
+</footer>
+
+<div id="toast" class="ji-toast" role="status" aria-live="polite"></div>
+<script>
+window.NexaurenAds&&NexaurenAds.loadBanner(document.getElementById("ji-ad-top"));
+window.NexaurenAds&&NexaurenAds.loadResponsive(document.getElementById("ji-ad-bottom"));
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+<script src="./juntar-imagens.js?v=20260928-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
