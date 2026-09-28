@@ -6,7 +6,7 @@
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const normalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 
-  let language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="pt")return "pt";if(q==="en")return "en";try{return localStorage.getItem("ns_lang")==="pt"?"pt":"en"}catch{return "en"}})();
+  let language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="pt")return "pt";if(q==="en")return "en";try{return localStorage.getItem("ns_lang_v2")==="pt"?"pt":"en"}catch{return "en"}})();
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const localizedTags=item=>language==="en"?(Array.isArray(item?.tags_en)&&item.tags_en.length?item.tags_en:(item?.tags||[])):(item?.tags||[]);
   const ui=Object.freeze(language==="en" ? {
