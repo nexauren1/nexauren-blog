@@ -1,9 +1,9 @@
 {
-  "version": 19,
+  "version": 20,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T11:30:00Z",
+    "updatedAt": "2026-09-28T17:30:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -2150,7 +2150,7 @@
       "group": "producao-musical",
       "icon": "♬",
       "version": "1.0.0",
-      "status": "active",
+      "status": "draft",
       "path": "/tool/categories/audio/producao-musical/gerador-de-progressao-de-acordes/",
       "tags": [
         "produção musical",
@@ -2177,7 +2177,7 @@
       "group": "producao-musical",
       "icon": "▦",
       "version": "1.0.0",
-      "status": "active",
+      "status": "draft",
       "path": "/tool/categories/audio/producao-musical/gerador-de-drum-pattern/",
       "tags": [
         "produção musical",
