@@ -456,7 +456,25 @@
         </div>
       </section>
 
+      <section class="nx-smart-panel" id="smart-analysis" aria-live="polite">
+        <div class="nx-smart-icon">✦</div>
+        <div class="nx-smart-copy">
+          <span class="nx-section-kicker">SMART ENGINE</span>
+          <strong id="smart-title">Análise automática pronta</strong>
+          <p id="smart-description">O Nexauren pode adaptar formato, qualidade e dimensão a cada imagem antes de processar o lote.</p>
+        </div>
+        <div class="nx-smart-status">
+          <span id="smart-badge">AUTO</span>
+          <small id="smart-capacity">Processamento adaptativo</small>
+        </div>
+      </section>
+
       <div class="nx-control-grid">
+        <div class="nx-field">
+          <label class="nx-label">Otimização inteligente</label>
+          <label class="nx-toggle"><input id="smart-enabled" type="checkbox" checked> Adaptar por imagem</label>
+        </div>
+
         <div class="nx-field nx-field-wide">
           <label class="nx-label" for="format">Formato de saída</label>
           <select id="format">
@@ -500,6 +518,11 @@
             <option value="#000000">Preto</option>
             <option value="#f2f2f2">Cinza claro</option>
           </select>
+        </div>
+
+        <div class="nx-field">
+          <label class="nx-label">Processamento do lote</label>
+          <label class="nx-toggle"><input id="parallel-enabled" type="checkbox" checked> Paralelo adaptativo</label>
         </div>
 
         <div class="nx-field nx-field-wide">
