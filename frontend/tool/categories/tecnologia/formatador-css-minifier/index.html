@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Formatador CSS / Minifier · Nexauren Tools</title>
+<title>Formatador CSS / Minifier · Nexauren Story</title>
 <link rel="stylesheet" href="./style.css">
 
 
@@ -309,7 +309,7 @@
 <button id="minify">Compactar</button>
 <button id="sample">Exemplo</button>
 <button id="clear">Limpar</button>
-<button id="copy">Copiar saída</button>
+<button id="copy">Copiar saída</button><button id="swap">Usar saída</button><button id="download">Baixar CSS</button>
 </div>
 <div class="options">
 <label>Indentação
@@ -330,7 +330,7 @@
 </section>
 </div>
 <div class="meter"><span id="meterFill"></span></div>
-<p id="message" class="message">Cole o CSS e escolha uma operação.</p>
+<p id="message" class="message">Cole o CSS e escolha uma operação.</p><p class="privacy-note">Processamento local: o CSS permanece neste navegador.</p>
 </section>
 
 <section class="stats">
@@ -339,24 +339,7 @@
 <div><strong id="declCount">0</strong><span>declarações</span></div>
 </section>
 
-<p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
-<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
-  <div class="nx-auto-ad-label">PUBLICIDADE</div>
-  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
-</div>
-<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
-<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
-<footer>NEXAUREN TOOLS · Style Engine · Processamento local</footer>
-</main>
-<script type="module">
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
-const app=document.querySelector(".console"),msg=document.querySelector("#access");
-onAuthStateChanged(auth,user=>{
- const locked=!user; document.body.classList.toggle("locked",locked);
- msg.hidden=!locked; msg.textContent=locked?"Entre para usar esta ferramenta.":"";
- app.querySelectorAll("button,textarea,select,input").forEach(el=>el.disabled=locked);
-});
-</script>
+<p id="access" class="access" hidden></p>
 <script src="./script.js"></script>
 
 
