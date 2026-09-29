@@ -265,8 +265,11 @@ function pitchTool(){
   [source,target,duration,semi,cents].forEach(el=>el.oninput=calc);
   document.getElementById("mp-pitch-calc").onclick=calc;
   document.getElementById("mp-pitch-reset").onclick=()=>{source.value=100;target.value=128;duration.value=16;semi.value=0;cents.value=0;calc()};
+  const onKey=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();calc()}};
+  window.addEventListener("keydown",onKey);
   copy.onclick=async()=>{const ok=await copyText(result.innerText);if(ok){copy.textContent=t.copied;setTimeout(()=>copy.textContent=t.copy,1000)}};
   calc();
+  return ()=>window.removeEventListener("keydown",onKey);
 }
 
 function fillScaleSelect(select){
