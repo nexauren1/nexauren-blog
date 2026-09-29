@@ -1,13 +1,13 @@
 
-import { getPlanState } from "/tool/frontend/tool-access.js?v=20260923";
-
 const $ = (s) => document.querySelector(s);
 const state = {
   files: [],
   results: new Map(),
   policy: null,
   busy: false,
-  toastTimer: null
+  toastTimer: null,
+  previewUrls: new Map(),
+  comparePosition: 0
 };
 
 const PRESETS = {
@@ -47,36 +47,21 @@ function setStatus(message, type = "ready") {
   meta.dataset.state = type;
 }
 
-function setPlanUI(policy) {
+function setPlanUI() {
   const badge = $("#plan-badge");
   const stateEl = $("#plan-state");
   const copy = $("#plan-copy");
-  if (!policy) {
-    badge.textContent = "CONTA";
-    stateEl.textContent = "A consultar…";
-    stateEl.className = "nx-plan-state";
-    copy.textContent = "A verificar os recursos disponíveis para a sua conta…";
-    return;
+  if (badge) badge.textContent = "PROCESSAMENTO LOCAL";
+  if (stateEl) {
+    stateEl.textContent = "SEM BLOQUEIO";
+    stateEl.className = "nx-plan-state pro";
   }
-  const pro = policy.plan === "pro";
-  badge.textContent = pro ? "NEXAUREN PRO" : "NEXAUREN FREE";
-  stateEl.textContent = pro ? "Ilimitado" : "3 imagens";
-  stateEl.className = "nx-plan-state " + (pro ? "pro" : "free");
-  copy.textContent = pro
-    ? "Lotes sem limite de imagens."
-    : "Até 3 imagens por lote. Entre no Pro para desbloquear lotes ilimitados.";
+  if (copy) copy.textContent = "Lotes sem limite artificial. Os ficheiros são processados diretamente no seu dispositivo.";
 }
 
 async function queryPolicy() {
-  state.policy = { plan: "free", limits: { maxFilesPerBatch: 3 }, usage: null };
-  try {
-    const plan = await getPlanState({ force: true });
-    const activePro = plan?.authenticated && plan?.pro === true &&
-      String(plan.plan || "").toLowerCase() === "pro" &&
-      String(plan.status || "").toUpperCase() === "ACTIVE";
-    if (activePro) state.policy = { plan: "pro", limits: { maxFilesPerBatch: null }, usage: null };
-  } catch {}
-  setPlanUI(state.policy);
+  state.policy = { plan: "free", limits: { maxFilesPerBatch: Infinity }, usage: null };
+  setPlanUI();
   return state.policy;
 }
 
@@ -98,9 +83,7 @@ function uniqueImages(files) {
 function renderQueue() {
   const queue = $("#queue");
   if (!state.files.length) {
-    queue.innerHTML = '<div class="nx-empty">Adicione até <strong>' +
-      (state.policy?.plan === "pro" ? "quantas imagens quiser" : "3 imagens") +
-      '</strong>. As imagens ficam no dispositivo enquanto são processadas.</div>';
+    queue.innerHTML = '<div class="nx-empty"><strong>Adicione quantas imagens quiser.</strong><br>Sem limite artificial por plano; a capacidade real depende do seu dispositivo.</div>';
     $("#compress").disabled = true;
     $("#clear").disabled = true;
     setStatus("Nenhuma imagem selecionada.");
@@ -128,21 +111,17 @@ function renderQueue() {
   }).join("");
 
   setStatus(state.files.length + (state.files.length === 1 ? " imagem" : " imagens") + " na fila.");
+  renderCompare();
 }
 
 function addFiles(inputFiles) {
   const incoming = uniqueImages(Array.from(inputFiles || []));
   if (!incoming.length) return;
 
-  const max = state.policy?.plan === "pro" ? Infinity : Number(state.policy?.limits?.maxFilesPerBatch || 3);
-  const room = Math.max(0, max - state.files.length);
-  const accepted = incoming.slice(0, room);
-  state.files.push(...accepted);
-
-  if (accepted.length < incoming.length) {
-    showToast("O Free permite até 3 imagens por lote. As restantes ficaram de fora.", "error");
-  }
+  state.files.push(...incoming);
+  state.comparePosition = Math.max(0, state.files.length - incoming.length);
   renderQueue();
+  renderCompare();
 }
 
 function removeAt(index) {
@@ -151,18 +130,25 @@ function removeAt(index) {
   if (!file) return;
   const result = state.results.get(fileKey(file));
   if (result?.url) URL.revokeObjectURL(result.url);
+  clearPreviewUrl(fileKey(file));
   state.results.delete(fileKey(file));
   state.files.splice(index, 1);
+  state.comparePosition = Math.min(state.comparePosition, Math.max(0, state.files.length - 1));
   renderQueue();
+  renderCompare();
   renderResults();
 }
 
 function clearAll() {
   if (state.busy) return;
   for (const result of state.results.values()) if (result.url) URL.revokeObjectURL(result.url);
+  for (const url of state.previewUrls.values()) URL.revokeObjectURL(url);
+  state.previewUrls.clear();
   state.results.clear();
   state.files = [];
+  state.comparePosition = 0;
   renderQueue();
+  renderCompare();
   renderResults();
 }
 
@@ -337,13 +323,6 @@ async function compressAll() {
   renderQueue();
 
   try {
-    const policy = await queryPolicy();
-    const count = state.files.length;
-    const max = policy.plan === "pro" ? Infinity : Number(policy.limits?.maxFilesPerBatch || 3);
-    if (count > max) {
-      throw Object.assign(new Error("O seu plano permite no máximo " + max + " imagens por lote."), { code: "TOOL_BATCH_LIMIT" });
-    }
-
     const files = [...state.files];
     for (let i = 0; i < files.length; i++) {
       setStatus("A comprimir " + (i + 1) + " de " + files.length + "…", "busy");
@@ -354,16 +333,106 @@ async function compressAll() {
     const finished = files.filter(file => state.results.get(fileKey(file))?.status === "done").length;
     showToast(finished + " de " + files.length + " imagens processadas.", finished === files.length ? "" : "error");
   } catch (error) {
-    if (error?.code === "TOOL_BATCH_LIMIT") {
-      showToast(error.message, "error");
-    } else {
-      showToast(error?.message || "Não foi possível iniciar o lote.", "error");
-    }
+    showToast(error?.message || "Não foi possível iniciar o lote.", "error");
   } finally {
     state.busy = false;
     renderQueue();
     renderResults();
   }
+}
+
+function getPreviewUrl(file) {
+  const key = fileKey(file);
+  if (!state.previewUrls.has(key)) state.previewUrls.set(key, URL.createObjectURL(file));
+  return state.previewUrls.get(key);
+}
+
+function clearPreviewUrl(key) {
+  const url = state.previewUrls.get(key);
+  if (url) URL.revokeObjectURL(url);
+  state.previewUrls.delete(key);
+}
+
+function currentCompareFile() {
+  return state.files[Math.max(0, Math.min(state.comparePosition, state.files.length - 1))] || null;
+}
+
+function renderCompare() {
+  const panel = $("#compare");
+  if (!panel) return;
+  const file = currentCompareFile();
+  if (!file) {
+    panel.hidden = true;
+    return;
+  }
+
+  panel.hidden = false;
+  $("#compare-index").textContent = (state.comparePosition + 1) + " / " + state.files.length;
+
+  const key = fileKey(file);
+  const result = state.results.get(key);
+  const originalUrl = getPreviewUrl(file);
+  const original = $("#compare-original");
+  const output = $("#compare-result");
+  const placeholder = $("#compare-placeholder");
+
+  original.src = originalUrl;
+  output.hidden = !result?.blob;
+  placeholder.hidden = !!result?.blob;
+
+  $("#compare-original-size").textContent = bytes(file.size);
+  $("#compare-original-meta").textContent = file.type.replace("image/","").toUpperCase();
+  $("#compare-caption").textContent = result?.blob
+    ? "Compare visualmente o original com a versão otimizada."
+    : "A imagem original já está pronta. O resultado aparecerá aqui após a compressão.";
+
+  if (!result?.blob) {
+    $("#compare-result-meta").textContent = "Aguardando compressão";
+    $("#compare-result-size").textContent = "—";
+    $("#compare-saving").textContent = "—";
+    $("#compare-dimensions").textContent = "—";
+    $("#compare-format").textContent = "—";
+    $("#compare-quality").textContent = "—";
+    $("#download-preview").disabled = true;
+    return;
+  }
+
+  output.src = result.url;
+  $("#compare-result-meta").textContent = extension(result.mime).toUpperCase();
+  $("#compare-result-size").textContent = bytes(result.blob.size);
+  $("#compare-saving").textContent = result.saving >= 0 ? result.saving + "%" : "↑ " + Math.abs(result.saving) + "%";
+  $("#compare-dimensions").textContent = result.width + "×" + result.height;
+  $("#compare-format").textContent = extension(result.mime).toUpperCase();
+  $("#compare-quality").textContent = "Q" + result.quality;
+  $("#download-preview").disabled = false;
+}
+
+function downloadPreview() {
+  const file = currentCompareFile();
+  if (!file) return;
+  const result = state.results.get(fileKey(file));
+  if (result?.blob) downloadResult(fileKey(file));
+}
+
+function openCurrentPreview(original = false) {
+  const file = currentCompareFile();
+  if (!file) return;
+  const result = state.results.get(fileKey(file));
+  const url = original ? getPreviewUrl(file) : result?.url;
+  if (!url) return;
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.click();
+}
+
+function moveCompare(step) {
+  if (!state.files.length) return;
+  state.comparePosition = (state.comparePosition + step + state.files.length) % state.files.length;
+  renderCompare();
+  const panel = $("#compare");
+  panel?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function renderResults() {
@@ -397,6 +466,7 @@ function renderResults() {
 
   $("#download-all").disabled = false;
   $("#copy-report").disabled = false;
+  renderCompare();
 }
 
 function outputName(file, result) {
@@ -430,7 +500,7 @@ function reportText() {
   if (!items.length) return "";
   const lines = [
     "NEXAUREN IMAGE LAB — COMPRESSOR",
-    "Plano: " + (state.policy?.plan === "pro" ? "Pro" : "Free"),
+    "Processamento: local · sem limite artificial por plano",
     "Imagens: " + items.length,
     ""
   ];
@@ -504,6 +574,10 @@ function wire() {
   $("#clear").addEventListener("click", clearAll);
   $("#download-all").addEventListener("click", downloadAll);
   $("#copy-report").addEventListener("click", copyReport);
+  $("#download-preview").addEventListener("click", downloadPreview);
+  $("#open-original").addEventListener("click", () => openCurrentPreview(true));
+  $("#compare-prev").addEventListener("click", () => moveCompare(-1));
+  $("#compare-next").addEventListener("click", () => moveCompare(1));
 
   $("#queue").addEventListener("click", event => {
     const remove = event.target.closest("[data-remove-index]");
@@ -516,12 +590,9 @@ function wire() {
   });
 
   setPreset("smart");
+  setPlanUI();
   renderQueue();
-  queryPolicy().then(() => renderQueue()).catch(() => {
-    state.policy = { plan: "free", limits: { maxFilesPerBatch: 3 }, usage: null };
-    setPlanUI(state.policy);
-    renderQueue();
-  });
+  renderCompare();
   document.addEventListener("keydown", event => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
