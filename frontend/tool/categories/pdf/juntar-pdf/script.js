@@ -1,6 +1,6 @@
 (()=>{"use strict";
 const $=s=>document.querySelector(s);
-const input=$("#pdfmerge-files"),drop=$("#pdfmerge-drop"),list=$("#pdfmerge-list"),build=$("#pdfmerge-build"),clear=$("#pdfmerge-clear"),status=$("#pdfmerge-status"),count=$("#pdfmerge-count"),pageCount=$("#pdfmerge-pages"),size=$("#pdfmerge-size"),name=$("#pdfmerge-name"),progress=$("#pdfmerge-progress"),result=$("#pdfmerge-result"),resultName=$("#pdfmerge-result-name"),resultSize=$("#pdfmerge-result-size"),downloadBtn=$("#pdfmerge-download"),langBtn=$("#pdfmerge-lang");
+const copyBtn=$("#pdfmerge-copy"),input=$("#pdfmerge-files"),drop=$("#pdfmerge-drop"),list=$("#pdfmerge-list"),build=$("#pdfmerge-build"),clear=$("#pdfmerge-clear"),status=$("#pdfmerge-status"),count=$("#pdfmerge-count"),pageCount=$("#pdfmerge-pages"),size=$("#pdfmerge-size"),name=$("#pdfmerge-name"),progress=$("#pdfmerge-progress"),result=$("#pdfmerge-result"),resultName=$("#pdfmerge-result-name"),resultSize=$("#pdfmerge-result-size"),downloadBtn=$("#pdfmerge-download"),langBtn=$("#pdfmerge-lang");
 let language=new URLSearchParams(location.search).get("lang")==="en"?"en":"pt";
 let files=[],output=null,pdfEnginePromise=null;
 
@@ -79,6 +79,7 @@ async function ensurePdfEngine(){
   try{return await pdfEnginePromise}finally{pdfEnginePromise=null}
 }
 
+async function copySummary(){if(!output)return;const text="NEXAUREN JUNTAR PDF\nDocumentos: "+files.length+"\nTamanho final: "+resultSize.textContent+"\nFicheiro: "+resultName.textContent;try{await navigator.clipboard.writeText(text);msg("Resumo copiado.")}catch{try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();msg(ok?"Resumo copiado.":"Não foi possível copiar o resumo.",!ok)}catch{msg("Não foi possível copiar o resumo.",true)}}}
 async function merge(){
   if(files.length<2){msg(text().need,true);return}
   build.disabled=true;clear.disabled=true;result.hidden=true;progress.style.width="0%";
@@ -96,7 +97,7 @@ async function merge(){
     const data=await out.save({useObjectStreams:false});
     output=new Blob([data],{type:"application/pdf"});
     const safe=((name.value||"documento-unificado").trim().replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"")||"documento-unificado")+".pdf";
-    resultName.textContent=safe;resultSize.textContent=bytes(output.size);result.hidden=false;progress.style.width="100%";
+    resultName.textContent=safe;resultSize.textContent=bytes(output.size);result.hidden=false;copyBtn.disabled=false;progress.style.width="100%";
     downloadBtn.onclick=()=>{const u=URL.createObjectURL(output),a=document.createElement("a");a.href=u;a.download=safe;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500)};
     msg(text().done);
   }catch(e){msg(e?.message||text().error,true)}
@@ -108,8 +109,8 @@ drop.addEventListener("click",e=>{if(e.target!==input)input.click()});
 drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag")});
 drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
 drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");add(e.dataTransfer.files)});
-build.addEventListener("click",merge);
-clear.addEventListener("click",()=>{files=[];output=null;result.hidden=true;progress.style.width="0%";render();msg(text().ready)});
+build.addEventListener("click",merge);copyBtn.addEventListener("click",copySummary);document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();if(!build.disabled)void merge()}});
+clear.addEventListener("click",()=>{copyBtn.disabled=true;files=[];output=null;result.hidden=true;progress.style.width="0%";render();msg(text().ready)});
 langBtn.addEventListener("click",()=>{
   language=language==="en"?"pt":"en";
   const url=new URL(location.href);
