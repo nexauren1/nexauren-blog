@@ -2,7 +2,7 @@ import { getPlanState } from "/tool/frontend/tool-access.js?v=20260925-resize-au
 
 const $=s=>document.querySelector(s);
 const state={files:[],results:[],pro:false,limit:10,ratio:null,planReady:false};
-const els={file:$("#file"),drop:$("#drop"),w:$("#w"),h:$("#h"),fit:$("#fit"),fmt:$("#fmt"),quality:$("#quality"),qv:$("#qv"),bg:$("#bg"),lock:$("#lock"),upscale:$("#upscale"),run:$("#run"),download:$("#download"),clear:$("#clear"),queue:$("#queue"),status:$("#status"),plan:$("#plan"),limit:$("#limit"),count:$("#count"),mode:$("#mode"),done:$("#done"),before:$("#totalBefore"),after:$("#totalAfter"),saved:$("#saved")};
+const els={file:$("#file"),drop:$("#drop"),w:$("#w"),h:$("#h"),fit:$("#fit"),fmt:$("#fmt"),quality:$("#quality"),qv:$("#qv"),bg:$("#bg"),lock:$("#lock"),upscale:$("#upscale"),run:$("#run"),download:$("#download"),copySummary:$("#copySummary"),clear:$("#clear"),queue:$("#queue"),status:$("#status"),plan:$("#plan"),limit:$("#limit"),count:$("#count"),mode:$("#mode"),done:$("#done"),before:$("#totalBefore"),after:$("#totalAfter"),saved:$("#saved")};
 function bytes(n){if(!Number.isFinite(n))return "—";const u=["B","KB","MB","GB"];let i=0,v=n;while(v>=1024&&i<u.length-1){v/=1024;i++}return `${v.toFixed(v>=100?0:v>=10?1:2)} ${u[i]}`}
 function setStatus(text,error=false){els.status.textContent=text;els.status.className="status"+(error?" error":"")}
 function canRun(){return state.planReady&&state.files.length>0}
