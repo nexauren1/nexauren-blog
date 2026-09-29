@@ -266,7 +266,32 @@ function clearResult(){
   const img=$("#result-image");
   img.hidden=true;
   img.removeAttribute("src");
-  $("#result-empty").hiddasync function renderResult(output){
+  $("#result-empty").hidden=false;
+  $("#result-loading").hidden=true;
+  $("#result-size").textContent="Aguardando";
+  $("#result-meta").textContent="—";
+  $("#saving").textContent="—";
+  $("#dimensions").textContent="—";
+  $("#format-label").textContent="—";
+  $("#time-label").textContent="—";
+  $("#download").disabled=true;
+}
+
+function setOriginalPreview(src){
+  const img=$("#original-image");
+  img.onload=()=>{
+    $("#original-loading").hidden=true;
+    $("#original-dimensions").textContent=img.naturalWidth+" × "+img.naturalHeight;
+  };
+  img.onerror=()=>{
+    $("#original-loading").hidden=true;
+    setStatus("error");
+    showToast("A pré-visualização original não pôde ser carregada.","error");
+  };
+  img.src=src;
+}
+
+async function renderResult(output){
   if(!output || !state.file) return false;
 
   const tokenAtRender=state.token;
