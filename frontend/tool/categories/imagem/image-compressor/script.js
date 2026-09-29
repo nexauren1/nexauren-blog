@@ -265,30 +265,63 @@ function setOriginalPreview(src){
 
 async function renderResult(output){
   if(!output || !state.file) return;
+
+  const tokenAtRender=state.token;
+  const objectUrl=URL.createObjectURL(output.blob);
+  let dataUrl="";
+
   if(state.result?.url) URL.revokeObjectURL(state.result.url);
+  state.result={...output,url:objectUrl,previewUrl:""};
 
-  const previewUrl=await blobToDataUrl(output.blob);
-  if(state.token<1) return;
-
-  state.result={...output,previewUrl,url:URL.createObjectURL(output.blob)};
   const img=$("#result-image");
-
   $("#result-empty").hidden=true;
-  $("#result-loading").hidden=true;
-  img.onload=()=>{img.hidden=false;};
-  img.onerror=()=>showToast("O resultado foi criado, mas a pré-visualização falhou.","error");
-  img.src=previewUrl;
-  img.hidden=false;
+  $("#result-loading").hidden=false;
+  $("#download").disabled=true;
 
-  const saving=Math.max(0,Math.round((1-output.blob.size/state.file.size)*100));
-  $("#result-size").textContent=bytes(output.blob.size);
-  $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
-  $("#saving").textContent=output.noGain ? "0%" : saving+"%";
-  $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
-  $("#format-label").textContent=mimeLabel(output.mime);
-  $("#time-label").textContent=timeLabel(output.ms);
-  $("#download").disabled=false;
-  setStatus("ready");
+  const showMetrics=()=>{
+    const saving=Math.max(0,Math.round((1-output.blob.size/state.file.size)*100));
+    $("#result-size").textContent=bytes(output.blob.size);
+    $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
+    $("#saving").textContent=output.noGain ? "0%" : saving+"%";
+    $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
+    $("#format-label").textContent=mimeLabel(output.mime);
+    $("#time-label").textContent=timeLabel(output.ms);
+    $("#download").disabled=false;
+    setStatus("ready");
+  };
+
+  const finish=()=>{
+    if(tokenAtRender!==state.token) return;
+    $("#result-loading").hidden=true;
+    img.hidden=false;
+    showMetrics();
+  };
+
+  const fallbackToDataUrl=async()=>{
+    try{
+      dataUrl=await blobToDataUrl(output.blob);
+      state.result.previewUrl=dataUrl;
+      img.onload=finish;
+      img.onerror=()=>{
+        $("#result-loading").hidden=true;
+        img.hidden=true;
+        showToast("O resultado foi criado, mas o navegador não conseguiu renderizar esta pré-visualização.","error");
+      };
+      img.src=dataUrl;
+      img.hidden=false;
+    }catch{
+      $("#result-loading").hidden=true;
+      img.hidden=true;
+      showToast("O resultado foi criado, mas a pré-visualização não pôde ser preparada.","error");
+    }
+  };
+
+  img.onload=finish;
+  img.onerror=()=>fallbackToDataUrl();
+
+  // ObjectURL é o caminho principal; data URL é o fallback para WebView/navegadores problemáticos.
+  img.src=objectUrl;
+  img.hidden=false;
 }
 
 async function runCompression(){
