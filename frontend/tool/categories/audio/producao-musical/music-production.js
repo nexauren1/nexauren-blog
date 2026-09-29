@@ -334,7 +334,10 @@ function chordTool(){
   document.getElementById("mp-chord-random").onclick=()=>generate(Math.floor(Math.random()*(progressionPatterns[mood.value].length)));
   [root,scale,mood].forEach(el=>el.onchange=()=>generate());
   copy.onclick=async()=>{const ok=await copyText(out.dataset.text||"");if(ok){copy.textContent=t.copied;setTimeout(()=>copy.textContent=t.copy,1000)}};
+  const onKey=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();generate()}};
+  window.addEventListener("keydown",onKey);
   generate(0);
+  return ()=>window.removeEventListener("keydown",onKey);
 }
 
 function drumTool(){
