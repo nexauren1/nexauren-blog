@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Base64 Encoder / Decoder</title>
+<meta name="description" content="Codifique e descodifique texto em Base64 localmente no navegador, com suporte a Unicode."><meta name="robots" content="index,follow"><title>Codificador / Descodificador Base64 — Nexauren Story</title>
 <link rel="stylesheet" href="style.css">
 
 
@@ -291,13 +291,13 @@
 <!-- NEXAUREN-AUTO-ADS:END --><main class="base64-tool">
 <h1>Base64 Lab</h1>
 <p>Codifique e descodifique texto localmente.</p>
-<textarea id="input" placeholder="Digite o texto ou Base64"></textarea>
-<div class="actions"><button id="encode">Codificar</button><button id="decode">Descodificar</button></div>
-<textarea id="output" readonly placeholder="Resultado"></textarea>
-<div class="actions"><button id="copy">Copiar</button><button id="clear">Limpar</button></div>
-<p id="status"></p>
+<label for="input">Entrada</label><textarea id="input" spellcheck="false" placeholder="Digite o texto ou cole o Base64"></textarea>
+<div class="actions"><button id="encode" type="button">Codificar →</button><button id="decode" type="button">← Descodificar</button><button id="sample" type="button">Exemplo</button></div>
+<label for="output">Resultado</label><textarea id="output" readonly spellcheck="false" aria-live="polite" placeholder="Resultado"></textarea>
+<div class="actions"><button id="copy" type="button">Copiar resultado</button><button id="use-output" type="button">Usar como entrada</button><button id="clear" type="button">Limpar</button></div>
+<p id="status" role="status" aria-live="polite"></p><p class="privacy-note"><strong>Privacidade local.</strong> O conteúdo não é enviado para um servidor.</p>
 </main>
-<script src="script.js"></script><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+<script src="script.js?v=20260929-base64"></script><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
   <div class="nx-auto-ad-label">PUBLICIDADE</div>
   <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
