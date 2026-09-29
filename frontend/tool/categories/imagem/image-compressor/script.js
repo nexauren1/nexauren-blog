@@ -271,7 +271,7 @@ async function renderResult(output){
   let dataUrl="";
 
   if(state.result?.url) URL.revokeObjectURL(state.result.url);
-  state.result={...output,url:objectUrl,previewUrl:""};
+  state.result={...output,url:objectUrl,previewUrl:objectUrl};
 
   const img=$("#result-image");
   $("#result-empty").hidden=true;
