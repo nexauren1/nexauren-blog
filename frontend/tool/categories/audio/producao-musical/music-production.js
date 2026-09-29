@@ -294,7 +294,10 @@ function scaleTool(){
   }
   root.onchange=calc;type.onchange=calc;
   copy.onclick=async()=>{const ok=await copyText(out.innerText);if(ok){copy.textContent=t.copied;setTimeout(()=>copy.textContent=t.copy,1000)}};
+  const onKey=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();copy.click()}};
+  window.addEventListener("keydown",onKey);
   calc();
+  return ()=>window.removeEventListener("keydown",onKey);
 }
 
 const progressionPatterns={
