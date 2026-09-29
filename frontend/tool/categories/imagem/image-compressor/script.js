@@ -293,13 +293,13 @@ async function renderResult(output){
 
 async function runCompression(){
   if(!state.file) return;
-  const token=++state.token;
 
   if(state.busy){
     state.pending=true;
     return;
   }
 
+  const token=++state.token;
   state.busy=true;
   state.pending=false;
   setStatus("busy");
