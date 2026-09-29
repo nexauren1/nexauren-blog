@@ -431,7 +431,7 @@ async function openCamera(){
   if(!navigator.mediaDevices?.getUserMedia){
     $("#camera-status").textContent="INDISPONÍVEL";
     $("#camera-hint").textContent="Este navegador não disponibiliza câmera direta.";
-    showToast("A câmera direta não está disponível neste navegador. Use "Escolher da galeria".", "error");
+     showToast("A câmera direta não está disponível neste navegador. Use a galeria.", "error");
     return;
   }
 
