@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07111f">
 <meta name="description" content="Calculadora de lucro para vendas online em vários países e moedas. Descobre quanto realmente ganhas por venda.">
-<title>Calculadora de lucro para marketplace — Nexauren Tools</title>
+<title>Calculadora de lucro para marketplace — Nexauren Story</title>
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/marketplace/marketplace-fee-calculator/">
 <link rel="stylesheet" href="./style.css">
 
@@ -300,7 +300,7 @@
 </header>
 <section class="mfc-grid">
 <form class="mfc-panel mfc-inputs" id="calculator" autocomplete="off">
- <div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">1 · VENDA</span><h2>Dados da venda</h2></div><button type="button" class="mfc-reset" id="reset">↺ Limpar</button></div>
+ <div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">1 · VENDA</span><h2>Dados da venda</h2></div><div class="mfc-head-actions"><button type="button" class="mfc-copy-summary" id="copySummary">Copiar resumo</button><button type="button" class="mfc-reset" id="reset">↺ Limpar</button></div></div>
  <div class="mfc-fields">
   <label class="mfc-field mfc-field-wide"><span>País / moeda</span><div class="mfc-control"><select id="currency"><option value="EUR">🇪🇺 Euro — EUR (€)</option><option value="MZN">🇲🇿 Moçambique — MZN (MT)</option><option value="ZAR">🇿🇦 África do Sul — ZAR (R)</option><option value="USD">🇺🇸 Estados Unidos — USD ($)</option><option value="BRL">🇧🇷 Brasil — BRL (R$)</option><option value="GBP">🇬🇧 Reino Unido — GBP (£)</option><option value="CAD">🇨🇦 Canadá — CAD ($)</option><option value="AUD">🇦🇺 Austrália — AUD ($)</option><option value="CHF">🇨🇭 Suíça — CHF</option><option value="JPY">🇯🇵 Japão — JPY (¥)</option><option value="CNY">🇨🇳 China — CNY (¥)</option><option value="INR">🇮🇳 Índia — INR (₹)</option><option value="NGN">🇳🇬 Nigéria — NGN (₦)</option><option value="KES">🇰🇪 Quénia — KES (KSh)</option><option value="GHS">🇬🇭 Gana — GHS (GH₵)</option><option value="AED">🇦🇪 Emirados Árabes — AED</option></select></div></label>
   <label class="mfc-field"><span>Quantidade</span><div class="mfc-control"><input id="quantity" inputmode="numeric" type="number" min="1" step="1" value="1"><span class="mfc-quantity-unit">un.</span></div></label>
@@ -321,9 +321,9 @@
   <label class="mfc-field"><span>Margem desejada</span><div class="mfc-control mfc-percent"><input id="targetMargin" type="number" min="0" max="99.99" step="0.01" value="20"><span>%</span></div></label>
   <label class="mfc-field"><span>Lucro desejado</span><div class="mfc-control mfc-money"><span class="mfc-prefix" data-currency>€</span><input id="targetProfit" type="number" min="0" step="0.01" value="0"></div></label>
  </div></details>
- <p class="mfc-simple-note">Os dados básicos já são suficientes para calcular o lucro. Usa “Mais opções” apenas quando precisares.</p>
+ <p class="mfc-simple-note">Os dados básicos já são suficientes para calcular o lucro. Usa “Mais opções” apenas quando precisares. Os valores são guardados localmente neste dispositivo.</p>
 </form>
-<section class="mfc-panel mfc-results" aria-live="polite">
+<section class="mfc-panel mfc-results" aria-live="polite"><div id="mfcSaveStatus" class="mfc-save-status">Rascunho local ativo</div>
  <div class="mfc-panel-head"><div><span class="mfc-panel-eyebrow">2 · RESULTADO</span><h2>Quanto ganhas?</h2></div><span class="mfc-live">AO VIVO</span></div>
  <div class="mfc-profit-card"><div><span class="mfc-profit-label">LUCRO TOTAL</span><strong id="netProfit">€ 38,00</strong></div><div class="mfc-margin-box"><span>MARGEM</span><strong id="margin">38,00%</strong></div></div>
  <div class="mfc-unit-grid"><div class="mfc-unit-card"><span>LUCRO / UN.</span><strong id="unitProfit">€ 38,00</strong></div><div class="mfc-unit-card"><span>CUSTO / UN.</span><strong id="unitTotalCost">€ 62,00</strong></div><div class="mfc-unit-card"><span>RECEITA / UN.</span><strong id="unitRevenue">€ 100,00</strong></div></div>
