@@ -8,9 +8,9 @@
 <meta name="description" content="Compressor de imagem avançado da Nexauren: lote, qualidade, tamanho alvo, redimensionamento e limpeza local de metadados.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/imagem/image-compressor/">
-<title>Compressor de Imagem Avançado | Nexauren</title>
+<title>Nexauren Image Lab — Compressor de Imagem</title>
 <link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
-<link rel="stylesheet" href="/tool/categories/imagem/image-compressor/compressor.css?v=20260924-v2">
+<link rel="stylesheet" href="/tool/categories/imagem/image-compressor/compressor.css?v=20260929-v3">
 
 
 
@@ -316,16 +316,19 @@
 
   <section class="nx-hero">
     <div>
-      <div class="nx-kicker">Compressor de Imagem · V2</div>
-      <h1 class="nx-title">Menos peso.<br>Mais controlo.</h1>
-      <p class="nx-lead">Comprima imagens em lote com controlo fino de qualidade, formato, dimensão e tamanho-alvo. Tudo foi pensado para trabalhar rápido, com controlo e resultados consistentes.</p>
+      <div class="nx-kicker">NEXAUREN IMAGE LAB · V3</div>
+      <h1 class="nx-title">Comprima.<br>Compare.<br>Publique.</h1>
+      <p class="nx-lead">Compressão local de alto desempenho com comparação visual instantânea, presets inteligentes, formatos modernos, redimensionamento e tamanho-alvo. Sem limite artificial de imagens por plano.</p>
     </div>
     <aside class="nx-plan-card" aria-live="polite">
       <div class="nx-plan-top">
-        <span class="nx-plan-badge" id="plan-badge">CONTA</span>
-        <strong class="nx-plan-state" id="plan-state">A consultar…</strong>
+        <span class="nx-plan-badge">PROCESSAMENTO LOCAL</span>
+        <strong class="nx-plan-state pro">SEM BLOQUEIO</strong>
       </div>
-      <p class="nx-plan-copy" id="plan-copy">A preparar o seu espaço de trabalho…</p>
+      <p class="nx-plan-copy">Lotes sem limite artificial. Os ficheiros são processados diretamente no dispositivo, sem upload para um servidor.</p>
+      <div class="nx-trust-row">
+        <span>⚡ Rápido</span><span>🔒 Privado</span><span>∞ Lotes</span>
+      </div>
     </aside>
   </section>
 
@@ -347,6 +350,63 @@
           </div>
         </div>
       </div>
+
+      <section class="nx-compare" id="compare" hidden aria-live="polite">
+        <div class="nx-compare-head">
+          <div>
+            <span class="nx-section-kicker">LIVE COMPARISON</span>
+            <h2>Original vs. resultado</h2>
+            <p id="compare-caption">Selecione uma imagem e comprima para ver a transformação.</p>
+          </div>
+          <div class="nx-compare-toolbar">
+            <button class="nx-mini-btn" id="compare-prev" type="button" title="Imagem anterior">←</button>
+            <span id="compare-index">1 / 1</span>
+            <button class="nx-mini-btn" id="compare-next" type="button" title="Próxima imagem">→</button>
+          </div>
+        </div>
+
+        <div class="nx-compare-grid">
+          <article class="nx-preview-card">
+            <div class="nx-preview-top">
+              <span class="nx-preview-label">ORIGINAL</span>
+              <span class="nx-preview-meta" id="compare-original-meta">—</span>
+            </div>
+            <div class="nx-preview-stage">
+              <img id="compare-original" alt="Pré-visualização original">
+            </div>
+            <div class="nx-preview-foot">
+              <span id="compare-original-size">—</span>
+              <button class="nx-link-btn" id="open-original" type="button">Abrir</button>
+            </div>
+          </article>
+
+          <article class="nx-preview-card result-preview">
+            <div class="nx-preview-top">
+              <span class="nx-preview-label accent">RESULTADO</span>
+              <span class="nx-preview-meta" id="compare-result-meta">Aguardando compressão</span>
+            </div>
+            <div class="nx-preview-stage">
+              <div class="nx-result-placeholder" id="compare-placeholder">
+                <span class="nx-placeholder-icon">✦</span>
+                <strong>Seu resultado aparece aqui</strong>
+                <small>Escolha as definições e toque em “Comprimir lote”.</small>
+              </div>
+              <img id="compare-result" alt="Pré-visualização comprimida" hidden>
+            </div>
+            <div class="nx-preview-foot">
+              <span id="compare-result-size">—</span>
+              <button class="nx-link-btn primary" id="download-preview" type="button" disabled>Baixar</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="nx-insight-grid">
+          <div class="nx-insight-card"><span>REDUÇÃO</span><strong id="compare-saving">—</strong><small>peso do ficheiro</small></div>
+          <div class="nx-insight-card"><span>DIMENSÃO</span><strong id="compare-dimensions">—</strong><small>largura × altura</small></div>
+          <div class="nx-insight-card"><span>FORMATO</span><strong id="compare-format">—</strong><small>saída final</small></div>
+          <div class="nx-insight-card"><span>QUALIDADE</span><strong id="compare-quality">—</strong><small>configuração usada</small></div>
+        </div>
+      </section>
 
       <div class="nx-control-grid">
         <div class="nx-field nx-field-wide">
@@ -418,7 +478,7 @@
         </div>
       </div>
       <div class="nx-queue" id="queue">
-        <div class="nx-empty">Adicione até <strong>3 imagens</strong> no Free. No Pro, o lote não tem limite.</div>
+        <div class="nx-empty"><strong>Adicione quantas imagens quiser.</strong><br>O Nexauren não aplica limite artificial por plano; a capacidade real depende do seu dispositivo.</div>
       </div>
 
       <div class="nx-results" id="results">
@@ -435,7 +495,7 @@
         </div>
       </div>
 
-      <div class="nx-note">Privacidade: as imagens são processadas diretamente no seu dispositivo e os ficheiros permanecem consigo.</div>
+      <div class="nx-note"><strong>Privacidade por design:</strong> as imagens são processadas diretamente no seu dispositivo. Não há necessidade de enviar os ficheiros para um servidor.</div>
     </div>
 
     <div class="nx-card nx-login" id="login" hidden>
@@ -456,7 +516,7 @@
   </footer>
 </main>
 <div class="nx-toast" id="toast" role="status" aria-live="polite"></div>
-<script type="module" src="script.js?v=20260924-v2"></script>
+<script type="module" src="script.js?v=20260929-v3"></script>
 
 
 </body>
