@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Conversor de Cores · Nexauren Tools</title>
+<title>Conversor de Cores · Nexauren Story</title>
 <link rel="stylesheet" href="./style.css">
 
 
@@ -312,11 +312,11 @@
 <div class="format-card" data-key="cmyk"><span>CMYK</span><strong id="cmyk">—</strong><button data-copy="cmyk">Copiar</button></div>
 </div>
 
-<div class="contrast">
+<div class="contrast"><div><span>Formato selecionado</span><strong id="selectedFormat">HEX</strong></div>
 <div><span>Contraste sobre branco</span><strong id="onWhite">—</strong></div>
 <div><span>Contraste sobre preto</span><strong id="onBlack">—</strong></div>
 </div>
-<p id="message" class="message">Introduza uma cor CSS válida.</p>
+<div class="result-actions"><button id="copyAll">Copiar todos os formatos</button><button id="download">Baixar CSS</button></div><p class="privacy-note">Processamento local: a cor não é enviada para um servidor.</p><p id="message" class="message">Introduza uma cor CSS válida.</p>
 </section>
 <p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
@@ -327,14 +327,7 @@
 <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
 <footer>NEXAUREN TOOLS · Color Lab · Processamento local</footer>
 </main>
-<script type="module">
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
-const app=document.querySelector(".lab"),msg=document.querySelector("#access");
-onAuthStateChanged(auth,user=>{
- const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
- app.querySelectorAll("button,input").forEach(el=>el.disabled=locked);
-});
-</script>
+
 <script src="./script.js"></script>
 
 
