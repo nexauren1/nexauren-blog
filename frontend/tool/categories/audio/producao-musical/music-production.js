@@ -446,8 +446,10 @@ function drumTool(){
   document.getElementById("mp-drum-play").onclick=play;
   document.getElementById("mp-drum-stop").onclick=stop;
   copy.onclick=async()=>{const ok=await copyText(exportPattern());if(ok){copy.textContent=t.copied;setTimeout(()=>copy.textContent=t.copy,1000)}};
+  const onKey=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();randomize()}};
+  window.addEventListener("keydown",onKey);
   draw();
-  return ()=>{stop();if(audio){try{audio.close()}catch{}audio=null;noiseBuffer=null}};
+  return ()=>{stop();window.removeEventListener("keydown",onKey);if(audio){try{audio.close()}catch{}audio=null;noiseBuffer=null}};
 }
 
 let cleanupActive=()=>{};
