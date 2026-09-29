@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Conversor de Dados / Bytes · Nexauren Tools</title>
+<title>Conversor de Dados / Bytes · Nexauren Story</title>
 <link rel="stylesheet" href="./style.css">
 
 
@@ -307,8 +307,8 @@
 <label>ESCALA DE SAÍDA<select id="scale"><option value="decimal">SI · 1000</option><option value="binary">IEC · 1024</option></select></label>
 </div>
 <div id="results" class="results"></div>
-<div class="exact"><span>BYTES EXATOS</span><strong id="exact">—</strong><button id="copyExact">Copiar</button></div>
-<p id="message" class="message">Os cálculos são realizados localmente.</p>
+<div class="exact"><span>BYTES EXATOS</span><strong id="exact">—</strong><button id="copyExact">Copiar</button><button id="copyAll">Copiar todos</button></div>
+<p class="privacy-note">Processamento local: os cálculos não são enviados para um servidor.</p><p id="message" class="message">Os cálculos são realizados localmente.</p>
 </section>
 <p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
@@ -319,14 +319,7 @@
 <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
 <footer>NEXAUREN TOOLS · Data Scale · Processamento local</footer>
 </main>
-<script type="module">
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
-const app=document.querySelector(".converter"),msg=document.querySelector("#access");
-onAuthStateChanged(auth,user=>{
- const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
- app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked);
-});
-</script>
+
 <script src="./script.js"></script>
 
 
