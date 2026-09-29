@@ -369,6 +369,43 @@
           </div>
         </div>
 
+        <div class="nx-compare-main">
+          <div class="nx-compare-main-head">
+            <div>
+              <span class="nx-section-kicker">PIXEL PREVIEW</span>
+              <strong>Deslize para comparar</strong>
+            </div>
+            <div class="nx-view-actions">
+              <button class="nx-mini-btn" id="zoom-out" type="button" title="Diminuir zoom">−</button>
+              <span id="zoom-value">100%</span>
+              <button class="nx-mini-btn" id="zoom-in" type="button" title="Aumentar zoom">+</button>
+              <button class="nx-mini-btn" id="zoom-reset" type="button" title="Repor zoom">↺</button>
+              <button class="nx-mini-btn strong" id="fullscreen-preview" type="button" title="Tela cheia">⛶</button>
+            </div>
+          </div>
+          <div class="nx-slider-stage" id="compare-slider-stage">
+            <img id="slider-original" alt="Imagem original">
+            <div class="nx-slider-result" id="slider-result-layer">
+              <img id="slider-result" alt="Resultado comprimido">
+            </div>
+            <span class="nx-slider-label left">ORIGINAL</span>
+            <span class="nx-slider-label right">RESULTADO</span>
+            <div class="nx-slider-divider" id="slider-divider">
+              <span>↔</span>
+            </div>
+            <div class="nx-slider-placeholder" id="slider-placeholder">
+              <span class="nx-placeholder-icon">✦</span>
+              <strong>Compreenda o resultado em segundos</strong>
+              <small>Comprima uma imagem para ativar a comparação interativa.</small>
+            </div>
+            <input id="compare-slider" class="nx-compare-range" type="range" min="0" max="100" value="50" aria-label="Posição da comparação">
+          </div>
+          <div class="nx-slider-footer">
+            <span id="slider-status">Arraste o divisor para comparar.</span>
+            <label class="nx-fit-toggle"><input id="fit-toggle" type="checkbox" checked> Ajustar à área</label>
+          </div>
+        </div>
+
         <div class="nx-compare-grid">
           <article class="nx-preview-card">
             <div class="nx-preview-top">
@@ -409,6 +446,7 @@
           <div class="nx-insight-card"><span>DIMENSÃO</span><strong id="compare-dimensions">—</strong><small>largura × altura</small></div>
           <div class="nx-insight-card"><span>FORMATO</span><strong id="compare-format">—</strong><small>saída final</small></div>
           <div class="nx-insight-card"><span>QUALIDADE</span><strong id="compare-quality">—</strong><small>configuração usada</small></div>
+          <div class="nx-insight-card"><span>PROCESSAMENTO</span><strong id="compare-time">—</strong><small>tempo no dispositivo</small></div>
         </div>
       </section>
 
@@ -499,6 +537,20 @@
         </div>
       </div>
 
+      <section class="nx-history" id="history-panel">
+        <div class="nx-history-head">
+          <div>
+            <span class="nx-section-kicker">LOCAL ACTIVITY</span>
+            <h2>Histórico recente</h2>
+            <p>Resumo local das últimas compressões. Os ficheiros não são guardados pelo Nexauren.</p>
+          </div>
+          <button class="nx-mini-btn" id="clear-history" type="button">Limpar histórico</button>
+        </div>
+        <div class="nx-history-list" id="history-list">
+          <div class="nx-history-empty">Ainda não há compressões nesta sessão.</div>
+        </div>
+      </section>
+
       <div class="nx-note"><strong>Privacidade por design:</strong> as imagens são processadas diretamente no seu dispositivo. Não há necessidade de enviar os ficheiros para um servidor.</div>
     </div>
 
@@ -519,6 +571,24 @@
     <span><a href="/tool/">Ferramentas</a> · <a href="/account/upgrade/">Plano Pro</a> · <a href="/legal/privacidade/">Privacidade</a></span>
   </footer>
 </main>
+<div class="nx-lightbox" id="preview-lightbox" hidden role="dialog" aria-modal="true" aria-label="Pré-visualização em tela cheia">
+  <div class="nx-lightbox-backdrop" data-close-lightbox></div>
+  <div class="nx-lightbox-card">
+    <div class="nx-lightbox-head">
+      <strong id="lightbox-title">Nexauren Preview</strong>
+      <button class="nx-mini-btn strong" id="close-lightbox" type="button">×</button>
+    </div>
+    <div class="nx-lightbox-stage">
+      <img id="lightbox-original" alt="Original em tela cheia">
+      <img id="lightbox-result" alt="Resultado em tela cheia">
+    </div>
+    <div class="nx-lightbox-foot">
+      <span id="lightbox-meta">—</span>
+      <button class="nx-link-btn primary" id="lightbox-download" type="button">Baixar resultado</button>
+    </div>
+  </div>
+</div>
+
 <div class="nx-toast" id="toast" role="status" aria-live="polite"></div>
 <script type="module" src="script.js?v=20260929-v3"></script>
 
