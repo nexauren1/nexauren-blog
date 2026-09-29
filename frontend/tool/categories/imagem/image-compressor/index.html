@@ -10,7 +10,7 @@
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/imagem/image-compressor/">
 <title>Nexauren Image Lab — Compressor de Imagem</title>
 <link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
-<link rel="stylesheet" href="/tool/categories/imagem/image-compressor/compressor.css?v=20260929-v4">
+<link rel="stylesheet" href="/tool/categories/imagem/image-compressor/compressor.css?v=20260929-v5">
 
 
 
@@ -308,323 +308,196 @@
 <script src="/assets/ads.js?v=20260925-auto3"></script>
 </head>
 <body>
-<!-- NEXAUREN-AUTO-ADS:START -->
-<div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
-  <div class="nx-auto-ad-label">PUBLICIDADE</div>
-  <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
-</div>
-<script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
-<!-- NEXAUREN-AUTO-ADS:END --><main class="nx-compressor">
-  <header class="nx-topbar">
-    <a class="nx-brand" href="/tool/categories/imagem/" aria-label="Voltar para Imagem">
-      <span class="nx-brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M7 5h10M7 19h10M5 8.5h5v7H5zM14 8.5h5v7h-5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-          <path d="M10 12h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-        </svg>
-      </span>
-      <span class="nx-brand-copy"><strong>NEXAUREN</strong><span>IMAGE LAB · COMPRESSOR</span></span>
-    </a>
-    <a class="nx-back" href="/tool/categories/imagem/">← Ferramentas de imagem</a>
-  </header>
+  <!-- NEXAUREN-AUTO-ADS:START -->
+  <div class="nx-auto-ad top" data-nx-auto-ad="top" aria-label="Publicidade">
+    <div class="nx-auto-ad-label">PUBLICIDADE</div>
+    <div class="nx-auto-ad-inner" id="nx-auto-ad-top"></div>
+  </div>
+  <script>window.NexaurenAds?.loadBanner(document.getElementById("nx-auto-ad-top"));</script>
+  <!-- NEXAUREN-AUTO-ADS:END -->
 
-  <section class="nx-hero">
-    <div>
-      <div class="nx-kicker">NEXAUREN IMAGE LAB · V3</div>
-      <h1 class="nx-title">Comprima.<br>Compare.<br>Publique.</h1>
-      <p class="nx-lead">Compressão local de alto desempenho com comparação visual instantânea, presets inteligentes, formatos modernos, redimensionamento e tamanho-alvo. Sem limite artificial de imagens por plano.</p>
-    </div>
-    <aside class="nx-plan-card" aria-live="polite">
-      <div class="nx-plan-top">
-        <span class="nx-plan-badge">PROCESSAMENTO LOCAL</span>
-        <strong class="nx-plan-state pro">SEM BLOQUEIO</strong>
-      </div>
-      <p class="nx-plan-copy">Lotes sem limite artificial. Os ficheiros são processados diretamente no dispositivo, sem upload para um servidor.</p>
-      <div class="nx-trust-row">
-        <span>⚡ Rápido</span><span>🔒 Privado</span><span>∞ Lotes</span>
-      </div>
-    </aside>
-  </section>
+  <main class="nx-page">
+    <header class="nx-topbar">
+      <a class="nx-brand" href="/tool/categories/imagem/" aria-label="Voltar para Ferramentas de imagem">
+        <span class="nx-brand-mark" aria-hidden="true">✦</span>
+        <span class="nx-brand-copy"><strong>NEXAUREN</strong><small>IMAGE LAB</small></span>
+      </a>
+      <a class="nx-back" href="/tool/categories/imagem/">← Ferramentas de imagem</a>
+    </header>
 
-  <section class="nx-app" aria-label="Compressor de imagem">
-    <div class="nx-card">
-      <div class="nx-drop-wrap">
-        <div class="nx-dropzone" id="dropzone">
-          <input class="nx-hidden-input" id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/avif" multiple>
-          <div class="nx-drop-content">
-            <div class="nx-drop-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M12 16V5m0 0L8 9m4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M5 14v3.2A1.8 1.8 0 0 0 6.8 19h10.4a1.8 1.8 0 0 0 1.8-1.8V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="nx-drop-title">Arraste imagens para aqui</div>
-            <div class="nx-drop-sub">JPG, PNG, WebP e outros formatos suportados · também aceita colar uma imagem</div>
-            <button class="nx-pick" id="pick" type="button">Escolher imagens</button>
-          </div>
-        </div>
+    <section class="nx-intro">
+      <span class="nx-eyebrow">IMAGE COMPRESSOR</span>
+      <h1>Comprime uma imagem.<br>Veja a diferença.</h1>
+      <p>Arraste uma imagem para começar. O original e o resultado ficam lado a lado, com processamento local e sem limites artificiais.</p>
+    </section>
+
+    <section class="nx-tool" aria-label="Compressor de imagem">
+      <div class="nx-upload" id="upload">
+        <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/avif">
+        <div class="nx-upload-icon">↑</div>
+        <strong>Escolher imagem</strong>
+        <span>JPG, PNG, WebP, GIF, BMP ou AVIF</span>
+        <button id="pick" class="nx-primary" type="button">Selecionar imagem</button>
       </div>
 
-      <section class="nx-compare" id="compare" hidden aria-live="polite">
-        <div class="nx-compare-head">
-          <div>
-            <span class="nx-section-kicker">LIVE COMPARISON</span>
-            <h2>Original vs. resultado</h2>
-            <p id="compare-caption">Selecione uma imagem e comprima para ver a transformação.</p>
-          </div>
-          <div class="nx-compare-toolbar">
-            <button class="nx-mini-btn" id="compare-prev" type="button" title="Imagem anterior">←</button>
-            <span id="compare-index">1 / 1</span>
-            <button class="nx-mini-btn" id="compare-next" type="button" title="Próxima imagem">→</button>
-          </div>
-        </div>
-
-        <div class="nx-compare-main">
-          <div class="nx-compare-main-head">
+      <div class="nx-workspace" id="workspace" hidden>
+        <div class="nx-workbar">
+          <div class="nx-fileline">
+            <span class="nx-status-dot" id="status-dot"></span>
             <div>
-              <span class="nx-section-kicker">PIXEL PREVIEW</span>
-              <strong>Deslize para comparar</strong>
-            </div>
-            <div class="nx-view-actions">
-              <button class="nx-mini-btn" id="zoom-out" type="button" title="Diminuir zoom">−</button>
-              <span id="zoom-value">100%</span>
-              <button class="nx-mini-btn" id="zoom-in" type="button" title="Aumentar zoom">+</button>
-              <button class="nx-mini-btn" id="zoom-reset" type="button" title="Repor zoom">↺</button>
-              <button class="nx-mini-btn strong" id="fullscreen-preview" type="button" title="Tela cheia">⛶</button>
+              <strong id="file-name">imagem.jpg</strong>
+              <small id="file-info">—</small>
             </div>
           </div>
-          <div class="nx-slider-stage" id="compare-slider-stage">
-            <img id="slider-original" alt="Imagem original">
-            <div class="nx-slider-result" id="slider-result-layer">
-              <img id="slider-result" alt="Resultado comprimido">
-            </div>
-            <span class="nx-slider-label left">ORIGINAL</span>
-            <span class="nx-slider-label right">RESULTADO</span>
-            <div class="nx-slider-divider" id="slider-divider">
-              <span>↔</span>
-            </div>
-            <div class="nx-slider-placeholder" id="slider-placeholder">
-              <span class="nx-placeholder-icon">✦</span>
-              <strong>Compreenda o resultado em segundos</strong>
-              <small>Comprima uma imagem para ativar a comparação interativa.</small>
-            </div>
-            <input id="compare-slider" class="nx-compare-range" type="range" min="0" max="100" value="50" aria-label="Posição da comparação">
-          </div>
-          <div class="nx-slider-footer">
-            <span id="slider-status">Arraste o divisor para comparar.</span>
-            <label class="nx-fit-toggle"><input id="fit-toggle" type="checkbox" checked> Ajustar à área</label>
+          <div class="nx-work-actions">
+            <button class="nx-secondary" id="settings-toggle" type="button">⚙ Configurações</button>
+            <button class="nx-secondary" id="replace" type="button">Escolher outra</button>
           </div>
         </div>
 
         <div class="nx-compare-grid">
-          <article class="nx-preview-card">
-            <div class="nx-preview-top">
-              <span class="nx-preview-label">ORIGINAL</span>
-              <span class="nx-preview-meta" id="compare-original-meta">—</span>
+          <article class="nx-image-card">
+            <div class="nx-card-head">
+              <span>ORIGINAL</span>
+              <strong id="original-size">—</strong>
             </div>
-            <div class="nx-preview-stage">
-              <img id="compare-original" alt="Pré-visualização original">
+            <div class="nx-image-stage">
+              <div class="nx-image-loading" id="original-loading"><span></span></div>
+              <img id="original-image" alt="Imagem original">
             </div>
-            <div class="nx-preview-foot">
-              <span id="compare-original-size">—</span>
-              <button class="nx-link-btn" id="open-original" type="button">Abrir</button>
+            <div class="nx-card-foot">
+              <span id="original-dimensions">—</span>
+              <button class="nx-text-btn" id="open-original" type="button">Abrir</button>
             </div>
           </article>
 
-          <article class="nx-preview-card result-preview">
-            <div class="nx-preview-top">
-              <span class="nx-preview-label accent">RESULTADO</span>
-              <span class="nx-preview-meta" id="compare-result-meta">Aguardando compressão</span>
+          <article class="nx-image-card result">
+            <div class="nx-card-head">
+              <span>RESULTADO</span>
+              <strong id="result-size">Aguardando</strong>
             </div>
-            <div class="nx-preview-stage">
-              <div class="nx-result-placeholder" id="compare-placeholder">
-                <span class="nx-placeholder-icon">✦</span>
-                <strong>Seu resultado aparece aqui</strong>
-                <small>Escolha as definições e toque em “Comprimir lote”.</small>
+            <div class="nx-image-stage">
+              <div class="nx-result-empty" id="result-empty">
+                <div class="nx-result-symbol">✦</div>
+                <strong>O resultado aparece aqui</strong>
+                <span>Abra as configurações para ajustar a compressão.</span>
               </div>
-              <img id="compare-result" alt="Pré-visualização comprimida" hidden>
+              <div class="nx-image-loading" id="result-loading" hidden><span></span></div>
+              <img id="result-image" alt="Imagem comprimida" hidden>
             </div>
-            <div class="nx-preview-foot">
-              <span id="compare-result-size">—</span>
-              <button class="nx-link-btn primary" id="download-preview" type="button" disabled>Baixar</button>
+            <div class="nx-card-foot">
+              <span id="result-meta">—</span>
+              <button class="nx-primary small" id="download" type="button" disabled>Baixar</button>
             </div>
           </article>
         </div>
 
-        <div class="nx-insight-grid">
-          <div class="nx-insight-card"><span>REDUÇÃO</span><strong id="compare-saving">—</strong><small>peso do ficheiro</small></div>
-          <div class="nx-insight-card"><span>DIMENSÃO</span><strong id="compare-dimensions">—</strong><small>largura × altura</small></div>
-          <div class="nx-insight-card"><span>FORMATO</span><strong id="compare-format">—</strong><small>saída final</small></div>
-          <div class="nx-insight-card"><span>QUALIDADE</span><strong id="compare-quality">—</strong><small>configuração usada</small></div>
-          <div class="nx-insight-card"><span>PROCESSAMENTO</span><strong id="compare-time">—</strong><small>tempo no dispositivo</small></div>
-        </div>
-      </section>
-
-      <section class="nx-smart-panel" id="smart-analysis" aria-live="polite">
-        <div class="nx-smart-icon">✦</div>
-        <div class="nx-smart-copy">
-          <span class="nx-section-kicker">SMART ENGINE</span>
-          <strong id="smart-title">Análise automática pronta</strong>
-          <p id="smart-description">O Nexauren pode adaptar formato, qualidade e dimensão a cada imagem antes de processar o lote.</p>
-        </div>
-        <div class="nx-smart-status">
-          <span id="smart-badge">AUTO</span>
-          <small id="smart-capacity">Processamento adaptativo</small>
-        </div>
-      </section>
-
-      <div class="nx-control-grid">
-        <div class="nx-field">
-          <label class="nx-label">Otimização inteligente</label>
-          <label class="nx-toggle"><input id="smart-enabled" type="checkbox" checked> Adaptar por imagem</label>
+        <div class="nx-result-bar" id="result-bar">
+          <div><span>REDUÇÃO</span><strong id="saving">—</strong></div>
+          <div><span>DIMENSÕES</span><strong id="dimensions">—</strong></div>
+          <div><span>FORMATO</span><strong id="format-label">—</strong></div>
+          <div><span>TEMPO</span><strong id="time-label">—</strong></div>
         </div>
 
-        <div class="nx-field nx-field-wide">
-          <label class="nx-label" for="format">Formato de saída</label>
-          <select id="format">
-            <option value="auto">Automático · preservar quando possível</option>
-            <option value="webp">WebP · recomendado para web</option>
-            <option value="jpeg">JPG · máxima compatibilidade</option>
-            <option value="png">PNG · sem perda</option>
-          </select>
-        </div>
+        <div class="nx-settings" id="settings-panel" hidden>
+          <div class="nx-settings-head">
+            <div>
+              <span class="nx-eyebrow">CONFIGURAÇÕES</span>
+              <h2>Controle o resultado</h2>
+            </div>
+            <button class="nx-icon-btn" id="settings-close" type="button" aria-label="Fechar configurações">×</button>
+          </div>
 
-        <div class="nx-field">
-          <label class="nx-label">Qualidade</label>
-          <div class="nx-range-line">
-            <input id="quality" type="range" min="45" max="100" value="84">
-            <output class="nx-output" id="quality-value">84%</output>
+          <div class="nx-settings-grid">
+            <label class="nx-field">
+              <span>Formato</span>
+              <select id="format">
+                <option value="auto">Automático</option>
+                <option value="webp">WebP</option>
+                <option value="jpeg">JPG</option>
+                <option value="png">PNG</option>
+              </select>
+            </label>
+
+            <label class="nx-field">
+              <span>Qualidade <b id="quality-value">84%</b></span>
+              <input id="quality" type="range" min="45" max="100" value="84">
+            </label>
+
+            <label class="nx-field">
+              <span>Largura máxima</span>
+              <input id="max-width" type="number" min="256" max="12000" value="2560">
+            </label>
+
+            <label class="nx-field">
+              <span>Altura máxima</span>
+              <input id="max-height" type="number" min="256" max="12000" value="2560">
+            </label>
+
+            <label class="nx-field nx-field-wide">
+              <span>Modo</span>
+              <select id="mode">
+                <option value="smart">Smart — recomendado</option>
+                <option value="manual">Manual — seguir exatamente as definições</option>
+                <option value="small">Máxima redução</option>
+                <option value="quality">Máxima qualidade</option>
+              </select>
+            </label>
+
+            <label class="nx-field">
+              <span>Atualização</span>
+              <label class="nx-switch"><input id="auto-apply" type="checkbox" checked><span>Atualizar em tempo real</span></label>
+            </label>
+
+            <label class="nx-field nx-field-wide">
+              <span>Fundo para JPG</span>
+              <select id="background">
+                <option value="#ffffff">Branco</option>
+                <option value="#000000">Preto</option>
+                <option value="#f2f2f2">Cinza claro</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="nx-settings-actions">
+            <button class="nx-secondary" id="reset-settings" type="button">Restaurar</button>
+            <button class="nx-primary" id="apply-settings" type="button">Aplicar e atualizar</button>
           </div>
         </div>
-
-        <div class="nx-field">
-          <label class="nx-label" for="max-width">Dimensão máxima</label>
-          <div class="nx-target-row open">
-            <input id="max-width" type="number" min="256" max="12000" step="1" value="2560" placeholder="Largura">
-            <input id="max-height" type="number" min="256" max="12000" step="1" value="2560" placeholder="Altura">
-          </div>
-        </div>
-
-        <div class="nx-field">
-          <label class="nx-label">Tamanho-alvo</label>
-          <label class="nx-toggle"><input id="target-enabled" type="checkbox"> Procurar o menor ficheiro dentro do alvo</label>
-        </div>
-
-        <div class="nx-field" id="target-field" hidden>
-          <label class="nx-label" for="target-kb">Alvo por imagem</label>
-          <input id="target-kb" type="number" min="10" max="20480" step="10" value="500">
-        </div>
-
-        <div class="nx-field">
-          <label class="nx-label" for="background">Fundo para JPG</label>
-          <select id="background">
-            <option value="#ffffff">Branco</option>
-            <option value="#000000">Preto</option>
-            <option value="#f2f2f2">Cinza claro</option>
-          </select>
-        </div>
-
-        <div class="nx-field">
-          <label class="nx-label">Processamento do lote</label>
-          <label class="nx-toggle"><input id="parallel-enabled" type="checkbox" checked> Paralelo adaptativo</label>
-        </div>
-
-        <div class="nx-field nx-field-wide">
-          <label class="nx-label" for="suffix">Sufixo dos ficheiros</label>
-          <input id="suffix" type="text" maxlength="40" value="-nexauren" placeholder="-comprimida">
-        </div>
       </div>
+    </section>
 
-      <div class="nx-presets" aria-label="Predefinições rápidas">
-        <button class="nx-preset" type="button" data-preset="web">Web · equilibrado</button>
-        <button class="nx-preset active" type="button" data-preset="smart">Smart · recomendado</button>
-        <button class="nx-preset" type="button" data-preset="small">Mínimo · poupar espaço</button>
-        <button class="nx-preset" type="button" data-preset="quality">Qualidade · mais detalhe</button>
-      </div>
+    <section class="nx-privacy">
+      <span>🔒</span>
+      <div><strong>Processamento local</strong><small>A imagem é processada diretamente no seu dispositivo.</small></div>
+    </section>
 
-      <div class="nx-queue-head">
-        <div class="nx-queue-title">
-          <h2>Fila de imagens</h2>
-          <p id="queue-meta">Nenhuma imagem selecionada.</p>
-        </div>
-        <div class="nx-queue-actions">
-          <button class="nx-btn ghost" id="clear" type="button">Limpar</button>
-          <button class="nx-btn primary" id="compress" type="button" disabled>Comprimir lote</button>
-        </div>
-      </div>
-      <div class="nx-queue" id="queue">
-        <div class="nx-empty"><strong>Adicione quantas imagens quiser.</strong><br>O Nexauren não aplica limite artificial por plano; a capacidade real depende do seu dispositivo.</div>
-      </div>
-
-      <div class="nx-results" id="results">
-        <div class="nx-stats">
-          <div class="nx-stat"><strong id="stat-count">0</strong><span>Imagens</span></div>
-          <div class="nx-stat"><strong id="stat-original">—</strong><span>Original</span></div>
-          <div class="nx-stat"><strong id="stat-output">—</strong><span>Resultado</span></div>
-          <div class="nx-stat"><strong id="stat-saved">—</strong><span>Poupança</span></div>
-        </div>
-        <div class="nx-table" id="result-list"></div>
-        <div class="nx-queue-actions" style="margin-top:12px">
-          <button class="nx-btn primary" id="download-all" type="button" disabled>Baixar todos</button>
-          <button class="nx-btn ghost" id="copy-report" type="button" disabled>Copiar relatório</button>
-        </div>
-      </div>
-
-      <section class="nx-history" id="history-panel">
-        <div class="nx-history-head">
-          <div>
-            <span class="nx-section-kicker">LOCAL ACTIVITY</span>
-            <h2>Histórico recente</h2>
-            <p>Resumo local das últimas compressões. Os ficheiros não são guardados pelo Nexauren.</p>
-          </div>
-          <button class="nx-mini-btn" id="clear-history" type="button">Limpar histórico</button>
-        </div>
-        <div class="nx-history-list" id="history-list">
-          <div class="nx-history-empty">Ainda não há compressões nesta sessão.</div>
-        </div>
-      </section>
-
-      <div class="nx-note"><strong>Privacidade por design:</strong> as imagens são processadas diretamente no seu dispositivo. Não há necessidade de enviar os ficheiros para um servidor.</div>
+    <!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+    <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
+      <div class="nx-auto-ad-label">PUBLICIDADE</div>
+      <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
     </div>
+    <script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
+    <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
 
-    <div class="nx-card nx-login" id="login" hidden>
-      <h2>Entre na sua conta Nexauren</h2>
-      <p>O Compressor de Imagem verifica automaticamente os recursos disponíveis para a sua conta antes de processar cada lote.</p>
-      <a href="/account">Entrar ou criar conta</a>
-    </div>
-  </section><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
-<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
-  <div class="nx-auto-ad-label">PUBLICIDADE</div>
-  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
-</div>
-<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
-<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
-<footer class="nx-footer">
-    <span>© <span id="year"></span> Nexauren Story · Image Lab</span>
-    <span><a href="/tool/">Ferramentas</a> · <a href="/account/upgrade/">Plano Pro</a> · <a href="/legal/privacidade/">Privacidade</a></span>
-  </footer>
-</main>
-<div class="nx-lightbox" id="preview-lightbox" hidden role="dialog" aria-modal="true" aria-label="Pré-visualização em tela cheia">
-  <div class="nx-lightbox-backdrop" data-close-lightbox></div>
-  <div class="nx-lightbox-card">
-    <div class="nx-lightbox-head">
-      <strong id="lightbox-title">Nexauren Preview</strong>
-      <button class="nx-mini-btn strong" id="close-lightbox" type="button">×</button>
-    </div>
-    <div class="nx-lightbox-stage">
-      <img id="lightbox-original" alt="Original em tela cheia">
-      <img id="lightbox-result" alt="Resultado em tela cheia">
-    </div>
-    <div class="nx-lightbox-foot">
-      <span id="lightbox-meta">—</span>
-      <button class="nx-link-btn primary" id="lightbox-download" type="button">Baixar resultado</button>
+    <footer class="nx-footer">
+      <span>© <span id="year"></span> Nexauren Story</span>
+      <span><a href="/tool/">Ferramentas</a> · <a href="/legal/privacidade/">Privacidade</a></span>
+    </footer>
+  </main>
+
+  <div class="nx-modal" id="preview-modal" hidden>
+    <div class="nx-modal-backdrop" id="modal-close"></div>
+    <div class="nx-modal-card">
+      <div class="nx-modal-head">
+        <strong id="modal-title">Pré-visualização</strong>
+        <button class="nx-icon-btn" id="modal-x" type="button">×</button>
+      </div>
+      <div class="nx-modal-stage"><img id="modal-image" alt="Pré-visualização"></div>
     </div>
   </div>
-</div>
 
-<div class="nx-toast" id="toast" role="status" aria-live="polite"></div>
-<script type="module" src="script.js?v=20260929-v4"></script>
-
-
+  <div class="nx-toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="script.js?v=20260929-v5"></script>
 </body>
 </html>
