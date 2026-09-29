@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Gerador de Cores e Paletas · Nexauren Tools</title>
+<title>Gerador de Cores e Paletas · Nexauren Story</title>
 <link rel="stylesheet" href="./style.css">
 
 
@@ -323,7 +323,7 @@
 </label>
 <button id="generate" class="primary">Gerar paleta</button>
 <button id="random">Cor aleatória</button>
-<button id="copy">Copiar CSS</button>
+<button id="copy">Copiar CSS</button><button id="download">Baixar CSS</button>
 </div>
 
 <div id="palette" class="palette"></div>
@@ -331,7 +331,7 @@
 <div class="code-head"><span>02 · TOKENS CSS</span><span id="status">PRONTO</span></div>
 <pre id="cssOutput">/* Gere uma paleta para criar tokens CSS. */</pre>
 </div>
-<p id="message" class="message">A paleta é processada localmente.</p>
+<p class="privacy-note">Processamento local: a paleta e as cores permanecem neste navegador.</p><p id="message" class="message">A paleta é processada localmente.</p>
 </section>
 
 <p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
@@ -343,14 +343,7 @@
 <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
 <footer>NEXAUREN TOOLS · Palette Studio · Processamento local</footer>
 </main>
-<script type="module">
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
-const app=document.querySelector(".studio"),msg=document.querySelector("#access");
-onAuthStateChanged(auth,user=>{
- const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
- app.querySelectorAll("button,input,select").forEach(el=>el.disabled=locked);
-});
-</script>
+
 <script src="./script.js"></script>
 
 
