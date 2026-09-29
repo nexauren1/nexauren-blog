@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en"><head>
-<script src="/assets/nexauren-language.js?v=20260928-6"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gerador de Sitemap · Nexauren Tools</title><link rel="stylesheet" href="./style.css">
+<html lang="pt-PT"><head>
+<script src="/assets/nexauren-language.js?v=20260928-6"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gerador de Sitemap · Nexauren Story</title><link rel="stylesheet" href="./style.css">
 
 
 
@@ -292,8 +292,8 @@
 <label>Última atualização<input id="lastmod" type="date"></label>
 <label>URLs <span class="hint">uma por linha</span><textarea id="urls" spellcheck="false" placeholder="/&#10;/blog/&#10;/tool/&#10;/account"></textarea></label>
 <div class="buttons"><button id="generate" class="primary">Gerar sitemap</button><button id="sample" class="secondary">Exemplo</button><button id="clear" class="secondary">Limpar</button></div></aside>
-<section class="output"><div class="section-head output-head"><span>02 · SITEMAP.XML</span><span id="count">0 URLs</span></div><pre id="code">O sitemap aparecerá aqui.</pre><div class="actions"><button id="copy" class="primary">Copiar XML</button><button id="download" class="secondary">Baixar sitemap.xml</button></div><div id="message" class="message">Pronto para gerar.</div></section></section>
-<p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+<section class="output"><div class="section-head output-head"><span>02 · SITEMAP.XML</span><span id="count">0 URLs · 0 caracteres</span></div><pre id="code">O sitemap aparecerá aqui.</pre><div class="actions"><button id="copy" class="primary">Copiar XML</button><button id="download" class="secondary">Baixar sitemap.xml</button></div><div id="message" class="message">Pronto para gerar.</div></section></section>
+<p class="privacy-note">Processamento local: as URLs e o sitemap permanecem neste navegador.</p><p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
   <div class="nx-auto-ad-label">PUBLICIDADE</div>
   <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
@@ -301,7 +301,7 @@
 <script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
 <!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
 <footer>NEXAUREN TOOLS · Site Map Studio · Execução local</footer></main>
-<script type="module">import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";const app=document.querySelector(".studio"),msg=document.querySelector("#access");onAuthStateChanged(auth,user=>{const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";app.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=locked)});</script>
+
 <script src="./script.js"></script>
 
 </body></html>
