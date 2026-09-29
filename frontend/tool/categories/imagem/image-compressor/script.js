@@ -134,7 +134,7 @@ function addFiles(inputFiles) {
   state.comparePosition = Math.max(0, state.files.length - incoming.length);
   renderQueue();
   renderCompare();
-  analyzeAll(incoming).catch(() => {});
+  analyzeAll(state.files).catch(() => {});
 }
 
 function removeAt(index) {
