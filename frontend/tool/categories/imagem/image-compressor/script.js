@@ -2,12 +2,15 @@ const $ = (selector) => document.querySelector(selector);
 
 const state = {
   file: null,
-  originalUrl: "",
+  originalSrc: "",
   result: null,
   token: 0,
   timer: null,
+  busy: false,
+  pending: false,
   settingsOpen: false,
-  busy: false
+  cameraStream: null,
+  cameraFacing: "environment"
 };
 
 const DEFAULTS = {
@@ -33,54 +36,49 @@ function timeLabel(ms){
   return ms<1000 ? Math.max(1,Math.round(ms))+" ms" : (ms/1000).toFixed(ms<10000?2:1)+" s";
 }
 
-function extension(mime){
+function mimeLabel(mime){
   if(mime==="image/jpeg") return "JPG";
   if(mime==="image/png") return "PNG";
-  return "WEBP";
+  if(mime==="image/webp") return "WEBP";
+  return (String(mime||"IMG").split("/")[1]||"IMG").toUpperCase();
 }
 
-function outputMime(file, format){
+function outputMime(file,format){
   if(format==="jpeg") return "image/jpeg";
   if(format==="png") return "image/png";
   if(format==="webp") return "image/webp";
-  return file?.type==="image/png" ? "image/webp" : "image/webp";
-}
-
-function sanitizeDimensions(){
-  const w=Math.min(12000,Math.max(256,Number($("#max-width").value)||DEFAULTS.maxWidth));
-  const h=Math.min(12000,Math.max(256,Number($("#max-height").value)||DEFAULTS.maxHeight));
-  $("#max-width").value=w;
-  $("#max-height").value=h;
-  return {w,h};
+  return "image/webp";
 }
 
 function getSettings(){
-  const d=sanitizeDimensions();
+  const maxWidth=Math.min(12000,Math.max(256,Number($("#max-width").value)||DEFAULTS.maxWidth));
+  const maxHeight=Math.min(12000,Math.max(256,Number($("#max-height").value)||DEFAULTS.maxHeight));
+  $("#max-width").value=maxWidth;
+  $("#max-height").value=maxHeight;
   return {
     format:$("#format").value,
     quality:Number($("#quality").value)/100,
-    maxWidth:d.w,
-    maxHeight:d.h,
+    maxWidth,
+    maxHeight,
     mode:$("#mode").value,
     autoApply:$("#auto-apply").checked,
     background:$("#background").value
   };
 }
 
-function modeSettings(settings,file,source){
+function effectiveSettings(settings,file,source){
   const out={...settings};
 
-  if(out.mode==="small") out.quality=Math.min(out.quality,0.68);
-  if(out.mode==="quality") out.quality=Math.max(out.quality,0.92);
+  if(out.mode==="small") out.quality=Math.min(out.quality,.68);
+  if(out.mode==="quality") out.quality=Math.max(out.quality,.92);
 
   if(out.mode==="smart"){
-    const large=Math.max(source.width,source.height)>=4500 || (source.width*source.height)>=12000000;
-    const png=file.type==="image/png";
-    out.format=out.format==="auto" ? "webp" : out.format;
-    out.quality=png ? Math.max(out.quality,0.88) : (large ? Math.min(out.quality,0.82) : out.quality);
+    const large=Math.max(source.width,source.height)>=4500 || source.width*source.height>=12000000;
+    if(out.format==="auto") out.format="webp";
     if(large){
       out.maxWidth=Math.min(out.maxWidth,3200);
       out.maxHeight=Math.min(out.maxHeight,3200);
+      out.quality=Math.min(out.quality,.84);
     }
   }
 
@@ -93,18 +91,153 @@ function showToast(message,type=""){
   el.textContent=message;
   el.className="nx-toast show "+type;
   clearTimeout(state.toastTimer);
-  state.toastTimer=setTimeout(()=>{el.className="nx-toast";},2800);
+  state.toastTimer=setTimeout(()=>el.className="nx-toast",2600);
 }
 
 function setStatus(status){
-  const dot=$("#status-dot");
-  dot.className="nx-status-dot "+status;
+  $("#status-dot").className="nx-status-dot "+status;
 }
 
-function resetResult(){
+function blobToDataUrl(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result));
+    reader.onerror=()=>reject(new Error("Não foi possível preparar a pré-visualização."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function getImageSource(file){
+  if(!file) throw new Error("Nenhuma imagem selecionada.");
+
+  if("createImageBitmap" in window){
+    try{
+      return await createImageBitmap(file,{imageOrientation:"from-image"});
+    }catch{}
+    try{
+      return await createImageBitmap(file);
+    }catch{}
+  }
+
+  const url=URL.createObjectURL(file);
+  try{
+    return await new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>{
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror=()=>{
+        URL.revokeObjectURL(url);
+        reject(new Error("O navegador não conseguiu abrir esta imagem."));
+      };
+      img.src=url;
+    });
+  }catch{
+    const dataUrl=await blobToDataUrl(file);
+    return await new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>resolve(img);
+      img.onerror=()=>reject(new Error("O navegador não conseguiu abrir esta imagem."));
+      img.src=dataUrl;
+    });
+  }
+}
+
+function closeSource(source){
+  try{source?.close?.();}catch{}
+}
+
+function canvasBlob(canvas,mime,quality){
+  return new Promise((resolve,reject)=>{
+    canvas.toBlob(blob=>{
+      if(blob) resolve(blob);
+      else reject(new Error("Não foi possível gerar o resultado."));
+    },mime,quality);
+  });
+}
+
+function fitDimensions(width,height,maxWidth,maxHeight){
+  const scale=Math.min(1,maxWidth/width,maxHeight/height);
+  return {
+    width:Math.max(1,Math.round(width*scale)),
+    height:Math.max(1,Math.round(height*scale))
+  };
+}
+
+async function processImage(file,settings,token){
+  const started=performance.now();
+  const source=await getImageSource(file);
+
+  try{
+    if(token!==state.token) return null;
+
+    const effective=effectiveSettings(settings,file,source);
+    const mime=outputMime(file,effective.format);
+    const dims=fitDimensions(source.width,source.height,effective.maxWidth,effective.maxHeight);
+
+    if(dims.width*dims.height>36000000){
+      throw new Error("Esta imagem é grande demais para o processamento seguro neste dispositivo.");
+    }
+
+    const canvas=document.createElement("canvas");
+    canvas.width=dims.width;
+    canvas.height=dims.height;
+
+    const ctx=canvas.getContext("2d",{alpha:mime!=="image/jpeg"});
+    if(!ctx) throw new Error("Canvas indisponível neste navegador.");
+
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality="high";
+
+    if(mime==="image/jpeg"){
+      ctx.fillStyle=effective.background;
+      ctx.fillRect(0,0,dims.width,dims.height);
+    }
+
+    ctx.drawImage(source,0,0,dims.width,dims.height);
+
+    let quality=mime==="image/png" ? 1 : effective.quality;
+    let blob=await canvasBlob(canvas,mime,quality);
+
+    if(blob.size>=file.size && mime!=="image/png"){
+      const fallbackQ=Math.max(.55,Math.min(.72,quality-.08));
+      if(fallbackQ<quality){
+        const fallback=await canvasBlob(canvas,mime,fallbackQ);
+        if(fallback.size<blob.size){
+          blob=fallback;
+          quality=fallbackQ;
+        }
+      }
+    }
+
+    const noGain=blob.size>=file.size && dims.width===source.width && dims.height===source.height;
+    if(noGain && settings.format==="auto"){
+      blob=file;
+    }
+
+    return {
+      blob,
+      mime:noGain ? file.type : mime,
+      originalWidth:source.width,
+      originalHeight:source.height,
+      outputWidth:dims.width,
+      outputHeight:dims.height,
+      quality:noGain ? 100 : Math.round(quality*100),
+      ms:performance.now()-started,
+      noGain
+    };
+  }finally{
+    closeSource(source);
+  }
+}
+
+function clearResult(){
   if(state.result?.url) URL.revokeObjectURL(state.result.url);
   state.result=null;
-  $("#result-image").hidden=true;
+  const img=$("#result-image");
+  img.hidden=true;
+  img.removeAttribute("src");
   $("#result-empty").hidden=false;
   $("#result-loading").hidden=true;
   $("#result-size").textContent="Aguardando";
@@ -116,310 +249,258 @@ function resetResult(){
   $("#download").disabled=true;
 }
 
-function setWorkspaceFile(file){
-  if(state.originalUrl) URL.revokeObjectURL(state.originalUrl);
-  resetResult();
-
-  state.file=file;
-  state.originalUrl=URL.createObjectURL(file);
-
+function setOriginalPreview(src){
   const img=$("#original-image");
-  img.src=state.originalUrl;
-
-  $("#file-name").textContent=file.name;
-  $("#file-info").textContent=file.type.replace("image/","").toUpperCase()+" · "+bytes(file.size);
-  $("#original-size").textContent=bytes(file.size);
-  $("#original-loading").hidden=false;
-  setStatus("busy");
-
   img.onload=()=>{
     $("#original-loading").hidden=true;
     $("#original-dimensions").textContent=img.naturalWidth+" × "+img.naturalHeight;
-    setStatus("ready");
-    scheduleApply(120);
   };
   img.onerror=()=>{
     $("#original-loading").hidden=true;
     setStatus("error");
-    showToast("Não foi possível abrir esta imagem neste navegador.", "error");
+    showToast("A pré-visualização original não pôde ser carregada.","error");
   };
+  img.src=src;
 }
 
-async function decode(file){
-  if(!file) throw new Error("Nenhuma imagem selecionada.");
-
-  if("createImageBitmap" in window){
-    try{
-      const bitmap=await createImageBitmap(file,{imageOrientation:"from-image"});
-      return {
-        source:bitmap,
-        width:bitmap.width,
-        height:bitmap.height,
-        close:()=>bitmap.close?.()
-      };
-    }catch{}
-
-    try{
-      const bitmap=await createImageBitmap(file);
-      return {
-        source:bitmap,
-        width:bitmap.width,
-        height:bitmap.height,
-        close:()=>bitmap.close?.()
-      };
-    }catch{}
-  }
-
-  const loadFromSrc=(src,revoke=false)=>new Promise((resolve,reject)=>{
-    const img=new Image();
-    img.onload=()=>{
-      resolve({
-        source:img,
-        width:img.naturalWidth,
-        height:img.naturalHeight,
-        close:()=>{if(revoke) URL.revokeObjectURL(src);}
-      });
-    };
-    img.onerror=()=>{
-      if(revoke) URL.revokeObjectURL(src);
-      reject(new Error("Não foi possível abrir "+file.name));
-    };
-    img.src=src;
-  });
-
-  try{
-    const url=URL.createObjectURL(file);
-    return await loadFromSrc(url,true);
-  }catch{
-    const dataUrl=await new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-      reader.onload=()=>resolve(reader.result);
-      reader.onerror=()=>reject(new Error("Não foi possível ler "+file.name));
-      reader.readAsDataURL(file);
-    });
-    return await loadFromSrc(String(dataUrl),false);
-  }
-}
-
-function canvasSize(width,height,maxWidth,maxHeight){
-  const scale=Math.min(1,maxWidth/width,maxHeight/height);
-  return {
-    width:Math.max(1,Math.round(width*scale)),
-    height:Math.max(1,Math.round(height*scale))
-  };
-}
-
-function canvasBlob(canvas,mime,quality){
-  return new Promise((resolve,reject)=>{
-    canvas.toBlob(blob=>{
-      if(blob) resolve(blob);
-      else reject(new Error("O navegador não conseguiu gerar o resultado."));
-    },mime,quality);
-  });
-}
-
-async function compress(file,settings,token){
-  const started=performance.now();
-  const decoded=await decode(file);
-  try{
-    if(token!==state.token) return null;
-
-    const effective=modeSettings(settings,file,decoded);
-    const mime=outputMime(file,effective.format);
-    const dims=canvasSize(decoded.width,decoded.height,effective.maxWidth,effective.maxHeight);
-    const pixels=dims.width*dims.height;
-
-    if(pixels>36000000){
-      throw new Error("A imagem é demasiado grande para o processamento seguro neste dispositivo.");
-    }
-
-    const canvas=document.createElement("canvas");
-    canvas.width=dims.width;
-    canvas.height=dims.height;
-
-    const ctx=canvas.getContext("2d",{alpha:mime!=="image/jpeg"});
-    if(!ctx) throw new Error("O navegador não disponibilizou o processamento de imagem.");
-
-    ctx.imageSmoothingEnabled=true;
-    ctx.imageSmoothingQuality="high";
-
-    if(mime==="image/jpeg"){
-      ctx.fillStyle=effective.background;
-      ctx.fillRect(0,0,dims.width,dims.height);
-    }
-
-    ctx.drawImage(decoded.source,0,0,dims.width,dims.height);
-
-    let quality=mime==="image/png" ? 1 : effective.quality;
-    let blob=await canvasBlob(canvas,mime,quality);
-
-    // Evita produzir um ficheiro maior quando o utilizador pediu compressão automática.
-    if(blob.size>=file.size && effective.format==="auto" && mime!=="image/png"){
-      const reduced=Math.max(.55,Math.min(quality-.08,.72));
-      const smaller=await canvasBlob(canvas,mime,reduced);
-      if(smaller.size<blob.size){
-        blob=smaller;
-        quality=reduced;
-      }
-    }
-
-    if(blob.size>=file.size && effective.format==="auto"){
-      return {
-        blob:file,
-        mime:file.type||mime,
-        width:decoded.width,
-        height:decoded.height,
-        outputWidth:dims.width,
-        outputHeight:dims.height,
-        quality:100,
-        ms:performance.now()-started,
-        noGain:true,
-        profile:effective.mode
-      };
-    }
-
-    return {
-      blob,
-      mime,
-      width:decoded.width,
-      height:decoded.height,
-      outputWidth:dims.width,
-      outputHeight:dims.height,
-      quality:Math.round(quality*100),
-      ms:performance.now()-started,
-      noGain:false,
-      profile:effective.mode
-    };
-  }finally{
-    decoded.close();
-  }
-}
-
-function renderResult(output){
-  if(!output) return;
-
+async function renderResult(output){
+  if(!output || !state.file) return;
   if(state.result?.url) URL.revokeObjectURL(state.result.url);
-  output.url=URL.createObjectURL(output.blob);
-  state.result=output;
+
+  const previewUrl=await blobToDataUrl(output.blob);
+  if(state.token<1) return;
+
+  state.result={...output,previewUrl,url:URL.createObjectURL(output.blob)};
+  const img=$("#result-image");
 
   $("#result-empty").hidden=true;
   $("#result-loading").hidden=true;
-
-  const img=$("#result-image");
-  img.src=output.url;
+  img.onload=()=>{img.hidden=false;};
+  img.onerror=()=>showToast("O resultado foi criado, mas a pré-visualização falhou.","error");
+  img.src=previewUrl;
   img.hidden=false;
 
   const saving=Math.max(0,Math.round((1-output.blob.size/state.file.size)*100));
   $("#result-size").textContent=bytes(output.blob.size);
-  $("#result-meta").textContent=output.noGain ? "Sem ganho adicional" : extension(output.mime)+" · Q"+output.quality;
+  $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
   $("#saving").textContent=output.noGain ? "0%" : saving+"%";
   $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
-  $("#format-label").textContent=extension(output.mime);
+  $("#format-label").textContent=mimeLabel(output.mime);
   $("#time-label").textContent=timeLabel(output.ms);
   $("#download").disabled=false;
   setStatus("ready");
 }
 
-async function applySettings(){
-  if(!state.file || state.busy) return;
-
+async function runCompression(){
+  if(!state.file) return;
   const token=++state.token;
+
+  if(state.busy){
+    state.pending=true;
+    return;
+  }
+
   state.busy=true;
+  state.pending=false;
   setStatus("busy");
   $("#result-loading").hidden=false;
   $("#result-empty").hidden=true;
   $("#result-image").hidden=true;
   $("#download").disabled=true;
-  $("#result-size").textContent="A processar…";
+  $("#result-size").textContent="A atualizar…";
 
   try{
-    const output=await compress(state.file,getSettings(),token);
-    if(token!==state.token || !output) return;
-    renderResult(output);
+    const output=await processImage(state.file,getSettings(),token);
+    if(token===state.token && output) await renderResult(output);
   }catch(error){
-    if(token!==state.token) return;
-    resetResult();
-    setStatus("error");
-    showToast(error?.message||"Não foi possível comprimir a imagem.", "error");
+    if(token===state.token){
+      clearResult();
+      setStatus("error");
+      showToast(error?.message||"Não foi possível comprimir a imagem.","error");
+    }
   }finally{
     if(token===state.token){
       state.busy=false;
       $("#result-loading").hidden=true;
+      if(state.pending){
+        state.pending=false;
+        runCompression();
+      }
     }
   }
 }
 
-function scheduleApply(delay=450){
+function scheduleCompression(delay=420){
   clearTimeout(state.timer);
-  if(!state.file) return;
-  if(!$("#auto-apply").checked) return;
-  state.timer=setTimeout(()=>applySettings(),delay);
+  if(!state.file || !$("#auto-apply").checked) return;
+  state.timer=setTimeout(runCompression,delay);
 }
 
-function toggleSettings(open){
-  state.settingsOpen=open;
-  $("#settings-panel").hidden=!open;
-  $("#settings-toggle").setAttribute("aria-expanded",String(open));
-  if(open) $("#settings-panel").scrollIntoView({behavior:"smooth",block:"nearest"});
+function openSettings(){
+  state.settingsOpen=true;
+  $("#settings-screen").hidden=false;
+  document.body.classList.add("nx-lock");
+  $("#settings-back").focus();
+}
+
+function closeSettings(){
+  state.settingsOpen=false;
+  $("#settings-screen").hidden=true;
+  document.body.classList.remove("nx-lock");
 }
 
 function resetSettings(){
+  $("#mode").value=DEFAULTS.mode;
   $("#format").value=DEFAULTS.format;
   $("#quality").value=DEFAULTS.quality;
   $("#quality-value").textContent=DEFAULTS.quality+"%";
   $("#max-width").value=DEFAULTS.maxWidth;
   $("#max-height").value=DEFAULTS.maxHeight;
-  $("#mode").value=DEFAULTS.mode;
-  $("#auto-apply").checked=DEFAULTS.autoApply;
   $("#background").value=DEFAULTS.background;
-  scheduleApply(120);
+  $("#auto-apply").checked=DEFAULTS.autoApply;
+  scheduleCompression(100);
 }
 
 function download(){
-  const result=state.result;
-  if(!result || !state.file) return;
-  const base=state.file.name.replace(/\.[^.]+$/,"");
-  const ext=extension(result.mime).toLowerCase();
+  if(!state.result?.blob || !state.file) return;
   const link=document.createElement("a");
-  link.href=result.url;
-  link.download=base+"-nexauren."+ext;
+  link.href=state.result.url;
+  const base=state.file.name.replace(/\.[^.]+$/,"");
+  link.download=base+"-nexauren."+mimeLabel(state.result.mime).toLowerCase();
   document.body.appendChild(link);
   link.click();
   link.remove();
 }
 
-function openModal(kind){
-  const src=kind==="original" ? state.originalUrl : state.result?.url;
+function openPreview(kind){
+  const src=kind==="original" ? state.originalSrc : state.result?.previewUrl;
   if(!src) return;
   $("#modal-title").textContent=kind==="original" ? "Imagem original" : "Resultado";
   $("#modal-image").src=src;
   $("#preview-modal").hidden=false;
+  document.body.classList.add("nx-lock");
 }
 
-function closeModal(){
+function closePreview(){
   $("#preview-modal").hidden=true;
   $("#modal-image").removeAttribute("src");
+  if(!state.settingsOpen && $("#camera-screen").hidden) document.body.classList.remove("nx-lock");
 }
 
-function handleFile(file){
-  if(!file || !file.type.startsWith("image/")){
-    showToast("Selecione um ficheiro de imagem válido.", "error");
-    return;
-  }
+function showWorkspace(file){
+  if(state.originalSrc) URL.revokeObjectURL(state.originalSrc);
+  clearResult();
+
+  state.file=file;
+  state.originalSrc=URL.createObjectURL(file);
   $("#upload").hidden=true;
   $("#workspace").hidden=false;
-  setWorkspaceFile(file);
+  $("#file-name").textContent=file.name;
+  $("#file-info").textContent=mimeLabel(file.type)+" · "+bytes(file.size);
+  $("#original-size").textContent=bytes(file.size);
+  $("#original-loading").hidden=false;
+  setStatus("busy");
+  setOriginalPreview(state.originalSrc);
+}
+
+function handleGalleryFile(file){
+  if(!file || !String(file.type||"").startsWith("image/")){
+    showToast("Escolha uma imagem válida.","error");
+    return;
+  }
+  showWorkspace(file);
+  scheduleCompression(120);
+}
+
+function stopCamera(){
+  if(state.cameraStream){
+    state.cameraStream.getTracks().forEach(track=>track.stop());
+    state.cameraStream=null;
+  }
+  const video=$("#camera-video");
+  video.srcObject=null;
+  $("#camera-capture").disabled=true;
+}
+
+async function openCamera(){
+  $("#camera-screen").hidden=false;
+  document.body.classList.add("nx-lock");
+  $("#camera-status").textContent="A INICIAR";
+  $("#camera-hint").textContent="Solicitando acesso à câmera…";
+
+  if(!navigator.mediaDevices?.getUserMedia){
+    $("#camera-status").textContent="INDISPONÍVEL";
+    $("#camera-hint").textContent="Este navegador não permite câmera direta. Use a galeria.";
+    showToast("Câmera direta não suportada neste navegador. Abrindo galeria.","error");
+    $("#file-input").click();
+    closeCamera();
+    return;
+  }
+
+  try{
+    stopCamera();
+    state.cameraStream=await navigator.mediaDevices.getUserMedia({
+      audio:false,
+      video:{facingMode:{ideal:state.cameraFacing},width:{ideal:1920},height:{ideal:1080}}
+    });
+    const video=$("#camera-video");
+    video.srcObject=state.cameraStream;
+    await video.play().catch(()=>{});
+    $("#camera-status").textContent="PRONTA";
+    $("#camera-hint").textContent="Centralize a imagem e toque no botão para fotografar.";
+    $("#camera-capture").disabled=false;
+  }catch(error){
+    $("#camera-status").textContent="SEM ACESSO";
+    $("#camera-hint").textContent="Autorize a câmera ou escolha uma imagem da galeria.";
+    showToast(error?.name==="NotAllowedError" ? "A câmera foi bloqueada. Permita o acesso nas definições do navegador." : "Não foi possível iniciar a câmera.","error");
+  }
+}
+
+function closeCamera(){
+  stopCamera();
+  $("#camera-screen").hidden=true;
+  if(!state.settingsOpen && $("#preview-modal").hidden) document.body.classList.remove("nx-lock");
+}
+
+async function captureCamera(){
+  const video=$("#camera-video");
+  if(!state.cameraStream || !video.videoWidth || !video.videoHeight) return;
+
+  const canvas=$("#camera-canvas");
+  const maxSide=4096;
+  const scale=Math.min(1,maxSide/video.videoWidth,maxSide/video.videoHeight);
+  canvas.width=Math.max(1,Math.round(video.videoWidth*scale));
+  canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+
+  const ctx=canvas.getContext("2d",{alpha:false});
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+  const blob=await new Promise((resolve,reject)=>{
+    canvas.toBlob(b=>b?resolve(b):reject(new Error("Não foi possível capturar a foto.")),"image/jpeg",.94);
+  });
+
+  const file=new File([blob],"nexauren-camera-"+Date.now()+".jpg",{type:"image/jpeg",lastModified:Date.now()});
+  closeCamera();
+  handleGalleryFile(file);
+}
+
+function switchCamera(){
+  state.cameraFacing=state.cameraFacing==="environment" ? "user" : "environment";
+  openCamera();
 }
 
 function wire(){
   $("#year").textContent=new Date().getFullYear();
 
-  $("#pick").addEventListener("click",()=>$("#file-input").click());
-
-  $("#file-input").addEventListener("change",(event)=>{
-    handleFile(event.target.files?.[0]);
+  $("#camera-open").addEventListener("click",openCamera);
+  $("#gallery-open").addEventListener("click",()=>$("#file-input").click());
+  $("#camera-gallery").addEventListener("click",()=>$("#file-input").click());
+  $("#file-input").addEventListener("change",event=>{
+    handleGalleryFile(event.target.files?.[0]);
     event.target.value="";
   });
+
+  $("#replace").addEventListener("click",openCamera);
 
   const upload=$("#upload");
   ["dragenter","dragover"].forEach(type=>upload.addEventListener(type,event=>{
@@ -430,50 +511,65 @@ function wire(){
     event.preventDefault();
     upload.classList.remove("is-over");
   }));
-  upload.addEventListener("drop",event=>{
-    handleFile(event.dataTransfer?.files?.[0]);
-  });
+  upload.addEventListener("drop",event=>handleGalleryFile(event.dataTransfer?.files?.[0]));
 
   window.addEventListener("paste",event=>{
-    const file=Array.from(event.clipboardData?.files||[]).find(item=>item.type.startsWith("image/"));
-    if(file) handleFile(file);
+    const file=Array.from(event.clipboardData?.files||[]).find(f=>String(f.type||"").startsWith("image/"));
+    if(file) handleGalleryFile(file);
   });
 
-  $("#replace").addEventListener("click",()=>{
-    $("#file-input").click();
-  });
+  $("#settings-toggle").addEventListener("click",openSettings);
+  $("#settings-back").addEventListener("click",closeSettings);
 
-  $("#settings-toggle").addEventListener("click",()=>toggleSettings(!state.settingsOpen));
-  $("#settings-close").addEventListener("click",()=>toggleSettings(false));
-
-  $("#quality").addEventListener("input",(event)=>{
+  $("#quality").addEventListener("input",event=>{
     $("#quality-value").textContent=event.target.value+"%";
-    scheduleApply();
+    scheduleCompression();
   });
 
-  ["#format","#max-width","#max-height","#mode","#background"].forEach(selector=>{
-    $(selector).addEventListener("change",()=>scheduleApply());
+  ["#mode","#format","#max-width","#max-height","#background"].forEach(id=>{
+    $(id).addEventListener("input",()=>scheduleCompression());
+    $(id).addEventListener("change",()=>scheduleCompression());
   });
 
-  $("#auto-apply").addEventListener("change",()=>{
-    if($("#auto-apply").checked) scheduleApply(120);
+  $("#auto-apply").addEventListener("change",()=>scheduleCompression(100));
+
+  $("#apply-settings").addEventListener("click",()=>{
+    closeSettings();
+    runCompression();
   });
 
-  $("#apply-settings").addEventListener("click",applySettings);
   $("#reset-settings").addEventListener("click",resetSettings);
   $("#download").addEventListener("click",download);
+  $("#open-original").addEventListener("click",()=>openPreview("original"));
 
-  $("#open-original").addEventListener("click",()=>openModal("original"));
+  $("#modal-close").addEventListener("click",closePreview);
+  $("#modal-x").addEventListener("click",closePreview);
 
-  $("#modal-close").addEventListener("click",closeModal);
-  $("#modal-x").addEventListener("click",closeModal);
+  $("#camera-close").addEventListener("click",closeCamera);
+  $("#camera-capture").addEventListener("click",captureCamera);
+  $("#camera-switch").addEventListener("click",switchCamera);
 
-  document.addEventListener("keydown",(event)=>{
-    if(event.key==="Escape" && !$("#preview-modal").hidden) closeModal();
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"){
+      if(!$("#camera-screen").hidden){closeCamera();return;}
+      if(!$("#preview-modal").hidden){closePreview();return;}
+      if(!$("#settings-screen").hidden){closeSettings();}
+    }
+    if(event.key===" " && !$("#camera-screen").hidden && !$("#camera-capture").disabled){
+      event.preventDefault();
+      captureCamera();
+    }
+  });
+
+  $("#settings-screen").addEventListener("click",event=>{
+    if(event.target===$("#settings-screen")) closeSettings();
+  });
+
+  $("#camera-screen").addEventListener("click",event=>{
+    if(event.target===$("#camera-screen")) closeCamera();
   });
 
   setStatus("ready");
-  $("#file-input").setAttribute("capture","environment");
 }
 
 wire();
