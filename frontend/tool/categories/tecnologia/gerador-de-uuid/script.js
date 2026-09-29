@@ -1,8 +1,7 @@
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923-access-2";
-const output=document.querySelector('#output');
+const output=document.querySelector("#output"),amount=document.querySelector("#amount"),status=document.querySelector("#status");
 const uuid=()=>crypto.randomUUID();
-function generate(){const n=Math.min(100,Math.max(1,Number(document.querySelector('#amount').value)||1));output.textContent=Array.from({length:n},uuid).join('\n')}
-document.querySelector('#generate').onclick=generate;
-document.querySelector('#clear').onclick=()=>output.textContent='Nenhum UUID gerado.';
-document.querySelector('#copy').onclick=()=>navigator.clipboard.writeText(output.textContent);
-onAuthStateChanged(auth,user=>{if(!user)location.href='/conta/'})
+const announce=m=>{status.textContent=m;clearTimeout(announce.t);announce.t=setTimeout(()=>status.textContent="",1800)};
+function generate(){const n=Math.min(100,Math.max(1,Number(amount.value)||1));amount.value=n;output.textContent=Array.from({length:n},uuid).join("\n");announce(n===1?"1 UUID gerado.":n+" UUIDs gerados.")}
+async function copy(){const value=output.textContent.trim();if(!value||value==="Nenhum UUID gerado."){announce("Não há UUIDs para copiar.");return}try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(value);else{const t=document.createElement("textarea");t.value=value;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}announce("UUIDs copiados.")}catch{announce("Não foi possível copiar automaticamente.")}}
+function download(){const value=output.textContent.trim();if(!value||value==="Nenhum UUID gerado."){announce("Gere pelo menos um UUID primeiro.");return}const blob=new Blob([value+"\n"],{type:"text/plain;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="nexauren-uuids.txt";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce("Ficheiro TXT guardado.")}
+document.querySelector("#generate").addEventListener("click",generate);document.querySelector("#copy").addEventListener("click",copy);document.querySelector("#download").addEventListener("click",download);document.querySelector("#clear").addEventListener("click",()=>{output.textContent="Nenhum UUID gerado.";announce("Campos limpos.")});amount.addEventListener("keydown",e=>{if(e.key==="Enter")generate()});generate();
