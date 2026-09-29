@@ -618,7 +618,7 @@ restoreThemeSelection();
 window.addEventListener("keydown",e=>{
 if(STANDALONE)return;
 if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||""))return;
-if(e.code==="Space"){e.preventDefault();toggleRun()}else if(e.key.toLowerCase()==="r"){e.preventDefault();resetTimer()}else if(e.key.toLowerCase()==="f"){e.preventDefault();fullscreen()}else if(e.key.toLowerCase()==="s"&&(cfg.mode==="intervals"||cfg.mode==="pomodoro")){e.preventDefault();if(timer.running){intervalAdvance();render()}}
+if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();toggleRun()}else if(e.code==="Space"){e.preventDefault();toggleRun()}else if(e.key.toLowerCase()==="r"){e.preventDefault();resetTimer()}else if(e.key.toLowerCase()==="f"){e.preventDefault();fullscreen()}else if(e.key.toLowerCase()==="s"&&(cfg.mode==="intervals"||cfg.mode==="pomodoro")){e.preventDefault();if(timer.running){intervalAdvance();render()}}
 });
 window.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&timer.running&&cfg.wake)setWake(true)});
 window.addEventListener("nexauren:language-changed",()=>location.reload());
