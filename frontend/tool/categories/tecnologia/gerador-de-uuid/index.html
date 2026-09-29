@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gerador de UUID | Nexauren</title>
+<meta name="description" content="Gere UUID v4 localmente no navegador, em lote e sem enviar dados para um servidor."><meta name="robots" content="index,follow"><title>Gerador de UUID — Nexauren Story</title>
 <link rel="stylesheet" href="style.css">
 
 
@@ -291,12 +291,12 @@
 <!-- NEXAUREN-AUTO-ADS:END --><main>
 <section class="hero"><span>01 · IDENTIDADE DIGITAL</span><h1>Gerador de UUID</h1><p>Crie identificadores únicos localmente no navegador.</p></section>
 <section class="card">
-<label>Quantidade</label><input id="amount" type="number" min="1" max="100" value="5">
-<div class="actions"><button id="generate">Gerar UUID</button><button id="copy">Copiar</button><button id="clear">Limpar</button></div>
-<pre id="output">Nenhum UUID gerado.</pre>
+<label for="amount">Quantidade</label><input id="amount" aria-describedby="amount-help" type="number" min="1" max="100" value="5"><small id="amount-help">Gere de 1 a 100 UUIDs v4 por vez.</small>
+<div class="actions"><button id="generate" type="button">Gerar UUID</button><button id="copy" type="button">Copiar</button><button id="download" type="button">Guardar TXT</button><button id="clear" type="button">Limpar</button></div><p id="status" aria-live="polite"></p>
+<pre id="output" aria-label="UUIDs gerados">Nenhum UUID gerado.</pre>
 </section>
 </main>
-<script type="module" src="script.js"></script><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+<script type="module" src="script.js?v=20260929-uuid2"></script><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
   <div class="nx-auto-ad-label">PUBLICIDADE</div>
   <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
