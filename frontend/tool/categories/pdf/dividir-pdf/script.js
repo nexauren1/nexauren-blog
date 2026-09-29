@@ -3,7 +3,7 @@ const $=s=>document.querySelector(s);
 const input=$("#pdfsplit-file"),drop=$("#pdfsplit-drop"),fileBar=$("#pdfsplit-filebar"),fileName=$("#pdfsplit-file-name"),fileMeta=$("#pdfsplit-file-meta");
 const mode=$("#pdfsplit-mode"),range=$("#pdfsplit-range"),splitBtn=$("#pdfsplit-split"),clearBtn=$("#pdfsplit-clear");
 const total=$("#pdfsplit-total"),parts=$("#pdfsplit-parts"),state=$("#pdfsplit-state"),status=$("#pdfsplit-status"),progress=$("#pdfsplit-progress"),results=$("#pdfsplit-results");
-const langBtn=$("#pdfsplit-lang"),nameInput=$("#pdfsplit-name");
+const copyBtn=$("#pdfsplit-copy"),downloadAllBtn=$("#pdfsplit-download-all"),langBtn=$("#pdfsplit-lang"),nameInput=$("#pdfsplit-name");
 let language=new URLSearchParams(location.search).get("lang")==="en"?"en":"pt";
 let file=null,pdf=null,enginePromise=null,outputs=[],downloadUrls=[];
 
@@ -37,6 +37,8 @@ function renderResults(){
   row.append(idx,info,btn);results.append(row);
  })
 }
+async function copySummary(){if(!outputs.length)return;const text="NEXAUREN DIVIDIR PDF\nDocumento: "+(file?.name||"—")+"\nPáginas: "+(pdf?.getPageCount?.()||"—")+"\nPartes: "+outputs.length+"\nModo: "+(mode.value==="each"?t().each:t().range);try{await navigator.clipboard.writeText(text);msg("Resumo copiado.")}catch{try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();msg(ok?"Resumo copiado.":"Não foi possível copiar o resumo.",!ok)}catch{msg("Não foi possível copiar o resumo.",true)}}}
+async function downloadAll(){for(const r of outputs){const u=URL.createObjectURL(r.blob),a=document.createElement("a");a.href=u;a.download=r.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1200);await new Promise(resolve=>setTimeout(resolve,160))}if(outputs.length)msg(outputs.length+" ficheiros enviados para download.")}
 function parseRange(value,max){
  const out=new Set();
  for(const raw of String(value||"").split(",")){const s=raw.trim();if(!s)continue;const m=s.match(/^(\d+)(?:\s*-\s*(\d+))?$/);if(!m)throw Error(t().invalidRange);const a=Number(m[1]),b=m[2]?Number(m[2]):a;if(a<1||b<1||a>max||b>max||a>b)throw Error(t().outside);for(let i=a;i<=b;i++)out.add(i)}
@@ -61,7 +63,7 @@ async function openFile(f){
 }
 async function split(){
  if(!pdf){msg(t().select,true);return}
- splitBtn.disabled=true;clearBtn.disabled=true;progress.style.width="0%";outputs=[];renderResults();
+ splitBtn.disabled=true;clearBtn.disabled=true;copyBtn.disabled=true;downloadAllBtn.disabled=true;progress.style.width="0%";outputs=[];renderResults();
  try{
   const lib=await ensureEngine(),groups=selectedPages(pdf.getPageCount()),base=(nameInput.value.trim().replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"")||"parte");
   for(let i=0;i<groups.length;i++){
@@ -71,6 +73,7 @@ async function split(){
    const data=await out.save({useObjectStreams:false}),blob=new Blob([data],{type:"application/pdf"});
    const suffix=groups.length===1?base:base+"-"+String(i+1).padStart(3,"0");
    outputs.push({blob,name:suffix+".pdf",pages:groups[i].length,size:blob.size});
+   copyBtn.disabled=false;downloadAllBtn.disabled=false;
    renderResults();progress.style.width=Math.round((i+1)/groups.length*100)+"%";parts.textContent=String(groups.length);state.textContent=t().processing;
    await new Promise(requestAnimationFrame);
   }
@@ -79,13 +82,14 @@ async function split(){
  finally{splitBtn.disabled=!pdf;clearBtn.disabled=false}
 }
 window.__nexaurenPdfSplitRun=split;
+copyBtn.addEventListener("click",copySummary);downloadAllBtn.addEventListener("click",downloadAll);document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();if(!splitBtn.disabled)void split()}});
 input.addEventListener("change",e=>{openFile(e.target.files?.[0]);input.value=""});
 drop.addEventListener("click",e=>{if(e.target!==input)input.click()});
 drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag")});
 drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
 drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");openFile(e.dataTransfer.files?.[0])});
 mode.addEventListener("change",()=>{range.disabled=mode.value!=="range";if(pdf)parts.textContent=mode.value==="each"?String(pdf.getPageCount()):"1"});
-clearBtn.addEventListener("click",()=>{file=null;pdf=null;outputs=[];fileBar.hidden=true;total.textContent="0";parts.textContent="0";state.textContent=t().ready;progress.style.width="0%";splitBtn.disabled=true;renderResults();msg(t().ready)});
+clearBtn.addEventListener("click",()=>{copyBtn.disabled=true;downloadAllBtn.disabled=true;file=null;pdf=null;outputs=[];fileBar.hidden=true;total.textContent="0";parts.textContent="0";state.textContent=t().ready;progress.style.width="0%";splitBtn.disabled=true;renderResults();msg(t().ready)});
 langBtn.addEventListener("click",()=>{language=language==="en"?"pt":"en";const u=new URL(location.href);if(language==="en")u.searchParams.set("lang","en");else u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search||""));applyLanguage();msg(t().ready)});
 range.disabled=true;applyLanguage();
 })();
