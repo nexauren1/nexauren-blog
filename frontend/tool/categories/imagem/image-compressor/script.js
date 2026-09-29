@@ -98,13 +98,35 @@ function setStatus(status){
   $("#status-dot").className="nx-status-dot "+status;
 }
 
-function blobToDataUrl(blob){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>resolve(String(reader.result));
-    reader.onerror=()=>reject(new Error("Não foi possível preparar a pré-visualização."));
-    reader.readAsDataURL(blob);
-  });
+async function blobToDataUrl(blob){
+  if(!(blob instanceof Blob) || blob.size<=0){
+    throw new Error("Não foi possível preparar a pré-visualização.");
+  }
+
+  try{
+    if(typeof FileReader!=="undefined"){
+      const result=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result));
+        reader.onerror=()=>reject(new Error("reader"));
+        reader.readAsDataURL(blob);
+      });
+      if(result && result.startsWith("data:")) return result;
+    }
+  }catch{}
+
+  if(typeof blob.arrayBuffer==="function" && typeof btoa==="function"){
+    const buffer=await blob.arrayBuffer();
+    const bytes=new Uint8Array(buffer);
+    let binary="";
+    const chunk=0x8000;
+    for(let i=0;i<bytes.length;i+=chunk){
+      binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+    }
+    return "data:"+(blob.type||"image/jpeg")+";base64,"+btoa(binary);
+  }
+
+  throw new Error("Não foi possível preparar a pré-visualização.");
 }
 
 async function getImageSource(file){
@@ -244,92 +266,106 @@ function clearResult(){
   const img=$("#result-image");
   img.hidden=true;
   img.removeAttribute("src");
-  $("#result-empty").hidden=false;
-  $("#result-loading").hidden=true;
-  $("#result-size").textContent="Aguardando";
-  $("#result-meta").textContent="—";
-  $("#saving").textContent="—";
-  $("#dimensions").textContent="—";
-  $("#format-label").textContent="—";
-  $("#time-label").textContent="—";
-  $("#download").disabled=true;
-}
-
-function setOriginalPreview(src){
-  const img=$("#original-image");
-  img.onload=()=>{
-    $("#original-loading").hidden=true;
-    $("#original-dimensions").textContent=img.naturalWidth+" × "+img.naturalHeight;
-  };
-  img.onerror=()=>{
-    $("#original-loading").hidden=true;
-    setStatus("error");
-    showToast("A pré-visualização original não pôde ser carregada.","error");
-  };
-  img.src=src;
-}
-
-async function renderResult(output){
-  if(!output || !state.file) return;
+  $("#result-empty").hiddasync function renderResult(output){
+  if(!output || !state.file) return false;
 
   const tokenAtRender=state.token;
-  const objectUrl=URL.createObjectURL(output.blob);
-  let dataUrl="";
+  const previous=state.result;
+  let objectUrl="";
+  let previewUrl="";
+  let committed=false;
 
-  if(state.result?.url) URL.revokeObjectURL(state.result.url);
-  state.result={...output,url:objectUrl,previewUrl:objectUrl};
+  try{
+    if(!(output.blob instanceof Blob) || output.blob.size<=0){
+      throw new Error("O resultado gerado está vazio.");
+    }
 
-  const img=$("#result-image");
-  $("#result-empty").hidden=true;
-  $("#result-loading").hidden=false;
-  $("#download").disabled=true;
+    objectUrl=URL.createObjectURL(output.blob);
+    previewUrl=objectUrl;
 
-  const showMetrics=()=>{
+    const img=$("#result-image");
+    $("#result-empty").hidden=true;
+    $("#result-loading").hidden=false;
+
     const saving=Math.max(0,Math.round((1-output.blob.size/state.file.size)*100));
-    $("#result-size").textContent=bytes(output.blob.size);
-    $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
-    $("#saving").textContent=output.noGain ? "0%" : saving+"%";
-    $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
-    $("#format-label").textContent=mimeLabel(output.mime);
-    $("#time-label").textContent=timeLabel(output.ms);
-    $("#download").disabled=false;
-    setStatus("ready");
-  };
+    const showMetrics=()=>{
+      $("#result-size").textContent=bytes(output.blob.size);
+      $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
+      $("#saving").textContent=output.noGain ? "0%" : saving+"%";
+      $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
+      $("#format-label").textContent=mimeLabel(output.mime);
+      $("#time-label").textContent=timeLabel(output.ms);
+      $("#download").disabled=false;
+      setStatus("ready");
+    };
 
-  const finish=()=>{
-    if(tokenAtRender!==state.token) return;
+    const waitForLoad=src=>new Promise((resolve,reject)=>{
+      const onLoad=()=>{ cleanup(); resolve(); };
+      const onError=()=>{ cleanup(); reject(new Error("preview")); };
+      const cleanup=()=>{
+        img.removeEventListener("load",onLoad);
+        img.removeEventListener("error",onError);
+      };
+      img.addEventListener("load",onLoad,{once:true});
+      img.addEventListener("error",onError,{once:true});
+      img.src=src;
+      img.hidden=false;
+    });
+
+    try{
+      await waitForLoad(objectUrl);
+    }catch{
+      const dataUrl=await blobToDataUrl(output.blob);
+      previewUrl=dataUrl;
+      await waitForLoad(dataUrl);
+    }
+
+    if(tokenAtRender!==state.token || !state.file){
+      if(objectUrl) URL.revokeObjectURL(objectUrl);
+      return false;
+    }
+
+    state.result={...output,url:objectUrl,previewUrl};
+    committed=true;
+
+    if(previous?.url && previous.url!==objectUrl){
+      URL.revokeObjectURL(previous.url);
+    }
+
     $("#result-loading").hidden=true;
+    $("#result-empty").hidden=true;
     img.hidden=false;
     showMetrics();
-  };
+    return true;
+  }catch(error){
+    if(objectUrl && !committed) URL.revokeObjectURL(objectUrl);
 
-  const fallbackToDataUrl=async()=>{
-    try{
-      dataUrl=await blobToDataUrl(output.blob);
-      state.result.previewUrl=dataUrl;
-      img.onload=finish;
-      img.onerror=()=>{
-        $("#result-loading").hidden=true;
-        img.hidden=true;
-        showToast("O resultado foi criado, mas o navegador não conseguiu renderizar esta pré-visualização.","error");
-      };
-      img.src=dataUrl;
-      img.hidden=false;
-    }catch{
-      $("#result-loading").hidden=true;
-      img.hidden=true;
-      showToast("O resultado foi criado, mas a pré-visualização não pôde ser preparada.","error");
+    $("#result-loading").hidden=true;
+
+    if(previous?.blob && state.result===previous){
+      $("#result-empty").hidden=true;
+      $("#result-image").hidden=false;
+      $("#download").disabled=false;
+      $("#result-size").textContent=bytes(previous.blob.size);
+      $("#result-meta").textContent=previous.noGain ? "Último resultado válido" : mimeLabel(previous.mime)+" · Q"+previous.quality;
+      $("#saving").textContent=previous.noGain ? "0%" : Math.max(0,Math.round((1-previous.blob.size/state.file.size)*100))+"%";
+      $("#dimensions").textContent=previous.outputWidth+" × "+previous.outputHeight;
+      $("#format-label").textContent=mimeLabel(previous.mime);
+      $("#time-label").textContent=timeLabel(previous.ms);
+      setStatus("ready");
+      return false;
     }
-  };
 
-  img.onload=finish;
-  img.onerror=()=>fallbackToDataUrl();
-
-  // ObjectURL é o caminho principal; data URL é o fallback para WebView/navegadores problemáticos.
-  img.src=objectUrl;
-  img.hidden=false;
+    $("#result-image").hidden=true;
+    $("#result-empty").hidden=false;
+    $("#download").disabled=true;
+    setStatus("error");
+    showToast(error?.message==="preview"
+      ? "O resultado foi criado, mas a pré-visualização não pôde ser carregada."
+      : (error?.message || "Não foi possível preparar a pré-visualização."),"error");
+    return false;
+  }
 }
-
 async function runCompression(){
   if(!state.file) return;
 
@@ -436,6 +472,9 @@ function closePreview(){
 }
 
 function showWorkspace(file){
+  clearTimeout(state.timer);
+  state.token++;
+  state.pending=false;
   if(state.originalSrc) URL.revokeObjectURL(state.originalSrc);
   clearResult();
 
