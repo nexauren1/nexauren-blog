@@ -7,7 +7,10 @@ const state = {
   busy: false,
   toastTimer: null,
   previewUrls: new Map(),
-  comparePosition: 0
+  comparePosition: 0,
+  zoom: 1,
+  slider: 50,
+  history: []
 };
 
 const PRESETS = {
@@ -16,9 +19,16 @@ const PRESETS = {
   small: { format: "webp", quality: 68, max: 1600 },
   quality: { format: "webp", quality: 92, max: 3200 }
 };
+const HISTORY_KEY = "nexauren-image-compressor-history-v1";
 
 function esc(value) {
   return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+
+function formatMs(value) {
+  if (!Number.isFinite(value)) return "—";
+  if (value < 1000) return Math.max(1, Math.round(value)) + " ms";
+  return (value / 1000).toFixed(value < 10000 ? 2 : 1) + " s";
 }
 
 function bytes(value) {
@@ -294,7 +304,9 @@ async function compressFile(file) {
   renderQueue();
 
   try {
+    const started = performance.now();
     const output = await compressOne(file, readSettings());
+    output.ms = performance.now() - started;
     const oldResult = state.results.get(key);
     if (oldResult?.url) URL.revokeObjectURL(oldResult.url);
 
@@ -309,8 +321,10 @@ async function compressFile(file) {
       width: output.width,
       height: output.height,
       quality: output.quality,
-      saving
+      saving,
+      ms: output.ms
     });
+    saveHistoryEntry(file, state.results.get(key));
   } catch (error) {
     state.results.set(key, { status: "error", statusText: error?.message || "Falha ao comprimir." });
   }
@@ -339,6 +353,132 @@ async function compressAll() {
     renderQueue();
     renderResults();
   }
+}
+
+function saveHistoryEntry(file, result) {
+  const entry = {
+    id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+    name: file.name,
+    original: file.size,
+    output: result.blob.size,
+    saving: result.saving,
+    width: result.width,
+    height: result.height,
+    format: extension(result.mime).toUpperCase(),
+    quality: result.quality,
+    ms: result.ms,
+    at: new Date().toISOString()
+  };
+  state.history.unshift(entry);
+  state.history = state.history.slice(0, 12);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(state.history)); } catch {}
+  renderHistory();
+}
+
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    state.history = Array.isArray(saved) ? saved.slice(0, 12) : [];
+  } catch {
+    state.history = [];
+  }
+  renderHistory();
+}
+
+function clearHistory() {
+  state.history = [];
+  try { localStorage.removeItem(HISTORY_KEY); } catch {}
+  renderHistory();
+  showToast("Histórico local limpo.");
+}
+
+function renderHistory() {
+  const list = $("#history-list");
+  if (!list) return;
+  if (!state.history.length) {
+    list.innerHTML = '<div class="nx-history-empty">Ainda não há compressões nesta sessão.</div>';
+    return;
+  }
+  list.innerHTML = state.history.map(item => {
+    const when = new Date(item.at);
+    const label = Number.isNaN(when.getTime()) ? "" : when.toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" });
+    return '<article class="nx-history-item">' +
+      '<div class="nx-history-icon">✦</div>' +
+      '<div class="nx-history-main"><strong title="' + esc(item.name) + '">' + esc(item.name) + '</strong>' +
+      '<span>' + bytes(item.original) + ' → ' + bytes(item.output) + ' · ' + (item.saving >= 0 ? item.saving + '% menor' : '↑ ' + Math.abs(item.saving) + '%') + ' · ' + esc(item.format) + '</span></div>' +
+      '<div class="nx-history-meta"><strong>' + esc(formatMs(item.ms)) + '</strong><small>' + esc(label) + '</small></div>' +
+      '</article>';
+  }).join("");
+}
+
+function applyZoom() {
+  const value = state.zoom;
+  const text = Math.round(value * 100) + "%";
+  $("#zoom-value").textContent = text;
+  ["#slider-original","#slider-result","#compare-original","#compare-result"].forEach(sel => {
+    const el = $(sel);
+    if (el) {
+      el.style.transform = "scale(" + value + ")";
+      el.style.transformOrigin = "center";
+      el.style.transition = "transform .18s ease";
+    }
+  });
+}
+
+function setZoom(next) {
+  state.zoom = Math.min(2, Math.max(0.5, Number(next) || 1));
+  applyZoom();
+}
+
+function renderSlider() {
+  const stage = $("#compare-slider-stage");
+  const layer = $("#slider-result-layer");
+  const divider = $("#slider-divider");
+  const range = $("#compare-slider");
+  const result = $("#slider-result");
+  const placeholder = $("#slider-placeholder");
+  const file = currentCompareFile();
+  const output = file ? state.results.get(fileKey(file)) : null;
+
+  if (!stage || !layer || !divider || !range || !result || !placeholder) return;
+  state.slider = Number(range.value || 50);
+  layer.style.width = state.slider + "%";
+  divider.style.left = state.slider + "%";
+  const ready = !!output?.blob;
+  placeholder.hidden = ready;
+  result.hidden = !ready;
+  $("#slider-status").textContent = ready
+    ? "Arraste o divisor. O original fica à esquerda; o resultado, à direita."
+    : "Comprima uma imagem para ativar a comparação interativa.";
+  if (ready) {
+    $("#slider-original").style.opacity = "1";
+    result.src = output.url;
+    $("#lightbox-result").src = output.url;
+  }
+  applyZoom();
+}
+
+function openLightbox() {
+  const file = currentCompareFile();
+  if (!file) return;
+  const result = state.results.get(fileKey(file));
+  if (!result?.blob) {
+    showToast("Comprima a imagem antes de abrir a tela cheia.", "error");
+    return;
+  }
+  const box = $("#preview-lightbox");
+  box.hidden = false;
+  document.body.classList.add("nx-modal-open");
+  $("#lightbox-title").textContent = file.name;
+  $("#lightbox-original").src = getPreviewUrl(file);
+  $("#lightbox-result").src = result.url;
+  $("#lightbox-meta").textContent = bytes(file.size) + " → " + bytes(result.blob.size) + " · " + (result.saving >= 0 ? result.saving + "% menor" : "↑ " + Math.abs(result.saving) + "%") + " · " + extension(result.mime).toUpperCase();
+}
+
+function closeLightbox() {
+  const box = $("#preview-lightbox");
+  box.hidden = true;
+  document.body.classList.remove("nx-modal-open");
 }
 
 function getPreviewUrl(file) {
@@ -393,7 +533,9 @@ function renderCompare() {
     $("#compare-dimensions").textContent = "—";
     $("#compare-format").textContent = "—";
     $("#compare-quality").textContent = "—";
+    $("#compare-time").textContent = "—";
     $("#download-preview").disabled = true;
+    renderSlider();
     return;
   }
 
@@ -404,7 +546,9 @@ function renderCompare() {
   $("#compare-dimensions").textContent = result.width + "×" + result.height;
   $("#compare-format").textContent = extension(result.mime).toUpperCase();
   $("#compare-quality").textContent = "Q" + result.quality;
+  $("#compare-time").textContent = formatMs(result.ms);
   $("#download-preview").disabled = false;
+  renderSlider();
 }
 
 function downloadPreview() {
@@ -575,6 +719,18 @@ function wire() {
   $("#download-all").addEventListener("click", downloadAll);
   $("#copy-report").addEventListener("click", copyReport);
   $("#download-preview").addEventListener("click", downloadPreview);
+  $("#compare-slider").addEventListener("input", event => {
+    state.slider = Number(event.target.value);
+    renderSlider();
+  });
+  $("#zoom-in").addEventListener("click", () => setZoom(state.zoom + 0.1));
+  $("#zoom-out").addEventListener("click", () => setZoom(state.zoom - 0.1));
+  $("#zoom-reset").addEventListener("click", () => setZoom(1));
+  $("#fullscreen-preview").addEventListener("click", openLightbox);
+  $("#close-lightbox").addEventListener("click", closeLightbox);
+  document.querySelector("[data-close-lightbox]")?.addEventListener("click", closeLightbox);
+  $("#lightbox-download").addEventListener("click", downloadPreview);
+  $("#clear-history").addEventListener("click", clearHistory);
   $("#open-original").addEventListener("click", () => openCurrentPreview(true));
   $("#compare-prev").addEventListener("click", () => moveCompare(-1));
   $("#compare-next").addEventListener("click", () => moveCompare(1));
@@ -593,7 +749,17 @@ function wire() {
   setPlanUI();
   renderQueue();
   renderCompare();
+  loadHistory();
   document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !$("#preview-lightbox").hidden) {
+      closeLightbox();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+      event.preventDefault();
+      setZoom(1);
+      return;
+    }
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
       compressAll();
