@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Validador JSON · Nexauren Tools</title>
+<meta name="description" content="Valide JSON localmente no navegador e veja linha, coluna e contexto de erros de sintaxe."><meta name="robots" content="index,follow"><title>Validador JSON — Nexauren Story</title>
 <link rel="stylesheet" href="./style.css">
 
 
@@ -316,9 +316,9 @@
 }'></textarea>
       </div>
       <div class="editor-footer">
-        <button id="validate" class="primary">Validar JSON</button>
-        <button id="sample" class="secondary">Inserir exemplo</button>
-        <button id="clear" class="secondary">Limpar</button>
+        <button id="validate" class="primary" type="button">Validar JSON</button>
+        <button id="sample" class="secondary" type="button">Inserir exemplo</button>
+        <button id="clear" class="secondary" type="button">Limpar</button>
       </div>
     </div>
 
@@ -367,14 +367,14 @@
         </div>
 
         <div class="actions">
-          <button id="copy" class="secondary">Copiar JSON</button>
-          <button id="format" class="secondary">Abrir no Formatador</button>
+          <button id="copy" class="secondary" type="button">Copiar JSON</button>
+          <button id="format" class="secondary" type="button">Abrir no Formatador</button>
         </div>
       </div>
     </div>
   </section>
 
-  <p id="access-message" class="access-message" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
+  <!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
   <div class="nx-auto-ad-label">PUBLICIDADE</div>
   <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
@@ -384,25 +384,7 @@
 <footer>© 2026 Nexauren Story · Ferramentas · Conta</footer>
 </main>
 
-<script type="module">
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
-const input=document.querySelector("#input");
-const accessMessage=document.querySelector("#access-message");
-function applyAccess(user){
-  if(user){
-    document.body.classList.remove("locked");
-    accessMessage.hidden=true;
-    input.disabled=false;
-  }else{
-    document.body.classList.add("locked");
-    input.disabled=true;
-    accessMessage.hidden=false;
-    accessMessage.textContent="Entre para usar esta ferramenta.";
-  }
-}
-onAuthStateChanged(auth, applyAccess);
-</script>
-<script src="./script.js"></script>
+<script src="./script.js?v=20260929-validator"></script></script>
 
 
 </body>
