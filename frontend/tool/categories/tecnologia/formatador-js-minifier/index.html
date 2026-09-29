@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Formatador JS / Minifier · Nexauren Tools</title>
+<title>Formatador JS / Minifier · Nexauren Story</title>
 <link rel="stylesheet" href="./style.css">
 
 
@@ -298,7 +298,7 @@
 
 <section class="lab">
 <div class="toolbar">
-<button id="format" class="primary">Formatar</button><button id="minify">Compactar</button><button id="validate">Validar</button><button id="sample">Exemplo</button><button id="clear">Limpar</button><button id="copy">Copiar</button>
+<button id="format" class="primary">Formatar</button><button id="minify">Compactar</button><button id="validate">Validar</button><button id="sample">Exemplo</button><button id="clear">Limpar</button><button id="copy">Copiar</button><button id="swap">Usar saída</button><button id="download">Baixar JS</button>
 </div>
 <div class="settings">
 <label>Indentação <select id="indent"><option value="2">2 espaços</option><option value="4">4 espaços</option><option value="1">1 espaço</option><option value="tab">Tab</option></select></label>
@@ -310,25 +310,9 @@
 <section class="editor output"><div class="titlebar"><i></i><i></i><i></i><span>output.js</span></div><textarea id="output" spellcheck="false" readonly></textarea></section>
 </div>
 <div class="telemetry"><span id="inCount">0 chars</span><span id="outCount">0 chars</span><span id="saved">0%</span></div>
-<p id="message" class="message">Aguardando código.</p>
+<p id="message" class="message">Aguardando código.</p><p class="privacy-note">Processamento local: o JavaScript permanece neste navegador.</p>
 </section>
-<p id="access" class="access" hidden></p><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
-<div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
-  <div class="nx-auto-ad-label">PUBLICIDADE</div>
-  <div class="nx-auto-ad-inner" id="nx-auto-ad-bottom"></div>
-</div>
-<script>window.NexaurenAds?.loadResponsive(document.getElementById("nx-auto-ad-bottom"));</script>
-<!-- NEXAUREN-AUTO-ADS:END-BOTTOM -->
-<footer>NEXAUREN TOOLS · Script Lab · Processamento local</footer>
-</main>
-<script type="module">
-import {auth,onAuthStateChanged} from "/tool/frontend/tool-access.js?v=20260923";
-const app=document.querySelector(".lab"),msg=document.querySelector("#access");
-onAuthStateChanged(auth,user=>{
- const locked=!user;document.body.classList.toggle("locked",locked);msg.hidden=!locked;msg.textContent=locked?"Entre para usar esta ferramenta.":"";
- app.querySelectorAll("button,textarea,select,input").forEach(el=>el.disabled=locked);
-});
-</script>
+<p id="access" class="access" hidden></p>
 <script src="./script.js"></script>
 
 
