@@ -10,7 +10,9 @@ const state = {
   comparePosition: 0,
   zoom: 1,
   slider: 50,
-  history: []
+  history: [],
+  analysis: new Map(),
+  processing: { done: 0, total: 0, concurrency: 1 }
 };
 
 const PRESETS = {
@@ -132,6 +134,7 @@ function addFiles(inputFiles) {
   state.comparePosition = Math.max(0, state.files.length - incoming.length);
   renderQueue();
   renderCompare();
+  analyzeAll(incoming).catch(() => {});
 }
 
 function removeAt(index) {
@@ -142,6 +145,7 @@ function removeAt(index) {
   if (result?.url) URL.revokeObjectURL(result.url);
   clearPreviewUrl(fileKey(file));
   state.results.delete(fileKey(file));
+  state.analysis.delete(fileKey(file));
   state.files.splice(index, 1);
   state.comparePosition = Math.min(state.comparePosition, Math.max(0, state.files.length - 1));
   renderQueue();
@@ -155,6 +159,7 @@ function clearAll() {
   for (const url of state.previewUrls.values()) URL.revokeObjectURL(url);
   state.previewUrls.clear();
   state.results.clear();
+  state.analysis.clear();
   state.files = [];
   state.comparePosition = 0;
   renderQueue();
@@ -173,7 +178,9 @@ function readSettings() {
     targetEnabled: $("#target-enabled").checked,
     targetBytes: Math.min(20 * 1024 * 1024, Math.max(10 * 1024, (Number($("#target-kb").value) || 500) * 1024)),
     background: $("#background").value,
-    suffix: sanitizeSuffix($("#suffix").value)
+    suffix: sanitizeSuffix($("#suffix").value),
+    smart: $("#smart-enabled")?.checked !== false,
+    parallel: $("#parallel-enabled")?.checked !== false
   };
 }
 
@@ -182,10 +189,157 @@ function sanitizeSuffix(value) {
   return v || "-nexauren";
 }
 
+async function analyzeImage(file) {
+  const cached = state.analysis.get(fileKey(file));
+  if (cached) return cached;
+
+  const started = performance.now();
+  let decoded = null;
+  let alphaRatio = 0;
+  let colorVariance = 0;
+  let samplePixels = 0;
+
+  try {
+    decoded = await decode(file);
+    const sampleMax = 96;
+    const scale = Math.min(1, sampleMax / decoded.width, sampleMax / decoded.height);
+    const width = Math.max(1, Math.round(decoded.width * scale));
+    const height = Math.max(1, Math.round(decoded.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (ctx) {
+      ctx.drawImage(decoded.source, 0, 0, width, height);
+      const data = ctx.getImageData(0, 0, width, height).data;
+      const values = [];
+      for (let i = 0; i < data.length; i += 4) {
+        const a = data[i + 3] / 255;
+        if (a < 0.98) alphaRatio += 1;
+        const y = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+        values.push(y);
+      }
+      samplePixels = values.length;
+      if (values.length) {
+        const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+        colorVariance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+      }
+    }
+  } catch {
+    // Metadata-only fallback below.
+  } finally {
+    decoded?.close?.();
+  }
+
+  alphaRatio = samplePixels ? alphaRatio / samplePixels : 0;
+  const mp = (file.size && Number.isFinite(file.size)) ? (decoded?.width * decoded?.height || 0) / 1000000 : 0;
+  const isPng = file.type === "image/png";
+  const isJpeg = file.type === "image/jpeg";
+  const isWebp = file.type === "image/webp";
+  const transparent = alphaRatio > 0.015;
+  const graphic = transparent || (isPng && colorVariance < 850);
+  const photo = isJpeg || isWebp || (!graphic && colorVariance > 900);
+
+  const analysis = {
+    type: transparent ? "transparência" : graphic ? "gráfico / UI" : photo ? "fotografia" : "imagem",
+    transparent,
+    photo,
+    graphic,
+    width: decoded?.width || 0,
+    height: decoded?.height || 0,
+    megapixels: mp,
+    alphaRatio,
+    colorVariance,
+    ms: performance.now() - started
+  };
+
+  state.analysis.set(fileKey(file), analysis);
+  return analysis;
+}
+
+function deviceConcurrency() {
+  const cores = Number(navigator.hardwareConcurrency || 4);
+  const memory = Number(navigator.deviceMemory || 4);
+  if (cores <= 2 || memory <= 2) return 1;
+  if (cores <= 4 || memory <= 4) return 2;
+  return 3;
+}
+
+function smartSettings(file, base, analysis) {
+  if (!base.smart) return { ...base, profile: "manual" };
+
+  const output = { ...base };
+  const mp = Math.max(0, analysis?.megapixels || 0);
+  const large = mp >= 12 || Math.max(analysis?.width || 0, analysis?.height || 0) >= 5000;
+  const tiny = file.size < 180 * 1024;
+  const photo = !!analysis?.photo;
+  const graphic = !!analysis?.graphic;
+
+  if (output.format === "auto") output.format = "webp";
+
+  if (graphic && output.format === "webp") {
+    output.quality = tiny ? 0.92 : 0.88;
+    output.profile = analysis?.transparent ? "Smart · transparência" : "Smart · gráfico";
+  } else if (photo) {
+    output.quality = tiny ? 0.90 : (large ? 0.80 : 0.84);
+    output.profile = large ? "Smart · foto grande" : "Smart · fotografia";
+  } else {
+    output.quality = tiny ? 0.92 : 0.86;
+    output.profile = "Smart · equilibrado";
+  }
+
+  const deviceCores = Number(navigator.hardwareConcurrency || 4);
+  const maxForDevice = deviceCores <= 2 ? 1920 : deviceCores <= 4 ? 2560 : 3200;
+  if (large && output.maxWidth >= maxForDevice) {
+    output.maxWidth = Math.min(output.maxWidth, maxForDevice);
+    output.maxHeight = Math.min(output.maxHeight, maxForDevice);
+  }
+
+  if (analysis?.transparent && output.format === "jpeg") {
+    output.format = "webp";
+    output.profile = "Smart · transparência preservada";
+  }
+
+  return output;
+}
+
+async function analyzeAll(files) {
+  const analyses = [];
+  for (const file of files) {
+    try { analyses.push(await analyzeImage(file)); }
+    catch { analyses.push(null); }
+  }
+  renderSmartPanel(analyses, files);
+  return analyses;
+}
+
+function renderSmartPanel(analyses, files) {
+  const panel = $("#smart-analysis");
+  if (!panel) return;
+  if (!files.length) {
+    $("#smart-title").textContent = "Análise automática pronta";
+    $("#smart-description").textContent = "O Nexauren pode adaptar formato, qualidade e dimensão a cada imagem antes de processar o lote.";
+    $("#smart-badge").textContent = "AUTO";
+    $("#smart-capacity").textContent = "Processamento adaptativo";
+    return;
+  }
+  const valid = analyses.filter(Boolean);
+  const smart = valid.filter(a => a.photo || a.graphic || a.transparent).length;
+  const maxMp = valid.reduce((m, a) => Math.max(m, a.megapixels || 0), 0);
+  const labels = [...new Set(valid.map(a => a.type))];
+  $("#smart-title").textContent = "Motor Smart analisou " + valid.length + " de " + files.length + " imagem" + (files.length === 1 ? "" : "ns");
+  $("#smart-description").textContent = smart
+    ? labels.join(" · ") + " detectado" + (labels.length > 1 ? "s" : "") + ". O compressor ajustará a estratégia por ficheiro."
+    : "Será aplicado um perfil equilibrado para cada ficheiro.";
+  $("#smart-badge").textContent = "SMART";
+  $("#smart-capacity").textContent = maxMp ? maxMp.toFixed(1) + " MP máx. · local" : "Processamento local";
+}
+
 function chooseFormat(file, requested) {
   if (requested === "jpeg") return "image/jpeg";
   if (requested === "png") return "image/png";
   if (requested === "webp") return "image/webp";
+  if (file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/webp") return "image/webp";
   return "image/webp";
 }
 
@@ -286,12 +440,37 @@ async function compressOne(file, settings) {
       blob = await exportCanvas(canvas, mime, finalQuality);
     }
 
+    let effectiveBlob = blob;
+    let effectiveMime = mime;
+    let effectiveQuality = Math.round(finalQuality * 100);
+    let noGain = false;
+
+    if (!settings.targetEnabled && blob.size >= file.size && file.type.startsWith("image/")) {
+      const fallbackQuality = Math.max(0.55, Math.min(finalQuality - 0.08, 0.72));
+      if (mime !== "image/png" && fallbackQuality < finalQuality) {
+        const fallback = await exportCanvas(canvas, mime, fallbackQuality);
+        if (fallback.size < blob.size) {
+          effectiveBlob = fallback;
+          effectiveQuality = Math.round(fallbackQuality * 100);
+        }
+      }
+
+      if (effectiveBlob.size >= file.size) {
+        effectiveBlob = file;
+        effectiveMime = file.type || mime;
+        effectiveQuality = 100;
+        noGain = true;
+      }
+    }
+
     return {
-      blob,
-      mime,
+      blob: effectiveBlob,
+      mime: effectiveMime,
       width: rendered.width,
       height: rendered.height,
-      quality: Math.round(finalQuality * 100)
+      quality: effectiveQuality,
+      noGain,
+      profile: settings.profile || "Manual"
     };
   } finally {
     decoded.close();
@@ -300,12 +479,17 @@ async function compressOne(file, settings) {
 
 async function compressFile(file) {
   const key = fileKey(file);
-  state.results.set(key, { status: "busy", statusText: "A preparar…" });
+  state.results.set(key, { status: "busy", statusText: "A analisar…" });
   renderQueue();
 
   try {
     const started = performance.now();
-    const output = await compressOne(file, readSettings());
+    const baseSettings = readSettings();
+    const analysis = baseSettings.smart ? await analyzeImage(file) : null;
+    const settings = smartSettings(file, baseSettings, analysis);
+    state.results.set(key, { status: "busy", statusText: (settings.profile || "A preparar…") + " · a comprimir…" });
+    renderQueue();
+    const output = await compressOne(file, settings);
     output.ms = performance.now() - started;
     const oldResult = state.results.get(key);
     if (oldResult?.url) URL.revokeObjectURL(oldResult.url);
@@ -314,7 +498,9 @@ async function compressFile(file) {
     const saving = Math.round((1 - output.blob.size / file.size) * 100);
     state.results.set(key, {
       status: "done",
-      statusText: "Concluído · " + (saving >= 0 ? saving + "% menor" : Math.abs(saving) + "% maior"),
+      statusText: output.noGain
+        ? "Concluído · sem ganho adicional"
+        : "Concluído · " + (saving >= 0 ? saving + "% menor" : Math.abs(saving) + "% maior"),
       blob: output.blob,
       url,
       mime: output.mime,
@@ -322,7 +508,10 @@ async function compressFile(file) {
       height: output.height,
       quality: output.quality,
       saving,
-      ms: output.ms
+      ms: output.ms,
+      profile: output.profile,
+      noGain: output.noGain,
+      analysis
     });
     saveHistoryEntry(file, state.results.get(key));
   } catch (error) {
@@ -338,20 +527,39 @@ async function compressAll() {
 
   try {
     const files = [...state.files];
-    for (let i = 0; i < files.length; i++) {
-      setStatus("A comprimir " + (i + 1) + " de " + files.length + "…", "busy");
-      await compressFile(files[i]);
-    }
+    const base = readSettings();
+    const concurrency = base.parallel ? Math.min(deviceConcurrency(), files.length) : 1;
+    state.processing = { done: 0, total: files.length, concurrency };
+
+    const queue = [...files];
+    const worker = async () => {
+      while (queue.length) {
+        const file = queue.shift();
+        if (!file) return;
+        const index = files.indexOf(file) + 1;
+        setStatus("A processar " + index + " de " + files.length + " · " + concurrency + " em paralelo…", "busy");
+        await compressFile(file);
+        state.processing.done += 1;
+        setStatus("Processadas " + state.processing.done + " de " + files.length + " · " + concurrency + " em paralelo.", "busy");
+      }
+    };
+
+    await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
     renderResults();
     const finished = files.filter(file => state.results.get(fileKey(file))?.status === "done").length;
-    showToast(finished + " de " + files.length + " imagens processadas.", finished === files.length ? "" : "error");
+    const failed = files.length - finished;
+    showToast(failed
+      ? finished + " concluídas · " + failed + " com erro."
+      : finished + " imagens processadas com o modo " + (concurrency > 1 ? "paralelo" : "sequencial") + ".");
   } catch (error) {
     showToast(error?.message || "Não foi possível iniciar o lote.", "error");
   } finally {
     state.busy = false;
+    state.processing = { done: 0, total: 0, concurrency: 1 };
     renderQueue();
     renderResults();
+    analyzeAll(state.files).catch(() => {});
   }
 }
 
@@ -366,7 +574,9 @@ function saveHistoryEntry(file, result) {
     height: result.height,
     format: extension(result.mime).toUpperCase(),
     quality: result.quality,
+    profile: result.profile,
     ms: result.ms,
+    noGain: result.noGain,
     at: new Date().toISOString()
   };
   state.history.unshift(entry);
@@ -405,7 +615,7 @@ function renderHistory() {
     return '<article class="nx-history-item">' +
       '<div class="nx-history-icon">✦</div>' +
       '<div class="nx-history-main"><strong title="' + esc(item.name) + '">' + esc(item.name) + '</strong>' +
-      '<span>' + bytes(item.original) + ' → ' + bytes(item.output) + ' · ' + (item.saving >= 0 ? item.saving + '% menor' : '↑ ' + Math.abs(item.saving) + '%') + ' · ' + esc(item.format) + '</span></div>' +
+      '<span>' + bytes(item.original) + ' → ' + bytes(item.output) + ' · ' + (item.noGain ? 'sem ganho adicional' : (item.saving >= 0 ? item.saving + '% menor' : '↑ ' + Math.abs(item.saving) + '%')) + ' · ' + esc(item.format) + ' · ' + esc(item.profile || 'Manual') + '</span></div>' +
       '<div class="nx-history-meta"><strong>' + esc(formatMs(item.ms)) + '</strong><small>' + esc(label) + '</small></div>' +
       '</article>';
   }).join("");
@@ -523,7 +733,7 @@ function renderCompare() {
   $("#compare-original-size").textContent = bytes(file.size);
   $("#compare-original-meta").textContent = file.type.replace("image/","").toUpperCase();
   $("#compare-caption").textContent = result?.blob
-    ? "Compare visualmente o original com a versão otimizada."
+    ? (result.profile ? result.profile + " · compare visualmente o original com o resultado." : "Compare visualmente o original com a versão otimizada.")
     : "A imagem original já está pronta. O resultado aparecerá aqui após a compressão.";
 
   if (!result?.blob) {
@@ -542,10 +752,10 @@ function renderCompare() {
   output.src = result.url;
   $("#compare-result-meta").textContent = extension(result.mime).toUpperCase();
   $("#compare-result-size").textContent = bytes(result.blob.size);
-  $("#compare-saving").textContent = result.saving >= 0 ? result.saving + "%" : "↑ " + Math.abs(result.saving) + "%";
+  $("#compare-saving").textContent = result.noGain ? "0%" : (result.saving >= 0 ? result.saving + "%" : "↑ " + Math.abs(result.saving) + "%");
   $("#compare-dimensions").textContent = result.width + "×" + result.height;
   $("#compare-format").textContent = extension(result.mime).toUpperCase();
-  $("#compare-quality").textContent = "Q" + result.quality;
+  $("#compare-quality").textContent = result.noGain ? "Original" : "Q" + result.quality;
   $("#compare-time").textContent = formatMs(result.ms);
   $("#download-preview").disabled = false;
   renderSlider();
@@ -602,8 +812,8 @@ function renderResults() {
   $("#result-list").innerHTML = done.map(({ file, result }) =>
     '<div class="nx-result">' +
       '<div class="nx-result-thumb"><img src="' + esc(result.url) + '" alt="" loading="lazy"></div>' +
-      '<div class="nx-result-name"><strong>' + esc(file.name) + '</strong><span>' + result.width + " × " + result.height + " · " + extension(result.mime).toUpperCase() + " · Q" + result.quality + '</span></div>' +
-      '<div class="nx-saving">' + (result.saving >= 0 ? result.saving + "% menor" : Math.abs(result.saving) + "% maior") + '</div>' +
+      '<div class="nx-result-name"><strong>' + esc(file.name) + '</strong><span>' + result.width + " × " + result.height + " · " + extension(result.mime).toUpperCase() + " · " + esc(result.noGain ? "Original preservado" : ("Q" + result.quality)) + " · " + esc(result.profile || "Manual") + '</span></div>' +
+      '<div class="nx-saving">' + (result.noGain ? "sem ganho" : (result.saving >= 0 ? result.saving + "% menor" : Math.abs(result.saving) + "% maior")) + '</div>' +
       '<button class="nx-btn" type="button" data-download-key="' + esc(fileKey(file)) + '">Baixar</button>' +
     '</div>'
   ).join("");
@@ -749,6 +959,7 @@ function wire() {
   setPlanUI();
   renderQueue();
   renderCompare();
+  renderSmartPanel([], []);
   loadHistory();
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && !$("#preview-lightbox").hidden) {
