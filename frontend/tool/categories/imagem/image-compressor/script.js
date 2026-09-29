@@ -1,5 +1,5 @@
-import { auth, onAuthStateChanged, workerFetch } from "/account/account-client.js?v=20260923-tool-access-2";
-import { getPlanState, verifyToolAccess } from "/tool/frontend/tool-access.js?v=20260923";
+
+import { getPlanState } from "/tool/frontend/tool-access.js?v=20260923";
 
 const $ = (s) => document.querySelector(s);
 const state = {
@@ -68,38 +68,16 @@ function setPlanUI(policy) {
 }
 
 async function queryPolicy() {
-  const [plan, unlock] = await Promise.all([
-    getPlanState({ force: true }),
-    verifyToolAccess("image-compressor")
-  ]);
-  if (!plan?.authenticated || plan?.pro === null || plan?.status === "UNKNOWN") {
-    throw Object.assign(new Error("Não foi possível confirmar o seu plano."), { code: "PLAN_UNAVAILABLE" });
-  }
-  if (plan.pro === true) {
-    if (plan.plan?.toLowerCase() !== "pro" || plan.status?.toUpperCase() !== "ACTIVE" || unlock?.unlocked !== true || unlock?.error) {
-      throw Object.assign(new Error("Não foi possível confirmar o acesso aos recursos Pro."), { code: "PRO_UNAVAILABLE" });
-    }
-    state.policy = {
-      plan: "pro",
-      limits: { maxFilesPerBatch: null },
-      usage: null
-    };
-  } else {
-    state.policy = {
-      plan: "free",
-      limits: { maxFilesPerBatch: 3 },
-      usage: null
-    };
-  }
+  state.policy = { plan: "free", limits: { maxFilesPerBatch: 3 }, usage: null };
+  try {
+    const plan = await getPlanState({ force: true });
+    const activePro = plan?.authenticated && plan?.pro === true &&
+      String(plan.plan || "").toLowerCase() === "pro" &&
+      String(plan.status || "").toUpperCase() === "ACTIVE";
+    if (activePro) state.policy = { plan: "pro", limits: { maxFilesPerBatch: null }, usage: null };
+  } catch {}
   setPlanUI(state.policy);
   return state.policy;
-}
-
-async function consumeBatch(count) {
-  return await workerFetch("/api/tools/image-compressor/consume", {
-    method: "POST",
-    body: JSON.stringify({ image_count: count })
-  });
 }
 
 function fileKey(file) {
@@ -366,8 +344,6 @@ async function compressAll() {
       throw Object.assign(new Error("O seu plano permite no máximo " + max + " imagens por lote."), { code: "TOOL_BATCH_LIMIT" });
     }
 
-    await consumeBatch(count);
-
     const files = [...state.files];
     for (let i = 0; i < files.length; i++) {
       setStatus("A comprimir " + (i + 1) + " de " + files.length + "…", "busy");
@@ -472,7 +448,13 @@ async function copyReport() {
     await navigator.clipboard.writeText(text);
     showToast("Relatório copiado.");
   } catch {
-    showToast("O navegador não permitiu copiar o relatório.", "error");
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand("copy"); ta.remove();
+      showToast(ok ? "Relatório copiado." : "Não foi possível copiar o relatório.", ok ? "" : "error");
+    } catch { showToast("Não foi possível copiar o relatório.", "error"); }
   }
 }
 
@@ -535,27 +517,17 @@ function wire() {
 
   setPreset("smart");
   renderQueue();
+  queryPolicy().then(() => renderQueue()).catch(() => {
+    state.policy = { plan: "free", limits: { maxFilesPerBatch: 3 }, usage: null };
+    setPlanUI(state.policy);
+    renderQueue();
+  });
+  document.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      compressAll();
+    }
+  });
 }
 
 wire();
-
-onAuthStateChanged(auth, async user => {
-  const app = document.querySelector(".nx-app");
-  const login = $("#login");
-  const mainCard = document.querySelector(".nx-card:not(.nx-login)");
-  if (!user) {
-    mainCard.style.display = "none";
-    login.classList.add("open");
-    setPlanUI(null);
-    return;
-  }
-  login.classList.remove("open");
-  mainCard.style.display = "";
-  try {
-    await queryPolicy();
-    renderQueue();
-  } catch (error) {
-    setPlanUI(null);
-    showToast(error?.message || "Não foi possível consultar o seu plano.", "error");
-  }
-});
