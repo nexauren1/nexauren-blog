@@ -132,6 +132,18 @@ async function blobToDataUrl(blob){
 async function getImageSource(file){
   if(!file) throw new Error("Nenhuma imagem selecionada.");
 
+  // Nas atualizações em tempo real, reutilize o Blob URL já criado para a imagem atual.
+  // Isso evita reler o File repetidamente e reduz falhas em WebViews Android.
+  if(state.file===file && state.originalSrc){
+    return await new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.decoding="async";
+      img.onload=()=>resolve(img);
+      img.onerror=()=>reject(new Error("O navegador não conseguiu abrir esta imagem."));
+      img.src=state.originalSrc;
+    });
+  }
+
   if("createImageBitmap" in window){
     try{
       return await createImageBitmap(file,{imageOrientation:"from-image"});
@@ -145,6 +157,7 @@ async function getImageSource(file){
   try{
     return await new Promise((resolve,reject)=>{
       const img=new Image();
+      img.decoding="async";
       img.onload=()=>{
         URL.revokeObjectURL(url);
         resolve(img);
@@ -159,6 +172,7 @@ async function getImageSource(file){
     const dataUrl=await blobToDataUrl(file);
     return await new Promise((resolve,reject)=>{
       const img=new Image();
+      img.decoding="async";
       img.onload=()=>resolve(img);
       img.onerror=()=>reject(new Error("O navegador não conseguiu abrir esta imagem."));
       img.src=dataUrl;
