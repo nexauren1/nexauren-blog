@@ -309,40 +309,21 @@ async function renderResult(output){
     previewUrl=objectUrl;
 
     const img=$("#result-image");
-    $("#result-empty").hidden=true;
-    $("#result-loading").hidden=false;
-
     const saving=Math.max(0,Math.round((1-output.blob.size/state.file.size)*100));
-    const showMetrics=()=>{
-      $("#result-size").textContent=bytes(output.blob.size);
-      $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
-      $("#saving").textContent=output.noGain ? "0%" : saving+"%";
-      $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
-      $("#format-label").textContent=mimeLabel(output.mime);
-      $("#time-label").textContent=timeLabel(output.ms);
-      $("#download").disabled=false;
-      setStatus("ready");
-    };
 
-    const waitForLoad=src=>new Promise((resolve,reject)=>{
-      const onLoad=()=>{ cleanup(); resolve(); };
-      const onError=()=>{ cleanup(); reject(new Error("preview")); };
-      const cleanup=()=>{
-        img.removeEventListener("load",onLoad);
-        img.removeEventListener("error",onError);
-      };
-      img.addEventListener("load",onLoad,{once:true});
-      img.addEventListener("error",onError,{once:true});
-      img.src=src;
-      img.hidden=false;
+    const loadCandidate=src=>new Promise((resolve,reject)=>{
+      const probe=new Image();
+      probe.onload=()=>resolve(probe);
+      probe.onerror=()=>reject(new Error("preview"));
+      probe.src=src;
     });
 
     try{
-      await waitForLoad(objectUrl);
+      await loadCandidate(objectUrl);
     }catch{
       const dataUrl=await blobToDataUrl(output.blob);
       previewUrl=dataUrl;
-      await waitForLoad(dataUrl);
+      await loadCandidate(dataUrl);
     }
 
     if(tokenAtRender!==state.token || !state.file){
@@ -357,10 +338,18 @@ async function renderResult(output){
       URL.revokeObjectURL(previous.url);
     }
 
-    $("#result-loading").hidden=true;
-    $("#result-empty").hidden=true;
+    img.src=previewUrl;
     img.hidden=false;
-    showMetrics();
+    $("#result-empty").hidden=true;
+    $("#result-loading").hidden=true;
+    $("#result-size").textContent=bytes(output.blob.size);
+    $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
+    $("#saving").textContent=output.noGain ? "0%" : saving+"%";
+    $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
+    $("#format-label").textContent=mimeLabel(output.mime);
+    $("#time-label").textContent=timeLabel(output.ms);
+    $("#download").disabled=false;
+    setStatus("ready");
     return true;
   }catch(error){
     if(objectUrl && !committed) URL.revokeObjectURL(objectUrl);
