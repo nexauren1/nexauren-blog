@@ -174,8 +174,14 @@ async function processImage(file,settings,token){
 
     const effective=effectiveSettings(settings,file,source);
     const mime=outputMime(file,effective.format);
+    if(!Number.isFinite(source.width) || !Number.isFinite(source.height) || source.width<1 || source.height<1){
+      throw new Error("Não foi possível determinar as dimensões da imagem.");
+    }
     const dims=fitDimensions(source.width,source.height,effective.maxWidth,effective.maxHeight);
 
+    if(!Number.isFinite(dims.width) || !Number.isFinite(dims.height) || dims.width<1 || dims.height<1){
+      throw new Error("As dimensões escolhidas não são válidas.");
+    }
     if(dims.width*dims.height>36000000){
       throw new Error("Esta imagem é grande demais para o processamento seguro neste dispositivo.");
     }
@@ -184,8 +190,8 @@ async function processImage(file,settings,token){
     canvas.width=dims.width;
     canvas.height=dims.height;
 
-    const ctx=canvas.getContext("2d",{alpha:mime!=="image/jpeg"});
-    if(!ctx) throw new Error("Canvas indisponível neste navegador.");
+    const ctx=canvas.getContext("2d",{alpha:mime!=="image/jpeg"}) || canvas.getContext("2d");
+    if(!ctx) throw new Error("O navegador não disponibilizou o processamento de imagem.");
 
     ctx.imageSmoothingEnabled=true;
     ctx.imageSmoothingQuality="high";
@@ -337,9 +343,7 @@ async function runCompression(){
   state.pending=false;
   setStatus("busy");
   $("#result-loading").hidden=false;
-  $("#result-empty").hidden=true;
-  $("#result-image").hidden=true;
-  $("#download").disabled=true;
+  $("#download").disabled=!state.result?.blob;
   $("#result-size").textContent="A atualizar…";
 
   try{
@@ -347,9 +351,20 @@ async function runCompression(){
     if(token===state.token && output) await renderResult(output);
   }catch(error){
     if(token===state.token){
-      clearResult();
+      $("#result-loading").hidden=true;
+      if(state.result?.blob){
+        $("#result-empty").hidden=true;
+        $("#result-image").hidden=false;
+        $("#download").disabled=false;
+        $("#result-size").textContent=bytes(state.result.blob.size);
+        $("#result-meta").textContent=state.result.noGain ? "Último resultado válido" : mimeLabel(state.result.mime)+" · Q"+state.result.quality;
+        $("#saving").textContent=state.result.noGain ? "0%" : Math.max(0,Math.round((1-state.result.blob.size/state.file.size)*100))+"%";
+        $("#dimensions").textContent=state.result.outputWidth+" × "+state.result.outputHeight;
+        $("#format-label").textContent=mimeLabel(state.result.mime);
+        $("#time-label").textContent=timeLabel(state.result.ms);
+      }
       setStatus("error");
-      showToast(error?.message||"Não foi possível comprimir a imagem.","error");
+      showToast(error?.message||"Não foi possível atualizar estas definições. O resultado anterior foi mantido.","error");
     }
   }finally{
     if(token===state.token){
@@ -357,7 +372,7 @@ async function runCompression(){
       $("#result-loading").hidden=true;
       if(state.pending){
         state.pending=false;
-        runCompression();
+        queueMicrotask(()=>runCompression());
       }
     }
   }
