@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
 <script src="/assets/nexauren-language.js?v=20260928-6"></script>
 <meta charset="utf-8">
@@ -8,10 +8,10 @@
 <meta name="description" content="Leitor de QR Code Nexauren — leia QR Codes usando a câmara ou uma imagem, diretamente no navegador.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/tecnologia/leitor-de-qr-code/">
-<title>Leitor de QR Code — Nexauren Tools</title>
+<title>Leitor de QR Code — Nexauren Story</title>
 
 <link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
-<link rel="stylesheet" href="./style.css?v=20260923-1">
+<link rel="stylesheet" href="./style.css?v=20260929-qr-reader2">
 
 
 
@@ -308,10 +308,7 @@
     <div><div class="reader-eyebrow">NEXAUREN TOOL · TECNOLOGIA</div><h1>Leia um <span>QR Code.</span></h1><p>Use a câmara do telemóvel ou escolha uma imagem. A leitura acontece localmente no navegador.</p></div>
     <div class="reader-signal"><i></i><span>SCANNER LOCAL</span></div>
   </section>
-  <section class="reader-account-gate" id="account-gate" hidden>
-    <div class="reader-gate-icon">⌗</div><div class="reader-eyebrow">CONTA NEXAUREN</div><h2>Entre para usar esta ferramenta.</h2><p>As ferramentas Nexauren estão disponíveis apenas para utilizadores autenticados.</p><a class="primary" href="/account">Entrar ou criar conta</a>
-  </section>
-  <section class="reader-app" id="tool-app" hidden>
+  <section class="reader-app" id="tool-app">
     <div class="reader-layout">
       <section class="reader-scanner panel">
         <div class="panel-head"><div><span>01</span><strong>Scanner</strong></div><small>Enquadre o QR Code dentro da área.</small></div>
@@ -330,7 +327,7 @@
         <div class="result-empty" id="result-empty"><div>⌁</div><strong>Nenhum QR detetado</strong><span>O conteúdo lido aparecerá aqui.</span></div>
         <div class="result-content" id="result-content" hidden>
           <div class="result-badge" id="result-type">TEXTO</div><pre id="result-text"></pre>
-          <div class="result-actions"><button id="copy" class="primary" type="button">Copiar</button><button id="open" class="secondary" type="button" hidden>Abrir URL</button></div>
+          <div class="result-actions"><button id="copy" class="primary" type="button">Copiar</button><button id="open" class="secondary" type="button" hidden>Abrir URL</button><button id="clear-result" class="secondary" type="button" hidden>Limpar</button></div>
         </div>
       </aside>
     </div>
