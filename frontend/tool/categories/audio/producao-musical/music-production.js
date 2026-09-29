@@ -235,9 +235,11 @@ function bpmTool(){
   }
   bpm.oninput=calc;division.onchange=calc;tap.onclick=doTap;clearTap.onclick=clearTaps;
   document.getElementById("mp-reset").onclick=()=>{bpm.value=128;division.value="quarter";clearTaps();calc()};
+  const onKey=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();calc()}};
+  window.addEventListener("keydown",onKey);
   copy.onclick=async()=>{const ok=await copyText(result.innerText);if(ok){copy.textContent=t.copied;setTimeout(()=>copy.textContent=t.copy,1000)}};
   calc();
-  return ()=>{clearTimeout(tapTimer)};
+  return ()=>{clearTimeout(tapTimer);window.removeEventListener("keydown",onKey)};
 }
 
 function pitchTool(){
