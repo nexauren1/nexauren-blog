@@ -873,10 +873,13 @@ async function createZip(){
     info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.effects=state.selectedEffects.slice();info.generationOptions={...state.generation};info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
     info.description="Generated locally from one source sample.";
     const items=getCreateItems();state.zipBlob=await zipPack(info,items,passwordEnabled?password:"",$("#include-cover").checked);
-    $("#download-created").disabled=false;trackUse();downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
+    $("#download-created").disabled=false;$("#copy-created-summary").disabled=false;trackUse();downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
     $("#created-summary").textContent=t("generatedSummary",{n:items.length,type:info.typeName,duration:formatSeconds(info.sourceDuration)});
   }catch(e){console.error(e);notify(t("zipError"),true)}finally{$("#download-created").disabled=!state.zipBlob;$("#create-status").textContent=t("doneCreate",{n:state.generated.length})}
 }
+async function copyTextSafe(text){try{await navigator.clipboard.writeText(text);notify("Resumo copiado.");return true}catch{try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();if(ok)notify("Resumo copiado.");return ok}catch{return false}}}
+function createdSummary(){const info=$("#pack-name")?.value?.trim()||"Nexauren Sample Pack";return [info,"Amostras geradas: "+state.generated.length,"Tipo: "+createTypeFolder(),"Efeitos: "+state.selectedEffects.map(effectLabel).join(", "),"Formato: WAV"].join("\n")}
+function organizedSummary(){const info=$("#org-pack-name")?.value?.trim()||"Nexauren Organized Pack";return [info,"Ficheiros organizados: "+state.orgFiles.length].join("\n")}
 function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function renderOrganizerList(){
   const card=$("#organize-table-card");card.hidden=!state.orgFiles.length;
@@ -909,7 +912,7 @@ async function organizeZip(){
     });
     info.fileCount=items.length;info.folders=Object.fromEntries([...counts.entries()]);info.description="Organized locally from uploaded audio files.";
     state.orgZipBlob=await zipPack(info,items,passwordEnabled?password:"",false);
-    $("#org-results").hidden=false;$("#download-organized").disabled=false;trackUse();
+    $("#org-results").hidden=false;$("#download-organized").disabled=false;$("#copy-organized-summary").disabled=false;trackUse();
     $("#org-summary").textContent=t("orgSummary",{n:items.length,cats:counts.size});
     downloadBlob(state.orgZipBlob,slug(info.packName)+".zip");notify(t("doneOrg",{n:items.length}));
   }catch(e){console.error(e);notify(t("zipError"),true)}finally{$("#organize-pack").disabled=!state.orgFiles.length;$("#org-status").textContent=t("doneOrg",{n:state.orgFiles.length})}
@@ -933,7 +936,7 @@ $("#organize-drop").addEventListener("dragover",e=>e.preventDefault());
 $("#organize-drop").addEventListener("drop",e=>{e.preventDefault();loadOrganizer(e.dataTransfer.files)});
 $("#generate-pack").addEventListener("click",generateSamples);
 $("#cancel-generation").addEventListener("click",()=>{if(!state.generating)return;state.cancelRequested=true;$("#cancel-generation").disabled=true;$("#create-status").textContent=t("cancelling");});
-$("#download-created").addEventListener("click",createZip);
+$("#download-created").addEventListener("click",createZip);$("#copy-created-summary").addEventListener("click",()=>copyTextSafe(createdSummary()));$("#copy-organized-summary").addEventListener("click",()=>copyTextSafe(organizedSummary()));document.addEventListener("keydown",event=>{if((event.ctrlKey||event.metaKey)&&event.key==="Enter"){event.preventDefault();if(!$("#generate-pack").disabled)void generateSamples()}});
 $("#organize-pack").addEventListener("click",organizeZip);
 $("#download-organized").addEventListener("click",()=>{if(state.orgZipBlob)downloadBlob(state.orgZipBlob,slug($("#org-pack-name").value)+".zip")});
 $("#year").textContent=new Date().getFullYear();
