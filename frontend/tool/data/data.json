@@ -157,25 +157,30 @@
     {
       "id": "image-cropper",
       "name": "Cortador de Imagem",
-      "description": "Corte imagens com proporções prontas para posts, stories e miniaturas.",
+      "description": "Crop images to precise aspect ratios with drag positioning, rotation, flip, quality controls, and local browser processing.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-cropper/",
       "tags": [
         "imagem",
         "image",
         "cropper",
-        "Cortador de Imagem"
+        "crop",
+        "aspect ratio",
+        "photo crop",
+        "JPG",
+        "PNG",
+        "WebP"
       ],
-      "featured": false,
+      "featured": true,
       "popular": true,
       "access": "public",
       "sortOrder": 40,
       "name_en": "Image Cropper",
-      "description_en": "Crop images online for free with common aspect ratios, adjustable position, rotation, flip, quality, and JPG, PNG, or WebP export.",
+      "description_en": "Crop images online for free to precise aspect ratios with drag positioning, rotation, flip, quality controls, and local browser processing.",
       "tags_en": [
         "image cropper",
         "crop image",
@@ -183,8 +188,9 @@
         "crop JPG",
         "crop PNG",
         "crop WebP",
+        "aspect ratio crop",
         "photo crop",
-        "aspect ratio crop"
+        "image crop tool"
       ]
     },
     {
