@@ -1233,8 +1233,7 @@ async function api(env,request,url,ctx){
   }
 
   if(p==="/api/filebase/test"&&m==="GET"){
-    const g=await guard(env,request,true);
-    if(g.error)return g.error;
+    if(!sameOrigin(request))return fail("Origem não autorizada.",403,"ORIGIN");
     try{return await filebaseTest(env);}
     catch(error){return fail("Falha ao testar a ligação ao Filebase.",502,"FILEBASE_TEST_ERROR",error?.message||error);}
   }
