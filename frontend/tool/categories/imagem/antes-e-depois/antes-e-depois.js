@@ -18,8 +18,10 @@ function readImage(file){
     img.src=url;
   });
 }
+function syncStageSize(){stage.style.setProperty("--stage-width",stage.clientWidth+"px");stage.style.setProperty("--stage-height",stage.clientHeight+"px")}
 function syncClip(){
   const p=Number(slider.value);
+  syncStageSize();
   beforeClip.style.width=p+"%";
   divider.style.left="calc("+p+"% - 1px)";
   beforeClip.style.setProperty("--split",p+"%");
@@ -91,5 +93,7 @@ function drawCombined(sideBySide){
 download.addEventListener("click",()=>drawCombined(false));
 downloadSide.addEventListener("click",()=>drawCombined(true));
 format.dispatchEvent(new Event("change"));
-syncClip();updateStatus();
+syncStageSize();syncClip();updateStatus();
+window.addEventListener("resize",syncStageSize,{passive:true});
+if(window.ResizeObserver){new ResizeObserver(syncStageSize).observe(stage)}
 })();
