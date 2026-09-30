@@ -1,4 +1,5 @@
 import { jwtVerify, importX509 } from "jose";
+import { filebaseTest } from "./filebase.js";
 const COOKIE = "ns_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_SOCIAL_IMAGE = "https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2";
@@ -1229,6 +1230,13 @@ async function api(env,request,url,ctx){
       const status=code==="TOOL_BATCH_LIMIT"?429:503;
       return fail(error?.message||"Não foi possível validar o lote.",status,code,error?.details||null);
     }
+  }
+
+  if(p==="/api/filebase/test"&&m==="GET"){
+    const g=await guard(env,request,true);
+    if(g.error)return g.error;
+    try{return await filebaseTest(env);}
+    catch(error){return fail("Falha ao testar a ligação ao Filebase.",502,"FILEBASE_TEST_ERROR",error?.message||error);}
   }
 
   if(p==="/api/health"&&m==="GET"){try{const ready=await dbReady(env);return json({ok:ready,db:ready},ready?200:503);}catch{return fail("D1 indisponível.",503,"DB_UNAVAILABLE");}}
