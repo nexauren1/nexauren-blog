@@ -93,3 +93,45 @@ button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.
 @media(max-width:480px){
   .nx-intro h1{font-size:39px}.nx-upload{min-height:225px;padding:36px 14px}.nx-image-stage{height:64vw;min-height:195px}.nx-field-row{grid-template-columns:1fr}.nx-camera-controls{grid-template-columns:1fr 70px 1fr;gap:7px;padding-left:10px;padding-right:10px}.nx-camera-controls .nx-secondary{padding:9px 7px;font-size:10px}.nx-camera-frame{width:78vw;height:58vh}.nx-footer{flex-direction:column}
 }
+
+/* SEO content */
+.nx-seo-content{margin:42px auto 0;max-width:1080px}
+.nx-seo-intro{max-width:800px;margin:0 auto 24px;text-align:center}
+.nx-seo-intro h2,.nx-related h2,.nx-faq h2{margin:9px 0 10px;font-size:clamp(27px,4vw,42px);line-height:1.05;letter-spacing:-.04em;color:var(--text)}
+.nx-seo-intro p{margin:0;color:#8b98aa;font-size:14px;line-height:1.75}
+.nx-seo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.nx-seo-two{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.nx-seo-card,.nx-faq{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#0d141e,#091019);padding:18px}
+.nx-seo-card>span{font-size:10px;font-weight:950;letter-spacing:.16em;color:#67dff9}
+.nx-seo-card h2,.nx-seo-card h3{margin:8px 0 8px;font-size:18px;letter-spacing:-.02em}
+.nx-seo-card p{margin:0;color:#8794a7;font-size:12px;line-height:1.7}
+.nx-field-help{display:block;margin-top:6px;color:#728096;font-size:10px;line-height:1.5}
+.nx-target-presets{display:flex;flex-wrap:wrap;gap:7px;margin:-3px 0 12px}
+.nx-target-presets button{border:1px solid #26354a;border-radius:999px;background:#0f1722;color:#cdd8e5;padding:7px 10px;font-size:10px;font-weight:850}
+.nx-target-presets button:hover{border-color:#6d7cff55;background:#121c2b}
+.nx-faq{margin-top:12px}
+.nx-faq>div{margin-bottom:10px}
+.nx-faq details{border-top:1px solid #182230;padding:13px 0}
+.nx-faq details:first-of-type{border-top:0}
+.nx-faq summary{cursor:pointer;color:#e8eef5;font-size:12px;font-weight:850;list-style:none}
+.nx-faq summary::-webkit-details-marker{display:none}
+.nx-faq summary:after{content:"+";float:right;color:#6f8094;font-size:16px}
+.nx-faq details[open] summary:after{content:"−"}
+.nx-faq p{margin:8px 0 0;color:#8794a7;font-size:12px;line-height:1.65}
+.nx-related{margin-top:28px}
+.nx-related-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.nx-related-card{min-width:0;display:grid;gap:7px;padding:15px;border:1px solid var(--line);border-radius:16px;background:#0b1119;text-decoration:none;transition:.16s ease}
+.nx-related-card:hover{transform:translateY(-1px);border-color:#6d7cff44;background:#0d1520}
+.nx-related-card strong{font-size:12px}
+.nx-related-card span{color:#7f8da1;font-size:10px;line-height:1.55}
+.nx-related-card b{color:#7deaff;font-size:10px;margin-top:3px}
+@media(max-width:900px){
+  .nx-seo-grid{grid-template-columns:1fr}
+  .nx-related-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .nx-seo-content{margin-top:30px}
+  .nx-seo-two{grid-template-columns:1fr}
+  .nx-related-grid{grid-template-columns:1fr}
+  .nx-seo-card,.nx-faq{padding:15px}
+}
