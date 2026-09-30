@@ -1255,13 +1255,18 @@
       "popular": true,
       "access": "public",
       "sortOrder": 30,
-      "name_en": "Image Format Converter",
-      "description_en": "Convert images in batches to PNG, JPG, WebP, or AVIF, with resizing, rotation, mirroring, and finishing directly in your browser.",
+      "name_en": "Image Converter",
+      "description_en": "Convert images online for free between WebP, AVIF, JPG, and PNG, with batch processing, resizing, quality, rotation, and flip controls.",
       "tags_en": [
-        "image",
-        "converter",
-        "format",
-        "image conversion"
+        "image converter",
+        "convert image",
+        "JPG to PNG",
+        "PNG to JPG",
+        "JPG to WebP",
+        "PNG to WebP",
+        "WebP converter",
+        "AVIF converter",
+        "image format converter"
       ]
     },
     {
@@ -1271,7 +1276,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-cropper/",
       "tags": [
@@ -1285,11 +1290,16 @@
       "access": "public",
       "sortOrder": 40,
       "name_en": "Image Cropper",
-      "description_en": "Crop images with ready-made proportions for posts, stories, and thumbnails.",
+      "description_en": "Crop images online for free with common aspect ratios, adjustable position, rotation, flip, quality, and JPG, PNG, or WebP export.",
       "tags_en": [
-        "image",
-        "cropper",
-        "cropping"
+        "image cropper",
+        "crop image",
+        "crop photo",
+        "crop JPG",
+        "crop PNG",
+        "crop WebP",
+        "photo crop",
+        "aspect ratio crop"
       ]
     },
     {
@@ -1299,7 +1309,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-watermark/",
       "tags": [
@@ -1312,11 +1322,15 @@
       "popular": false,
       "access": "public",
       "sortOrder": 50,
-      "name_en": "Image Watermark",
-      "description_en": "Add text over an image with adjustable size, position, color, and opacity.",
+      "name_en": "Watermark Studio",
+      "description_en": "Add text watermarks to images online for free with position, opacity, rotation, color, outline, shadow, and repeated pattern controls.",
       "tags_en": [
-        "image",
-        "watermark"
+        "watermark image",
+        "add watermark to photo",
+        "image watermark",
+        "photo watermark",
+        "text watermark",
+        "watermark generator"
       ]
     },
     {
@@ -1326,7 +1340,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-metadata-cleaner/",
       "tags": [
@@ -1340,12 +1354,16 @@
       "popular": false,
       "access": "public",
       "sortOrder": 60,
-      "name_en": "Metadata Cleaner",
-      "description_en": "Re-export an image to remove metadata that is not preserved by Canvas.",
+      "name_en": "Image Metadata Cleaner",
+      "description_en": "Re-encode images in your browser to create a cleaner exported copy without preserving the original metadata set.",
       "tags_en": [
-        "image",
-        "metadata",
-        "cleaner"
+        "remove image metadata",
+        "EXIF cleaner",
+        "EXIF remover",
+        "remove EXIF",
+        "image privacy",
+        "metadata remover",
+        "clean photo metadata"
       ]
     },
     {
@@ -1355,7 +1373,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-palette-extractor/",
       "tags": [
@@ -1370,11 +1388,15 @@
       "access": "public",
       "sortOrder": 70,
       "name_en": "Color Palette Extractor",
-      "description_en": "Extract dominant colors from an image and copy HEX values or CSS tokens.",
+      "description_en": "Extract dominant image colors online for free and get HEX, RGB, CSS variables, JSON, and gradient-ready palette data.",
       "tags_en": [
-        "image",
-        "palette",
-        "extractor"
+        "color palette extractor",
+        "extract colors from image",
+        "image color picker",
+        "HEX colors",
+        "RGB colors",
+        "CSS color palette",
+        "palette generator"
       ]
     },
     {
@@ -1384,7 +1406,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/social-image-resizer/",
       "tags": [
@@ -1399,11 +1421,16 @@
       "access": "public",
       "sortOrder": 80,
       "name_en": "Social Media Image Resizer",
-      "description_en": "Prepare images for common Instagram, Stories, YouTube, Open Graph, X, and LinkedIn formats.",
+      "description_en": "Resize images for Instagram, Stories, YouTube, Open Graph, X, LinkedIn, and other social formats with exact canvas sizes and fit controls.",
       "tags_en": [
-        "image",
-        "social",
-        "resizer"
+        "social media image resizer",
+        "Instagram image size",
+        "Instagram post size",
+        "Instagram story size",
+        "YouTube image size",
+        "Open Graph image size",
+        "LinkedIn image size",
+        "social image resize"
       ]
     },
     {
@@ -1413,7 +1440,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/favicon-generator/",
       "tags": [
@@ -1426,12 +1453,16 @@
       "popular": false,
       "access": "public",
       "sortOrder": 90,
-      "name_en": "Favicon & Icon Generator",
-      "description_en": "Generate PNGs in useful sizes for favicons, Apple Touch Icons, and PWA icons from an image.",
+      "name_en": "Favicon Generator",
+      "description_en": "Generate favicons, Apple Touch icons, and PWA icons from a source image, with ready-to-copy HTML and manifest code.",
       "tags_en": [
-        "image",
-        "favicon",
-        "generator"
+        "favicon generator",
+        "create favicon",
+        "favicon maker",
+        "PWA icons",
+        "Apple Touch icon",
+        "website icon",
+        "web app icon"
       ]
     },
     {
@@ -1892,11 +1923,11 @@
       "name": "Juntar Imagens",
       "name_en": "Image Combiner",
       "description": "Combine várias imagens numa única composição vertical, horizontal ou em grelha, com ordem, espaçamento, margem, fundo e formato configuráveis.",
-      "description_en": "Combine multiple images into a single vertical, horizontal, or grid composition with configurable order, spacing, padding, background, and output format.",
+      "description_en": "Combine multiple images online for free into vertical, horizontal, or grid compositions with reorder, spacing, margins, background, and format controls.",
       "category": "imagem",
       "group": "imagem",
       "icon": "⊞",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/juntar-imagens/",
       "tags": [
@@ -1911,14 +1942,14 @@
         "WebP"
       ],
       "tags_en": [
-        "image",
-        "combine",
-        "merge",
-        "collage",
-        "grid",
-        "PNG",
-        "JPG",
-        "WebP"
+        "combine images",
+        "merge images",
+        "join images",
+        "image combiner",
+        "photo collage",
+        "merge photos",
+        "combine JPG",
+        "combine PNG"
       ],
       "featured": true,
       "popular": false,
@@ -1930,11 +1961,11 @@
       "name": "Desfocar & Pixelizar",
       "name_en": "Blur & Pixelate",
       "description": "Desfoque ou pixelize imagens inteiras ou áreas selecionadas, com intensidade ajustável e processamento totalmente local.",
-      "description_en": "Blur or pixelate whole images or selected areas with adjustable intensity and fully local processing.",
+      "description_en": "Blur or pixelate images online for free, including selected areas, with adjustable intensity and local browser processing.",
       "category": "imagem",
       "group": "imagem",
       "icon": "◌",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/desfocar-pixelizar/",
       "tags": [
@@ -1947,11 +1978,13 @@
         "pixelate"
       ],
       "tags_en": [
-        "image",
-        "privacy",
-        "blur",
-        "pixelate",
-        "redaction"
+        "blur image",
+        "blur photo",
+        "pixelate image",
+        "image privacy",
+        "redact image",
+        "blur face",
+        "pixelate photo"
       ],
       "featured": true,
       "popular": false,
@@ -1963,11 +1996,11 @@
       "name": "Girar & Espelhar",
       "name_en": "Rotate & Flip Image",
       "description": "Gire imagens em passos de 90° e espelhe horizontal ou verticalmente, com pré-visualização imediata e exportação local.",
-      "description_en": "Rotate images in 90° steps and flip them horizontally or vertically with live preview and local export.",
+      "description_en": "Rotate and flip images online for free with 90-degree rotation, horizontal and vertical mirror controls, preview, and local export.",
       "category": "imagem",
       "group": "imagem",
       "icon": "↻",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/girar-espelhar/",
       "tags": [
@@ -1980,12 +2013,13 @@
         "transformação"
       ],
       "tags_en": [
-        "image",
-        "rotate",
-        "rotation",
-        "flip",
-        "mirror",
-        "transform"
+        "rotate image",
+        "rotate photo",
+        "flip image",
+        "mirror image",
+        "rotate JPG",
+        "rotate PNG",
+        "image transform"
       ],
       "featured": true,
       "popular": false,
@@ -1997,11 +2031,11 @@
       "name": "Adicionar Bordas",
       "name_en": "Add Image Borders",
       "description": "Adicione molduras às imagens com espessura, cor, estilo, margem e cantos arredondados configuráveis.",
-      "description_en": "Add frames to images with configurable thickness, color, style, padding, and rounded corners.",
+      "description_en": "Add borders and frames to images online for free with adjustable thickness, color, style, padding, and rounded corners.",
       "category": "imagem",
       "group": "imagem",
       "icon": "□",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/adicionar-bordas/",
       "tags": [
@@ -2014,11 +2048,13 @@
         "design"
       ],
       "tags_en": [
-        "image",
-        "borders",
-        "frame",
-        "border",
-        "design"
+        "image borders",
+        "add image border",
+        "image frame",
+        "photo border",
+        "add frame to photo",
+        "border generator",
+        "image editing"
       ],
       "featured": true,
       "popular": false,
