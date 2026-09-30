@@ -498,7 +498,7 @@
       </div>
     </section>
 
-    <section class="nx-privacy"><span>🔒</span><div><strong>Local browser processing</strong><small>Your images are processed directly on your device.</small></div></section>
+    <section class="nx-privacy"><span>🔒</span><div><strong>Local processing · private temporary download</strong><small>Compression runs on your device. When you download, the generated result can pass through private temporary storage and is removed after the transfer.</small></div></section>
 
 <section class="nx-seo-content">
   <div class="nx-seo-intro">
@@ -518,7 +518,7 @@
   <section class="nx-faq">
     <div><span class="nx-eyebrow">FAQ</span><h2>Image Compressor FAQ</h2></div>
     <details open><summary>Is this image compressor free?</summary><p>Yes. The Nexauren Image Compressor is available to use for free in your browser.</p></details>
-    <details><summary>Are my images uploaded to a server?</summary><p>The compression process runs locally in your browser, so the image can be processed directly on your device.</p></details>
+    <details><summary>Are my images uploaded to a server?</summary><p>The original image is processed locally in your browser. For the download workflow, the generated result may be transferred through Nexauren’s private temporary storage layer and is deleted after the transfer. A local download fallback is used when the temporary service is unavailable.</p></details>
     <details><summary>Can I compress JPG, PNG, and WebP images?</summary><p>Yes. The tool supports JPG, PNG, and WebP output options, with automatic WebP output available as a practical default for supported images.</p></details>
     <details><summary>Can I compress an image to 100 KB?</summary><p>Yes. Set a target size of 100 KB and apply the settings. The tool aims for the requested size; the final file can vary depending on the source image and selected format.</p></details>
   </section>
@@ -637,5 +637,6 @@
 
   <div class="nx-toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="script.js?v=20260930-seo1"></script>
+  <script type="module" src="cloud-download.js?v=20260930-filebase1"></script>
 </body>
 </html>
