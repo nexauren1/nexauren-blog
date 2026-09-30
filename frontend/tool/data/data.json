@@ -1155,7 +1155,7 @@
     {
       "id": "image-compressor",
       "name": "Compressor de Imagem",
-      "description": "Comprima imagens em lote com qualidade, formato, dimensão e tamanho-alvo, com processamento local.",
+      "description": "Comprima JPG, PNG e WebP online gratuitamente. Reduza o tamanho do ficheiro, ajuste a qualidade e as dimensões e descarregue o resultado no navegador.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
@@ -1179,15 +1179,21 @@
       "proBatchLimit": null,
       "sortOrder": 10,
       "name_en": "Image Compressor",
-      "description_en": "Compress images in batches with quality, format, dimensions, and target size controls, using local processing.",
+      "description_en": "Compress JPG, PNG, and WebP images online for free. Reduce image file size, adjust quality and dimensions, and download the result in your browser.",
       "tags_en": [
         "image",
-        "compressor",
-        "compression",
-        "batch",
-        "WebP",
-        "JPG",
-        "PNG"
+        "image compressor",
+        "compress image",
+        "compress image online free",
+        "reduce image size",
+        "reduce image file size",
+        "compress jpg",
+        "compress jpeg",
+        "compress jpeg to 100kb",
+        "compress png",
+        "compress webp",
+        "resize image",
+        "target file size"
       ]
     },
     {
