@@ -343,11 +343,11 @@
     {
       "id": "favicon-generator",
       "name": "Gerador de Favicon e Ícones",
-      "description": "Gere PNGs em tamanhos úteis para favicon, Apple Touch Icon e PWA a partir de uma imagem.",
+      "description": "Generate favicon.ico, browser PNGs, Apple Touch Icon, and PWA icons from one image with local browser processing.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/favicon-generator/",
       "tags": [
@@ -356,14 +356,15 @@
         "generator",
         "Gerador de Favicon e Ícones"
       ],
-      "featured": false,
-      "popular": false,
+      "featured": true,
+      "popular": true,
       "access": "public",
       "sortOrder": 90,
       "name_en": "Favicon Generator",
-      "description_en": "Generate favicons, Apple Touch icons, and PWA icons from a source image, with ready-to-copy HTML and manifest code.",
+      "description_en": "Generate favicon.ico, browser PNGs, Apple Touch Icon, and PWA icons from one image with local browser processing.",
       "tags_en": [
         "favicon generator",
+        "favicon ico",
         "create favicon",
         "favicon maker",
         "PWA icons",
@@ -707,12 +708,12 @@
       "id": "juntar-imagens",
       "name": "Juntar Imagens",
       "name_en": "Image Combiner",
-      "description": "Combine várias imagens numa única composição vertical, horizontal ou em grelha, com ordem, espaçamento, margem, fundo e formato configuráveis.",
-      "description_en": "Combine multiple images online for free into vertical, horizontal, or grid compositions with reorder, spacing, margins, background, and format controls.",
+      "description": "Combine multiple images into vertical, horizontal, or grid compositions with reordering, spacing, margins, background, and full-resolution export.",
+      "description_en": "Combine multiple images into vertical, horizontal, or grid compositions with reordering, spacing, margins, background, and full-resolution export.",
       "category": "imagem",
       "group": "imagem",
       "icon": "⊞",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/combine-images/",
       "tags": [
@@ -737,7 +738,7 @@
         "combine PNG"
       ],
       "featured": true,
-      "popular": false,
+      "popular": true,
       "access": "public",
       "sortOrder": 110
     },
