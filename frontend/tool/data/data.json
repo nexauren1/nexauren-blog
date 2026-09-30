@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-30T17:52:34.301Z",
+    "updatedAt": "2026-09-30T18:00:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1471,7 +1471,7 @@
       "description": "Converta uma ou várias imagens JPG/JPEG em um único PDF, com tamanho de página, margens, orientação e qualidade ajustáveis.",
       "category": "pdf",
       "icon": "▤",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/jpg-to-pdf/",
       "tags": [
@@ -1487,14 +1487,14 @@
       "access": "public",
       "sortOrder": 10,
       "name_en": "JPG → PDF",
-      "description_en": "Convert one or more JPG/JPEG images into a single PDF with adjustable page size, margins, orientation, and quality.",
+      "description_en": "Convert JPG and JPEG images to PDF online for free with adjustable page size, margins, orientation, and quality.",
       "tags_en": [
-        "JPG",
-        "JPEG",
-        "PDF",
-        "converter",
-        "images",
-        "documents"
+        "JPG to PDF",
+        "JPEG to PDF",
+        "image to PDF",
+        "photo to PDF",
+        "convert JPG",
+        "PDF converter"
       ]
     },
     {
@@ -1503,7 +1503,7 @@
       "description": "Converta páginas de um PDF em imagens JPG, escolhendo páginas, resolução e qualidade.",
       "category": "pdf",
       "icon": "▤",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/pdf-to-jpg/",
       "tags": [
@@ -1519,14 +1519,13 @@
       "access": "public",
       "sortOrder": 20,
       "name_en": "PDF → JPG",
-      "description_en": "Convert PDF pages into JPG images with page selection, resolution, and quality controls.",
+      "description_en": "Convert PDF pages to JPG images online for free with page selection, rendering resolution, and JPG quality controls.",
       "tags_en": [
-        "PDF",
-        "JPG",
-        "JPEG",
-        "converter",
-        "images",
-        "pages"
+        "PDF to JPG",
+        "PDF converter",
+        "convert PDF to image",
+        "PDF pages to JPG",
+        "JPG export"
       ]
     },
     {
@@ -1535,7 +1534,7 @@
       "description": "Converta páginas de um PDF em imagens PNG com resolução ajustável.",
       "category": "pdf",
       "icon": "▤",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/pdf-to-png/",
       "tags": [
@@ -1550,13 +1549,13 @@
       "access": "public",
       "sortOrder": 30,
       "name_en": "PDF → PNG",
-      "description_en": "Convert PDF pages into PNG images with adjustable resolution.",
+      "description_en": "Convert PDF pages to PNG images online for free with page selection and adjustable rendering resolution.",
       "tags_en": [
-        "PDF",
-        "PNG",
-        "converter",
-        "images",
-        "pages"
+        "PDF to PNG",
+        "PDF converter",
+        "convert PDF to image",
+        "PDF pages to PNG",
+        "PNG export"
       ]
     },
     {
@@ -1565,7 +1564,7 @@
       "description": "Converta uma ou várias imagens PNG em um único PDF com página, margem, orientação e ajuste configuráveis.",
       "category": "pdf",
       "icon": "◩",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/png-to-pdf/",
       "tags": [
@@ -1580,13 +1579,13 @@
       "access": "public",
       "sortOrder": 40,
       "name_en": "PNG → PDF",
-      "description_en": "Convert one or more PNG images into a single PDF with configurable page size, margins, orientation, and fit.",
+      "description_en": "Convert PNG images to PDF online for free with page size, margins, orientation, fit mode, and quality controls.",
       "tags_en": [
-        "PNG",
-        "PDF",
-        "converter",
-        "images",
-        "documents"
+        "PNG to PDF",
+        "image to PDF",
+        "convert PNG",
+        "PNG converter",
+        "PDF converter"
       ]
     },
     {
@@ -1595,9 +1594,9 @@
       "description": "Combine vários ficheiros PDF num único documento, organize a ordem e faça tudo localmente no navegador.",
       "category": "pdf",
       "icon": "⊕",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/juntar-pdf/",
+      "path": "/tool/categories/pdf/merge-pdf/",
       "tags": [
         "PDF",
         "juntar",
@@ -1610,12 +1609,13 @@
       "access": "public",
       "sortOrder": 50,
       "name_en": "Merge PDF",
-      "description_en": "Combine multiple PDF files into one document, organize their order, and process everything locally in your browser.",
+      "description_en": "Merge multiple PDF files into one document online for free, keep their order, and export the combined PDF in your browser.",
       "tags_en": [
-        "PDF",
-        "merge",
-        "combine",
-        "documents"
+        "merge PDF",
+        "combine PDF",
+        "join PDF",
+        "PDF merger",
+        "merge PDF files"
       ]
     },
     {
@@ -1624,9 +1624,9 @@
       "description": "Divida um PDF em vários ficheiros por páginas, com seleção por páginas ou intervalo.",
       "category": "pdf",
       "icon": "↯",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/dividir-pdf/",
+      "path": "/tool/categories/pdf/split-pdf/",
       "tags": [
         "PDF",
         "dividir",
@@ -1639,13 +1639,13 @@
       "access": "public",
       "sortOrder": 60,
       "name_en": "Split PDF",
-      "description_en": "Split a PDF into separate files by page, using individual pages or a custom range.",
+      "description_en": "Split a PDF online for free into one-page files or selected page ranges and download the resulting documents.",
       "tags_en": [
-        "PDF",
-        "split",
-        "separate",
-        "pages",
-        "documents"
+        "split PDF",
+        "PDF splitter",
+        "extract PDF pages",
+        "separate PDF",
+        "split PDF pages"
       ]
     },
     {
@@ -1654,9 +1654,9 @@
       "description": "Rode todas as páginas de um PDF ou apenas um intervalo e exporte o documento ajustado.",
       "category": "pdf",
       "icon": "↻",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/rodar-pdf/",
+      "path": "/tool/categories/pdf/rotate-pdf/",
       "tags": [
         "PDF",
         "rodar",
@@ -1669,13 +1669,13 @@
       "access": "public",
       "sortOrder": 70,
       "name_en": "Rotate PDF",
-      "description_en": "Rotate all PDF pages or a selected page range and export the adjusted document.",
+      "description_en": "Rotate PDF pages online for free by 90, 180, or 270 degrees and export a corrected PDF.",
       "tags_en": [
-        "PDF",
-        "rotate",
-        "rotation",
-        "pages",
-        "documents"
+        "rotate PDF",
+        "PDF rotation",
+        "rotate PDF pages",
+        "fix PDF orientation",
+        "turn PDF"
       ]
     },
     {
@@ -1684,9 +1684,9 @@
       "description": "Insira páginas de outro PDF no documento principal e exporte o resultado diretamente no navegador.",
       "category": "pdf",
       "icon": "⊞",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/inserir-paginas/",
+      "path": "/tool/categories/pdf/insert-pdf-pages/",
       "tags": [
         "PDF",
         "inserir",
@@ -1699,13 +1699,13 @@
       "access": "public",
       "sortOrder": 80,
       "name_en": "Insert Pages",
-      "description_en": "Insert pages from another PDF into the main document and export the result directly in your browser.",
+      "description_en": "Insert pages from another PDF into a main document online for free and export a new PDF.",
       "tags_en": [
-        "PDF",
-        "insert",
-        "pages",
-        "combine",
-        "documents"
+        "insert PDF pages",
+        "add pages to PDF",
+        "combine PDF pages",
+        "PDF editor",
+        "insert pages"
       ]
     },
     {
@@ -1714,9 +1714,9 @@
       "description": "Crie cópias de páginas dentro de um PDF, escolha páginas específicas, repetições e exporte um novo documento no navegador.",
       "category": "pdf",
       "icon": "⧉",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/duplicar-paginas/",
+      "path": "/tool/categories/pdf/duplicate-pdf-pages/",
       "tags": [
         "PDF",
         "duplicar",
@@ -1729,13 +1729,12 @@
       "access": "public",
       "sortOrder": 90,
       "name_en": "Duplicate Pages",
-      "description_en": "Create copies of pages inside a PDF, choose specific pages and repetitions, and export a new document in your browser.",
+      "description_en": "Duplicate selected pages inside a PDF online for free, choose repetitions, and export a new document.",
       "tags_en": [
-        "PDF",
-        "duplicate",
-        "pages",
-        "copies",
-        "documents"
+        "duplicate PDF pages",
+        "repeat PDF pages",
+        "copy PDF pages",
+        "PDF page duplicator"
       ]
     },
     {
@@ -1744,9 +1743,9 @@
       "description": "Remova páginas específicas de um PDF e exporte o documento limpo diretamente no navegador.",
       "category": "pdf",
       "icon": "⊘",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/eliminar-paginas/",
+      "path": "/tool/categories/pdf/delete-pdf-pages/",
       "tags": [
         "PDF",
         "eliminar",
@@ -1759,13 +1758,12 @@
       "access": "public",
       "sortOrder": 100,
       "name_en": "Delete Pages",
-      "description_en": "Remove specific pages from a PDF and export the cleaned document directly in your browser.",
+      "description_en": "Delete specific pages or page ranges from a PDF online for free and export a clean document.",
       "tags_en": [
-        "PDF",
-        "delete",
-        "remove",
-        "pages",
-        "documents"
+        "delete PDF pages",
+        "remove PDF pages",
+        "PDF page remover",
+        "delete pages from PDF"
       ]
     },
     {
@@ -1774,9 +1772,9 @@
       "description": "Adicione uma marca-d’água de texto a todas as páginas de um PDF, com posição, tamanho, cor, opacidade e rotação ajustáveis.",
       "category": "pdf",
       "icon": "✦",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/pdf/marca-dagua-pdf/",
+      "path": "/tool/categories/pdf/pdf-watermark/",
       "tags": [
         "PDF",
         "marca-d’água",
@@ -1789,12 +1787,13 @@
       "access": "public",
       "sortOrder": 110,
       "name_en": "PDF Watermark",
-      "description_en": "Add a text watermark to PDF pages with adjustable position, size, color, opacity, and rotation.",
+      "description_en": "Add a text watermark to PDF pages online for free with position, size, color, opacity, and rotation controls.",
       "tags_en": [
-        "PDF",
-        "watermark",
-        "text",
-        "documents"
+        "PDF watermark",
+        "watermark PDF",
+        "add watermark to PDF",
+        "text watermark",
+        "PDF editor"
       ]
     },
     {
@@ -2285,6 +2284,37 @@
       "popular": false,
       "access": "public",
       "sortOrder": 150
+    },
+    {
+      "id": "adicionar-texto-pdf",
+      "name": "Adicionar Texto ao PDF",
+      "description": "Adicione texto sobre páginas de um PDF, com posição, tamanho, cor e rotação ajustáveis.",
+      "category": "pdf",
+      "group": "pdf",
+      "icon": "Aa",
+      "version": "2.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/add-text-to-pdf/",
+      "tags": [
+        "PDF",
+        "texto",
+        "editar PDF",
+        "anotação",
+        "documentos"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 5,
+      "name_en": "Add Text to PDF",
+      "description_en": "Add text to PDF pages online for free with adjustable position, size, color, and rotation.",
+      "tags_en": [
+        "add text to PDF",
+        "PDF text editor",
+        "edit PDF",
+        "PDF annotation",
+        "write on PDF"
+      ]
     }
   ]
 }

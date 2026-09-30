@@ -20,6 +20,25 @@ const IMAGE_PATH_REDIRECTS = new Map([
   ["/tool/categories/imagem/juntar-imagens/", "/tool/categories/imagem/combine-images/"]
 ]);
 
+const PDF_PATH_REDIRECTS = new Map([
+  ["/tool/categories/pdf/adicionar-texto-pdf", "/tool/categories/pdf/add-text-to-pdf/"],
+  ["/tool/categories/pdf/adicionar-texto-pdf/", "/tool/categories/pdf/add-text-to-pdf/"],
+  ["/tool/categories/pdf/dividir-pdf", "/tool/categories/pdf/split-pdf/"],
+  ["/tool/categories/pdf/dividir-pdf/", "/tool/categories/pdf/split-pdf/"],
+  ["/tool/categories/pdf/duplicar-paginas", "/tool/categories/pdf/duplicate-pdf-pages/"],
+  ["/tool/categories/pdf/duplicar-paginas/", "/tool/categories/pdf/duplicate-pdf-pages/"],
+  ["/tool/categories/pdf/eliminar-paginas", "/tool/categories/pdf/delete-pdf-pages/"],
+  ["/tool/categories/pdf/eliminar-paginas/", "/tool/categories/pdf/delete-pdf-pages/"],
+  ["/tool/categories/pdf/inserir-paginas", "/tool/categories/pdf/insert-pdf-pages/"],
+  ["/tool/categories/pdf/inserir-paginas/", "/tool/categories/pdf/insert-pdf-pages/"],
+  ["/tool/categories/pdf/juntar-pdf", "/tool/categories/pdf/merge-pdf/"],
+  ["/tool/categories/pdf/juntar-pdf/", "/tool/categories/pdf/merge-pdf/"],
+  ["/tool/categories/pdf/marca-dagua-pdf", "/tool/categories/pdf/pdf-watermark/"],
+  ["/tool/categories/pdf/marca-dagua-pdf/", "/tool/categories/pdf/pdf-watermark/"],
+  ["/tool/categories/pdf/rodar-pdf", "/tool/categories/pdf/rotate-pdf/"],
+  ["/tool/categories/pdf/rodar-pdf/", "/tool/categories/pdf/rotate-pdf/"]
+]);
+
 const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-4" defer></script>';
 const ANALYTICS_SCRIPT = '<script src="/assets/analytics.js?v=20260929-1" defer></script>';
 
@@ -32,9 +51,14 @@ function upsert(html, regex, tag) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const redirectTarget = IMAGE_PATH_REDIRECTS.get(url.pathname.toLowerCase());
-    if (redirectTarget) {
-      url.pathname = redirectTarget;
+    const imageRedirectTarget = IMAGE_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    if (imageRedirectTarget) {
+      url.pathname = imageRedirectTarget;
+      return Response.redirect(url.toString(), 301);
+    }
+    const pdfRedirectTarget = PDF_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    if (pdfRedirectTarget) {
+      url.pathname = pdfRedirectTarget;
       return Response.redirect(url.toString(), 301);
     }
 
