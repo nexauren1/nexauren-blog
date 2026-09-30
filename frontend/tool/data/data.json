@@ -196,57 +196,64 @@
     {
       "id": "image-watermark",
       "name": "Marca-d'água de Imagem",
-      "description": "Adicione texto sobre a imagem com tamanho, posição, cor e opacidade ajustáveis.",
+      "description": "Create text watermarks with precise styling, positioning, rotation, repeat patterns, and local browser processing.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-watermark/",
       "tags": [
         "imagem",
         "image",
         "watermark",
-        "Marca-d'água de Imagem"
+        "text watermark",
+        "branding",
+        "JPG",
+        "PNG",
+        "WebP"
       ],
-      "featured": false,
-      "popular": false,
+      "featured": true,
+      "popular": true,
       "access": "public",
       "sortOrder": 50,
       "name_en": "Watermark Studio",
-      "description_en": "Add text watermarks to images online for free with position, opacity, rotation, color, outline, shadow, and repeated pattern controls.",
+      "description_en": "Add text watermarks online for free with precise styling, positioning, rotation, repeat patterns, and local browser processing.",
       "tags_en": [
         "watermark image",
         "add watermark to photo",
         "image watermark",
         "photo watermark",
         "text watermark",
-        "watermark generator"
+        "watermark generator",
+        "image branding"
       ]
     },
     {
       "id": "image-metadata-cleaner",
       "name": "Limpador de Metadados",
-      "description": "Reexporte uma imagem para remover os metadados que não são preservados pelo Canvas.",
+      "description": "Re-encode one or more images locally to create fresh JPG, PNG, or WebP copies while comparing the original and cleaned outputs.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-metadata-cleaner/",
       "tags": [
         "imagem",
         "image",
         "metadata",
+        "EXIF",
+        "privacy",
         "cleaner",
-        "Limpador de Metadados"
+        "re-encode"
       ],
-      "featured": false,
-      "popular": false,
+      "featured": true,
+      "popular": true,
       "access": "public",
       "sortOrder": 60,
       "name_en": "Image Metadata Cleaner",
-      "description_en": "Re-encode images in your browser to create a cleaner exported copy without preserving the original metadata set.",
+      "description_en": "Re-encode one or more images locally to create fresh JPG, PNG, or WebP copies while comparing the original and cleaned outputs.",
       "tags_en": [
         "remove image metadata",
         "EXIF cleaner",
@@ -254,7 +261,7 @@
         "remove EXIF",
         "image privacy",
         "metadata remover",
-        "clean photo metadata"
+        "clean image metadata"
       ]
     },
     {
