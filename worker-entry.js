@@ -481,6 +481,7 @@ function seoHead(html,o){
   html=html.replace(/<script id="nexauren-structured-data" type="application\/ld\+json">[\s\S]*?<\/script>/i,'<script id="nexauren-structured-data" type="application/ld+json">'+safeJsonLd(o.structured)+'</script>');
   return html;
 }
+const PUBLIC_TOOL_CATEGORIES=new Set(["imagem","pdf"]);
 function normalizeToolRegistry(raw){
   const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
     id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
@@ -499,7 +500,7 @@ function normalizeToolRegistry(raw){
       description:text(s?.description||"",300).trim(),
       description_en:text(s?.description_en||s?.descriptionEn||"",300).trim()
     })).filter(s=>s.id&&s.name):[]
-  })).filter(c=>c.id&&c.name):[];
+  })).filter(c=>c.id&&c.name&&PUBLIC_TOOL_CATEGORIES.has(c.id)):[];
   const categoryIds=new Set(categories.map(c=>c.id));
   const tools=Array.isArray(raw?.tools)?raw.tools.map((t,i)=>{
     const id=slugify(t?.id||t?.name||("ferramenta-"+(i+1)));
@@ -526,7 +527,7 @@ function normalizeToolRegistry(raw){
       freeBatchLimit:Number.isFinite(Number(t?.freeBatchLimit))?Math.max(1,Math.min(1000,Number(t.freeBatchLimit))):null,
       proBatchLimit:t?.proBatchLimit==null?null:(Number.isFinite(Number(t.proBatchLimit))?Math.max(1,Math.min(10000,Number(t.proBatchLimit))):null)
     };
-  }).filter(t=>t.id&&t.name&&t.path&&t.status&&t.access):[];
+  }).filter(t=>t.id&&t.name&&t.path&&t.status&&t.access&&PUBLIC_TOOL_CATEGORIES.has(t.category)):[];
   return {version:Number(raw?.version||1)||1,site:"Nexauren Story",basePath:"/tool/",registry:{updatedAt:nowIso(),source:"nexauren-admin"},categories,tools};
 }
 async function loadToolRegistry(env,request){
