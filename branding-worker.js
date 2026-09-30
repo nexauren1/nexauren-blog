@@ -1,4 +1,5 @@
 import app from "./worker-entry.js";
+import { filebasePutTemp, filebaseGetTemp, filebaseDeleteTemp, filebaseCleanupTemp } from "./filebase.js";
 
 const ICON = '<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">';
 const OG = '<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
@@ -43,6 +44,138 @@ const DEV_TOOL_RENAMES = new Map([["gerador-de-qr-code","qr-code-generator"],["l
 const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-4" defer></script>';
 const ANALYTICS_SCRIPT = '<script src="/assets/analytics.js?v=20260929-1" defer></script>';
 
+const TEMP_MAX_BYTES = 32 * 1024 * 1024;
+const TEMP_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function tempJson(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    }
+  });
+}
+
+function tempOriginAllowed(request) {
+  const origin = request.headers.get("Origin");
+  if (!origin) return request.method === "GET";
+  return [
+    "https://nexaurenstory.com",
+    "https://www.nexaurenstory.com",
+    "https://nexauren-blog.nexaurenstore.workers.dev"
+  ].includes(origin);
+}
+
+function safeTempFilename(value) {
+  const cleaned = String(value || "nexauren-image").replace(/[\\/\\0]/g, "").replace(/[^a-zA-Z0-9._-]/g, "_");
+  return (cleaned || "nexauren-image").slice(0, 180);
+}
+
+async function filebaseTempRoute(request, env) {
+  if (!tempOriginAllowed(request)) return tempJson({ ok: false, code: "ORIGIN" }, 403);
+
+  const url = new URL(request.url);
+  const method = request.method.toUpperCase();
+  const idMatch = url.pathname.match(/^\/api\/filebase\/temp\/([^/]+)$/);
+
+  if (url.pathname === "/api/filebase/temp" && method === "POST") {
+    const contentType = String(request.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+    if (!contentType.startsWith("image/")) {
+      return tempJson({ ok: false, code: "UNSUPPORTED_MEDIA", error: "Only image results can use temporary storage." }, 415);
+    }
+
+    const declared = Number(request.headers.get("content-length") || 0);
+    if (declared > TEMP_MAX_BYTES) {
+      return tempJson({ ok: false, code: "TEMP_TOO_LARGE", maxBytes: TEMP_MAX_BYTES }, 413);
+    }
+
+    let body;
+    try {
+      body = await request.arrayBuffer();
+    } catch {
+      return tempJson({ ok: false, code: "BODY_READ_FAILED" }, 400);
+    }
+
+    if (!body.byteLength) return tempJson({ ok: false, code: "EMPTY_BODY" }, 400);
+    if (body.byteLength > TEMP_MAX_BYTES) {
+      return tempJson({ ok: false, code: "TEMP_TOO_LARGE", maxBytes: TEMP_MAX_BYTES }, 413);
+    }
+
+    const id = crypto.randomUUID();
+    const key = "tmp/image-compressor/" + id;
+    const filename = safeTempFilename(request.headers.get("x-nexauren-filename"));
+    const stored = await filebasePutTemp(env, {
+      key,
+      body,
+      contentType,
+      filename
+    });
+
+    if (!stored.ok) {
+      return tempJson({
+        ok: false,
+        code: "FILEBASE_PUT_FAILED",
+        status: stored.status,
+        requestId: stored.requestId
+      }, 502);
+    }
+
+    return tempJson({
+      ok: true,
+      id,
+      size: body.byteLength,
+      contentType,
+      expiresAt: stored.expiresAt
+    }, 201);
+  }
+
+  if (idMatch && (method === "GET" || method === "DELETE")) {
+    const id = idMatch[1];
+    if (!TEMP_ID_RE.test(id)) return tempJson({ ok: false, code: "INVALID_ID" }, 400);
+
+    const key = "tmp/image-compressor/" + id;
+
+    if (method === "DELETE") {
+      const deleted = await filebaseDeleteTemp(env, key);
+      if (!deleted.response.ok && deleted.response.status !== 404) {
+        return tempJson({
+          ok: false,
+          code: "FILEBASE_DELETE_FAILED",
+          status: deleted.response.status,
+          requestId: deleted.requestId
+        }, 502);
+      }
+      return tempJson({ ok: true, deleted: true });
+    }
+
+    const result = await filebaseGetTemp(env, key);
+    if (!result.response.ok) {
+      return tempJson({
+        ok: false,
+        code: result.response.status === 404 ? "TEMP_NOT_FOUND" : "FILEBASE_GET_FAILED",
+        status: result.response.status,
+        requestId: result.requestId
+      }, result.response.status === 404 ? 404 : 502);
+    }
+
+    const headers = new Headers();
+    for (const name of ["content-type", "content-length", "etag", "x-amz-checksum-sha256"]) {
+      const value = result.response.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    headers.set("cache-control", "no-store");
+    headers.set("x-content-type-options", "nosniff");
+
+    return new Response(result.response.body, {
+      status: 200,
+      headers
+    });
+  }
+
+  return null;
+}
+
 function upsert(html, regex, tag) {
   return regex.test(html)
     ? html.replace(regex, tag)
@@ -53,6 +186,11 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const lowerPath = url.pathname.toLowerCase();
+
+    if (lowerPath === "/api/filebase/temp" || /^\/api\/filebase\/temp\//.test(lowerPath)) {
+      const tempResponse = await filebaseTempRoute(request, env);
+      if (tempResponse) return tempResponse;
+    }
 
     const imageRedirectTarget = IMAGE_PATH_REDIRECTS.get(lowerPath);
     if (imageRedirectTarget) {
@@ -139,8 +277,14 @@ export default {
   },
 
   async scheduled(controller, env, ctx) {
+    const tasks = [];
     if (typeof app.scheduled === "function") {
-      return app.scheduled(controller, env, ctx);
+      tasks.push(app.scheduled(controller, env, ctx));
     }
+    if (new Date().getUTCMinutes() % 30 === 0) {
+      tasks.push(filebaseCleanupTemp(env));
+    }
+    const results = await Promise.allSettled(tasks);
+    return results;
   }
 };
