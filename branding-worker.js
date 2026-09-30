@@ -51,9 +51,14 @@ function upsert(html, regex, tag) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const redirectTarget = IMAGE_PATH_REDIRECTS.get(url.pathname.toLowerCase());
-    if (redirectTarget) {
-      url.pathname = redirectTarget;
+    const imageRedirectTarget = IMAGE_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    if (imageRedirectTarget) {
+      url.pathname = imageRedirectTarget;
+      return Response.redirect(url.toString(), 301);
+    }
+    const pdfRedirectTarget = PDF_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    if (pdfRedirectTarget) {
+      url.pathname = pdfRedirectTarget;
       return Response.redirect(url.toString(), 301);
     }
 
