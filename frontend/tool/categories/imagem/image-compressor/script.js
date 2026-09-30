@@ -10,7 +10,8 @@ const state = {
   pending: false,
   settingsOpen: false,
   cameraStream: null,
-  cameraFacing: "environment"
+  cameraFacing: "environment",
+  toastTimer: null
 };
 
 const DEFAULTS = {
@@ -19,7 +20,8 @@ const DEFAULTS = {
   maxWidth: 2560,
   maxHeight: 2560,
   mode: "smart",
-  autoApply: true,
+  autoApply: false,
+  targetSizeKB: "",
   background: "#ffffff"
 };
 
@@ -43,7 +45,7 @@ function mimeLabel(mime){
   return (String(mime||"IMG").split("/")[1]||"IMG").toUpperCase();
 }
 
-function outputMime(file,format){
+function outputMime(format){
   if(format==="jpeg") return "image/jpeg";
   if(format==="png") return "image/png";
   if(format==="webp") return "image/webp";
@@ -53,8 +55,11 @@ function outputMime(file,format){
 function getSettings(){
   const maxWidth=Math.min(12000,Math.max(256,Number($("#max-width").value)||DEFAULTS.maxWidth));
   const maxHeight=Math.min(12000,Math.max(256,Number($("#max-height").value)||DEFAULTS.maxHeight));
+  const rawTarget=String($("#target-size")?.value||"").trim();
+  const targetSizeKB=rawTarget ? Math.min(100000,Math.max(10,Number(rawTarget))) : "";
   $("#max-width").value=maxWidth;
   $("#max-height").value=maxHeight;
+  if($("#target-size")) $("#target-size").value=targetSizeKB==="" ? "" : targetSizeKB;
   return {
     format:$("#format").value,
     quality:Number($("#quality").value)/100,
@@ -62,11 +67,12 @@ function getSettings(){
     maxHeight,
     mode:$("#mode").value,
     autoApply:$("#auto-apply").checked,
+    targetSizeKB,
     background:$("#background").value
   };
 }
 
-function effectiveSettings(settings,file,source){
+function effectiveSettings(settings,source){
   const out={...settings};
 
   if(out.mode==="small") out.quality=Math.min(out.quality,.68);
@@ -88,19 +94,21 @@ function effectiveSettings(settings,file,source){
 
 function showToast(message,type=""){
   const el=$("#toast");
+  if(!el) return;
   el.textContent=message;
   el.className="nx-toast show "+type;
   clearTimeout(state.toastTimer);
-  state.toastTimer=setTimeout(()=>el.className="nx-toast",2600);
+  state.toastTimer=setTimeout(()=>el.className="nx-toast",3000);
 }
 
 function setStatus(status){
-  $("#status-dot").className="nx-status-dot "+status;
+  const dot=$("#status-dot");
+  if(dot) dot.className="nx-status-dot "+status;
 }
 
 async function blobToDataUrl(blob){
   if(!(blob instanceof Blob) || blob.size<=0){
-    throw new Error("Não foi possível preparar a pré-visualização.");
+    throw new Error("Could not prepare the image preview.");
   }
 
   try{
@@ -117,29 +125,27 @@ async function blobToDataUrl(blob){
 
   if(typeof blob.arrayBuffer==="function" && typeof btoa==="function"){
     const buffer=await blob.arrayBuffer();
-    const bytes=new Uint8Array(buffer);
+    const bytesArray=new Uint8Array(buffer);
     let binary="";
     const chunk=0x8000;
-    for(let i=0;i<bytes.length;i+=chunk){
-      binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+    for(let i=0;i<bytesArray.length;i+=chunk){
+      binary+=String.fromCharCode(...bytesArray.subarray(i,i+chunk));
     }
     return "data:"+(blob.type||"image/jpeg")+";base64,"+btoa(binary);
   }
 
-  throw new Error("Não foi possível preparar a pré-visualização.");
+  throw new Error("Could not prepare the image preview.");
 }
 
 async function getImageSource(file){
-  if(!file) throw new Error("Nenhuma imagem selecionada.");
+  if(!file) throw new Error("No image selected.");
 
-  // Nas atualizações em tempo real, reutilize o Blob URL já criado para a imagem atual.
-  // Isso evita reler o File repetidamente e reduz falhas em WebViews Android.
   if(state.file===file && state.originalSrc){
     return await new Promise((resolve,reject)=>{
       const img=new Image();
       img.decoding="async";
       img.onload=()=>resolve(img);
-      img.onerror=()=>reject(new Error("O navegador não conseguiu abrir esta imagem."));
+      img.onerror=()=>reject(new Error("The browser could not open this image."));
       img.src=state.originalSrc;
     });
   }
@@ -164,7 +170,7 @@ async function getImageSource(file){
       };
       img.onerror=()=>{
         URL.revokeObjectURL(url);
-        reject(new Error("O navegador não conseguiu abrir esta imagem."));
+        reject(new Error("The browser could not open this image."));
       };
       img.src=url;
     });
@@ -174,21 +180,21 @@ async function getImageSource(file){
       const img=new Image();
       img.decoding="async";
       img.onload=()=>resolve(img);
-      img.onerror=()=>reject(new Error("O navegador não conseguiu abrir esta imagem."));
+      img.onerror=()=>reject(new Error("The browser could not decode this image."));
       img.src=dataUrl;
     });
   }
 }
 
 function closeSource(source){
-  try{source?.close?.();}catch{}
+  try{source?.close?.()}catch{}
 }
 
 function canvasBlob(canvas,mime,quality){
   return new Promise((resolve,reject)=>{
     canvas.toBlob(blob=>{
       if(blob) resolve(blob);
-      else reject(new Error("Não foi possível gerar o resultado."));
+      else reject(new Error("Could not create the compressed image."));
     },mime,quality);
   });
 }
@@ -201,6 +207,94 @@ function fitDimensions(width,height,maxWidth,maxHeight){
   };
 }
 
+function drawCanvas(source,width,height,mime,background){
+  const canvas=document.createElement("canvas");
+  canvas.width=width;
+  canvas.height=height;
+  const ctx=canvas.getContext("2d",{alpha:mime!=="image/jpeg"}) || canvas.getContext("2d");
+  if(!ctx) throw new Error("The browser could not start image processing.");
+
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality="high";
+
+  if(mime==="image/jpeg"){
+    ctx.fillStyle=background;
+    ctx.fillRect(0,0,width,height);
+  }
+
+  ctx.drawImage(source,0,0,width,height);
+  return canvas;
+}
+
+async function encodeForTarget(source,width,height,effective,mime,targetBytes){
+  let currentWidth=width;
+  let currentHeight=height;
+  let lastBlob=null;
+  let lastQuality=mime==="image/png" ? 1 : effective.quality;
+  let targetReached=false;
+
+  for(let dimensionPass=0;dimensionPass<7;dimensionPass++){
+    const canvas=drawCanvas(source,currentWidth,currentHeight,mime,effective.background);
+
+    if(mime==="image/png"){
+      const png=await canvasBlob(canvas,mime,1);
+      lastBlob=png;
+      lastQuality=1;
+      targetReached=png.size<=targetBytes;
+    }else{
+      let low=.08;
+      let high=Math.max(.15,Math.min(1,effective.quality));
+      let smallest=await canvasBlob(canvas,mime,low);
+      lastBlob=smallest;
+      lastQuality=low;
+
+      if(smallest.size<=targetBytes){
+        let best=smallest;
+        let bestQ=low;
+
+        for(let i=0;i<8;i++){
+          const q=(low+high)/2;
+          const candidate=await canvasBlob(canvas,mime,q);
+
+          if(candidate.size<=targetBytes){
+            best=candidate;
+            bestQ=q;
+            low=q;
+          }else{
+            high=q;
+          }
+        }
+
+        lastBlob=best;
+        lastQuality=bestQ;
+        targetReached=true;
+      }else{
+        targetReached=false;
+      }
+    }
+
+    if(targetReached || currentWidth<=320 || currentHeight<=320) break;
+
+    const ratio=Math.sqrt(targetBytes/Math.max(lastBlob.size,targetBytes))*0.9;
+    const scale=Math.min(.9,Math.max(.45,ratio));
+    const nextWidth=Math.max(320,Math.round(currentWidth*scale));
+    const nextHeight=Math.max(320,Math.round(currentHeight*scale));
+
+    if(nextWidth>=currentWidth && nextHeight>=currentHeight) break;
+
+    currentWidth=nextWidth;
+    currentHeight=nextHeight;
+  }
+
+  return {
+    blob:lastBlob,
+    quality:Math.round(lastQuality*100),
+    outputWidth:currentWidth,
+    outputHeight:currentHeight,
+    targetReached
+  };
+}
+
 async function processImage(file,settings,token){
   const started=performance.now();
   const source=await getImageSource(file);
@@ -208,52 +302,58 @@ async function processImage(file,settings,token){
   try{
     if(token!==state.token) return null;
 
-    const effective=effectiveSettings(settings,file,source);
-    const mime=outputMime(file,effective.format);
+    const effective=effectiveSettings(settings,source);
+    const mime=outputMime(effective.format);
+
     if(!Number.isFinite(source.width) || !Number.isFinite(source.height) || source.width<1 || source.height<1){
-      throw new Error("Não foi possível determinar as dimensões da imagem.");
+      throw new Error("Could not determine the image dimensions.");
     }
+
     const dims=fitDimensions(source.width,source.height,effective.maxWidth,effective.maxHeight);
 
     if(!Number.isFinite(dims.width) || !Number.isFinite(dims.height) || dims.width<1 || dims.height<1){
-      throw new Error("As dimensões escolhidas não são válidas.");
+      throw new Error("The selected dimensions are not valid.");
     }
+
     if(dims.width*dims.height>36000000){
-      throw new Error("Esta imagem é grande demais para o processamento seguro neste dispositivo.");
+      throw new Error("This image is too large for safe processing on this device. Reduce the maximum width or height.");
     }
 
-    const canvas=document.createElement("canvas");
-    canvas.width=dims.width;
-    canvas.height=dims.height;
+    const targetBytes=Number(effective.targetSizeKB)>0 ? Number(effective.targetSizeKB)*1024 : 0;
+    let blob;
+    let quality=mime==="image/png" ? 100 : Math.round(effective.quality*100);
+    let outputWidth=dims.width;
+    let outputHeight=dims.height;
+    let targetReached=false;
 
-    const ctx=canvas.getContext("2d",{alpha:mime!=="image/jpeg"}) || canvas.getContext("2d");
-    if(!ctx) throw new Error("O navegador não disponibilizou o processamento de imagem.");
+    if(targetBytes>0){
+      const targetResult=await encodeForTarget(source,dims.width,dims.height,effective,mime,targetBytes);
+      blob=targetResult.blob;
+      quality=targetResult.quality;
+      outputWidth=targetResult.outputWidth;
+      outputHeight=targetResult.outputHeight;
+      targetReached=targetResult.targetReached;
+    }else{
+      const canvas=drawCanvas(source,dims.width,dims.height,mime,effective.background);
+      blob=await canvasBlob(canvas,mime,mime==="image/png" ? 1 : effective.quality);
 
-    ctx.imageSmoothingEnabled=true;
-    ctx.imageSmoothingQuality="high";
-
-    if(mime==="image/jpeg"){
-      ctx.fillStyle=effective.background;
-      ctx.fillRect(0,0,dims.width,dims.height);
-    }
-
-    ctx.drawImage(source,0,0,dims.width,dims.height);
-
-    let quality=mime==="image/png" ? 1 : effective.quality;
-    let blob=await canvasBlob(canvas,mime,quality);
-
-    if(blob.size>=file.size && mime!=="image/png"){
-      const fallbackQ=Math.max(.55,Math.min(.72,quality-.08));
-      if(fallbackQ<quality){
-        const fallback=await canvasBlob(canvas,mime,fallbackQ);
-        if(fallback.size<blob.size){
-          blob=fallback;
-          quality=fallbackQ;
+      if(blob.size>=file.size && mime!=="image/png"){
+        const fallbackQ=Math.max(.45,Math.min(.72,effective.quality-.08));
+        if(fallbackQ<effective.quality){
+          const fallback=await canvasBlob(canvas,mime,fallbackQ);
+          if(fallback.size<blob.size){
+            blob=fallback;
+            quality=Math.round(fallbackQ*100);
+          }
         }
       }
     }
 
-    const noGain=blob.size>=file.size && dims.width===source.width && dims.height===source.height;
+    if(!blob || blob.size<=0){
+      throw new Error("The compressed image is empty.");
+    }
+
+    const noGain=targetBytes<=0 && blob.size>=file.size && outputWidth===source.width && outputHeight===source.height;
     if(noGain && settings.format==="auto"){
       blob=file;
     }
@@ -263,9 +363,11 @@ async function processImage(file,settings,token){
       mime:noGain ? file.type : mime,
       originalWidth:source.width,
       originalHeight:source.height,
-      outputWidth:dims.width,
-      outputHeight:dims.height,
-      quality:noGain ? 100 : Math.round(quality*100),
+      outputWidth,
+      outputHeight,
+      quality:noGain ? 100 : quality,
+      targetBytes,
+      targetReached:targetBytes<=0 ? false : targetReached || blob.size<=targetBytes,
       ms:performance.now()-started,
       noGain
     };
@@ -277,12 +379,13 @@ async function processImage(file,settings,token){
 function clearResult(){
   if(state.result?.url) URL.revokeObjectURL(state.result.url);
   state.result=null;
+
   const img=$("#result-image");
   img.hidden=true;
   img.removeAttribute("src");
   $("#result-empty").hidden=false;
   $("#result-loading").hidden=true;
-  $("#result-size").textContent="Aguardando";
+  $("#result-size").textContent="Waiting";
   $("#result-meta").textContent="—";
   $("#saving").textContent="—";
   $("#dimensions").textContent="—";
@@ -300,7 +403,7 @@ function setOriginalPreview(src){
   img.onerror=()=>{
     $("#original-loading").hidden=true;
     setStatus("error");
-    showToast("A pré-visualização original não pôde ser carregada.","error");
+    showToast("The original image preview could not be loaded.","error");
   };
   img.src=src;
 }
@@ -316,7 +419,7 @@ async function renderResult(output){
 
   try{
     if(!(output.blob instanceof Blob) || output.blob.size<=0){
-      throw new Error("O resultado gerado está vazio.");
+      throw new Error("The generated result is empty.");
     }
 
     objectUrl=URL.createObjectURL(output.blob);
@@ -341,7 +444,7 @@ async function renderResult(output){
     }
 
     if(tokenAtRender!==state.token || !state.file){
-      if(objectUrl) URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(objectUrl);
       return false;
     }
 
@@ -357,7 +460,14 @@ async function renderResult(output){
     $("#result-empty").hidden=true;
     $("#result-loading").hidden=true;
     $("#result-size").textContent=bytes(output.blob.size);
-    $("#result-meta").textContent=output.noGain ? "Original preservado" : mimeLabel(output.mime)+" · Q"+output.quality;
+
+    let meta=output.noGain ? "Original preserved" : mimeLabel(output.mime)+" · Q"+output.quality;
+    if(output.targetBytes>0){
+      const targetLabel=bytes(output.targetBytes);
+      meta+=(output.targetReached ? " · Target "+targetLabel : " · Target not reached: "+targetLabel);
+    }
+    $("#result-meta").textContent=meta;
+
     $("#saving").textContent=output.noGain ? "0%" : saving+"%";
     $("#dimensions").textContent=output.outputWidth+" × "+output.outputHeight;
     $("#format-label").textContent=mimeLabel(output.mime);
@@ -375,7 +485,7 @@ async function renderResult(output){
       $("#result-image").hidden=false;
       $("#download").disabled=false;
       $("#result-size").textContent=bytes(previous.blob.size);
-      $("#result-meta").textContent=previous.noGain ? "Último resultado válido" : mimeLabel(previous.mime)+" · Q"+previous.quality;
+      $("#result-meta").textContent=previous.noGain ? "Last valid result" : mimeLabel(previous.mime)+" · Q"+previous.quality;
       $("#saving").textContent=previous.noGain ? "0%" : Math.max(0,Math.round((1-previous.blob.size/state.file.size)*100))+"%";
       $("#dimensions").textContent=previous.outputWidth+" × "+previous.outputHeight;
       $("#format-label").textContent=mimeLabel(previous.mime);
@@ -389,11 +499,12 @@ async function renderResult(output){
     $("#download").disabled=true;
     setStatus("error");
     showToast(error?.message==="preview"
-      ? "O resultado foi criado, mas a pré-visualização não pôde ser carregada."
-      : (error?.message || "Não foi possível preparar a pré-visualização."),"error");
+      ? "The result was created, but its preview could not be loaded."
+      : (error?.message || "Could not prepare the image preview."),"error");
     return false;
   }
 }
+
 async function runCompression(){
   if(!state.file) return;
 
@@ -408,7 +519,7 @@ async function runCompression(){
   setStatus("busy");
   $("#result-loading").hidden=false;
   $("#download").disabled=!state.result?.blob;
-  $("#result-size").textContent="A atualizar…";
+  $("#result-size").textContent="Updating…";
 
   try{
     const output=await processImage(state.file,getSettings(),token);
@@ -421,14 +532,14 @@ async function runCompression(){
         $("#result-image").hidden=false;
         $("#download").disabled=false;
         $("#result-size").textContent=bytes(state.result.blob.size);
-        $("#result-meta").textContent=state.result.noGain ? "Último resultado válido" : mimeLabel(state.result.mime)+" · Q"+state.result.quality;
+        $("#result-meta").textContent=state.result.noGain ? "Last valid result" : mimeLabel(state.result.mime)+" · Q"+state.result.quality;
         $("#saving").textContent=state.result.noGain ? "0%" : Math.max(0,Math.round((1-state.result.blob.size/state.file.size)*100))+"%";
         $("#dimensions").textContent=state.result.outputWidth+" × "+state.result.outputHeight;
         $("#format-label").textContent=mimeLabel(state.result.mime);
         $("#time-label").textContent=timeLabel(state.result.ms);
       }
       setStatus("error");
-      showToast(error?.message||"Não foi possível atualizar estas definições. O resultado anterior foi mantido.","error");
+      showToast(error?.message||"Could not update these settings. The previous result was kept.","error");
     }
   }finally{
     if(token===state.token){
@@ -469,6 +580,7 @@ function resetSettings(){
   $("#max-width").value=DEFAULTS.maxWidth;
   $("#max-height").value=DEFAULTS.maxHeight;
   $("#background").value=DEFAULTS.background;
+  $("#target-size").value=DEFAULTS.targetSizeKB;
   $("#auto-apply").checked=DEFAULTS.autoApply;
   scheduleCompression(100);
 }
@@ -487,7 +599,7 @@ function download(){
 function openPreview(kind){
   const src=kind==="original" ? state.originalSrc : state.result?.previewUrl;
   if(!src) return;
-  $("#modal-title").textContent=kind==="original" ? "Imagem original" : "Resultado";
+  $("#modal-title").textContent=kind==="original" ? "Original image" : "Compressed result";
   $("#modal-image").src=src;
   $("#preview-modal").hidden=false;
   document.body.classList.add("nx-lock");
@@ -520,11 +632,11 @@ function showWorkspace(file){
 
 function handleGalleryFile(file){
   if(!file || !String(file.type||"").startsWith("image/")){
-    showToast("Escolha uma imagem válida.","error");
+    showToast("Choose a valid image.","error");
     return;
   }
   showWorkspace(file);
-  scheduleCompression(120);
+  runCompression();
 }
 
 function stopCamera(){
@@ -540,13 +652,13 @@ function stopCamera(){
 async function openCamera(){
   $("#camera-screen").hidden=false;
   document.body.classList.add("nx-lock");
-  $("#camera-status").textContent="A INICIAR";
-  $("#camera-hint").textContent="Solicitando acesso à câmera…";
+  $("#camera-status").textContent="STARTING";
+  $("#camera-hint").textContent="Requesting camera access…";
 
   if(!navigator.mediaDevices?.getUserMedia){
-    $("#camera-status").textContent="INDISPONÍVEL";
-    $("#camera-hint").textContent="Este navegador não disponibiliza câmera direta.";
-     showToast("A câmera direta não está disponível neste navegador. Use a galeria.", "error");
+    $("#camera-status").textContent="UNAVAILABLE";
+    $("#camera-hint").textContent="This browser does not provide direct camera access.";
+    showToast("Direct camera access is not available. Use your gallery.","error");
     return;
   }
 
@@ -559,13 +671,13 @@ async function openCamera(){
     const video=$("#camera-video");
     video.srcObject=state.cameraStream;
     await video.play().catch(()=>{});
-    $("#camera-status").textContent="PRONTA";
-    $("#camera-hint").textContent="Centralize a imagem e toque no botão para fotografar.";
+    $("#camera-status").textContent="READY";
+    $("#camera-hint").textContent="Center the image and tap the shutter button.";
     $("#camera-capture").disabled=false;
   }catch(error){
-    $("#camera-status").textContent="SEM ACESSO";
-    $("#camera-hint").textContent="Autorize a câmera ou escolha uma imagem da galeria.";
-    showToast(error?.name==="NotAllowedError" ? "A câmera foi bloqueada. Permita o acesso nas definições do navegador." : "Não foi possível iniciar a câmera.","error");
+    $("#camera-status").textContent="NO ACCESS";
+    $("#camera-hint").textContent="Allow camera access or choose an image from your gallery.";
+    showToast(error?.name==="NotAllowedError" ? "Camera access was blocked. Allow it in your browser settings." : "Could not start the camera.","error");
   }
 }
 
@@ -586,10 +698,11 @@ async function captureCamera(){
   canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
 
   const ctx=canvas.getContext("2d",{alpha:false});
+  if(!ctx) return;
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
 
   const blob=await new Promise((resolve,reject)=>{
-    canvas.toBlob(b=>b?resolve(b):reject(new Error("Não foi possível capturar a foto.")),"image/jpeg",.94);
+    canvas.toBlob(b=>b?resolve(b):reject(new Error("Could not capture the photo.")),"image/jpeg",.94);
   });
 
   const file=new File([blob],"nexauren-camera-"+Date.now()+".jpg",{type:"image/jpeg",lastModified:Date.now()});
@@ -613,7 +726,7 @@ function wire(){
     event.target.value="";
   });
 
-  $("#replace").addEventListener("click",openCamera);
+  $("#replace").addEventListener("click",()=>openCamera());
 
   const upload=$("#upload");
   ["dragenter","dragover"].forEach(type=>upload.addEventListener(type,event=>{
@@ -639,9 +752,20 @@ function wire(){
     scheduleCompression();
   });
 
-  ["#mode","#format","#max-width","#max-height","#background"].forEach(id=>{
+  ["#mode","#format","#max-width","#max-height","#background","#target-size"].forEach(id=>{
     $(id).addEventListener("input",()=>scheduleCompression());
     $(id).addEventListener("change",()=>scheduleCompression());
+  });
+
+  document.querySelectorAll("[data-target-kb]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      $("#target-size").value=button.dataset.targetKb||"";
+      if(button.dataset.targetKb){
+        const format=$("#format");
+        if(format.value==="png") format.value="webp";
+      }
+      runCompression();
+    });
   });
 
   $("#auto-apply").addEventListener("change",()=>scheduleCompression(100));
