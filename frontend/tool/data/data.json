@@ -2199,6 +2199,39 @@
       "popular": false,
       "access": "public",
       "sortOrder": 10
+    },
+    {
+      "id": "antes-e-depois",
+      "name": "Antes e Depois",
+      "name_en": "Before & After",
+      "description": "Compare duas fotos com um divisor arrastável e exporte a comparação como uma única imagem.",
+      "description_en": "Compare two photos with a draggable slider and export the comparison as a single image.",
+      "category": "imagem",
+      "group": "imagem",
+      "icon": "↔",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/imagem/antes-e-depois/",
+      "tags": [
+        "imagem",
+        "image",
+        "antes e depois",
+        "before after",
+        "comparação",
+        "comparar",
+        "slider"
+      ],
+      "tags_en": [
+        "image",
+        "before and after",
+        "comparison",
+        "compare",
+        "slider"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 150
     }
   ]
 }
