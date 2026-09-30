@@ -116,35 +116,42 @@
     {
       "id": "image-converter",
       "name": "Conversor de Formato de Imagem",
-      "description": "Converta imagens em lote para PNG, JPG, WebP ou AVIF, com redimensionamento, rotação, espelho e acabamento diretamente no navegador.",
+      "description": "Convert JPG, PNG, WebP, and AVIF images in batches with optional resizing, quality control, rotation, flip, grayscale, and local browser processing.",
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-converter/",
       "tags": [
         "imagem",
         "image",
         "converter",
-        "Conversor de Formato de Imagem"
+        "convert",
+        "JPG",
+        "PNG",
+        "WebP",
+        "AVIF",
+        "batch"
       ],
       "featured": true,
       "popular": true,
       "access": "public",
       "sortOrder": 30,
       "name_en": "Image Converter",
-      "description_en": "Convert images online for free between WebP, AVIF, JPG, and PNG, with batch processing, resizing, quality, rotation, and flip controls.",
+      "description_en": "Convert JPG, PNG, WebP, and AVIF images online for free in batches with optional resizing, quality control, rotation, flip, grayscale, and local browser processing.",
       "tags_en": [
         "image converter",
         "convert image",
+        "convert images online free",
         "JPG to PNG",
         "PNG to JPG",
         "JPG to WebP",
         "PNG to WebP",
         "WebP converter",
         "AVIF converter",
-        "image format converter"
+        "image format converter",
+        "batch image converter"
       ]
     },
     {
