@@ -39,6 +39,7 @@ const PDF_PATH_REDIRECTS = new Map([
   ["/tool/categories/pdf/rodar-pdf/", "/tool/categories/pdf/rotate-pdf/"]
 ]);
 
+const DEV_TOOL_RENAMES = new Map([["gerador-de-qr-code","qr-code-generator"],["leitor-de-qr-code","qr-code-reader"],["gerador-de-codigo-de-barras","barcode-generator"],["gerador-de-uuid","uuid-generator"],["gerador-de-hash","hash-generator"],["base64-encoder-decoder","base64-encoder-decoder"],["jwt-decoder","jwt-decoder"],["formatador-json","json-formatter"],["formatador-xml","xml-formatter"],["validador-json","json-validator"],["testador-de-regex","regex-tester"],["json-csv","json-csv"],["gerador-de-lorem-ipsum","lorem-ipsum-generator"],["gerador-de-meta-tags","meta-tag-generator"],["gerador-de-sitemap","sitemap-generator"],["gerador-de-robots-txt","robots-txt-generator"],["analisador-de-url","url-analyzer"],["encoder-decoder-url","url-encoder-decoder"],["conversor-de-timestamp","timestamp-converter"],["formatador-html","html-formatter"],["formatador-css-minifier","css-formatter-minifier"],["formatador-js-minifier","js-formatter-minifier"],["diff-checker","diff-checker"],["conversor-de-cores","color-converter"],["gerador-de-paleta-de-cores","color-palette-generator"],["conversor-de-dados-e-bytes","data-byte-converter"],["gerador-de-api-key","api-key-generator"],["gerador-de-secret","secret-generator"]]);
 const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-4" defer></script>';
 const ANALYTICS_SCRIPT = '<script src="/assets/analytics.js?v=20260929-1" defer></script>';
 
@@ -51,15 +52,44 @@ function upsert(html, regex, tag) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const imageRedirectTarget = IMAGE_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    const lowerPath = url.pathname.toLowerCase();
+
+    const imageRedirectTarget = IMAGE_PATH_REDIRECTS.get(lowerPath);
     if (imageRedirectTarget) {
       url.pathname = imageRedirectTarget;
       return Response.redirect(url.toString(), 301);
     }
-    const pdfRedirectTarget = PDF_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    const pdfRedirectTarget = PDF_PATH_REDIRECTS.get(lowerPath);
     if (pdfRedirectTarget) {
       url.pathname = pdfRedirectTarget;
       return Response.redirect(url.toString(), 301);
+    }
+
+    const techCategoryOld = "/tool/categories/tecnologia";
+    const techCategoryNew = "/tool/categories/developer-tools/";
+    if (lowerPath === techCategoryOld || lowerPath === techCategoryOld + "/") {
+      url.pathname = techCategoryNew;
+      return Response.redirect(url.toString(), 301);
+    }
+
+    const devPrefix = "/tool/categories/developer-tools/";
+    if (lowerPath.startsWith(devPrefix)) {
+      const rest = url.pathname.slice(devPrefix.length);
+      const targetPath = "/tool/categories/tecnologia/" + rest;
+      url.pathname = targetPath;
+      return app.fetch(new Request(url.toString(), request));
+    }
+
+    if (lowerPath.startsWith(techCategoryOld + "/")) {
+      const rest = url.pathname.slice((techCategoryOld + "/").length);
+      const slash = rest.indexOf("/");
+      const oldSlug = (slash === -1 ? rest : rest.slice(0, slash)).replace(/^\/+|\/+$/g, "");
+      const targetSlug = DEV_TOOL_RENAMES.get(oldSlug.toLowerCase()) || oldSlug;
+      const suffix = slash === -1 ? "/" : rest.slice(slash);
+      if (!/\.[a-z0-9]{1,8}$/i.test(rest)) {
+        url.pathname = devPrefix + targetSlug + (suffix || "/");
+        return Response.redirect(url.toString(), 301);
+      }
     }
 
     const response = await app.fetch(request, env, ctx);
