@@ -1203,7 +1203,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-resizer/",
       "tags": [
@@ -1217,11 +1217,22 @@
       "access": "public",
       "sortOrder": 20,
       "name_en": "Image Resizer",
-      "description_en": "Resize images by pixels while preserving aspect ratio when needed.",
+      "description_en": "Resize images online for free by setting exact pixel dimensions, preserving aspect ratio, choosing fit mode, and exporting JPG, PNG, or WebP.",
       "tags_en": [
         "image",
-        "resizer",
-        "image resizing"
+        "image resizer",
+        "resize image",
+        "resize images online free",
+        "resize photo",
+        "image resizing",
+        "resize image to exact size",
+        "resize image by pixels",
+        "resize image to 1080x1080",
+        "resize image for social media",
+        "resize image for website",
+        "JPG",
+        "PNG",
+        "WebP"
       ]
     },
     {
