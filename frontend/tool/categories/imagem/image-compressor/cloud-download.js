@@ -79,6 +79,7 @@ async function secureDownload(button) {
   if (!image?.src) return;
 
   const originalMeta = document.querySelector("#result-meta")?.textContent || "";
+  let tempId = "";
   setDownloadState(button, "Preparing…", true);
 
   try {
@@ -95,10 +96,10 @@ async function secureDownload(button) {
       resultBlob,
       cleanBaseName(filename) + "." + extensionForMime(resultBlob.type)
     );
+    tempId = uploaded.id;
 
     const result = await fetchTemporaryResult(uploaded.id);
     downloadBlobLocally(result, filename);
-    await deleteTemporaryResult(uploaded.id);
 
     const meta = document.querySelector("#result-meta");
     if (meta) meta.textContent = originalMeta + " · Secure temporary download";
@@ -118,6 +119,7 @@ async function secureDownload(button) {
       link.remove();
     }
   } finally {
+    if (tempId) await deleteTemporaryResult(tempId);
     setDownloadState(button, "Download", false);
   }
 }
