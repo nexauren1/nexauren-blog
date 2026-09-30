@@ -7,6 +7,19 @@ const OG_WIDTH = '<meta property="og:image:width" content="1200">';
 const OG_HEIGHT = '<meta property="og:image:height" content="630">';
 const OG_TYPE = '<meta property="og:image:type" content="image/png">';
 const TW = '<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20260926-2">';
+const IMAGE_PATH_REDIRECTS = new Map([
+  ["/tool/categories/imagem/antes-e-depois", "/tool/categories/imagem/before-after/"],
+  ["/tool/categories/imagem/antes-e-depois/", "/tool/categories/imagem/before-after/"],
+  ["/tool/categories/imagem/adicionar-bordas", "/tool/categories/imagem/image-borders/"],
+  ["/tool/categories/imagem/adicionar-bordas/", "/tool/categories/imagem/image-borders/"],
+  ["/tool/categories/imagem/desfocar-pixelizar", "/tool/categories/imagem/blur-pixelate/"],
+  ["/tool/categories/imagem/desfocar-pixelizar/", "/tool/categories/imagem/blur-pixelate/"],
+  ["/tool/categories/imagem/girar-espelhar", "/tool/categories/imagem/rotate-flip-image/"],
+  ["/tool/categories/imagem/girar-espelhar/", "/tool/categories/imagem/rotate-flip-image/"],
+  ["/tool/categories/imagem/juntar-imagens", "/tool/categories/imagem/combine-images/"],
+  ["/tool/categories/imagem/juntar-imagens/", "/tool/categories/imagem/combine-images/"]
+]);
+
 const FOOTER_SCRIPT = '<script src="/assets/nexauren-footer.js?v=20260928-4" defer></script>';
 const ANALYTICS_SCRIPT = '<script src="/assets/analytics.js?v=20260929-1" defer></script>';
 
@@ -18,6 +31,13 @@ function upsert(html, regex, tag) {
 
 export default {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const redirectTarget = IMAGE_PATH_REDIRECTS.get(url.pathname.toLowerCase());
+    if (redirectTarget) {
+      url.pathname = redirectTarget;
+      return Response.redirect(url.toString(), 301);
+    }
+
     const response = await app.fetch(request, env, ctx);
     const type = response.headers.get("content-type") || "";
     if (!response.ok || !type.toLowerCase().includes("text/html")) return response;

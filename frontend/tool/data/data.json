@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-28T20:20:00Z",
+    "updatedAt": "2026-09-30T17:52:34.301Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -1929,7 +1929,7 @@
       "icon": "⊞",
       "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/imagem/juntar-imagens/",
+      "path": "/tool/categories/imagem/combine-images/",
       "tags": [
         "imagem",
         "image",
@@ -1967,7 +1967,7 @@
       "icon": "◌",
       "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/imagem/desfocar-pixelizar/",
+      "path": "/tool/categories/imagem/blur-pixelate/",
       "tags": [
         "imagem",
         "image",
@@ -2002,7 +2002,7 @@
       "icon": "↻",
       "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/imagem/girar-espelhar/",
+      "path": "/tool/categories/imagem/rotate-flip-image/",
       "tags": [
         "imagem",
         "image",
@@ -2037,7 +2037,7 @@
       "icon": "□",
       "version": "2.0.0",
       "status": "active",
-      "path": "/tool/categories/imagem/adicionar-bordas/",
+      "path": "/tool/categories/imagem/image-borders/",
       "tags": [
         "imagem",
         "image",
@@ -2264,7 +2264,7 @@
       "icon": "↔",
       "version": "1.0.0",
       "status": "active",
-      "path": "/tool/categories/imagem/antes-e-depois/",
+      "path": "/tool/categories/imagem/before-after/",
       "tags": [
         "imagem",
         "image",
