@@ -249,10 +249,20 @@ async function filebaseRequest(env, options = {}) {
 
   const bucket = String(env.FILEBASE_BUCKET || "").trim();
   const key = String(options.key || "").trim();
-  if (!bucket || !key) throw new Error("Filebase bucket or object key is missing.");
+  if (!bucket) throw new Error("Filebase bucket is missing.");
 
-  endpoint.pathname = encodedObjectPath(bucket, key);
-  endpoint.search = "";
+  endpoint.pathname = key ? encodedObjectPath(bucket, key) : "/" + encodeURIComponent(bucket);
+
+  const query = options.query || {};
+  const queryPairs = Object.entries(query)
+    .filter(([, value]) => value !== undefined && value !== null && value !== "")
+    .map(([name, value]) => [
+      encodeURIComponent(String(name)),
+      encodeURIComponent(String(value))
+    ])
+    .sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]))
+    .map(([name, value]) => name + "=" + value);
+  endpoint.search = queryPairs.length ? "?" + queryPairs.join("&") : "";
 
   const method = String(options.method || "GET").toUpperCase();
   const body = options.body ?? null;
@@ -295,7 +305,7 @@ async function filebaseRequest(env, options = {}) {
   const canonicalRequest = [
     method,
     endpoint.pathname,
-    "",
+    endpoint.search ? endpoint.search.slice(1) : "",
     canonicalHeaders,
     signedHeaders,
     payloadHash
@@ -393,4 +403,52 @@ export async function filebaseDeleteTemp(env, key) {
     method: "DELETE",
     key
   });
+}
+
+
+export async function filebaseCleanupTemp(env, maxAgeMs = 6 * 60 * 60 * 1000) {
+  const prefix = "tmp/image-compressor/";
+  const result = await filebaseRequest(env, {
+    method: "GET",
+    key: "",
+    query: {
+      "list-type": "2",
+      prefix
+    }
+  });
+
+  if (!result.response.ok) {
+    return {
+      ok: false,
+      status: result.response.status,
+      deleted: 0,
+      requestId: result.requestId
+    };
+  }
+
+  const xml = await result.response.text();
+  const now = Date.now();
+  const matches = [...xml.matchAll(
+    /<Contents>[\s\S]*?<Key>([^<]+)<\/Key>[\s\S]*?<LastModified>([^<]+)<\/LastModified>[\s\S]*?<\/Contents>/g
+  )];
+
+  let deleted = 0;
+  for (const match of matches.slice(0, 100)) {
+    const key = match[1];
+    const lastModified = Date.parse(match[2]);
+    if (!key.startsWith(prefix) || !Number.isFinite(lastModified)) continue;
+    if (now - lastModified < maxAgeMs) continue;
+
+    try {
+      const removed = await filebaseDeleteTemp(env, key);
+      if (removed.response.ok || removed.response.status === 404) deleted++;
+    } catch {}
+  }
+
+  return {
+    ok: true,
+    deleted,
+    scanned: matches.length,
+    requestId: result.requestId
+  };
 }
