@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);
-const e={file:$("#file"),hero:$("#heroPreview"),generate:$("#generate"),copyHtml:$("#copyHtml"),copyManifest:$("#copyManifest"),downloadAll:$("#downloadAll"),reset:$("#reset"),status:$("#status"),spinner:$("#spinner"),icons:$("#icons"),code:$("#code"),appName:$("#appName"),shortName:$("#shortName"),prefix:$("#prefix"),theme:$("#theme"),pwaBg:$("#pwaBg"),fit:$("#fit"),padding:$("#padding"),paddingOut:$("#paddingOut"),bgMode:$("#bgMode"),bg:$("#bg"),radius:$("#radius"),radiusOut:$("#radiusOut"),shadow:$("#shadow")};
+const e={file:$("#file"),cameraFile:$("#cameraFile"),choose:$("#choose"),camera:$("#camera"),hero:$("#heroPreview"),generate:$("#generate"),copyHtml:$("#copyHtml"),copyManifest:$("#copyManifest"),downloadAll:$("#downloadAll"),reset:$("#reset"),status:$("#status"),spinner:$("#spinner"),icons:$("#icons"),code:$("#code"),appName:$("#appName"),shortName:$("#shortName"),prefix:$("#prefix"),theme:$("#theme"),pwaBg:$("#pwaBg"),fit:$("#fit"),padding:$("#padding"),paddingOut:$("#paddingOut"),bgMode:$("#bgMode"),bg:$("#bg"),radius:$("#radius"),radiusOut:$("#radiusOut"),shadow:$("#shadow")};
 const SIZES=[16,32,48,64,96,180,192,512];let image=null,sourceUrl="",assets=new Map(),icoBlob=null,htmlText="",manifestText="";
 const revoke=u=>{if(u)try{URL.revokeObjectURL(u)}catch{}};const clean=v=>(v||"").trim().replace(/[^a-zA-Z0-9_-]+/g,"-").replace(/^-+|-+$/g,"")||"site-icon";const txt=v=>(v||"").trim();
 function status(t,error=false){e.status.textContent=t;e.status.className="status"+(error?" error":"")}
@@ -38,7 +38,7 @@ async function loadFile(file){
  catch(err){image=null;e.generate.disabled=true;status(err?.message||"Could not load this image.",true)}
 }
 function reset(){revoke(sourceUrl);sourceUrl="";image=null;assets.clear();icoBlob=null;e.file.value="";e.hero.removeAttribute("src");e.hero.hidden=true;e.icons.replaceChildren();e.code.hidden=true;e.code.textContent="";e.copyHtml.disabled=e.copyManifest.disabled=e.downloadAll.disabled=true;e.generate.disabled=true;status("Choose an image to start.")}
-e.file.onchange=ev=>{void loadFile(ev.target.files[0]);ev.target.value=""};
+e.choose.onclick=()=>e.file.click();e.camera.onclick=()=>e.cameraFile.click();e.file.onchange=ev=>{void loadFile(ev.target.files[0]);ev.target.value=""};e.cameraFile.onchange=ev=>{void loadFile(ev.target.files[0]);ev.target.value=""};
 [e.fit,e.padding,e.bgMode,e.bg,e.radius,e.shadow,e.theme,e.pwaBg].forEach(x=>x.addEventListener("input",updatePreview));
 e.generate.onclick=generate;e.copyHtml.onclick=()=>copy(htmlText,"HTML");e.copyManifest.onclick=()=>copy(manifestText,"Manifest");e.downloadAll.onclick=downloadAll;e.reset.onclick=reset;
 document.addEventListener("keydown",ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.key==="Enter"){ev.preventDefault();if(image)void generate()}});
