@@ -211,3 +211,186 @@ export async function filebaseTest(env) {
     }
   );
 }
+
+
+const FILEBASE_REGION = "auto";
+const FILEBASE_SERVICE = "s3";
+
+function encodedObjectPath(bucket, key) {
+  return (
+    "/" +
+    encodeURIComponent(String(bucket)) +
+    "/" +
+    String(key)
+      .split("/")
+      .map((part) => encodeURIComponent(part))
+      .join("/")
+  );
+}
+
+function tempHeaders() {
+  const now = new Date();
+  const amzDate = now.toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "Z");
+  return {
+    amzDate,
+    dateStamp: amzDate.slice(0, 8)
+  };
+}
+
+function canonicalHeaderValue(value) {
+  return String(value ?? "").trim().replace(/\s+/g, " ");
+}
+
+async function filebaseRequest(env, options = {}) {
+  const endpoint = safeEndpoint(env.FILEBASE_ENDPOINT);
+  if (!endpoint) throw new Error("Invalid Filebase endpoint.");
+
+  const bucket = String(env.FILEBASE_BUCKET || "").trim();
+  const key = String(options.key || "").trim();
+  if (!bucket || !key) throw new Error("Filebase bucket or object key is missing.");
+
+  endpoint.pathname = encodedObjectPath(bucket, key);
+  endpoint.search = "";
+
+  const method = String(options.method || "GET").toUpperCase();
+  const body = options.body ?? null;
+  const payloadBytes =
+    body == null
+      ? new Uint8Array()
+      : body instanceof ArrayBuffer
+        ? new Uint8Array(body)
+        : body instanceof Uint8Array
+          ? body
+          : new Uint8Array(body);
+
+  const payloadHash = await sha256Hex(payloadBytes);
+  const { amzDate, dateStamp } = tempHeaders();
+
+  const extra = {};
+  if (options.contentType) extra["content-type"] = canonicalHeaderValue(options.contentType);
+  for (const [name, value] of Object.entries(options.headers || {})) {
+    extra[String(name).toLowerCase()] = canonicalHeaderValue(value);
+  }
+
+  const signedHeaderNames = ["host", "x-amz-content-sha256", "x-amz-date", ...Object.keys(extra)]
+    .map((name) => name.toLowerCase())
+    .filter((name, index, arr) => arr.indexOf(name) === index)
+    .sort();
+
+  const headerMap = {
+    host: endpoint.host,
+    "x-amz-content-sha256": payloadHash,
+    "x-amz-date": amzDate,
+    ...extra
+  };
+
+  const canonicalHeaders = signedHeaderNames
+    .map((name) => name + ":" + canonicalHeaderValue(headerMap[name]) + "\n")
+    .join("");
+
+  const signedHeaders = signedHeaderNames.join(";");
+
+  const canonicalRequest = [
+    method,
+    endpoint.pathname,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash
+  ].join("\n");
+
+  const canonicalRequestHash = await sha256Hex(canonicalRequest);
+  const credentialScope =
+    dateStamp + "/" + FILEBASE_REGION + "/" + FILEBASE_SERVICE + "/aws4_request";
+
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    credentialScope,
+    canonicalRequestHash
+  ].join("\n");
+
+  const keyBytes = await signingKey(
+    String(env.FILEBASE_SECRET_KEY),
+    dateStamp,
+    FILEBASE_REGION,
+    FILEBASE_SERVICE
+  );
+
+  const signature = toHex(await hmacSha256(keyBytes, stringToSign));
+  const authorization =
+    "AWS4-HMAC-SHA256 " +
+    "Credential=" + String(env.FILEBASE_ACCESS_KEY) + "/" + credentialScope + ", " +
+    "SignedHeaders=" + signedHeaders + ", " +
+    "Signature=" + signature;
+
+  const headers = new Headers();
+  for (const name of signedHeaderNames) {
+    if (name !== "host") headers.set(name, headerMap[name]);
+  }
+  headers.set("authorization", authorization);
+
+  let response;
+  try {
+    response = await fetch(endpoint.toString(), {
+      method,
+      headers,
+      body: body == null ? undefined : payloadBytes
+    });
+  } catch (error) {
+    throw Object.assign(new Error("Could not reach Filebase."), {
+      code: "FILEBASE_NETWORK_ERROR",
+      details: String(error?.message || error).slice(0, 180)
+    });
+  }
+
+  return {
+    response,
+    requestId: response.headers.get("x-amz-request-id") || null
+  };
+}
+
+export async function filebasePutTemp(env, { key, body, contentType, filename }) {
+  const createdAt = new Date();
+  const expiresAt = new Date(createdAt.getTime() + 6 * 60 * 60 * 1000);
+
+  const headers = {
+    "x-amz-meta-purpose": "nexauren-temp",
+    "x-amz-meta-created-at": createdAt.toISOString(),
+    "x-amz-meta-expires-at": expiresAt.toISOString(),
+    "x-amz-meta-filename": String(filename || "download").slice(0, 180)
+  };
+
+  const result = await filebaseRequest(env, {
+    method: "PUT",
+    key,
+    body,
+    contentType: contentType || "application/octet-stream",
+    headers
+  });
+
+  const response = result.response;
+  return {
+    ok: response.ok,
+    status: response.status,
+    requestId: result.requestId,
+    expiresAt: expiresAt.toISOString(),
+    etag: response.headers.get("etag") || null
+  };
+}
+
+export async function filebaseGetTemp(env, key) {
+  return filebaseRequest(env, {
+    method: "GET",
+    key
+  });
+}
+
+export async function filebaseDeleteTemp(env, key) {
+  return filebaseRequest(env, {
+    method: "DELETE",
+    key
+  });
+}
