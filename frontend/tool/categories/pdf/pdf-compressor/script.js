@@ -1,7 +1,7 @@
 (()=>{"use strict";
 const $=s=>document.querySelector(s);
 const fileInput=$("#nxpc-file"),drop=$("#nxpc-drop"),filePanel=$("#nxpc-file-panel"),fileName=$("#nxpc-file-name"),fileMeta=$("#nxpc-file-meta");
-const removeBtn=$("#nxpc-remove"),compressBtn=$("#nxpc-compress"),resetBtn=$("#nxpc-reset"),progressWrap=$("#nxpc-progress-wrap"),progress=$("#nxpc-progress"),status=$("#nxpc-status"),result=$("#nxpc-result"),downloadBtn=$("#nxpc-download");
+const removeBtn=$("#nxpc-remove"),settings=$("#nxpc-settings"),compressBtn=$("#nxpc-compress"),resetBtn=$("#nxpc-reset"),progressWrap=$("#nxpc-progress-wrap"),progress=$("#nxpc-progress"),status=$("#nxpc-status"),result=$("#nxpc-result"),downloadBtn=$("#nxpc-download");
 const modeButtons=[...document.querySelectorAll(".nxpc-mode")],visualBox=$("#nxpc-visual-setting"),quality=$("#nxpc-quality"),qualityLabel=$("#nxpc-quality-label"),dpi=$("#nxpc-dpi"),presetButtons=[...document.querySelectorAll(".nxpc-preset")],presetHint=$("#nxpc-preset-hint");
 let sourceFile=null,outputBlob=null,outputName="compressed.pdf",mode="smart",preset="balanced",busy=false;
 const PRESETS={
@@ -15,8 +15,8 @@ const setProgress=(pct,msg)=>{progressWrap.hidden=false;progress.style.width=Mat
 const cleanName=n=>(String(n||"compressed").replace(/\.pdf$/i,"").replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"").slice(0,70)||"compressed")+"-compressed.pdf";
 const updateQuality=()=>{const q=Number(quality.value);qualityLabel.textContent=(q>=80?"High":q>=60?"Balanced":q>=40?"Strong":"Maximum")+" · JPEG "+q+"%"};
 const applyPreset=name=>{preset=PRESETS[name]?name:"balanced";const p=PRESETS[preset];quality.value=p.q;dpi.value=String(p.dpi);presetButtons.forEach(b=>b.classList.toggle("active",b.dataset.preset===preset));presetHint.textContent=p.hint;updateQuality()};
-const showFile=f=>{sourceFile=f;fileName.textContent=f.name;fileMeta.textContent=fmtBytes(f.size);filePanel.hidden=false;visualBox.hidden=mode!=="visual";result.hidden=true;progressWrap.hidden=true;compressBtn.disabled=false};
-const clearAll=()=>{sourceFile=null;outputBlob=null;fileInput.value="";filePanel.hidden=true;visualBox.hidden=true;result.hidden=true;progressWrap.hidden=true;progress.style.width="0%";compressBtn.disabled=false;busy=false;mode="smart";modeButtons.forEach(b=>b.classList.toggle("active",b.dataset.mode==="smart"));compressBtn.textContent="Compress PDF"};
+const showFile=f=>{sourceFile=f;fileName.textContent=f.name;fileMeta.textContent=fmtBytes(f.size);filePanel.hidden=false;settings.hidden=false;visualBox.hidden=mode==="smart";result.hidden=true;progressWrap.hidden=true;compressBtn.disabled=false;};
+const clearAll=()=>{sourceFile=null;outputBlob=null;fileInput.value="";filePanel.hidden=true;settings.hidden=true;visualBox.hidden=true;result.hidden=true;progressWrap.hidden=true;progress.style.width="0%";compressBtn.disabled=false;busy=false;mode="smart";modeButtons.forEach(b=>b.classList.toggle("active",b.dataset.mode==="smart"));compressBtn.textContent="Compress PDF"};
 let pdfLibPromise=null,pdfjsPromise=null;
 const loadScript=(src,globalName,timeout=15000)=>new Promise((resolve,reject)=>{
   const existing=document.querySelector('script[data-nx-lib="'+src+'"]');
