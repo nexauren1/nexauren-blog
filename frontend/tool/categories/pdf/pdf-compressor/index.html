@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08101a">
-<meta name="description" content="Compress PDF files online for free with Nexauren. Optimize PDF structure or use visual compression with adjustable quality, processed locally in your browser.">
+<meta name="description" content="Compress PDF files online for free with Nexauren. Compare smart optimization with aggressive visual compression, downsampling, JPEG quality controls, and a Best Size mode that keeps the smaller result.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://nexaurenstory.com/tool/categories/pdf/pdf-compressor/">
 <link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
 <link rel="stylesheet" href="/assets/public-ui.css?v=20261001-global">
-<link rel="stylesheet" href="./style.css?v=20261001-pdfcompressor-2">
+<link rel="stylesheet" href="./style.css?v=20261001-pdfcompressor-3">
 <meta property="og:site_name" content="Nexauren Story">
 <meta property="og:title" content="Compress PDF Online Free | PDF Compressor | Nexauren">
-<meta property="og:description" content="Compress PDF files online for free with local browser processing. Choose smart optimization or stronger visual compression.">
+<meta property="og:description" content="Compress PDF files locally in your browser. Choose Smart Optimize, Visual Compression, or Best Size to aggressively reduce file size.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nexaurenstory.com/tool/categories/pdf/pdf-compressor/">
 <meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20261001-pdf-compressor">
@@ -82,7 +82,7 @@
     <div class="nxpc-kicker">NEXAUREN PDF LAB</div>
     <h1>Compress PDF Online</h1>
     <p>Reduce PDF file size in your browser. Start with smart optimization, or use visual compression when you need a stronger reduction.</p>
-    <div class="nxpc-trust"><span>LOCAL PROCESSING</span><span>NO ARTIFICIAL QUOTAS</span><span>FREE</span><span>WORKER FALLBACK</span></div>
+    <div class="nxpc-trust"><span>LOCAL PROCESSING</span><span>NO ARTIFICIAL QUOTAS</span><span>FREE</span><span>WORKER FALLBACK</span><span>BEST SIZE AUTO</span></div>
   </section>
 
   <section class="nxpc-app" aria-labelledby="nxpc-title">
@@ -110,16 +110,18 @@
             <div><strong>Compression mode</strong><small>Choose how the new PDF is created.</small></div>
             <div class="nxpc-modes" role="group" aria-label="Compression mode">
               <button type="button" class="nxpc-mode active" data-mode="smart"><b>Smart Optimize</b><span>Preserves the document structure and text.</span></button>
-              <button type="button" class="nxpc-mode" data-mode="visual"><b>Visual Compression</b><span>Rebuilds pages as images for stronger reduction.</span></button>
+              <button type="button" class="nxpc-mode" data-mode="visual"><b>Visual Compression</b><span>Rebuilds pages as images with aggressive downsampling and JPEG compression.</span></button><button type="button" class="nxpc-mode" data-mode="auto"><b>Best Size (Auto)</b><span>Builds Smart and Smallest File versions, then keeps whichever is smaller.</span></button>
             </div>
           </div>
 
           <div class="nxpc-setting nxpc-visual-setting" id="nxpc-visual-setting" hidden>
-            <div><strong>Visual quality</strong><small id="nxpc-quality-label">Balanced · JPEG 70%</small></div>
-            <input id="nxpc-quality" type="range" min="40" max="90" step="5" value="70">
+            <div><strong>Visual compression controls</strong><small id="nxpc-quality-label">Balanced · JPEG 70%</small></div>
+            <input id="nxpc-quality" type="range" min="25" max="90" step="5" value="70">
             <div><div class="nxpc-range-row"><span>Smaller</span><span>Higher quality</span></div></div>
-            <div class="nxpc-dpi"><label for="nxpc-dpi">Render quality</label><select id="nxpc-dpi"><option value="90">90 DPI</option><option value="110" selected>110 DPI</option><option value="130">130 DPI</option><option value="160">160 DPI</option></select></div>
-            <p class="nxpc-warning">Visual Compression can remove searchable/selectable text because pages are rebuilt as images.</p>
+            <div class="nxpc-preset-list"><button type="button" class="nxpc-preset active" data-preset="balanced"><b>Balanced</b><span>110 DPI · JPEG 70</span></button><button type="button" class="nxpc-preset" data-preset="strong"><b>Strong</b><span>90 DPI · JPEG 50</span></button><button type="button" class="nxpc-preset" data-preset="maximum"><b>Maximum</b><span>72 DPI · JPEG 35</span></button><button type="button" class="nxpc-preset" data-preset="smallest"><b>Smallest file</b><span>60 DPI · JPEG 28</span></button></div>
+            <div class="nxpc-dpi"><label for="nxpc-dpi">Render quality</label><select id="nxpc-dpi"><option value="60">60 DPI</option><option value="72">72 DPI</option><option value="90">90 DPI</option><option value="110" selected>110 DPI</option><option value="130">130 DPI</option><option value="160">160 DPI</option></select></div>
+            <p id="nxpc-preset-hint" class="nxpc-preset-hint">Good balance between readable pages and file size.</p>
+            <p class="nxpc-warning">Visual Compression rasterizes every page. Text may no longer be searchable/selectable. For the smallest possible file, use “Smallest file” or “Best Size (Auto)”.</p>
           </div>
 
           <div class="nxpc-actions">
@@ -134,7 +136,7 @@
           <div class="nxpc-result-grid">
             <div><span>Original</span><strong id="nxpc-original-size">—</strong></div>
             <div><span>Result</span><strong id="nxpc-result-size">—</strong></div>
-            <div><span>Reduction</span><strong id="nxpc-saved">—</strong></div>
+            <div><span>Reduction</span><strong id="nxpc-saved">—</strong></div><div><span>Method</span><strong id="nxpc-result-method">—</strong></div>
           </div>
           <div class="nxpc-result-actions">
             <div><strong id="nxpc-result-name">compressed.pdf</strong><small id="nxpc-result-note">Ready to download.</small></div>
@@ -157,20 +159,20 @@
       </div>
       <div class="nxpc-side-card">
         <span class="nxpc-side-kicker">TIP</span>
-        <p>Start with Smart Optimize. Use Visual Compression when the PDF mainly contains scans or image-based pages and you need a smaller visual copy. If the browser worker cannot start, the tool automatically retries locally.</p>
+        <p>For normal documents, Smart Optimize is the text-safe starting point. For scans and image-heavy PDFs, use Maximum or Smallest file. Best Size (Auto) creates both a structure-preserving candidate and an aggressive visual candidate, then keeps the smaller one.</p>
       </div>
     </aside>
   </section>
 
   <section class="nxpc-seo">
     <article><span class="nxpc-side-kicker">PDF GUIDE</span><h2>Compress PDF files online without installing software</h2><p>Nexauren PDF Compressor gives you two browser-based workflows. Smart Optimize rewrites the PDF using compact object streams and a fresh document structure. Visual Compression renders each page and rebuilds the document as optimized JPEG images when you need a stronger size reduction.</p></article>
-    <article><h2>Which compression mode should I use?</h2><div class="nxpc-compare"><div><strong>Smart Optimize</strong><p>Best first choice when you need to keep text, links, and document structure intact.</p></div><div><strong>Visual Compression</strong><p>Useful for scanned or image-heavy PDFs when file size matters more than text searchability.</p></div></div></article>
-    <article><h2>PDF Compressor FAQ</h2><details><summary>Is it free?</summary><p>Yes. The tool is available for free.</p></details><details><summary>Are my documents uploaded?</summary><p>No. Compression runs in your browser.</p></details><details><summary>Will every PDF get smaller?</summary><p>Not necessarily. Already-optimized PDFs may change very little or can even become slightly larger.</p></details><details><summary>Does Visual Compression keep selectable text?</summary><p>No. It rebuilds each page as an image, so searchable/selectable text may not remain available.</p></details></article>
+    <article><h2>Which compression mode should I use?</h2><div class="nxpc-compare"><div><strong>Smart Optimize</strong><p>Rewrites the PDF structure without rasterizing pages. It is the right choice when searchable text, links, and document structure matter.</p></div><div><strong>Visual Compression</strong><p>Renders each page at a controlled DPI and encodes it as JPEG. This can remove much more size from scans and image-heavy PDFs.</p></div><div><strong>Best Size (Auto)</strong><p>Runs both approaches and keeps the smaller result. It may take longer because the document is processed twice.</p></div><div><strong>Smallest file preset</strong><p>Uses 60 DPI and JPEG 28 for a deliberately aggressive visual copy. Quality is reduced to prioritize file size.</p></div></div></article>
+    <article><h2>PDF Compressor FAQ</h2><details><summary>Is it free?</summary><p>Yes. The tool is available for free.</p></details><details><summary>Are my documents uploaded?</summary><p>No. Compression runs in your browser.</p></details><details><summary>Will every PDF get smaller?</summary><p>Not necessarily. Already-optimized PDFs may change very little or can even become slightly larger.</p></details><details><summary>How do I get the smallest file?</summary><p>Use Best Size (Auto) or the Smallest file preset. Best Size compares a structure-preserving PDF against a 60 DPI / JPEG 28 visual copy and keeps the smaller result.</p></details><details><summary>Does Visual Compression keep selectable text?</summary><p>No. It rebuilds each page as an image, so searchable/selectable text may not remain available.</p></details></article>
     <article><h2>More PDF tools</h2><div class="nxpc-more"><a href="/tool/categories/pdf/merge-pdf/"><b>Merge PDF</b><span>Combine multiple PDFs.</span></a><a href="/tool/categories/pdf/split-pdf/"><b>Split PDF</b><span>Extract pages and ranges.</span></a><a href="/tool/categories/pdf/pdf-to-jpg/"><b>PDF → JPG</b><span>Convert PDF pages to images.</span></a></div></article>
   </section>
 </main>
 
-<script src="./script.js?v=20261001-pdfcompressor-2"></script>
+<script src="./script.js?v=20261001-pdfcompressor-3"></script>
 <script src="/assets/public-ui.js?v=20261001-global" defer></script><!-- NEXAUREN-AUTO-ADS:START-BOTTOM -->
 <div class="nx-auto-ad bottom" data-nx-auto-ad="bottom" aria-label="Publicidade">
   <div class="nx-auto-ad-label">PUBLICIDADE</div>
