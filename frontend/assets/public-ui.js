@@ -11,6 +11,52 @@
   const $$=(s,scope=document)=>[...scope.querySelectorAll(s)];
   const currentPath=()=>{const p=window.location.pathname||"/";return p.length>1?p.replace(/\/+$/,""):"/";};
 
+function enforceGlobalNavigation(){
+    const primary=[
+      ["/","Home"],
+      ["/tool/","Tools"],
+      ["/faq/","FAQ"],
+      ["/account","Account"]
+    ];
+    const legal=[
+      ["/legal/privacidade/","Privacy"],
+      ["/legal/termos/","Terms"],
+      ["/legal/cookies/","Cookies"]
+    ];
+    const escAttr=v=>String(v).replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+    $("header").forEach(header=>{
+      let nav=$("nav",header);
+      if(!nav){
+        nav=document.createElement("nav");
+        nav.className=header.classList.contains("tool-header")?"tool-links":"nav-links";
+        const host=header.querySelector(".nav,.tool-nav,.account-wrap,.legal-wrap")||header.firstElementChild||header;
+        host.appendChild(nav);
+      }
+      nav.setAttribute("aria-label","Main navigation");
+      nav.innerHTML=primary.map(([href,label])=>'<a href="'+escAttr(href)+'">'+label+"</a>").join("");
+      let button=header.querySelector(".menu-toggle,.tool-menu");
+      if(!button){
+        button=document.createElement("button");
+        button.type="button";
+        button.className=header.classList.contains("tool-header")?"tool-menu":"menu-toggle";
+        button.setAttribute("aria-label","Open menu");
+        button.setAttribute("aria-expanded","false");
+        button.innerHTML="<span></span>";
+        const host=header.querySelector(".nav,.tool-nav")||header.firstElementChild||header;
+        host.appendChild(button);
+      }
+      let panel=header.querySelector(".mobile-menu,.mobile-nav,.tool-mobile");
+      if(!panel){
+        panel=document.createElement("div");
+        panel.className=header.classList.contains("tool-header")?"tool-mobile":"mobile-menu";
+        panel.dataset.nxAutoPanel="1";
+        header.appendChild(panel);
+      }
+      panel.innerHTML='<div class="'+(header.classList.contains("tool-header")?"tool-wrap":"wrap")+'">'+primary.map(([href,label])=>'<a href="'+escAttr(href)+'">'+label+"</a>").join("")+legal.map(([href,label])=>'<a href="'+escAttr(href)+'">'+label+"</a>").join("")+"</div>";
+    });
+    $('a[href="/blog/"]').forEach(a=>a.remove());
+  }
+
   function setActiveNavigation(){
     const path=currentPath();
     $$("header nav a").forEach(link=>{
@@ -277,6 +323,6 @@
     });
   }
 
-  function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");ensureLegalNavigation();setActiveNavigation();ensureResponsiveMenus();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
+  function init(){if(!document.body)return;document.body.classList.add("nx-page","nx-ready");enforceGlobalNavigation();setActiveNavigation();ensureResponsiveMenus();initMenus();initReveal();initSpotlight();initScrollProgress();initTopButton();initSkipLink();initHeaderMotion();initCursorGlow();initButtonFeedback();initPageTransition();initKeyboardNavigation();initNavigationLoader();updateYears();exposeApi();}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
