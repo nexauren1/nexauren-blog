@@ -3,7 +3,7 @@
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-09-30T18:30:00Z",
+    "updatedAt": "2026-10-01T01:55:00Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -747,11 +747,11 @@
       "name": "Desfocar & Pixelizar",
       "name_en": "Blur & Pixelate",
       "description": "Desfoque ou pixelize imagens inteiras ou áreas selecionadas, com intensidade ajustável e processamento totalmente local.",
-      "description_en": "Blur or pixelate images online for free, including selected areas, with adjustable intensity and local browser processing.",
+      "description_en": "Blur or pixelate images online for free, including selected areas, adjustable intensity, live preview, and local browser export.",
       "category": "imagem",
       "group": "imagem",
       "icon": "◌",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/blur-pixelate/",
       "tags": [
@@ -763,17 +763,9 @@
         "pixelizar",
         "pixelate"
       ],
-      "tags_en": [
-        "blur image",
-        "blur photo",
-        "pixelate image",
-        "image privacy",
-        "redact image",
-        "blur face",
-        "pixelate photo"
-      ],
+      "tags_en": "blur image",
       "featured": true,
-      "popular": false,
+      "popular": true,
       "access": "public",
       "sortOrder": 120
     },
@@ -782,11 +774,11 @@
       "name": "Girar & Espelhar",
       "name_en": "Rotate & Flip Image",
       "description": "Gire imagens em passos de 90° e espelhe horizontal ou verticalmente, com pré-visualização imediata e exportação local.",
-      "description_en": "Rotate and flip images online for free with 90-degree rotation, horizontal and vertical mirror controls, preview, and local export.",
+      "description_en": "Rotate and flip images online for free with 90-degree controls, horizontal and vertical mirroring, live preview, and local full-resolution export.",
       "category": "imagem",
       "group": "imagem",
       "icon": "↻",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/rotate-flip-image/",
       "tags": [
@@ -798,17 +790,9 @@
         "flip",
         "transformação"
       ],
-      "tags_en": [
-        "rotate image",
-        "rotate photo",
-        "flip image",
-        "mirror image",
-        "rotate JPG",
-        "rotate PNG",
-        "image transform"
-      ],
+      "tags_en": "rotate image",
       "featured": true,
-      "popular": false,
+      "popular": true,
       "access": "public",
       "sortOrder": 130
     },
