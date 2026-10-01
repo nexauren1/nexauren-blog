@@ -1,9 +1,9 @@
 {
-  "version": 27,
+  "version": 28,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-10-01T01:55:00Z",
+    "updatedAt": "2026-10-01T17:17:19.572Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -899,6 +899,38 @@
         "PDF labels",
         "PDF notes"
       ]
+    },
+    {
+      "id": "pdf-compressor",
+      "name": "Compressor de PDF",
+      "name_en": "PDF Compressor",
+      "description": "Reduza o tamanho de ficheiros PDF com otimização local no navegador e um modo visual para maior redução quando necessário.",
+      "description_en": "Compress PDF files online with local browser processing. Use Smart Optimize or Visual Compression with adjustable quality for image-heavy documents.",
+      "category": "pdf",
+      "group": "pdf",
+      "icon": "↓",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/pdf/pdf-compressor/",
+      "tags": [
+        "PDF",
+        "compressor",
+        "compress",
+        "reduzir PDF",
+        "tamanho do PDF"
+      ],
+      "tags_en": [
+        "PDF compressor",
+        "compress PDF",
+        "reduce PDF size",
+        "PDF size reducer",
+        "compress PDF online",
+        "optimize PDF"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 15
     }
   ]
 }
