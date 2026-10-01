@@ -186,11 +186,7 @@ function persistServerLanguage(lang){
   }catch{}
 }
 function getLang(){
-  const q=new URLSearchParams(location.search).get("lang");
-  if(LANGS.has(q))return q;
-  try{const saved=localStorage.getItem(STORAGE);if(LANGS.has(saved))return saved}catch{}
-  const cookie=getCookieLang();
-  if(cookie)return cookie;
+  try{localStorage.setItem(STORAGE,"en")}catch{}
   return "en";
 }
 let current=getLang();
@@ -330,16 +326,16 @@ function updateTitle(){
 
 function updateAlternates(){
   const base=new URL(location.pathname,location.origin).href;
-  const pt=new URL(location.pathname,location.origin);pt.searchParams.set("lang","pt");
-  const values={en:base,pt:pt.href,"x-default":base};
-  Object.entries(values).forEach(([lang,href])=>{
-    let link=document.querySelector('link[rel="alternate"][hreflang="'+lang+'"]');
-    if(!link){link=document.createElement("link");link.rel="alternate";link.hreflang=lang;document.head.appendChild(link)}
+  document.querySelectorAll('link[rel="alternate"][hreflang="pt"]').forEach(link=>link.remove());
+  const values={en:base,"x-default":base};
+  Object.entries(values).forEach(([hreflang,href])=>{
+    let link=document.querySelector('link[rel="alternate"][hreflang="'+hreflang+'"]');
+    if(!link){link=document.createElement("link");link.rel="alternate";link.hreflang=hreflang;document.head.appendChild(link)}
     link.href=href;
   });
 }
 function syncLanguageLinks(){
-  const currentLang=current;
+  const currentLang="en";
   document.querySelectorAll("a[href]").forEach(a=>{
     if(a.dataset.nxNoLanguageSync==="1"||a.target==="_blank"||a.hasAttribute("download"))return;
     const raw=a.getAttribute("href");
@@ -347,38 +343,24 @@ function syncLanguageLinks(){
     try{
       const u=new URL(raw,location.href);
       if(u.origin!==location.origin||u.pathname.startsWith("/assets/")||u.pathname.startsWith("/admin")||u.pathname.startsWith("/api/"))return;
-      u.searchParams.set("lang",currentLang);
+      u.searchParams.delete("lang");
       a.setAttribute("href",u.pathname+u.search+(u.hash||""));
     }catch{}
   });
 }
 function addToggle(){
-  const existing=document.querySelector("[data-nx-language-toggle]");
-  const header=document.querySelector("header");
-  if(existing){existing.textContent=current==="en"?"PT":"EN";return}
-  if(!header)return;
-  const b=document.createElement("button");
-  b.type="button";
-  b.className="nx-language-toggle";
-  b.dataset.nxLanguageToggle="1";
-  b.textContent=current==="en"?"PT":"EN";
-  b.setAttribute("aria-label",current==="en"?"Switch to Portuguese":"Mudar para inglês");
-  b.title=b.getAttribute("aria-label");
-  b.addEventListener("click",()=>setLanguage(current==="en"?"pt":"en"));
-  const menu=header.querySelector(".menu-toggle,.tool-menu");
-  if(menu)menu.before(b);
-  else header.querySelector("nav")?.appendChild(b);
+  document.querySelectorAll("#lang,#lang-toggle,#language-toggle,.language-toggle,[data-language-toggle],[data-lang-toggle],[data-nx-language-toggle]").forEach(el=>el.remove());
 }
 
 function setLanguage(lang){
-  if(!LANGS.has(lang))return;
-  current=lang;
-  try{localStorage.setItem(STORAGE,lang)}catch{}
-  persistServerLanguage(lang);
+  current="en";
+  try{localStorage.setItem(STORAGE,"en")}catch{}
+  persistServerLanguage("en");
+  const u=new URL(location.href);u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search?u.search:""));
   addToggle();
   translateDom();
   syncLanguageLinks();
-  window.dispatchEvent(new CustomEvent("nexauren:language-changed",{detail:{lang}}));
+  window.dispatchEvent(new CustomEvent("nexauren:language-changed",{detail:{lang:"en"}}));
 }
 
 window.NexaurenLanguage={get:()=>current,set:setLanguage,toggle:()=>setLanguage(current==="en"?"pt":"en")};
@@ -490,7 +472,7 @@ function installLanguageNavigationBridge(){
     try{
       const u=new URL(raw,location.href);
       if(u.origin!==location.origin||u.pathname.startsWith("/assets/")||u.pathname.startsWith("/admin")||u.pathname.startsWith("/api/"))return;
-      u.searchParams.set("lang",current);
+      u.searchParams.delete("lang");
       a.setAttribute("href",u.pathname+u.search+(u.hash||""));
     }catch{}
   },true);
