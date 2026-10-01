@@ -474,7 +474,7 @@
       "description": "Converta uma ou várias imagens PNG em um único PDF com página, margem, orientação e ajuste configuráveis.",
       "category": "pdf",
       "icon": "◩",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/png-to-pdf/",
       "tags": [
@@ -489,13 +489,14 @@
       "access": "public",
       "sortOrder": 40,
       "name_en": "PNG → PDF",
-      "description_en": "Convert PNG images to PDF online for free with page size, margins, orientation, fit mode, and quality controls.",
+      "description_en": "Convert PNG images to PDF locally with multi-image upload, page sizing, orientation, fit modes, margins, quality, progress, and downloadable output.",
       "tags_en": [
         "PNG to PDF",
         "image to PDF",
         "convert PNG",
         "PNG converter",
-        "PDF converter"
+        "images to PDF",
+        "photo to PDF"
       ]
     },
     {
@@ -504,7 +505,7 @@
       "description": "Combine vários ficheiros PDF num único documento, organize a ordem e faça tudo localmente no navegador.",
       "category": "pdf",
       "icon": "⊕",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/merge-pdf/",
       "tags": [
@@ -519,13 +520,14 @@
       "access": "public",
       "sortOrder": 50,
       "name_en": "Merge PDF",
-      "description_en": "Merge multiple PDF files into one document online for free, keep their order, and export the combined PDF in your browser.",
+      "description_en": "Merge multiple PDF files locally with ordering controls, progress, page counts, downloadable output, and no artificial quotas.",
       "tags_en": [
         "merge PDF",
         "combine PDF",
         "join PDF",
         "PDF merger",
-        "merge PDF files"
+        "merge PDF files",
+        "combine documents"
       ]
     },
     {
