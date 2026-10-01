@@ -104,47 +104,49 @@ function enforceGlobalNavigation(){
     });
   }
   function initMenus(){
-    if(document.body.dataset.nxMenuController==="1")return;
-    document.body.dataset.nxMenuController="1";
+    if(document.body.dataset.nxMenuGlobal==="2")return;
+    document.body.dataset.nxMenuGlobal="2";
 
     const buttonSelector="[data-nx-menu],.menu-toggle,.tool-menu";
     const panelSelector=".mobile-menu,.mobile-nav,.tool-mobile,[data-nx-panel]";
+    const openSelector=".mobile-menu.open,.mobile-nav.open,.tool-mobile.open,[data-nx-panel].open";
 
-    const getPanel=(button)=>{
-      const header=button?.closest("header");
-      return header?.querySelector(panelSelector)||null;
-    };
-
-    const closePanel=(panel)=>{
+    const closePanel=panel=>{
       if(!panel)return;
       panel.classList.remove("open");
-      panel.style.display="none";
-      panel.style.visibility="hidden";
-      panel.style.opacity="0";
-      panel.style.pointerEvents="none";
+      panel.style.display="";
+      panel.style.visibility="";
+      panel.style.opacity="";
+      panel.style.pointerEvents="";
       const header=panel.closest("header");
-      const button=header?.querySelector(buttonSelector);
-      if(button){
-        button.setAttribute("aria-expanded","false");
-        button.setAttribute("aria-label","Open menu");
-      }
+      header?.querySelector(buttonSelector)?.setAttribute("aria-expanded","false");
+      header?.querySelector(buttonSelector)?.setAttribute("aria-label","Open menu");
     };
 
     const closeAll=()=>{
-      $$(panelSelector+".open").forEach(closePanel);
+      $$(openSelector).forEach(closePanel);
       document.body.classList.remove("nx-menu-open");
     };
 
-    const positionPanel=(button,panel)=>{
-      if(window.innerWidth>960)return;
+    const getPanel=button=>{
+      const header=button.closest("header");
+      return header?$(panelSelector,header):null;
+    };
+
+    const placePanel=(button,panel)=>{
+      if(window.innerWidth>=961)return;
       const rect=button.getBoundingClientRect();
       panel.style.setProperty("--nx-menu-top",Math.max(0,Math.round(rect.bottom))+"px");
     };
 
-    const openPanel=(button,panel)=>{
+    const toggle=button=>{
+      const panel=getPanel(button);
+      if(!panel)return;
+      const open=panel.classList.contains("open");
       closeAll();
-      positionPanel(button,panel);
-      panel.classList.add("open");
+      if(open)return;
+      placePanel(button,panel);
+      panel.classList.add("open","nx-menu-layer");
       panel.style.display="block";
       panel.style.visibility="visible";
       panel.style.opacity="1";
@@ -157,26 +159,20 @@ function enforceGlobalNavigation(){
     document.addEventListener("click",event=>{
       const target=event.target instanceof Element?event.target:null;
       if(!target)return;
-
       const button=target.closest(buttonSelector);
       if(button){
         event.preventDefault();
         event.stopPropagation();
-        const panel=getPanel(button);
-        if(!panel)return;
-        if(panel.classList.contains("open"))closeAll();
-        else openPanel(button,panel);
+        toggle(button);
         return;
       }
-
-      const openPanelEl=target.closest(panelSelector+".open");
-      if(openPanelEl){
-        const link=target.closest("a[href]");
+      const panel=target.closest(panelSelector);
+      if(panel){
+        const link=target.closest("a");
         if(link)window.setTimeout(closeAll,0);
         return;
       }
-
-      if($$(panelSelector+".open").length)closeAll();
+      if($(openSelector))closeAll();
     },true);
 
     document.addEventListener("keydown",event=>{
@@ -184,10 +180,11 @@ function enforceGlobalNavigation(){
     });
 
     window.addEventListener("resize",()=>{
-      if(window.innerWidth>960)closeAll();
-      else $$(panelSelector+".open").forEach(panel=>{
-        const button=panel.closest("header")?.querySelector(buttonSelector);
-        if(button)positionPanel(button,panel);
+      if(window.innerWidth>=961)closeAll();
+      else $$(openSelector).forEach(panel=>{
+        const header=panel.closest("header");
+        const button=header?.querySelector(buttonSelector);
+        if(button)placePanel(button,panel);
       });
     },{passive:true});
   }
