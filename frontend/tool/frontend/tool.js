@@ -6,7 +6,7 @@
   const countEl=document.querySelector("[data-tool-count]");
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const norm=v=>String(v??"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"");
-  let language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="pt")return "pt";if(q==="en")return "en";try{return localStorage.getItem("ns_lang_v2")==="pt"?"pt":"en"}catch{return "en"}})();
+  let language="en";
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const tags=v=>language==="en"?(Array.isArray(v?.tags_en)&&v.tags_en.length?v.tags_en:(v?.tags||[])):(v?.tags||[]);
   const pageTitle=language==="en"?"Tools | Nexauren Story":"Ferramentas | Nexauren Story";
@@ -82,11 +82,11 @@
     if(link.dataset.toolChecking==="true")return;
 
     if(!accessApi){
-      renderAccessMessage({title:"Ferramentas a iniciar",body:"A verificação de acesso ainda está a iniciar. Tente novamente.",actionLabel:"Tentar novamente",actionUrl:location.href});
+      renderAccessMessage({title:"Tools are starting",body:"Access verification is still starting. Please try again.",actionLabel:"Try again",actionUrl:location.href});
       return;
     }
     if(!user){
-      renderAccessMessage({title:"É necessária uma conta",body:"Crie uma conta ou entre na sua conta Nexauren para usar as ferramentas.",actionLabel:"Entrar ou criar conta",actionUrl:"/account"});
+      renderAccessMessage({title:"An account is required",body:"Create an account or sign in to your Nexauren account to use the tools.",actionLabel:"Sign in or create an account",actionUrl:"/account"});
       return;
     }
 
@@ -99,12 +99,12 @@
         return;
       }
       if(result.error){
-        renderAccessMessage({title:"Não foi possível verificar o acesso",body:"Não conseguimos confirmar o estado do seu plano agora. Tente novamente.",actionLabel:"Tentar novamente",actionUrl:location.href});
+        renderAccessMessage({title:"Could not verify access",body:"We could not confirm your plan status right now. Please try again.",actionLabel:"Try again",actionUrl:location.href});
         return;
       }
-      renderAccessMessage({title:"Ferramenta exclusiva do Pro",body:"O seu plano atual não inclui esta ferramenta. Atualize para o Nexauren Pro para desbloquear o acesso.",actionLabel:"Ir para o plano Pro",actionUrl:accessApi.upgradeUrl()});
+      renderAccessMessage({title:"Pro-only tool",body:"Your current plan does not include this tool. Upgrade to Nexauren Pro to unlock access.",actionLabel:"Go to Pro",actionUrl:accessApi.upgradeUrl()});
     }catch{
-      renderAccessMessage({title:"Não foi possível verificar o acesso",body:"Não conseguimos confirmar o estado do seu plano agora. Tente novamente.",actionLabel:"Tentar novamente",actionUrl:location.href});
+      renderAccessMessage({title:"Could not verify access",body:"We could not confirm your plan status right now. Please try again.",actionLabel:"Try again",actionUrl:location.href});
     }finally{
       link.dataset.toolChecking="false";
       link.removeAttribute("aria-busy");
@@ -128,7 +128,7 @@
       const registry=await window.NexaurenToolRegistry.loadRegistry();
       applyRegistry(registry);
     }catch(e){
-      if(!registryReady&&grid)grid.innerHTML='<div class="tool-empty">'+esc(e.message||"Não foi possível carregar o catálogo.")+"</div>";
+      if(!registryReady&&grid)grid.innerHTML='<div class="tool-empty">'+esc(e.message||"Could not load the catalog.")+"</div>";
     }
   }
 
@@ -147,7 +147,7 @@
   document.addEventListener("click",handleToolClick,true);
   search?.addEventListener("input",updateSearch);
   window.addEventListener("nexauren:tool-registry-updated",event=>{if(event.detail)applyRegistry(event.detail)}); 
-  window.addEventListener("nexauren:language-changed",event=>{language=event.detail?.lang||language;if(registryReady)updateSearch()});
+  window.addEventListener("nexauren:language-changed",event=>{language="en";if(registryReady)updateSearch()});
   window.addEventListener("pageshow",()=>{closeAccessDialog();if(user)refreshPlan(true)});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden){closeAccessDialog();if(user)refreshPlan(true)}});
 
@@ -165,7 +165,7 @@
         if(user)await refreshPlan(false);
       });
     }catch(e){
-      if(!registryReady&&grid)grid.innerHTML='<div class="tool-empty">Não foi possível iniciar as ferramentas.</div>';
+      if(!registryReady&&grid)grid.innerHTML='<div class="tool-empty">Could not start the tools.</div>';
     }
   })();
 })();
