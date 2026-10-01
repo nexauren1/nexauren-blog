@@ -598,7 +598,7 @@
       "description": "Insira páginas de outro PDF no documento principal e exporte o resultado diretamente no navegador.",
       "category": "pdf",
       "icon": "⊞",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/insert-pdf-pages/",
       "tags": [
@@ -613,13 +613,12 @@
       "access": "public",
       "sortOrder": 80,
       "name_en": "Insert Pages",
-      "description_en": "Insert pages from another PDF into a main document online for free and export a new PDF.",
+      "description_en": "Insert pages from one PDF into another locally with before, after, or end placement.",
       "tags_en": [
-        "insert PDF pages",
-        "add pages to PDF",
+        "Insert PDF pages",
+        "PDF page inserter",
         "combine PDF pages",
-        "PDF editor",
-        "insert pages"
+        "add pages to PDF"
       ]
     },
     {
@@ -628,7 +627,7 @@
       "description": "Crie cópias de páginas dentro de um PDF, escolha páginas específicas, repetições e exporte um novo documento no navegador.",
       "category": "pdf",
       "icon": "⧉",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/duplicate-pdf-pages/",
       "tags": [
@@ -643,12 +642,12 @@
       "access": "public",
       "sortOrder": 90,
       "name_en": "Duplicate Pages",
-      "description_en": "Duplicate selected pages inside a PDF online for free, choose repetitions, and export a new document.",
+      "description_en": "Duplicate selected PDF pages locally and export a new document with controlled repetitions.",
       "tags_en": [
-        "duplicate PDF pages",
+        "Duplicate PDF pages",
+        "PDF page duplicator",
         "repeat PDF pages",
-        "copy PDF pages",
-        "PDF page duplicator"
+        "copy PDF pages"
       ]
     },
     {
