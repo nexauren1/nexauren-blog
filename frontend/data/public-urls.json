@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "generatedAt": "2026-10-01T02:35:36.816063Z",
+  "version": 4,
+  "generatedAt": "2026-10-01T17:17:20.084Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -34,6 +34,7 @@
     "/tool/categories/pdf/insert-pdf-pages/",
     "/tool/categories/pdf/jpg-to-pdf/",
     "/tool/categories/pdf/merge-pdf/",
+    "/tool/categories/pdf/pdf-compressor/",
     "/tool/categories/pdf/pdf-to-jpg/",
     "/tool/categories/pdf/pdf-to-png/",
     "/tool/categories/pdf/pdf-watermark/",
