@@ -185,7 +185,7 @@ function enforceGlobalNavigation(){
     document.addEventListener("click",event=>{
       const target=event.target instanceof Element?event.target:null;
       if(!target)return;
-      const openPanel=$(panelSelector+".open");
+      const openPanel=$(openPanelSelector);
       if(!openPanel)return;
       const button=openPanel.__nxHeader?.querySelector(buttonSelector);
       if(button?.contains(target)||openPanel.contains(target))return;
