@@ -76,7 +76,7 @@ function enforceGlobalNavigation(){
   }
 
   function ensureResponsiveMenus(){
-    $$$("header").forEach(header=>{
+    $("header").forEach(header=>{
       const nav=$("nav",header);
       if(!nav||header.querySelector(".menu-toggle,.tool-menu,[data-nx-auto-menu]"))return;
       const links=$$("a",nav).map(a=>({
