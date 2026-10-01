@@ -656,7 +656,7 @@
       "description": "Remova páginas específicas de um PDF e exporte o documento limpo diretamente no navegador.",
       "category": "pdf",
       "icon": "⊘",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/delete-pdf-pages/",
       "tags": [
@@ -671,12 +671,13 @@
       "access": "public",
       "sortOrder": 100,
       "name_en": "Delete Pages",
-      "description_en": "Delete specific pages or page ranges from a PDF online for free and export a clean document.",
+      "description_en": "Remove selected PDF pages locally with page ranges, document map, validation, progress, and clean export.",
       "tags_en": [
-        "delete PDF pages",
+        "Delete PDF pages",
         "remove PDF pages",
         "PDF page remover",
-        "delete pages from PDF"
+        "delete pages from PDF",
+        "extract PDF pages"
       ]
     },
     {
@@ -685,7 +686,7 @@
       "description": "Adicione uma marca-d’água de texto a todas as páginas de um PDF, com posição, tamanho, cor, opacidade e rotação ajustáveis.",
       "category": "pdf",
       "icon": "✦",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/pdf-watermark/",
       "tags": [
@@ -700,7 +701,7 @@
       "access": "public",
       "sortOrder": 110,
       "name_en": "PDF Watermark",
-      "description_en": "Add a text watermark to PDF pages online for free with position, size, color, opacity, and rotation controls.",
+      "description_en": "Add a text watermark to every PDF page with position, size, color, opacity, rotation, preview, and local export.",
       "tags_en": [
         "PDF watermark",
         "watermark PDF",
