@@ -193,10 +193,17 @@ function closeSource(source){
 function canvasBlob(canvas,mime,quality){
   return new Promise((resolve,reject)=>{
     canvas.toBlob(blob=>{
-      if(blob) resolve(blob);
-      else reject(new Error("Could not create the compressed image."));
+      if(blob) return resolve(blob);
+      reject(new Error("Could not create the compressed image in this format."));
     },mime,quality);
   });
+}
+
+async function canvasBlobWithFallback(canvas,mime,quality){
+  try{return await canvasBlob(canvas,mime,quality)}catch{
+    if(mime==="image/webp") return await canvasBlob(canvas,"image/jpeg",quality);
+    throw new Error("This browser cannot export the selected format.");
+  }
 }
 
 function fitDimensions(width,height,maxWidth,maxHeight){
@@ -237,7 +244,7 @@ async function encodeForTarget(source,width,height,effective,mime,targetBytes){
     const canvas=drawCanvas(source,currentWidth,currentHeight,mime,effective.background);
 
     if(mime==="image/png"){
-      const png=await canvasBlob(canvas,mime,1);
+      const png=await canvasBlobWithFallback(canvas,mime,1);
       lastBlob=png;
       lastQuality=1;
       targetReached=png.size<=targetBytes;
@@ -254,7 +261,7 @@ async function encodeForTarget(source,width,height,effective,mime,targetBytes){
 
         for(let i=0;i<8;i++){
           const q=(low+high)/2;
-          const candidate=await canvasBlob(canvas,mime,q);
+          const candidate=await canvasBlobWithFallback(canvas,mime,q);
 
           if(candidate.size<=targetBytes){
             best=candidate;
@@ -335,12 +342,12 @@ async function processImage(file,settings,token){
       targetReached=targetResult.targetReached;
     }else{
       const canvas=drawCanvas(source,dims.width,dims.height,mime,effective.background);
-      blob=await canvasBlob(canvas,mime,mime==="image/png" ? 1 : effective.quality);
+      blob=await canvasBlobWithFallback(canvas,mime,mime==="image/png" ? 1 : effective.quality);
 
       if(blob.size>=file.size && mime!=="image/png"){
         const fallbackQ=Math.max(.45,Math.min(.72,effective.quality-.08));
         if(fallbackQ<effective.quality){
-          const fallback=await canvasBlob(canvas,mime,fallbackQ);
+          const fallback=await canvasBlobWithFallback(canvas,mime,fallbackQ);
           if(fallback.size<blob.size){
             blob=fallback;
             quality=Math.round(fallbackQ*100);
@@ -632,7 +639,11 @@ function showWorkspace(file){
 
 function handleGalleryFile(file){
   if(!file || !String(file.type||"").startsWith("image/")){
-    showToast("Choose a valid image.","error");
+    showToast("Choose a valid image file.","error");
+    return;
+  }
+  if(file.size>200*1024*1024){
+    showToast("This image is too large for safe browser processing. Reduce its size and try again.","error");
     return;
   }
   showWorkspace(file);
@@ -726,7 +737,7 @@ function wire(){
     event.target.value="";
   });
 
-  $("#replace").addEventListener("click",()=>openCamera());
+  $("#replace").addEventListener("click",()=>$("#file-input").click());
 
   const upload=$("#upload");
   ["dragenter","dragover"].forEach(type=>upload.addEventListener(type,event=>{

@@ -36,7 +36,7 @@
       "category": "imagem",
       "group": "imagem",
       "icon": "▧",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-compressor/",
       "tags": [
@@ -56,21 +56,16 @@
       "proBatchLimit": null,
       "sortOrder": 10,
       "name_en": "Image Compressor",
-      "description_en": "Compress JPG, PNG, and WebP images online for free. Reduce image file size, adjust quality and dimensions, and download the result in your browser.",
+      "description_en": "Compress JPG, PNG, WebP, and other browser-supported images locally with quality, format, resize, target-size controls, side-by-side comparison, camera input, and fast export.",
       "tags_en": [
-        "image",
         "image compressor",
-        "compress image",
-        "compress image online free",
+        "compress image online",
         "reduce image size",
-        "reduce image file size",
-        "compress jpg",
-        "compress jpeg",
-        "compress jpeg to 100kb",
-        "compress png",
-        "compress webp",
-        "resize image",
-        "target file size"
+        "compress JPG",
+        "compress PNG",
+        "compress WebP",
+        "image optimizer",
+        "target image size"
       ]
     },
     {
