@@ -379,7 +379,7 @@
       "description": "Converta uma ou várias imagens JPG/JPEG em um único PDF, com tamanho de página, margens, orientação e qualidade ajustáveis.",
       "category": "pdf",
       "icon": "▤",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/jpg-to-pdf/",
       "tags": [
@@ -395,14 +395,14 @@
       "access": "public",
       "sortOrder": 10,
       "name_en": "JPG → PDF",
-      "description_en": "Convert JPG and JPEG images to PDF online for free with adjustable page size, margins, orientation, and quality.",
+      "description_en": "Convert multiple JPG/JPEG images into one PDF with reordering, page-size, orientation, margins, JPEG quality, camera input, and local export.",
       "tags_en": [
         "JPG to PDF",
         "JPEG to PDF",
-        "image to PDF",
+        "convert JPG to PDF",
+        "images to PDF",
         "photo to PDF",
-        "convert JPG",
-        "PDF converter"
+        "combine JPG into PDF"
       ]
     },
     {
@@ -874,7 +874,7 @@
       "category": "pdf",
       "group": "pdf",
       "icon": "Aa",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/add-text-to-pdf/",
       "tags": [
@@ -889,13 +889,14 @@
       "access": "public",
       "sortOrder": 5,
       "name_en": "Add Text to PDF",
-      "description_en": "Add text to PDF pages online for free with adjustable position, size, color, and rotation.",
+      "description_en": "Add text to one or all PDF pages with precise position, size, color, rotation, opacity, and local export.",
       "tags_en": [
         "add text to PDF",
         "PDF text editor",
-        "edit PDF",
         "PDF annotation",
-        "write on PDF"
+        "edit PDF text",
+        "PDF labels",
+        "PDF notes"
       ]
     }
   ]
