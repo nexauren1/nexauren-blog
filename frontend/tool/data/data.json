@@ -905,11 +905,11 @@
       "name": "Compressor de PDF",
       "name_en": "PDF Compressor",
       "description": "Reduza o tamanho de ficheiros PDF com otimização local no navegador e um modo visual para maior redução quando necessário.",
-      "description_en": "Compress PDF files online with local browser processing. Use Smart Optimize or Visual Compression with adjustable quality for image-heavy documents.",
+      "description_en": "Compress PDF files online with local browser processing. Use Smart Optimize or Visual Compression with adjustable quality, automatic PDF.js worker fallback, and no artificial quotas.",
       "category": "pdf",
       "group": "pdf",
       "icon": "↓",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "status": "active",
       "path": "/tool/categories/pdf/pdf-compressor/",
       "tags": [
@@ -925,7 +925,9 @@
         "reduce PDF size",
         "PDF size reducer",
         "compress PDF online",
-        "optimize PDF"
+        "optimize PDF",
+        "compress PDF online free",
+        "PDF optimizer"
       ],
       "featured": true,
       "popular": true,

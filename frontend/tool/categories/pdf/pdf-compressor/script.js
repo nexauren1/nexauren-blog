@@ -10,8 +10,32 @@ const cleanName=n=>(String(n||"compressed").replace(/\.pdf$/i,"").replace(/[^a-z
 const updateQuality=()=>{const q=Number(quality.value);qualityLabel.textContent=(q>=80?"High":q>=65?"Balanced":"Smaller")+" · JPEG "+q+"%"};
 const showFile=f=>{sourceFile=f;fileName.textContent=f.name;fileMeta.textContent=fmtBytes(f.size);filePanel.hidden=false;settings.hidden=false;result.hidden=true;progressWrap.hidden=true;compressBtn.disabled=false};
 const clearAll=()=>{sourceFile=null;outputBlob=null;fileInput.value="";filePanel.hidden=true;settings.hidden=true;result.hidden=true;progressWrap.hidden=true;progress.style.width="0%";compressBtn.disabled=false;busy=false};
-const engine=async()=>{if(window.PDFLib?.PDFDocument)return window.PDFLib;const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";document.head.appendChild(s);await new Promise((resolve,reject)=>{s.onload=resolve;s.onerror=reject});return window.PDFLib};
-const pdfjs=async()=>import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.mjs");
+let pdfLibPromise=null,pdfjsPromise=null;
+const loadScript=(src,globalName,timeout=15000)=>new Promise((resolve,reject)=>{
+  const existing=document.querySelector('script[data-nx-lib="'+src+'"]');
+  if(existing){if(window[globalName])return resolve(window[globalName]);}
+  const s=existing||document.createElement("script");
+  s.src=src;s.async=true;s.dataset.nxLib=src;
+  let done=false;
+  const finish=(fn,value)=>{if(done)return;done=true;clearTimeout(timer);fn(value)};
+  const timer=setTimeout(()=>finish(reject,new Error("Library loading timed out.")),timeout);
+  s.onload=()=>window[globalName]?finish(resolve,window[globalName]):finish(reject,new Error("Required library did not initialize."));
+  s.onerror=()=>finish(reject,new Error("Required browser library could not be loaded."));
+  if(!existing)document.head.appendChild(s);
+});
+const engine=async()=>{
+  if(window.PDFLib?.PDFDocument)return window.PDFLib;
+  if(!pdfLibPromise)pdfLibPromise=loadScript("https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js","PDFLib");
+  return pdfLibPromise;
+};
+const pdfjs=async()=>{
+  if(window.pdfjsLib?.getDocument)return window.pdfjsLib;
+  if(!pdfjsPromise)pdfjsPromise=loadScript("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js","pdfjsLib").then(lib=>{
+    lib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js";
+    return lib;
+  });
+  return pdfjsPromise;
+};
 const smartCompress=async(file,PDFLib)=>{
  setProgress(8,"Reading PDF…");
  const bytes=await file.arrayBuffer();
@@ -20,12 +44,22 @@ const smartCompress=async(file,PDFLib)=>{
  const bytesOut=await doc.save({useObjectStreams:true,addDefaultPage:false,objectsPerTick:50});
  return bytesOut;
 };
+const renderPdf=async(lib,data,disableWorker)=>{
+  try{
+    return await lib.getDocument({data,disableWorker:!!disableWorker,useWorkerFetch:false,isEvalSupported:true,verbosity:0}).promise;
+  }catch(first){
+    if(!disableWorker){
+      setProgress(5,"Worker unavailable. Switching to local fallback…");
+      return lib.getDocument({data,disableWorker:true,useWorkerFetch:false,isEvalSupported:false,verbosity:0}).promise;
+    }
+    throw first;
+  }
+};
 const visualCompress=async(file,PDFLib)=>{
  const lib=await pdfjs();
- lib.GlobalWorkerOptions.workerSrc="";
  setProgress(4,"Opening PDF…");
  const data=new Uint8Array(await file.arrayBuffer());
- const pdf=await lib.getDocument({data,disableWorker:true,useWorkerFetch:false,isEvalSupported:false}).promise;
+ const pdf=await renderPdf(lib,data,false);
  const out=await PDFLib.PDFDocument.create();
  const q=Number(quality.value)/100,d=Number(dpi.value),requestedScale=d/72;
  const maxPixels=12000000;
@@ -40,6 +74,7 @@ const visualCompress=async(file,PDFLib)=>{
    const canvas=document.createElement("canvas");
    canvas.width=Math.max(1,Math.ceil(viewport.width));canvas.height=Math.max(1,Math.ceil(viewport.height));
    const ctx=canvas.getContext("2d",{alpha:false,willReadFrequently:false});
+   if(!ctx)throw new Error("Canvas rendering is unavailable in this browser.");
    ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
    await page.render({canvasContext:ctx,viewport}).promise;
    const dataUrl=canvas.toDataURL("image/jpeg",q);
@@ -70,7 +105,13 @@ const compress=async()=>{
    result.hidden=false;setProgress(100,"Compression complete.");
    downloadBtn.onclick=()=>{if(!outputBlob)return;const url=URL.createObjectURL(outputBlob);const a=document.createElement("a");a.href=url;a.download=outputName;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)};
  }catch(err){
-   setProgress(0,"Compression failed: "+(err?.message||"Please try another PDF."));
+   const raw=String(err?.message||"");
+   const friendly=/password|encrypted/i.test(raw)
+     ?"This PDF is password-protected or encrypted. Please use an unlocked PDF."
+     :/worker|globalworkers|canvas|render/i.test(raw)
+       ?"This browser could not render the PDF safely. Try Smart Optimize or another PDF."
+       :"We couldn't compress this PDF. Try another file.";
+   setProgress(0,friendly);
  }finally{busy=false;compressBtn.disabled=false;resetBtn.disabled=false}
 };
 fileInput.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)showFile(f)});
