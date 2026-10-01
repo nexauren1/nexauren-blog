@@ -1,7 +1,7 @@
 const TEMP_ENDPOINT = "/api/filebase/temp";
 
 function cleanBaseName(name) {
-  const base = String(name || "image").replace(/\\.[^.]+$/, "");
+  const base = String(name || "image").replace(/\.[^.]+$/, "");
   return (base || "image").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
 }
 
