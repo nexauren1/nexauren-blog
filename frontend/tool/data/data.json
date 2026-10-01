@@ -411,7 +411,7 @@
       "description": "Converta páginas de um PDF em imagens JPG, escolhendo páginas, resolução e qualidade.",
       "category": "pdf",
       "icon": "▤",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/pdf-to-jpg/",
       "tags": [
@@ -427,13 +427,14 @@
       "access": "public",
       "sortOrder": 20,
       "name_en": "PDF → JPG",
-      "description_en": "Convert PDF pages to JPG images online for free with page selection, rendering resolution, and JPG quality controls.",
+      "description_en": "Convert PDF pages to JPG locally with page selection, live preview, rendering resolution, JPG quality, progress, and downloadable results.",
       "tags_en": [
         "PDF to JPG",
-        "PDF converter",
-        "convert PDF to image",
-        "PDF pages to JPG",
-        "JPG export"
+        "PDF to image",
+        "convert PDF pages",
+        "PDF page export",
+        "JPG converter",
+        "render PDF to JPG"
       ]
     },
     {
@@ -442,7 +443,7 @@
       "description": "Converta páginas de um PDF em imagens PNG com resolução ajustável.",
       "category": "pdf",
       "icon": "▤",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/pdf/pdf-to-png/",
       "tags": [
@@ -457,13 +458,14 @@
       "access": "public",
       "sortOrder": 30,
       "name_en": "PDF → PNG",
-      "description_en": "Convert PDF pages to PNG images online for free with page selection and adjustable rendering resolution.",
+      "description_en": "Convert PDF pages to PNG locally with page selection, live preview, rendering resolution, progress, and downloadable results.",
       "tags_en": [
         "PDF to PNG",
-        "PDF converter",
-        "convert PDF to image",
-        "PDF pages to PNG",
-        "PNG export"
+        "PDF to image",
+        "convert PDF pages",
+        "PDF page export",
+        "PNG converter",
+        "render PDF to PNG"
       ]
     },
     {
