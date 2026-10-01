@@ -801,11 +801,11 @@
       "name": "Adicionar Bordas",
       "name_en": "Add Image Borders",
       "description": "Adicione molduras às imagens com espessura, cor, estilo, margem e cantos arredondados configuráveis.",
-      "description_en": "Add borders and frames to images online for free with adjustable thickness, color, style, padding, and rounded corners.",
+      "description_en": "Add custom borders and frames to images with adjustable thickness, padding, color, style, rounded corners, shadow, and local full-resolution export.",
       "category": "imagem",
       "group": "imagem",
       "icon": "□",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/image-borders/",
       "tags": [
@@ -821,13 +821,14 @@
         "image borders",
         "add image border",
         "image frame",
+        "photo frame",
         "photo border",
-        "add frame to photo",
         "border generator",
+        "rounded image frame",
         "image editing"
       ],
       "featured": true,
-      "popular": false,
+      "popular": true,
       "access": "public",
       "sortOrder": 140
     },
@@ -836,11 +837,11 @@
       "name": "Antes e Depois",
       "name_en": "Before & After",
       "description": "Compare duas fotos com um divisor arrastável e exporte a comparação como uma única imagem.",
-      "description_en": "Compare two photos with a draggable slider and export the comparison as a single image.",
+      "description_en": "Compare two images with a draggable before-and-after slider, labels, fit controls, and local full-resolution export.",
       "category": "imagem",
       "group": "imagem",
       "icon": "↔",
-      "version": "1.0.0",
+      "version": "3.0.0",
       "status": "active",
       "path": "/tool/categories/imagem/before-after/",
       "tags": [
@@ -853,14 +854,16 @@
         "slider"
       ],
       "tags_en": [
-        "image",
-        "before and after",
-        "comparison",
-        "compare",
-        "slider"
+        "before after image",
+        "image comparison",
+        "compare images",
+        "before and after slider",
+        "photo comparison",
+        "visual comparison",
+        "image diff preview"
       ],
-      "featured": false,
-      "popular": false,
+      "featured": true,
+      "popular": true,
       "access": "public",
       "sortOrder": 150
     },

@@ -1,99 +1,11 @@
-(()=>{"use strict";
-const $=s=>document.querySelector(s);
-const beforeInput=$("#before-input"),afterInput=$("#after-input");
-const beforeUpload=$("#before-upload"),afterUpload=$("#after-upload");
-const beforeImage=$("#before-image"),afterImage=$("#after-image"),beforeClip=$("#before-clip");
-const beforeThumb=$("#before-thumb"),afterThumb=$("#after-thumb"),stage=$("#stage"),empty=$("#stage-empty"),divider=$("#divider");
-const slider=$("#slider"),sliderSide=$("#slider-side"),sliderValue=$("#slider-value"),positionLabel=$("#position-label");
-const labelBefore=$("#label-before"),labelAfter=$("#label-after"),status=$("#status"),clear=$("#clear");
-const download=$("#download"),downloadSide=$("#download-side"),format=$("#format"),quality=$("#quality"),qualityValue=$("#quality-value"),qualityField=$("#quality-field");
-let beforeFile=null,afterFile=null,beforeUrl=null,afterUrl=null,beforeImageObj=null,afterImageObj=null;
-
-function readImage(file){
-  return new Promise((resolve,reject)=>{
-    if(!file)return reject(new Error("Ficheiro inválido."));
-    const url=URL.createObjectURL(file),img=new Image();
-    img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
-    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível ler esta imagem."))};
-    img.src=url;
-  });
-}
-function syncStageSize(){stage.style.setProperty("--stage-width",stage.clientWidth+"px");stage.style.setProperty("--stage-height",stage.clientHeight+"px")}
-function syncClip(){
-  const p=Number(slider.value);
-  syncStageSize();
-  beforeClip.style.width=p+"%";
-  divider.style.left="calc("+p+"% - 1px)";
-  beforeClip.style.setProperty("--split",p+"%");
-  sliderSide.value=String(p);slider.value=String(p);
-  sliderValue.textContent=p+"%";positionLabel.textContent=p+"%";
-  labelBefore.style.opacity=p<8?"0":"1";labelAfter.style.opacity=p>92?"0":"1";
-}
-function setPreviewReady(){
-  stage.classList.add("ad-stage-ready");
-  empty.hidden=true;beforeClip.hidden=false;afterImage.hidden=false;divider.hidden=false;labelBefore.hidden=false;labelAfter.hidden=false;
-  syncClip();
-}
-function updateStatus(){
-  if(beforeFile&&afterFile){status.textContent="As duas fotos estão prontas. Arraste o divisor para comparar.";status.className="ad-status ready";download.disabled=false;downloadSide.disabled=false;clear.disabled=false}
-  else {status.textContent="Adicione uma foto em cada lado para começar.";status.className="ad-status";download.disabled=true;downloadSide.disabled=true;clear.disabled=!(beforeFile||afterFile)}
-}
-function setFile(side,file){
-  if(!file)return;
-  if(!file.type.startsWith("image/")){status.textContent="Escolha um ficheiro de imagem.";status.className="ad-status error";return}
-  readImage(file).then(img=>{
-    if(side==="before"){if(beforeUrl)URL.revokeObjectURL(beforeUrl);beforeFile=file;beforeImageObj=img;beforeUrl=URL.createObjectURL(file);beforeImage.src=beforeUrl;beforeThumb.src=beforeUrl;beforeThumb.hidden=false;beforeThumb.className="ad-upload-thumb";beforeUpload.classList.add("has-file")}
-    else {if(afterUrl)URL.revokeObjectURL(afterUrl);afterFile=file;afterImageObj=img;afterUrl=URL.createObjectURL(file);afterImage.src=afterUrl;afterThumb.src=afterUrl;afterThumb.hidden=false;afterThumb.className="ad-upload-thumb";afterUpload.classList.add("has-file")}
-    if(beforeFile&&afterFile)setPreviewReady();
-    updateStatus();
-  }).catch(()=>{status.textContent="Não foi possível preparar uma das imagens.";status.className="ad-status error"});
-}
-beforeInput.addEventListener("change",e=>setFile("before",e.target.files?.[0]));
-afterInput.addEventListener("change",e=>setFile("after",e.target.files?.[0]));
-slider.addEventListener("input",()=>{sliderSide.value=slider.value;syncClip()});
-sliderSide.addEventListener("input",()=>{slider.value=sliderSide.value;syncClip()});
-quality.addEventListener("input",()=>qualityValue.textContent=quality.value);
-format.addEventListener("change",()=>{qualityField.hidden=format.value==="image/png"});
-function clearAll(){
-  if(beforeUrl)URL.revokeObjectURL(beforeUrl);if(afterUrl)URL.revokeObjectURL(afterUrl);
-  beforeUrl=afterUrl=null;beforeFile=afterFile=null;beforeImageObj=afterImageObj=null;
-  beforeInput.value="";afterInput.value="";beforeThumb.hidden=true;afterThumb.hidden=true;
-  beforeUpload.classList.remove("has-file");afterUpload.classList.remove("has-file");
-  beforeClip.hidden=true;afterImage.hidden=true;divider.hidden=true;labelBefore.hidden=true;labelAfter.hidden=true;empty.hidden=false;
-  download.disabled=true;downloadSide.disabled=true;clear.disabled=true;stage.classList.remove("ad-stage-ready");status.textContent="Adicione uma foto em cada lado para começar.";status.className="ad-status";
-}
-clear.addEventListener("click",clearAll);
-function fitContain(ctx,img,x,y,w,h){
-  const r=Math.min(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*r,dh=img.naturalHeight*r;
-  ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
-}
-function extFor(m){return m==="image/jpeg"?"jpg":m==="image/webp"?"webp":"png"}
-function exportCanvas(canvas,name){
-  const type=format.value,q=Number(quality.value)/100;
-  canvas.toBlob(blob=>{
-    if(!blob){status.textContent="Falha ao preparar o ficheiro.";status.className="ad-status error";return}
-    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name+"."+extFor(type);document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
-  },type,q);
-}
-function drawCombined(sideBySide){
-  if(!beforeImageObj||!afterImageObj)return;
-  const maxH=Math.max(beforeImageObj.naturalHeight,afterImageObj.naturalHeight);
-  const eachW=sideBySide?Math.max(beforeImageObj.naturalWidth,afterImageObj.naturalWidth):Math.max(beforeImageObj.naturalWidth,afterImageObj.naturalWidth);
-  const scale=Math.min(1,2200/Math.max(sideBySide?eachW*2:eachW,maxH));
-  const w=Math.max(1,Math.round(eachW*(sideBySide?2:1)*scale)),h=Math.max(1,Math.round(maxH*scale));
-  const c=document.createElement("canvas");c.width=w;c.height=h;const ctx=c.getContext("2d");ctx.fillStyle="#0b0f18";ctx.fillRect(0,0,w,h);
-  if(sideBySide){fitContain(ctx,beforeImageObj,0,0,w/2,h);fitContain(ctx,afterImageObj,w/2,0,w/2,h)}
-  else {
-    fitContain(ctx,afterImageObj,0,0,w,h);
-    ctx.save();ctx.beginPath();ctx.rect(0,0,w*Number(slider.value)/100,h);ctx.clip();fitContain(ctx,beforeImageObj,0,0,w,h);ctx.restore();
-    ctx.fillStyle="#ffffff";const x=w*Number(slider.value)/100;ctx.fillRect(Math.max(0,x-1),0,2,h);
-  }
-  exportCanvas(c,sideBySide?"nexauren-antes-e-depois-lado-a-lado":"nexauren-antes-e-depois");
-}
-download.addEventListener("click",()=>drawCombined(false));
-downloadSide.addEventListener("click",()=>drawCombined(true));
-format.dispatchEvent(new Event("change"));
-syncStageSize();syncClip();updateStatus();
-window.addEventListener("resize",syncStageSize,{passive:true});
-if(window.ResizeObserver){new ResizeObserver(syncStageSize).observe(stage)}
-})();
+(()=>{"use strict";const $=s=>document.querySelector(s);const e={beforeFile:$("#beforeFile"),afterFile:$("#afterFile"),beforeUpload:$("#beforeUpload"),afterUpload:$("#afterUpload"),beforeImg:$("#beforeImg"),afterImg:$("#afterImg"),beforeThumb:$("#beforeThumb"),afterThumb:$("#afterThumb"),stage:$("#stage"),empty:$("#empty"),beforeClip:$("#beforeClip"),divider:$("#divider"),labelBefore:$("#labelBefore"),labelAfter:$("#labelAfter"),slider:$("#slider"),split:$("#split"),splitOut:$("#splitOut"),position:$("#position"),fit:$("#fit"),showLabels:$("#showLabels"),format:$("#format"),quality:$("#quality"),qualityOut:$("#qualityOut"),background:$("#background"),export:$("#export"),clear:$("#clear"),status:$("#status"),state:$("#state"),result:$("#result"),resultName:$("#resultName"),resultDim:$("#resultDim"),resultSize:$("#resultSize"),resultFormat:$("#resultFormat"),resultSplit:$("#resultSplit")};let before=null,after=null,bu="",au="",processing=false;
+const bytes=n=>{const u=["B","KB","MB","GB"];let i=0,v=n;while(v>1024&&i<3){v/=1024;i++}return v.toFixed(i?1:0)+" "+u[i]},ext=()=>e.format.value==="image/jpeg"?"jpg":e.format.value==="image/webp"?"webp":"png",msg=(t,err=false)=>{e.status.textContent=t;e.status.className="status"+(err?" error":"")};
+function read(file){return new Promise((res,rej)=>{if(!file?.type.startsWith("image/"))return rej(Error("Choose an image file."));const u=URL.createObjectURL(file),im=new Image;im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=()=>{URL.revokeObjectURL(u);rej(Error("Could not open the image."))};im.src=u})}
+function ready(){return before&&after}
+function drawPair(ctx,W,H,mode,split){
+ const fit=(im,x,y,w,h)=>{const sx=mode==="cover"?Math.max(w/im.naturalWidth,h/im.naturalHeight):Math.min(w/im.naturalWidth,h/im.naturalHeight),dw=im.naturalWidth*sx,dh=im.naturalHeight*sx;ctx.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh)};
+ctx.fillStyle=e.background.value;ctx.fillRect(0,0,W,H);if(mode==="cover"){fit(after,0,0,W,H);ctx.save();ctx.rect(0,0,W*split/100,H);ctx.clip();fit(before,0,0,W,H);ctx.restore()}else{fit(after,0,0,W,H);ctx.save();ctx.rect(0,0,W*split/100,H);ctx.clip();fit(before,0,0,W,H);ctx.restore()}}
+function preview(){if(!ready())return;const W=Math.max(1,e.stage.clientWidth),H=Math.max(1,e.stage.clientWidth*10/16);e.stage.style.aspectRatio="16/10";e.stage.style.height=Math.max(300,Math.round(H))+"px";e.beforeClip.style.width=e.slider.value+"%";e.beforeClip.style.height="100%";e.beforeImg.style.width=e.stage.clientWidth+"px";e.beforeImg.style.height=e.stage.clientHeight+"px";e.divider.style.left=e.slider.value+"%";e.position.textContent=e.slider.value+"%";e.splitOut.textContent=e.slider.value+"%";e.divider.hidden=false;e.beforeClip.hidden=false;e.afterImg.hidden=false;e.empty.hidden=true;e.labelBefore.hidden=e.labelAfter.hidden=!e.showLabels.checked}
+function setFile(which,file){if(!file)return;read(file).then(im=>{if(which==="before"){if(bu)URL.revokeObjectURL(bu);before=im;bu=URL.createObjectURL(file);e.beforeImg.src=bu;e.beforeThumb.src=bu;e.beforeThumb.hidden=false;e.beforeUpload.classList.add("has-file")}else{if(au)URL.revokeObjectURL(au);after=im;au=URL.createObjectURL(file);e.afterImg.src=au;e.afterThumb.src=au;e.afterThumb.hidden=false;e.afterUpload.classList.add("has-file")}e.state.textContent=ready()?"READY":"WAITING";msg(ready()?"Both images are ready. Drag the split slider.":"Add the second image to start comparing.");e.export.disabled=!ready();preview()}).catch(err=>msg(err.message,true))}
+async function exportImage(){if(!ready()||processing)return;processing=true;e.state.textContent="PROCESS";e.export.disabled=true;msg("Rendering full-resolution comparison locally…");await new Promise(r=>requestAnimationFrame(r));try{const W=Math.max(before.naturalWidth,after.naturalWidth,1),H=Math.max(before.naturalHeight,after.naturalHeight,1);if(W*H>30000000)throw Error("The comparison canvas is too large for this device.");const c=document.createElement("canvas");c.width=W;c.height=H;drawPair(c.getContext("2d"),W,H,e.fit.value,Number(e.slider.value));const blob=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error("Export failed.")),e.format.value,e.format.value==="image/png"?undefined:Number(e.quality.value)/100));const name="nexauren-before-after."+ext();e.result.hidden=false;e.resultName.textContent=name;e.resultDim.textContent=W+" × "+H;e.resultSize.textContent=bytes(blob.size);e.resultFormat.textContent=ext().toUpperCase();e.resultSplit.textContent=e.slider.value+"%";e.state.textContent="READY";msg("Comparison exported successfully.");NexaurenImage.download(blob,name)}catch(err){e.state.textContent="ERROR";msg(err.message||"Could not export comparison.",true)}finally{processing=false;e.export.disabled=!ready()}}
+e.beforeFile.onchange=x=>{setFile("before",x.target.files[0]);x.target.value=""};e.afterFile.onchange=x=>{setFile("after",x.target.files[0]);x.target.value=""};const sync=()=>{e.slider.value=e.split.value;e.position.textContent=e.slider.value+"%";e.splitOut.textContent=e.slider.value+"%";if(ready())preview()};e.slider.oninput=()=>{e.split.value=e.slider.value;sync()};e.split.oninput=()=>sync();e.fit.onchange=preview;e.showLabels.onchange=preview;e.format.oninput=()=>{e.qualityOut.textContent=e.format.value==="image/png"?"Lossless":e.quality.value+"%"};e.quality.oninput=()=>{e.qualityOut.textContent=e.format.value==="image/png"?"Lossless":e.quality.value+"%"};e.export.onclick=exportImage;e.clear.onclick=()=>{if(bu)URL.revokeObjectURL(bu);if(au)URL.revokeObjectURL(au);before=after=null;bu=au="";e.beforeFile.value=e.afterFile.value="";e.beforeImg.removeAttribute("src");e.afterImg.removeAttribute("src");e.beforeThumb.hidden=e.afterThumb.hidden=true;e.beforeUpload.classList.remove("has-file");e.afterUpload.classList.remove("has-file");e.result.hidden=true;e.export.disabled=true;e.empty.hidden=false;e.beforeClip.hidden=true;e.divider.hidden=true;e.state.textContent="IDLE";msg("Add one image to each side to start.")};document.addEventListener("keydown",x=>{if((x.ctrlKey||x.metaKey)&&x.key==="Enter"){x.preventDefault();exportImage()}});
