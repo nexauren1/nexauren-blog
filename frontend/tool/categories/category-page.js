@@ -6,7 +6,7 @@
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const normalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 
-  let language=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="pt")return "pt";if(q==="en")return "en";try{return localStorage.getItem("ns_lang_v2")==="pt"?"pt":"en"}catch{return "en"}})();
+  let language="en";
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const localizedTags=item=>language==="en"?(Array.isArray(item?.tags_en)&&item.tags_en.length?item.tags_en:(item?.tags||[])):(item?.tags||[]);
   const ui=Object.freeze(language==="en" ? {
@@ -211,7 +211,7 @@
 
   function updateUrl(){
     const params=new URLSearchParams();
-    if(language!=="en")params.set("lang",language);
+    
     if(state.query)params.set("q",state.query);
     if(state.tag)params.set("tag",state.tag);
     if(state.access!=="all")params.set("access",state.access);
@@ -230,7 +230,7 @@
     }
     try{
       const result=await accessApi.verifyToolAccess(link.dataset.toolId);
-      if(result.unlocked){location.href=link.dataset.toolPath+(language==="en"?"?lang=en":"");return}
+      if(result.unlocked){location.href=link.dataset.toolPath;return}
       if(result.error){
         showAccessMessage({title:ui.cannotVerify,body:ui.cannotVerifyBody,actionLabel:ui.tryAgain,actionUrl:location.href});
         return;
@@ -301,7 +301,7 @@
 
   document.addEventListener("click",handleToolClick,true);
   window.addEventListener("nexauren:tool-registry-updated",event=>{if(user&&event.detail)render(event.detail)}); 
-  window.addEventListener("nexauren:language-changed",async event=>{language=event.detail?.lang||language;const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
+  window.addEventListener("nexauren:language-changed",async event=>{language="en";const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
   window.addEventListener("pageshow",()=>{if(user)refreshPlan()});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&user)refreshPlan()});
 
