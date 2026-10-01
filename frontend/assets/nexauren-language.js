@@ -348,7 +348,11 @@ function syncLanguageLinks(){
   });
 }
 function addToggle(){
-  document.querySelectorAll("#lang,#lang-toggle,#language-toggle,.language-toggle,[data-language-toggle],[data-lang-toggle],[data-nx-language-toggle]").forEach(el=>el.remove());
+  document.querySelectorAll("#lang,#lang-toggle,#language-toggle,.language-toggle,[data-language-toggle],[data-lang-toggle],[data-nx-language-toggle]").forEach(el=>{
+    el.hidden=true;
+    el.setAttribute("aria-hidden","true");
+    el.tabIndex=-1;
+  });
 }
 
 function setLanguage(){
