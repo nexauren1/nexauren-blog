@@ -24,7 +24,7 @@ function enforceGlobalNavigation(){
       ["/legal/cookies/","Cookies"]
     ];
     const escAttr=v=>String(v).replace(/&/g,"&amp;").replace(/"/g,"&quot;");
-    $("header").forEach(header=>{
+    $$("header").forEach(header=>{
       let nav=$("nav",header);
       if(!nav){
         nav=document.createElement("nav");
@@ -76,7 +76,7 @@ function enforceGlobalNavigation(){
   }
 
   function ensureResponsiveMenus(){
-    $$("header").forEach(header=>{
+    $$$("header").forEach(header=>{
       const nav=$("nav",header);
       if(!nav||header.querySelector(".menu-toggle,.tool-menu,[data-nx-auto-menu]"))return;
       const links=$$("a",nav).map(a=>({
