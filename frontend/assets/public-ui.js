@@ -107,6 +107,7 @@ function enforceGlobalNavigation(){
 
   function initMenus(){
     const panelSelector=".mobile-menu,.mobile-nav,.tool-mobile";
+    const openPanelSelector=".mobile-menu.open,.mobile-nav.open,.tool-mobile.open";
     const buttonSelector="[data-nx-menu],.menu-toggle,.tool-menu";
 
     const closePanel=(panel)=>{
@@ -121,10 +122,10 @@ function enforceGlobalNavigation(){
     };
 
     const closeAll=(except=null)=>{
-      $$(panelSelector+".open").forEach(panel=>{
+      $$(openPanelSelector).forEach(panel=>{
         if(panel!==except)closePanel(panel);
       });
-      if(!$$(''+panelSelector+".open").length)document.body.classList.remove("nx-menu-open");
+      if(!$(openPanelSelector).length)document.body.classList.remove("nx-menu-open");
     };
 
     $$(buttonSelector).forEach(button=>{
