@@ -99,7 +99,7 @@ fileInput.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)showFil
 drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag")});
 drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
 drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");const f=e.dataTransfer.files?.[0];if(f?.type==="application/pdf"||/\.pdf$/i.test(f?.name||""))showFile(f)});
-removeBtn.onclick=clearAll;resetBtn.onclick=clearAll;
+removeBtn.onclick=clearAll;resetBtn.onclick=clearAll;compressBtn.addEventListener("click",compress);
 quality.addEventListener("input",()=>{preset="custom";presetButtons.forEach(b=>b.classList.remove("active"));presetHint.textContent="Custom quality and DPI. Lower values create smaller PDFs with more visual degradation.";updateQuality()});
 dpi.addEventListener("change",()=>{preset="custom";presetButtons.forEach(b=>b.classList.remove("active"));presetHint.textContent="Custom quality and DPI. Lower values create smaller PDFs with more visual degradation."});
 presetButtons.forEach(btn=>btn.addEventListener("click",()=>applyPreset(btn.dataset.preset)));
