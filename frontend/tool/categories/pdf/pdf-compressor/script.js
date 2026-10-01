@@ -15,8 +15,8 @@ const setProgress=(pct,msg)=>{progressWrap.hidden=false;progress.style.width=Mat
 const cleanName=n=>(String(n||"compressed").replace(/\.pdf$/i,"").replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"").slice(0,70)||"compressed")+"-compressed.pdf";
 const updateQuality=()=>{const q=Number(quality.value);qualityLabel.textContent=(q>=80?"High":q>=60?"Balanced":q>=40?"Strong":"Maximum")+" · JPEG "+q+"%"};
 const applyPreset=name=>{preset=PRESETS[name]?name:"balanced";const p=PRESETS[preset];quality.value=p.q;dpi.value=String(p.dpi);presetButtons.forEach(b=>b.classList.toggle("active",b.dataset.preset===preset));presetHint.textContent=p.hint;updateQuality()};
-const showFile=f=>{sourceFile=f;fileName.textContent=f.name;fileMeta.textContent=fmtBytes(f.size);filePanel.hidden=false;settings.hidden=false;visualBox.hidden=mode==="smart";result.hidden=true;progressWrap.hidden=true;compressBtn.disabled=false;};
-const clearAll=()=>{sourceFile=null;outputBlob=null;fileInput.value="";filePanel.hidden=true;settings.hidden=true;visualBox.hidden=true;result.hidden=true;progressWrap.hidden=true;progress.style.width="0%";compressBtn.disabled=false;busy=false;mode="smart";modeButtons.forEach(b=>b.classList.toggle("active",b.dataset.mode==="smart"));compressBtn.textContent="Compress PDF"};
+const showFile=f=>{sourceFile=f;fileName.textContent=f.name;fileMeta.textContent=fmtBytes(f.size);filePanel.hidden=false;settings.hidden=false;visualBox.hidden=mode==="visual";result.hidden=true;progressWrap.hidden=true;compressBtn.disabled=false;};
+const clearAll=()=>{sourceFile=null;outputBlob=null;fileInput.value="";filePanel.hidden=true;settings.hidden=false;visualBox.hidden=true;result.hidden=true;progressWrap.hidden=true;progress.style.width="0%";compressBtn.disabled=true;busy=false;mode="smart";modeButtons.forEach(b=>b.classList.toggle("active",b.dataset.mode==="smart"));compressBtn.textContent="Compress PDF"};
 let pdfLibPromise=null,pdfjsPromise=null;
 const loadScript=(src,globalName,timeout=15000)=>new Promise((resolve,reject)=>{
   const existing=document.querySelector('script[data-nx-lib="'+src+'"]');
@@ -99,10 +99,10 @@ fileInput.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)showFil
 drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag")});
 drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
 drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");const f=e.dataTransfer.files?.[0];if(f?.type==="application/pdf"||/\.pdf$/i.test(f?.name||""))showFile(f)});
-removeBtn.onclick=clearAll;resetBtn.onclick=clearAll;compressBtn.addEventListener("click",compress);
+removeBtn.onclick=clearAll;resetBtn.onclick=clearAll;compressBtn.onclick=compress;
 quality.addEventListener("input",()=>{preset="custom";presetButtons.forEach(b=>b.classList.remove("active"));presetHint.textContent="Custom quality and DPI. Lower values create smaller PDFs with more visual degradation.";updateQuality()});
 dpi.addEventListener("change",()=>{preset="custom";presetButtons.forEach(b=>b.classList.remove("active"));presetHint.textContent="Custom quality and DPI. Lower values create smaller PDFs with more visual degradation."});
 presetButtons.forEach(btn=>btn.addEventListener("click",()=>applyPreset(btn.dataset.preset)));
-modeButtons.forEach(btn=>btn.addEventListener("click",()=>{mode=btn.dataset.mode;modeButtons.forEach(b=>b.classList.toggle("active",b===btn));visualBox.hidden=mode!=="visual";compressBtn.textContent=mode==="auto"?"Find Smallest PDF":"Compress PDF"}));
+modeButtons.forEach(btn=>btn.onclick=()=>{mode=btn.dataset.mode;modeButtons.forEach(b=>b.classList.toggle("active",b===btn));visualBox.hidden=mode!=="visual";compressBtn.textContent=mode==="auto"?"Find Smallest PDF":"Compress PDF"});
 applyPreset("balanced");updateQuality();
 })();
