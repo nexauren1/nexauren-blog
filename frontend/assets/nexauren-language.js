@@ -311,7 +311,8 @@ function updateTitle(){
     "/account/upgrade/":"Upgrade — Nexauren Story",
     "/legal/privacidade/":"Privacy Policy — Nexauren Story",
     "/legal/termos/":"Terms of Use — Nexauren Story",
-    "/legal/cookies/":"Cookie Policy — Nexauren Story"
+    "/legal/cookies/":"Cookie Policy — Nexauren Story",
+    "/faq/":"FAQ — Nexauren Story"
   }:{
     "/":"Nexauren Story — Conteúdo e ferramentas",
     "/tool/":"Ferramentas — Nexauren Story",
@@ -327,15 +328,13 @@ function updateTitle(){
 function updateAlternates(){
   const base=new URL(location.pathname,location.origin).href;
   document.querySelectorAll('link[rel="alternate"][hreflang="pt"]').forEach(link=>link.remove());
-  const values={en:base,"x-default":base};
-  Object.entries(values).forEach(([hreflang,href])=>{
+  for(const [hreflang,href] of Object.entries({en:base,"x-default":base})){
     let link=document.querySelector('link[rel="alternate"][hreflang="'+hreflang+'"]');
     if(!link){link=document.createElement("link");link.rel="alternate";link.hreflang=hreflang;document.head.appendChild(link)}
     link.href=href;
-  });
+  }
 }
 function syncLanguageLinks(){
-  const currentLang="en";
   document.querySelectorAll("a[href]").forEach(a=>{
     if(a.dataset.nxNoLanguageSync==="1"||a.target==="_blank"||a.hasAttribute("download"))return;
     const raw=a.getAttribute("href");
@@ -344,7 +343,7 @@ function syncLanguageLinks(){
       const u=new URL(raw,location.href);
       if(u.origin!==location.origin||u.pathname.startsWith("/assets/")||u.pathname.startsWith("/admin")||u.pathname.startsWith("/api/"))return;
       u.searchParams.delete("lang");
-      a.setAttribute("href",u.pathname+u.search+(u.hash||""));
+      a.setAttribute("href",u.pathname+(u.search||"")+(u.hash||""));
     }catch{}
   });
 }
@@ -352,11 +351,11 @@ function addToggle(){
   document.querySelectorAll("#lang,#lang-toggle,#language-toggle,.language-toggle,[data-language-toggle],[data-lang-toggle],[data-nx-language-toggle]").forEach(el=>el.remove());
 }
 
-function setLanguage(lang){
+function setLanguage(){
   current="en";
   try{localStorage.setItem(STORAGE,"en")}catch{}
   persistServerLanguage("en");
-  const u=new URL(location.href);u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search?u.search:""));
+  const u=new URL(location.href);u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search||""));
   addToggle();
   translateDom();
   syncLanguageLinks();
