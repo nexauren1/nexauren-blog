@@ -54,7 +54,7 @@ function enforceGlobalNavigation(){
       }
       panel.innerHTML='<div class="'+(header.classList.contains("tool-header")?"tool-wrap":"wrap")+'">'+primary.map(([href,label])=>'<a href="'+escAttr(href)+'">'+label+"</a>").join("")+legal.map(([href,label])=>'<a href="'+escAttr(href)+'">'+label+"</a>").join("")+"</div>";
     });
-    $('a[href="/blog/"]').forEach(a=>a.remove());
+    $$('a[href="/blog/"]').forEach(a=>a.remove());
   }
 
   function setActiveNavigation(){
