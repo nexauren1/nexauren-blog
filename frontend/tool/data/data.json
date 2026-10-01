@@ -14,8 +14,8 @@
       "icon": "▧",
       "sortOrder": 10,
       "path": "/tool/categories/imagem/",
-      "name_en": "Image",
-      "description_en": "Tools for images, formats, and visual content."
+      "name_en": "Image Tools",
+      "description_en": "A focused Image Lab for compressing, resizing, converting, cropping, framing, comparing, combining, and preparing visual content in your browser."
     },
     {
       "id": "pdf",

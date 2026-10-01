@@ -1,0 +1,55 @@
+
+/* Nexauren Story — Image category identity */
+body[data-category="imagem"]{background:
+radial-gradient(900px 420px at 6% -5%,rgba(255,48,86,.22),transparent 62%),
+radial-gradient(760px 380px at 94% 0%,rgba(62,112,255,.23),transparent 60%),
+linear-gradient(180deg,#060811 0%,#080b13 45%,#05070c 100%);
+color:#f7f9fc;overflow-x:hidden}
+body[data-category="imagem"]::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;background:
+linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+background-size:34px 34px;mask-image:linear-gradient(to bottom,#000,transparent 75%);z-index:-1}
+body[data-category="imagem"] .tool-header{background:rgba(6,8,17,.68);border-bottom:1px solid rgba(130,155,205,.18);backdrop-filter:blur(18px);position:sticky;top:0;z-index:20}
+body[data-category="imagem"] .tool-wrap{width:min(1220px,calc(100% - 28px))}
+body[data-category="imagem"] .tool-brand{font-weight:900;letter-spacing:.02em}
+body[data-category="imagem"] .tool-mark{background:linear-gradient(135deg,#ff355b 5%,#ff7448 45%,#4d7cff 100%);box-shadow:0 8px 28px rgba(255,53,91,.22),0 8px 28px rgba(77,124,255,.18)}
+body[data-category="imagem"] .tool-links a{color:#aebbd1;transition:color .18s ease}
+body[data-category="imagem"] .tool-links a:hover{color:#fff}
+body[data-category="imagem"] main[data-category-page]{padding:26px 0 70px;position:relative}
+body[data-category="imagem"] .tool-category-head{position:relative;overflow:hidden;margin:4px 0 18px;padding:34px 34px 30px;border-radius:28px;border:1px solid rgba(110,138,188,.24);
+background:linear-gradient(135deg,rgba(16,21,35,.96),rgba(9,12,20,.94));
+box-shadow:0 24px 70px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.035)}
+body[data-category="imagem"] .tool-category-head::before{content:"";position:absolute;width:360px;height:360px;right:-120px;top:-190px;border-radius:50%;background:radial-gradient(circle,rgba(77,124,255,.30),transparent 68%);animation:nxfloat 8s ease-in-out infinite}
+body[data-category="imagem"] .tool-category-head::after{content:"";position:absolute;width:290px;height:290px;left:-150px;bottom:-210px;border-radius:50%;background:radial-gradient(circle,rgba(255,53,91,.22),transparent 68%);animation:nxfloat2 10s ease-in-out infinite}
+body[data-category="imagem"] .tool-category-head>*{position:relative;z-index:1}
+body[data-category="imagem"] .tool-category-head .tool-back{display:inline-flex;align-items:center;min-height:38px;padding:8px 11px;border:1px solid rgba(125,150,195,.22);border-radius:12px;background:rgba(255,255,255,.035);color:#9eabc1;transition:.18s}
+body[data-category="imagem"] .tool-category-head .tool-back:hover{color:#fff;border-color:rgba(99,220,255,.45);transform:translateX(-2px)}
+body[data-category="imagem"] .tool-category-head .tool-eyebrow{margin-top:28px;color:#67defd;font-size:10px;font-weight:950;letter-spacing:.22em}
+body[data-category="imagem"] .tool-category-head h1{margin:8px 0 9px;font-size:clamp(42px,7vw,76px);line-height:.92;letter-spacing:-.05em;background:linear-gradient(110deg,#fff 8%,#dbe8ff 52%,#67defd 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+body[data-category="imagem"] .tool-category-head p{max-width:760px;margin:0;color:#a9b5c8;font-size:15px;line-height:1.72}
+body[data-category="imagem"] .tool-count{display:inline-flex!important;margin-top:18px!important;padding:8px 12px;border:1px solid rgba(77,124,255,.28);border-radius:999px;background:linear-gradient(135deg,rgba(255,53,91,.10),rgba(77,124,255,.12));color:#dce7f6!important;font-size:11px;font-weight:850;letter-spacing:.04em}
+body[data-category="imagem"] .tool-category-search{margin-bottom:18px}
+body[data-category="imagem"] .tool-advanced-search{padding:16px;border-radius:22px;border:1px solid rgba(110,138,188,.20);background:rgba(10,14,23,.82);box-shadow:0 18px 45px rgba(0,0,0,.24);backdrop-filter:blur(14px)}
+body[data-category="imagem"] .tool-search-main{border-color:#2b3b57!important;background:#0b101a!important;border-radius:14px!important}
+body[data-category="imagem"] .tool-search-main input{color:#f7f9fc!important}
+body[data-category="imagem"] .tool-search-controls select{border-color:#2b3b57!important;background:#0b101a!important;color:#dfe8f6!important}
+body[data-category="imagem"] .tool-search-meta{color:#8796ad!important}
+body[data-category="imagem"] .tool-search-meta button{border-color:#2b3b57!important;background:#0b101a!important;color:#b8c5d8!important}
+body[data-category="imagem"] .tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body[data-category="imagem"] .tool-card{position:relative;min-height:220px;overflow:hidden;padding:20px!important;border:1px solid rgba(91,118,165,.23)!important;border-radius:21px!important;background:linear-gradient(150deg,rgba(18,24,39,.98),rgba(8,11,18,.98))!important;box-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.025)!important;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease!important}
+body[data-category="imagem"] .tool-card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(255,53,91,.0),rgba(77,124,255,.0));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .22s ease;pointer-events:none}
+body[data-category="imagem"] .tool-card:hover{transform:translateY(-6px);border-color:rgba(99,220,255,.45)!important;box-shadow:0 24px 55px rgba(0,0,0,.32),0 0 0 1px rgba(77,124,255,.10),0 12px 35px rgba(77,124,255,.10)!important}
+body[data-category="imagem"] .tool-card:hover::before{opacity:1;background:linear-gradient(135deg,rgba(255,53,91,.75),rgba(77,124,255,.72))}
+body[data-category="imagem"] .tool-card-icon{display:grid!important;place-items:center;width:46px!important;height:46px!important;border-radius:14px!important;border:1px solid rgba(92,120,167,.28);background:linear-gradient(135deg,rgba(255,53,91,.12),rgba(77,124,255,.13));color:#dff8ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+body[data-category="imagem"] .tool-arrow{color:#6fe5ff!important;transition:transform .18s ease}
+body[data-category="imagem"] .tool-card:hover .tool-arrow{transform:translate(3px,-2px)}
+body[data-category="imagem"] .tool-card h2{margin:18px 0 8px!important;font-size:17px!important;line-height:1.2;color:#f4f8ff!important}
+body[data-category="imagem"] .tool-card p{margin:0!important;color:#9eabc0!important;font-size:12px!important;line-height:1.62!important}
+body[data-category="imagem"] .tool-card>small{display:block;margin-top:14px;color:#6f819c!important;font-size:10px!important;line-height:1.45!important}
+body[data-category="imagem"] .tool-card-badge{border-radius:999px!important}
+body[data-category="imagem"] .tool-results{margin-top:0}
+body[data-category="imagem"] .tool-empty{border:1px dashed #2e405e!important;border-radius:18px!important;background:#0b1019!important;color:#a7b4c8!important}
+@keyframes nxfloat{50%{transform:translateY(18px) scale(1.04)}}@keyframes nxfloat2{50%{transform:translate(12px,-12px) scale(1.05)}}
+@media(max-width:980px){body[data-category="imagem"] .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){body[data-category="imagem"] .tool-wrap{width:min(100% - 18px,1220px)}body[data-category="imagem"] main[data-category-page]{padding-top:14px}body[data-category="imagem"] .tool-category-head{padding:22px 18px 20px;border-radius:21px}body[data-category="imagem"] .tool-category-head .tool-eyebrow{margin-top:22px}body[data-category="imagem"] .tool-category-head h1{font-size:clamp(39px,14vw,58px)}body[data-category="imagem"] .tool-category-head p{font-size:13px;line-height:1.6}body[data-category="imagem"] .tool-grid{grid-template-columns:1fr;gap:10px}body[data-category="imagem"] .tool-card{min-height:190px;padding:17px!important;border-radius:18px!important}body[data-category="imagem"] .tool-card h2{margin-top:14px!important}body[data-category="imagem"] .tool-advanced-search{padding:11px;border-radius:17px}}
+@media(prefers-reduced-motion:reduce){body[data-category="imagem"]::before,body[data-category="imagem"] .tool-category-head::before,body[data-category="imagem"] .tool-category-head::after{animation:none!important}body[data-category="imagem"] .tool-card{transition:none!important}}
