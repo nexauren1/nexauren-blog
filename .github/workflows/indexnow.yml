@@ -68,7 +68,7 @@ jobs:
             if (!file.startsWith("frontend/") || !file.endsWith("/index.html")) return null;
             const rel = file.slice("frontend/".length, -"/index.html".length);
             if (!rel) return "/";
-            return "/" + rel.replace(/\\/g, "/").replace(/^\\/+|\\/+$/g, "") + "/";
+            return "/" + rel.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "") + "/";
           };
 
           const toCanonical = (path) => {
