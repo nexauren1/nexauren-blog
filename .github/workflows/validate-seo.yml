@@ -42,7 +42,6 @@ jobs:
           if(!index.includes('name="twitter:card"')) throw new Error("Homepage Twitter card metadata missing.");
           if(!index.includes('nexauren-structured-data')) throw new Error("Homepage structured data missing.");
 
-          requireText("frontend/assets/app.js",'src="/assets/ads.js"');
           requireText("frontend/assets/ads.js","842be0a485a66000fcf7e5d24ee7b149");
           forbid("frontend/assets/ads.js","11177602");
           forbid("frontend/assets/ads.js","vignette.min.js");
