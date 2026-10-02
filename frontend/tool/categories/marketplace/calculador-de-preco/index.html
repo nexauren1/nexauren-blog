@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b13">
+<meta name="description" content="Calcule preço de venda, margem, lucro, taxas, ponto de equilíbrio e preço promocional para os seus produtos. Ferramenta gratuita da Nexauren Story.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/marketplace/calculador-de-preco/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<meta property="og:site_name" content="Nexauren Story">
+<meta property="og:title" content="Calculador de Preço & Lucro — Nexauren Story">
+<meta property="og:description" content="Transforme custos, taxas e margem em um preço de venda claro, com simulador visual e cenários.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nexaurenstory.com/tool/categories/marketplace/calculador-de-preco/">
+<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20261002-price">
+<meta property="og:image:alt" content="Nexauren Calculador de Preço & Lucro">
+<meta property="og:locale" content="pt_PT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Calculador de Preço & Lucro — Nexauren Story">
+<meta name="twitter:description" content="Calcule preço, lucro e ponto de equilíbrio.">
+<meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20261002-price">
+<title>Calculador de Preço & Lucro — Nexauren Story</title>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Nexauren Calculador de Preço & Lucro","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://nexaurenstory.com/tool/categories/marketplace/calculador-de-preco/","description":"Calculadora comercial para custos, taxas, preço de venda, lucro, margem e ponto de equilíbrio.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<link rel="stylesheet" href="/assets/public-ui.css?v=20261001-global">
+<link rel="stylesheet" href="/tool/categories/marketplace/calculador-de-preco/calculador.css?v=20261002-price-1">
+<script src="/assets/nexauren-language.js?v=20261001-en" data-nx-language-loader="1"></script>
+</head>
+<body class="nx-page nx-market-tool">
+<header class="tool-header"><div class="tool-wrap tool-nav"><a class="tool-brand" href="/" aria-label="Nexauren Story"><img src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="42" height="42"><span class="tool-brand-text"><strong>Nexauren</strong><span>Story</span></span></a><nav class="tool-links" aria-label="Main navigation"><a href="/">Home</a><a href="/tool/" aria-current="page">Tools</a><a href="/tool/categories/marketplace/" aria-current="page">Marketplace</a><a href="/faq/">FAQ</a><a href="/account">Account</a></nav><button class="tool-menu" type="button" aria-label="Open menu" aria-expanded="false"><span></span></button></div><div class="tool-mobile" data-tool-mobile><div class="tool-wrap"><a href="/">Home</a><a href="/tool/">Tools</a><a href="/tool/categories/marketplace/">Marketplace</a><a href="/faq/">FAQ</a><a href="/account">Account</a><a href="/legal/privacidade/">Privacy</a><a href="/legal/termos/">Terms</a></div></div></header>
+
+<main class="market-main">
+<section class="market-hero">
+  <div class="market-wrap">
+    <a class="market-back" href="/tool/categories/marketplace/">← Marketplace</a>
+    <div class="market-kicker">NEXAUREN MARKETPLACE · PRICING LAB</div>
+    <div class="market-hero-grid">
+      <div>
+        <h1>Preço certo.<br><span>Decisão clara.</span></h1>
+        <p class="market-lead">Monte o custo real do produto, inclua taxas, escolha a sua margem e veja o preço de venda aparecer em tempo real.</p>
+        <div class="market-proof-row"><span>⚡ cálculo ao vivo</span><span>▣ sem login</span><span>◌ no seu navegador</span></div>
+      </div>
+      <div class="market-hero-orbit" aria-hidden="true"><div class="orbit-core">MT</div><div class="orbit-chip chip-a">CUSTO</div><div class="orbit-chip chip-b">TAXAS</div><div class="orbit-chip chip-c">LUCRO</div><div class="orbit-ring"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="market-wrap market-tool-shell" aria-label="Calculador de preço">
+  <div class="preset-row" role="group" aria-label="Presets de exemplo">
+    <span class="preset-label">Começar com:</span>
+    <button type="button" class="preset active" data-preset="marketplace">Marketplace</button>
+    <button type="button" class="preset" data-preset="direct">Venda direta</button>
+    <button type="button" class="preset" data-preset="delivery">Marketplace + entrega</button>
+  </div>
+
+  <div class="market-grid">
+    <section class="market-input-card">
+      <div class="card-heading"><div><span class="mini-kicker">01 · BASE</span><h2>Custos do produto</h2></div><span class="step-badge">LIVE</span></div>
+      <div class="field-grid">
+        <label class="field wide"><span>Nome do produto <small>opcional</small></span><input id="productName" type="text" maxlength="80" placeholder="Ex.: T-shirt premium"></label>
+        <label class="field"><span>Moeda</span><select id="currency"><option value="MZN">MZN · MT</option><option value="ZAR">ZAR · R</option><option value="AOA">AOA · Kz</option><option value="BRL">BRL · R$</option><option value="EUR">EUR · €</option><option value="USD">USD · $</option></select></label>
+        <label class="field"><span>Preço de compra / unidade</span><div class="money-input"><b data-currency-symbol>MT</b><input id="purchase" inputmode="decimal" type="number" min="0" step="0.01" value="500"></div></label>
+        <label class="field"><span>Transporte / unidade</span><div class="money-input"><b data-currency-symbol>MT</b><input id="transport" inputmode="decimal" type="number" min="0" step="0.01" value="50"></div></label>
+        <label class="field"><span>Embalagem / unidade</span><div class="money-input"><b data-currency-symbol>MT</b><input id="packaging" inputmode="decimal" type="number" min="0" step="0.01" value="20"></div></label>
+        <label class="field"><span>Outros custos / unidade</span><div class="money-input"><b data-currency-symbol>MT</b><input id="other" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
+        <label class="field wide"><span>Taxa fixa por pedido <small>é dividida pela quantidade</small></span><div class="money-input"><b data-currency-symbol>MT</b><input id="fixedFee" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></label>
+      </div>
+    </section>
+
+    <section class="market-input-card">
+      <div class="card-heading"><div><span class="mini-kicker">02 · ESTRATÉGIA</span><h2>Taxas & objetivo</h2></div><span class="formula-chip" data-live-goal>30% margem</span></div>
+      <div class="field-grid">
+        <label class="field"><span>Taxa do marketplace</span><div class="percent-input"><input id="marketFee" inputmode="decimal" type="number" min="0" max="99" step="0.1" value="10"><b>%</b></div></label>
+        <label class="field"><span>Taxa de pagamento</span><div class="percent-input"><input id="paymentFee" inputmode="decimal" type="number" min="0" max="99" step="0.1" value="2"><b>%</b></div></label>
+        <label class="field"><span>Imposto / comissão</span><div class="percent-input"><input id="taxFee" inputmode="decimal" type="number" min="0" max="99" step="0.1" value="0"><b>%</b></div></label>
+        <label class="field"><span>Quantidade</span><input id="quantity" inputmode="numeric" type="number" min="1" step="1" value="10"></label>
+        <div class="field wide"><span>Como quer definir o lucro?</span><div class="segmented" role="group"><button type="button" class="seg active" data-mode="margin">Margem</button><button type="button" class="seg" data-mode="markup">Markup</button></div></div>
+        <label class="field wide"><span>Objetivo de lucro <output id="goalOutput">30%</output></span><input id="goal" type="range" min="1" max="70" step="1" value="30"></label>
+        <label class="field"><span>Desconto anunciado</span><div class="percent-input"><input id="discount" inputmode="decimal" type="number" min="0" max="90" step="0.5" value="0"><b>%</b></div></label>
+        <label class="field"><span>Arredondamento</span><select id="rounding"><option value="0">Nenhum</option><option value="1">1</option><option value="5">5</option><option value="10" selected>10</option><option value="50">50</option><option value="100">100</option></select></label>
+      </div>
+      <div class="formula-note"><span>ⓘ</span><p><b>Margem</b> = lucro como percentagem do preço pago. <b>Markup</b> = lucro como percentagem do custo.</p></div>
+    </section>
+  </div>
+
+  <section class="market-result-card" aria-live="polite">
+    <div class="result-topline">
+      <div><span class="mini-kicker">03 · RESULTADO</span><h2 data-result-title>Preço recomendado</h2><p data-result-subtitle>Depois de taxas, custos e objetivo de lucro.</p></div>
+      <div class="result-actions"><button type="button" class="ghost-btn" data-copy>Copiar resumo</button><button type="button" class="ghost-btn" data-print>Imprimir</button><button type="button" class="ghost-btn" data-reset>Restaurar</button></div>
+    </div>
+
+    <div class="price-focus">
+      <div class="price-side"><span>Preço de vitrine</span><strong data-list-price>MT 950</strong><small data-discount-note>sem desconto</small></div>
+      <div class="price-arrow">→</div>
+      <div class="price-side featured"><span>Cliente paga</span><strong data-customer-price>MT 950</strong><small data-customer-note>preço final</small></div>
+      <div class="profit-pill"><span>Lucro / unidade</span><b data-profit>MT 228</b></div>
+    </div>
+
+    <div class="metric-grid">
+      <article class="metric"><span>Custo real</span><b data-cost>MT 570</b><small>produto + operação</small></article>
+      <article class="metric"><span>Taxas + imposto</span><b data-fees>MT 114</b><small data-fee-rate>12,0% do preço</small></article>
+      <article class="metric"><span>Margem efetiva</span><b data-margin>27,0%</b><small data-margin-note>sobre o preço pago</small></article>
+      <article class="metric"><span>ROI</span><b data-roi>40,0%</b><small>lucro / custo</small></article>
+      <article class="metric"><span>Ponto de equilíbrio</span><b data-break-even>MT 648</b><small>lucro = 0</small></article>
+      <article class="metric"><span>Lucro total</span><b data-total-profit>MT 2.280</b><small data-quantity-note>10 unidades</small></article>
+    </div>
+
+    <div class="visual-breakdown">
+      <div class="breakdown-head"><div><span>Mapa do preço</span><small>Para cada unidade vendida</small></div><strong data-price-share>100%</strong></div>
+      <div class="stack-bar"><i data-stack-cost></i><i data-stack-fee></i><i data-stack-profit></i></div>
+      <div class="stack-legend"><span><i class="dot cost-dot"></i>Custo</span><span><i class="dot fee-dot"></i>Taxas / imposto</span><span><i class="dot profit-dot"></i>Lucro</span></div>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-main"><span class="insight-icon" data-insight-icon>✓</span><div><span class="mini-kicker">LEITURA RÁPIDA</span><h3 data-insight-title>O preço suporta o seu objetivo.</h3><p data-insight-body>Depois de custos e taxas, o valor continua acima do ponto de equilíbrio.</p></div></div>
+      <div class="share-card"><span>Venda de <b data-share-qty>10</b> unidades</span><strong data-share-revenue>MT 9.500</strong><small>faturação estimada</small></div>
+    </div>
+  </section>
+</section>
+</main>
+
+<footer class="market-footer"><div class="market-wrap"><span>© <span id="year"></span> Nexauren Story</span><span>Marketplace · Ferramentas comerciais</span></div></footer>
+
+<script src="/tool/categories/marketplace/calculador-de-preco/calculador.js?v=20261002-price-1"></script>
+<script src="/assets/public-ui.js?v=20261001-global" defer></script>
+<script>document.getElementById("year").textContent=new Date().getFullYear()</script>
+</body>
+</html>
