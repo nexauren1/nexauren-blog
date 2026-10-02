@@ -73,7 +73,7 @@ jobs:
 
           const toCanonical = (path) => {
             if (typeof path !== "string" || !path.startsWith("/") || path.includes("?") || path.includes("#")) return null;
-            const normalized = path.replace(/\\/g, "/").replace(/\/+?/g, "/");
+            const normalized = path.replace(/\\/g, "/").replace(/\/+/g, "/");
             if (/^\/(admin|account|api|assets|admin-assets|data)(\/|$)/.test(normalized)) return null;
             if (normalized.startsWith("/tool/frontend/templates/")) return null;
             return new URL(normalized, SITE).href;
