@@ -482,7 +482,21 @@ function seoHead(html,o){
   return html;
 }
 const PUBLIC_TOOL_CATEGORIES=new Set(["imagem","pdf","marketplace"]);
+const PUBLIC_TOOL_PATHS=new Map([["/tool/categories/images/","/tool/categories/imagem/"],["/tool/categories/images/image-compressor/","/tool/categories/imagem/image-compressor/"],["/tool/categories/images/image-resizer/","/tool/categories/imagem/image-resizer/"],["/tool/categories/images/image-converter/","/tool/categories/imagem/image-converter/"],["/tool/categories/images/image-cropper/","/tool/categories/imagem/image-cropper/"],["/tool/categories/images/image-watermark/","/tool/categories/imagem/image-watermark/"],["/tool/categories/images/image-metadata-cleaner/","/tool/categories/imagem/image-metadata-cleaner/"],["/tool/categories/images/image-palette-extractor/","/tool/categories/imagem/image-palette-extractor/"],["/tool/categories/images/social-image-resizer/","/tool/categories/imagem/social-image-resizer/"],["/tool/categories/images/favicon-generator/","/tool/categories/imagem/favicon-generator/"],["/tool/categories/images/combine-images/","/tool/categories/imagem/combine-images/"],["/tool/categories/images/blur-pixelate/","/tool/categories/imagem/blur-pixelate/"],["/tool/categories/images/rotate-flip-image/","/tool/categories/imagem/rotate-flip-image/"],["/tool/categories/images/image-borders/","/tool/categories/imagem/image-borders/"],["/tool/categories/images/before-after/","/tool/categories/imagem/before-after/"],["/tool/categories/pdf/merge-pdf/","/tool/categories/pdf/merge-pdf/"],["/tool/categories/pdf/split-pdf/","/tool/categories/pdf/split-pdf/"],["/tool/categories/pdf/rotate-pdf/","/tool/categories/pdf/rotate-pdf/"],["/tool/categories/pdf/insert-pdf-pages/","/tool/categories/pdf/insert-pdf-pages/"],["/tool/categories/pdf/duplicate-pdf-pages/","/tool/categories/pdf/duplicate-pdf-pages/"],["/tool/categories/pdf/delete-pdf-pages/","/tool/categories/pdf/delete-pdf-pages/"],["/tool/categories/pdf/pdf-watermark/","/tool/categories/pdf/pdf-watermark/"],["/tool/categories/pdf/add-text-to-pdf/","/tool/categories/pdf/add-text-to-pdf/"],["/tool/categories/pdf/jpg-to-pdf/","/tool/categories/pdf/jpg-to-pdf/"],["/tool/categories/pdf/pdf-to-jpg/","/tool/categories/pdf/pdf-to-jpg/"],["/tool/categories/pdf/pdf-to-png/","/tool/categories/pdf/pdf-to-png/"],["/tool/categories/pdf/png-to-pdf/","/tool/categories/pdf/png-to-pdf/"],["/tool/categories/pdf/pdf-compressor/","/tool/categories/pdf/pdf-compressor/"],["/tool/categories/marketplace/pricing-calculator/","/tool/categories/marketplace/calculador-de-preco/"]]);
+const LEGACY_TOOL_REDIRECTS=new Map([["/tool/categories/imagem/","/tool/categories/images/"],["/tool/categories/imagem/image-compressor/","/tool/categories/images/image-compressor/"],["/tool/categories/imagem/image-resizer/","/tool/categories/images/image-resizer/"],["/tool/categories/imagem/image-converter/","/tool/categories/images/image-converter/"],["/tool/categories/imagem/image-cropper/","/tool/categories/images/image-cropper/"],["/tool/categories/imagem/image-watermark/","/tool/categories/images/image-watermark/"],["/tool/categories/imagem/image-metadata-cleaner/","/tool/categories/images/image-metadata-cleaner/"],["/tool/categories/imagem/image-palette-extractor/","/tool/categories/images/image-palette-extractor/"],["/tool/categories/imagem/social-image-resizer/","/tool/categories/images/social-image-resizer/"],["/tool/categories/imagem/favicon-generator/","/tool/categories/images/favicon-generator/"],["/tool/categories/imagem/combine-images/","/tool/categories/images/combine-images/"],["/tool/categories/imagem/blur-pixelate/","/tool/categories/images/blur-pixelate/"],["/tool/categories/imagem/rotate-flip-image/","/tool/categories/images/rotate-flip-image/"],["/tool/categories/imagem/image-borders/","/tool/categories/images/image-borders/"],["/tool/categories/imagem/before-after/","/tool/categories/images/before-after/"],["/tool/categories/pdf/juntar-pdf/","/tool/categories/pdf/merge-pdf/"],["/tool/categories/pdf/dividir-pdf/","/tool/categories/pdf/split-pdf/"],["/tool/categories/pdf/rodar-pdf/","/tool/categories/pdf/rotate-pdf/"],["/tool/categories/pdf/inserir-paginas/","/tool/categories/pdf/insert-pdf-pages/"],["/tool/categories/pdf/duplicar-paginas/","/tool/categories/pdf/duplicate-pdf-pages/"],["/tool/categories/pdf/eliminar-paginas/","/tool/categories/pdf/delete-pdf-pages/"],["/tool/categories/pdf/marca-dagua-pdf/","/tool/categories/pdf/pdf-watermark/"],["/tool/categories/pdf/adicionar-texto-pdf/","/tool/categories/pdf/add-text-to-pdf/"],["/tool/categories/marketplace/calculador-de-preco/","/tool/categories/marketplace/pricing-calculator/"]]);
 const INDEXNOW_KEY_PATH="/.well-known/indexnow-key.txt";
+function publicToolPathForRequest(path){
+  return PUBLIC_TOOL_PATHS.get(path)||null;
+}
+function canonicalPublicPath(path){
+  return LEGACY_TOOL_REDIRECTS.get(path)||path;
+}
+function rewriteToolHtmlPaths(html,internalPath,publicPath){
+  if(!internalPath||internalPath===publicPath)return html;
+  const internalUrl="https://nexaurenstory.com"+internalPath;
+  const publicUrl="https://nexaurenstory.com"+publicPath;
+  return html.replaceAll(internalUrl,publicUrl).replaceAll(internalPath,publicPath);
+}
 function indexNowKeyResponse(env){
   const key=String(env.INDEXNOW_KEY||"").trim();
   if(!/^[A-Za-z0-9-]{8,128}$/.test(key)){
@@ -559,7 +573,7 @@ async function loadToolRegistry(env,request){
   const assetToolMap=new Map((assetRegistry?.tools||[]).map(tool=>[tool.id,tool]));
   const mergedTools=dbRegistry.tools.map(tool=>{
     const asset=assetToolMap.get(tool.id);
-    return asset ? {...tool,name_en:tool.name_en||asset.name_en||"",description_en:tool.description_en||asset.description_en||"",tags_en:tool.tags_en?.length?tool.tags_en:(asset.tags_en||[])} : tool;
+    return asset ? {...tool,path:asset.path||tool.path,name_en:tool.name_en||asset.name_en||"",description_en:tool.description_en||asset.description_en||"",tags_en:tool.tags_en?.length?tool.tags_en:(asset.tags_en||[])} : tool;
   });
   for(const tool of assetActiveTools){
     if(!mergedTools.some(existing=>existing.id===tool.id))mergedTools.push(tool);
@@ -1483,13 +1497,14 @@ async function api(env,request,url,ctx){
   if(p==="/api/stats"&&m==="GET"){const g=await guard(env,request,["owner","admin"]);if(g.error)return g.error;return json({ok:true,stats:await adminStats(env,request)});}
   return fail("Endpoint não encontrado.",404,"NOT_FOUND");
 }
-async function decorateToolHtmlResponse(request,response){
+async function decorateToolHtmlResponse(request,response,internalPath=null){
   const type=response.headers.get("content-type")||"";
   if(!response.ok||!type.toLowerCase().includes("text/html"))return response;
   const url=new URL(request.url);
   const view=url.searchParams.get("view")||"";
   const standalone=view==="event"||view==="embed";
   let html=await response.text();
+  if(internalPath)html=rewriteToolHtmlPaths(html,internalPath,url.pathname);
   html=html.replaceAll("/assets/nexauren-language.js?v=20260928-12","/assets/nexauren-language.js?v=20260928-12");
   if(!/public-ui\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/assets/public-ui.css?v=20260928-support-1">\n</head>');
   if(!standalone&&!/tool-engagement\.css/i.test(html))html=html.replace(/<\/head>/i,'<link rel="stylesheet" href="/tool/frontend/tool-engagement.css?v=20260926-1">\n</head>');
@@ -1512,6 +1527,17 @@ async function page(env,request,url){
   if(url.pathname==="/sitemap-pages.xml")return sitemapPages(env);
   if(url.pathname==="/robots.txt")return robots();
   if(url.pathname===INDEXNOW_KEY_PATH)return indexNowKeyResponse(env);
+  const legacyToolRedirect=canonicalPublicPath(url.pathname);
+  if(legacyToolRedirect!==url.pathname){
+    const target=new URL(legacyToolRedirect+url.search,request.url);
+    return Response.redirect(target.href,301);
+  }
+  const internalToolPath=publicToolPathForRequest(url.pathname);
+  if(internalToolPath){
+    const internalUrl=new URL(internalToolPath+url.search,request.url);
+    const response=await env.ASSETS.fetch(new Request(internalUrl,request));
+    return decorateToolHtmlResponse(request,response,internalToolPath);
+  }
   if(url.pathname==="/social-preview.png")return env.ASSETS.fetch(new Request(new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url),request));
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||url.pathname==="/manifest.json")return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
