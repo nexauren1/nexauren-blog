@@ -486,7 +486,13 @@ const PUBLIC_TOOL_PATHS=new Map([["/tool/categories/images/","/tool/categories/i
 const LEGACY_TOOL_REDIRECTS=new Map([["/tool/categories/imagem/","/tool/categories/images/"],["/tool/categories/imagem/image-compressor/","/tool/categories/images/image-compressor/"],["/tool/categories/imagem/image-resizer/","/tool/categories/images/image-resizer/"],["/tool/categories/imagem/image-converter/","/tool/categories/images/image-converter/"],["/tool/categories/imagem/image-cropper/","/tool/categories/images/image-cropper/"],["/tool/categories/imagem/image-watermark/","/tool/categories/images/image-watermark/"],["/tool/categories/imagem/image-metadata-cleaner/","/tool/categories/images/image-metadata-cleaner/"],["/tool/categories/imagem/image-palette-extractor/","/tool/categories/images/image-palette-extractor/"],["/tool/categories/imagem/social-image-resizer/","/tool/categories/images/social-image-resizer/"],["/tool/categories/imagem/favicon-generator/","/tool/categories/images/favicon-generator/"],["/tool/categories/imagem/combine-images/","/tool/categories/images/combine-images/"],["/tool/categories/imagem/blur-pixelate/","/tool/categories/images/blur-pixelate/"],["/tool/categories/imagem/rotate-flip-image/","/tool/categories/images/rotate-flip-image/"],["/tool/categories/imagem/image-borders/","/tool/categories/images/image-borders/"],["/tool/categories/imagem/before-after/","/tool/categories/images/before-after/"],["/tool/categories/pdf/juntar-pdf/","/tool/categories/pdf/merge-pdf/"],["/tool/categories/pdf/dividir-pdf/","/tool/categories/pdf/split-pdf/"],["/tool/categories/pdf/rodar-pdf/","/tool/categories/pdf/rotate-pdf/"],["/tool/categories/pdf/inserir-paginas/","/tool/categories/pdf/insert-pdf-pages/"],["/tool/categories/pdf/duplicar-paginas/","/tool/categories/pdf/duplicate-pdf-pages/"],["/tool/categories/pdf/eliminar-paginas/","/tool/categories/pdf/delete-pdf-pages/"],["/tool/categories/pdf/marca-dagua-pdf/","/tool/categories/pdf/pdf-watermark/"],["/tool/categories/pdf/adicionar-texto-pdf/","/tool/categories/pdf/add-text-to-pdf/"],["/tool/categories/marketplace/calculador-de-preco/","/tool/categories/marketplace/pricing-calculator/"]]);
 const INDEXNOW_KEY_PATH="/.well-known/indexnow-key.txt";
 function publicToolPathForRequest(path){
-  return PUBLIC_TOOL_PATHS.get(path)||null;
+  const exact=PUBLIC_TOOL_PATHS.get(path);
+  if(exact)return exact;
+  const imagePrefix="/tool/categories/images/";
+  if(path.startsWith(imagePrefix))return "/tool/categories/imagem/"+path.slice(imagePrefix.length);
+  const pricingPrefix="/tool/categories/marketplace/pricing-calculator/";
+  if(path.startsWith(pricingPrefix))return "/tool/categories/marketplace/calculador-de-preco/"+path.slice(pricingPrefix.length);
+  return null;
 }
 function canonicalPublicPath(path){
   return LEGACY_TOOL_REDIRECTS.get(path)||path;
