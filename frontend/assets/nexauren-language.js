@@ -186,8 +186,8 @@ function persistServerLanguage(lang){
   }catch{}
 }
 function getLang(){
-  try{localStorage.setItem(STORAGE,"pt")}catch{}
-  return "pt";
+  try{localStorage.setItem(STORAGE,"en")}catch{}
+  return "en";
 }
 let current=getLang();
 let busy=false;
@@ -355,8 +355,8 @@ function addToggle(){
   });
 }
 
-function setLanguage(nextLanguage="pt"){
-  current=LANGS.has(String(nextLanguage||"").toLowerCase())?String(nextLanguage).toLowerCase():"pt";
+function setLanguage(){
+  current="en";
   try{localStorage.setItem(STORAGE,current)}catch{}
   persistServerLanguage(current);
   const u=new URL(location.href);u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search||""));
@@ -366,7 +366,7 @@ function setLanguage(nextLanguage="pt"){
   window.dispatchEvent(new CustomEvent("nexauren:language-changed",{detail:{lang:"en"}}));
 }
 
-window.NexaurenLanguage={get:()=>current,set:setLanguage,toggle:()=>setLanguage(current==="en"?"pt":"en")};
+window.NexaurenLanguage={get:()=>current,set:setLanguage,toggle:setLanguage};
 
 function refresh(){
   if(isExternalTranslationActive())return;
@@ -378,7 +378,7 @@ function refresh(){
 window.NexaurenLanguage=Object.freeze({
   get:()=>current,
   set:setLanguage,
-  toggle:()=>setLanguage(current==="en"?"pt":"en"),
+  toggle:setLanguage,
   refresh
 });
 function installSafeObserver(){
