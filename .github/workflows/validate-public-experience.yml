@@ -42,6 +42,29 @@ jobs:
               "/tool/frontend/templates/"
           )
 
+          ROUTE_RENAMES = {
+              "/tool/categories/imagem/": "/tool/categories/images/",
+              "/tool/categories/pdf/juntar-pdf/": "/tool/categories/pdf/merge-pdf/",
+              "/tool/categories/pdf/dividir-pdf/": "/tool/categories/pdf/split-pdf/",
+              "/tool/categories/pdf/rodar-pdf/": "/tool/categories/pdf/rotate-pdf/",
+              "/tool/categories/pdf/inserir-paginas/": "/tool/categories/pdf/insert-pdf-pages/",
+              "/tool/categories/pdf/duplicar-paginas/": "/tool/categories/pdf/duplicate-pdf-pages/",
+              "/tool/categories/pdf/eliminar-paginas/": "/tool/categories/pdf/delete-pdf-pages/",
+              "/tool/categories/pdf/marca-dagua-pdf/": "/tool/categories/pdf/pdf-watermark/",
+              "/tool/categories/pdf/adicionar-texto-pdf/": "/tool/categories/pdf/add-text-to-pdf/",
+              "/tool/categories/marketplace/calculador-de-preco/": "/tool/categories/marketplace/pricing-calculator/",
+              "/tool/destaques/": "/tool/featured/",
+              "/tool/populares/": "/tool/popular/",
+              "/tool/avaliacoes/": "/tool/reviews/",
+              "/legal/privacidade/": "/legal/privacy/",
+              "/legal/termos/": "/legal/terms/",
+          }
+          def canonical_public_path(path: str) -> str:
+              for old, new in sorted(ROUTE_RENAMES.items(), key=lambda item: len(item[0]), reverse=True):
+                  if path.startswith(old):
+                      return new + path[len(old):]
+              return path
+
           def public_path(index_file: Path):
               rel=index_file.parent.relative_to(root).as_posix()
               return "/" if rel=="." else "/"+rel.rstrip("/")+"/"
@@ -51,7 +74,7 @@ jobs:
 
           pages={}
           for index_file in root.rglob("index.html"):
-              path=public_path(index_file)
+              path=canonical_public_path(public_path(index_file))
               if not is_excluded(path):
                   pages[path]=index_file
 
