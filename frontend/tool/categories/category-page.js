@@ -6,7 +6,7 @@
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const normalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 
-  let language="pt";
+  let language="en";
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const localizedTags=item=>language==="en"?(Array.isArray(item?.tags_en)&&item.tags_en.length?item.tags_en:(item?.tags||[])):(item?.tags||[]);
   const ui=Object.freeze(language==="en" ? {
@@ -244,7 +244,7 @@
   function applySeo(cat){
     const name=label(cat,"name")||"Ferramentas";
     const description=(label(cat,"description")||"Ferramentas online do Nexauren Story.").trim().slice(0,160);
-    const canonical=new URL("/tool/categories/"+encodeURIComponent(slug)+"/",location.origin).href;
+    const canonical=new URL(location.pathname.replace(/\/$/,"")+"/",location.origin).href;
     const set=(selector,attr,value)=>{
       let el=document.querySelector(selector);
       if(!el){el=document.createElement("meta");if(selector.includes("[name=\"description\"]"))el.name="description";else if(selector.includes("[property=\""))el.setAttribute("property",selector.match(/property=\"([^\"]+)/)?.[1]||"");document.head.appendChild(el);}
@@ -257,6 +257,14 @@
     let link=document.querySelector('link[rel="canonical"]');
     if(!link){link=document.createElement("link");link.rel="canonical";document.head.appendChild(link)}
     link.href=canonical;
+  }
+
+  function applyStructuredData(cat,tools,seo){
+    const existing=document.querySelector('script[data-nx-category-schema]');
+    if(!existing)return;
+    const canonical=new URL(location.pathname.replace(/\/$/,"")+"/",location.origin).href;
+    const items=tools.slice(0,100).map((tool,index)=>({"@type":"ListItem","position":index+1,"name":label(tool,"name"),"url":new URL(tool.path,location.origin).href}));
+    existing.textContent=JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":label(cat,"name")+" — Nexauren Story","url":canonical,"description":seo.description,"isPartOf":{"@type":"WebSite","name":"Nexauren Story","url":location.origin+"/"},"mainEntity":{"@type":"ItemList","itemListElement":items}});
   }
 
   function render(registry){
@@ -304,7 +312,7 @@
 
   document.addEventListener("click",handleToolClick,true);
   window.addEventListener("nexauren:tool-registry-updated",event=>{if(user&&event.detail)render(event.detail)}); 
-  window.addEventListener("nexauren:language-changed",async event=>{language=event.detail?.lang==="en"?"en":"pt";const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
+  window.addEventListener("nexauren:language-changed",async event=>{language="en";const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
   window.addEventListener("pageshow",()=>{if(user)refreshPlan()});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&user)refreshPlan()});
 
