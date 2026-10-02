@@ -257,6 +257,10 @@
     let link=document.querySelector('link[rel="canonical"]');
     if(!link){link=document.createElement("link");link.rel="canonical";document.head.appendChild(link)}
     link.href=canonical;
+    const twitterTitle=name+" — Image, PDF & Marketplace Tools — Nexauren Story";
+    set('meta[name="twitter:title"]',"content",twitterTitle);
+    set('meta[name="twitter:description"]',"content",description);
+    return {name,description,canonical};
   }
 
   function applyStructuredData(cat,tools,seo){
