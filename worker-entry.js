@@ -482,6 +482,14 @@ function seoHead(html,o){
   return html;
 }
 const PUBLIC_TOOL_CATEGORIES=new Set(["imagem","pdf","marketplace"]);
+const INDEXNOW_KEY_PATH="/.well-known/indexnow-key.txt";
+function indexNowKeyResponse(env){
+  const key=String(env.INDEXNOW_KEY||"").trim();
+  if(!/^[A-Za-z0-9-]{8,128}$/.test(key)){
+    return new Response("IndexNow não configurado.\n",{status:404,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
+  }
+  return new Response(key+"\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
+}
 function normalizeToolRegistry(raw){
   const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
     id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
@@ -1503,6 +1511,7 @@ async function page(env,request,url){
   if(url.pathname==="/sitemap.xml")return sitemapIndex();
   if(url.pathname==="/sitemap-pages.xml")return sitemapPages(env);
   if(url.pathname==="/robots.txt")return robots();
+  if(url.pathname===INDEXNOW_KEY_PATH)return indexNowKeyResponse(env);
   if(url.pathname==="/social-preview.png")return env.ASSETS.fetch(new Request(new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url),request));
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||url.pathname==="/manifest.json")return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");
