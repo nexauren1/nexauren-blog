@@ -1,0 +1,171 @@
+name: Submit changed URLs to IndexNow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "worker-entry.js"
+      - "wrangler.json"
+      - ".github/workflows/indexnow.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: nexauren-indexnow
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Submit changed public URLs
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_BEFORE: ${{ github.event.before }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${INDEXNOW_KEY}" ]; then
+            echo "INDEXNOW_KEY is not configured; skipping IndexNow submission."
+            exit 0
+          fi
+          node <<'NODE'
+          const fs = require("fs");
+          const cp = require("child_process");
+
+          const SITE = "https://nexaurenstory.com";
+          const KEY = String(process.env.INDEXNOW_KEY || "").trim();
+          const KEY_LOCATION = SITE + "/.well-known/indexnow-key.txt";
+          const eventName = process.env.GITHUB_EVENT_NAME || "";
+          const before = process.env.GITHUB_BEFORE || "";
+          const sha = process.env.GITHUB_SHA || "";
+          const headMessage = process.env.GITHUB_HEAD_COMMIT_MESSAGE || "";
+
+          if (headMessage.includes("standardize automatic ads")) {
+            console.log("Skipping IndexNow for the automatic ads-only commit.");
+            process.exit(0);
+          }
+
+          if (!/^[A-Za-z0-9-]{8,128}$/.test(KEY)) {
+            throw new Error("INDEXNOW_KEY has invalid format.");
+          }
+
+          const manifest = JSON.parse(fs.readFileSync("frontend/data/public-urls.json", "utf8"));
+          const allPaths = Array.isArray(manifest.urls) ? manifest.urls : [];
+
+          const pathFromIndexFile = (file) => {
+            if (!file.startsWith("frontend/") || !file.endsWith("/index.html")) return null;
+            const rel = file.slice("frontend/".length, -"/index.html".length);
+            if (!rel) return "/";
+            return "/" + rel.replace(/\\/g, "/").replace(/^\\/+|\\/+$/g, "") + "/";
+          };
+
+          const toCanonical = (path) => {
+            if (typeof path !== "string" || !path.startsWith("/") || path.includes("?") || path.includes("#")) return null;
+            const normalized = path.replace(/\\/g, "/").replace(/\\/+/, "/");
+            if (/^\/(admin|account|api|assets|admin-assets|data)(\/|$)/.test(normalized)) return null;
+            if (normalized.startsWith("/tool/frontend/templates/")) return null;
+            return new URL(normalized, SITE).href;
+          };
+
+          let paths = new Set();
+          const needsFullSubmission = eventName !== "push"
+            || !before
+            || /^0+$/.test(before)
+            || headMessage.includes("sync public URL manifest");
+
+          if (needsFullSubmission) {
+            for (const p of allPaths) paths.add(p);
+          } else {
+            let diff;
+            try {
+              diff = cp.execFileSync("git", ["diff", "--name-status", before, sha, "--", "frontend", "worker-entry.js", "wrangler.json"], { encoding: "utf8" });
+            } catch (error) {
+              console.log("Could not compute the push diff; submitting the current public sitemap instead.");
+              for (const p of allPaths) paths.add(p);
+              diff = "";
+            }
+
+            const changedFiles = diff.split("\n").map(line => line.trim()).filter(Boolean);
+            for (const line of changedFiles) {
+              const parts = line.split(/\s+/);
+              const status = parts[0] || "";
+              const file = status.startsWith("R") ? (parts[2] || "") : (parts[1] || "");
+              if (file === "frontend/tool/data/data.json" || file === "frontend/data/public-urls.json" || file === "worker-entry.js" || file === "wrangler.json") {
+                for (const p of allPaths) paths.add(p);
+                continue;
+              }
+              const publicPath = pathFromIndexFile(file);
+              if (publicPath) paths.add(publicPath);
+            }
+          }
+
+          const urls = [...paths].map(toCanonical).filter(Boolean);
+          const uniqueUrls = [...new Set(urls)];
+
+          if (!uniqueUrls.length) {
+            console.log("No public URLs require IndexNow notification.");
+            process.exit(0);
+          }
+
+          async function sleep(ms) {
+            await new Promise(resolve => setTimeout(resolve, ms));
+          }
+
+          async function fetchRetry(url, init, label, attempts = 5) {
+            let last;
+            for (let attempt = 1; attempt <= attempts; attempt++) {
+              try {
+                const response = await fetch(url, init);
+                if (response.ok) return response;
+                const body = (await response.text()).slice(0, 500);
+                last = new Error(label + " HTTP " + response.status + ": " + body);
+              } catch (error) {
+                last = error;
+              }
+              if (attempt < attempts) {
+                console.log(label + " attempt " + attempt + " failed; retrying...");
+                await sleep(15000 * attempt);
+              }
+            }
+            throw last || new Error(label + " failed");
+          }
+
+          const keyResponse = await fetchRetry(KEY_LOCATION, { headers: { "cache-control": "no-cache" } }, "IndexNow key file");
+          const remoteKey = (await keyResponse.text()).trim();
+          if (remoteKey !== KEY) throw new Error("The live IndexNow key file does not match INDEXNOW_KEY.");
+
+          const BATCH_SIZE = 10000;
+          let submitted = 0;
+          for (let i = 0; i < uniqueUrls.length; i += BATCH_SIZE) {
+            const urlList = uniqueUrls.slice(i, i + BATCH_SIZE);
+            const response = await fetchRetry("https://api.indexnow.org/indexnow", {
+              method: "POST",
+              headers: { "content-type": "application/json; charset=utf-8" },
+              body: JSON.stringify({
+                host: new URL(SITE).host,
+                key: KEY,
+                keyLocation: KEY_LOCATION,
+                urlList
+              })
+            }, "IndexNow submission");
+            if (response.status !== 200 && response.status !== 202) {
+              throw new Error("Unexpected IndexNow response: HTTP " + response.status);
+            }
+            console.log("IndexNow accepted batch:", urlList.length, "URLs");
+            submitted += urlList.length;
+          }
+
+          console.log("IndexNow submission complete:", submitted, "public URLs.");
+          NODE
