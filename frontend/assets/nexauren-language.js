@@ -357,8 +357,8 @@ function addToggle(){
 
 function setLanguage(nextLanguage="pt"){
   current=LANGS.has(String(nextLanguage||"").toLowerCase())?String(nextLanguage).toLowerCase():"pt";
-  try{localStorage.setItem(STORAGE,"en")}catch{}
-  persistServerLanguage("en");
+  try{localStorage.setItem(STORAGE,current)}catch{}
+  persistServerLanguage(current);
   const u=new URL(location.href);u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search||""));
   addToggle();
   translateDom();
