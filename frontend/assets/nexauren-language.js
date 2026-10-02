@@ -186,8 +186,8 @@ function persistServerLanguage(lang){
   }catch{}
 }
 function getLang(){
-  try{localStorage.setItem(STORAGE,"en")}catch{}
-  return "en";
+  try{localStorage.setItem(STORAGE,"pt")}catch{}
+  return "pt";
 }
 let current=getLang();
 let busy=false;
@@ -355,8 +355,8 @@ function addToggle(){
   });
 }
 
-function setLanguage(){
-  current="en";
+function setLanguage(nextLanguage="pt"){
+  current=LANGS.has(String(nextLanguage||"").toLowerCase())?String(nextLanguage).toLowerCase():"pt";
   try{localStorage.setItem(STORAGE,"en")}catch{}
   persistServerLanguage("en");
   const u=new URL(location.href);u.searchParams.delete("lang");history.replaceState(null,"",u.pathname+(u.search||""));
