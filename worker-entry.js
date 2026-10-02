@@ -442,7 +442,7 @@ async function sitemapPages(env){
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}});
 }
 async function sitemapIndex(){const body='<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://nexaurenstory.com/sitemap-pages.xml</loc></sitemap>\n</sitemapindex>';return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}})}
-async function robots(){return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}})}
+async function robots(){return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}})}
 function seoHead(html,o){
   const set=(re,val)=>{html=html.replace(re,val);};
   html=html.replace(/<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*type=["']image\/svg\+xml["'][^>]*>/gi,"");
