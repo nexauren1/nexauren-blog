@@ -1,17 +1,17 @@
 {
-  "version": 4,
-  "generatedAt": "2026-10-02T21:18:58.791Z",
+  "version": 5,
+  "generatedAt": "2026-10-02T21:20:44.336Z",
   "urls": [
     "/",
     "/ad-test/",
     "/faq/",
     "/feedback/",
     "/legal/cookies/",
-    "/legal/privacidade/",
-    "/legal/termos/",
+    "/legal/privacy/",
+    "/legal/terms/",
     "/support/",
     "/tool/",
-    "/tool/avaliacoes/",
+    "/tool/reviews/",
     "/tool/categories/images/",
     "/tool/categories/images/before-after/",
     "/tool/categories/images/blur-pixelate/",
@@ -43,7 +43,7 @@
     "/tool/categories/pdf/png-to-pdf/",
     "/tool/categories/pdf/rotate-pdf/",
     "/tool/categories/pdf/split-pdf/",
-    "/tool/destaques/",
-    "/tool/populares/"
+    "/tool/featured/",
+    "/tool/popular/"
   ]
 }
