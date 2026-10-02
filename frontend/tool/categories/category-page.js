@@ -6,7 +6,7 @@
   const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const normalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 
-  let language="en";
+  let language="pt";
   const label=(item,key)=>language==="en"?(item?.[key+"_en"]||item?.[key]||""):(item?.[key]||"");
   const localizedTags=item=>language==="en"?(Array.isArray(item?.tags_en)&&item.tags_en.length?item.tags_en:(item?.tags||[])):(item?.tags||[]);
   const ui=Object.freeze(language==="en" ? {
@@ -271,7 +271,7 @@
     const visibleCategoryName=esc(label(cat,"name"));
     const seoIntro=esc(seo.description);
     const topToolNames=state.tools.slice(0,4).map(tool=>esc(label(tool,"name"))).join(", ");
-    root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+visibleCategoryName+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" "+ui.tool+" available":" "+ui.tool+" disponível"):(language==="en"?" "+ui.toolsPlural+" available":" "+ui.toolsPlural+" disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section><section class="tool-category-seo" aria-labelledby="category-seo-title"><h2 id="category-seo-title">Explore '+visibleCategoryName+' tools online</h2><p>'+seoIntro+'</p><p>Each tool focuses on one practical workflow, with direct browser access and clear controls. Available tools include '+topToolNames+'.</p></section>';
+    root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+visibleCategoryName+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" "+ui.tool+" available":" "+ui.tool+" disponível"):(language==="en"?" "+ui.toolsPlural+" available":" "+ui.toolsPlural+" disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section><section class="tool-category-seo" aria-labelledby="category-seo-title"><h2 id="category-seo-title">Explore as ferramentas de '+visibleCategoryName+' online</h2><p>'+seoIntro+'</p><p>Cada ferramenta foi criada para uma tarefa prática, com acesso direto no navegador e controlos claros. Entre as ferramentas disponíveis estão '+topToolNames+'.</p></section>';
     buildSearch();
   }
 
@@ -304,7 +304,7 @@
 
   document.addEventListener("click",handleToolClick,true);
   window.addEventListener("nexauren:tool-registry-updated",event=>{if(user&&event.detail)render(event.detail)}); 
-  window.addEventListener("nexauren:language-changed",async event=>{language="en";const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
+  window.addEventListener("nexauren:language-changed",async event=>{language=event.detail?.lang==="en"?"en":"pt";const cached=window.NexaurenToolRegistry.getCachedRegistry?.();if(cached){render(cached);return}try{render(await window.NexaurenToolRegistry.refreshRegistry())}catch{}});
   window.addEventListener("pageshow",()=>{if(user)refreshPlan()});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&user)refreshPlan()});
 
