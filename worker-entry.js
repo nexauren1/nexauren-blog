@@ -1527,6 +1527,7 @@ async function decorateToolHtmlResponse(request,response,internalPath=null){
     html=html.replace(/<link[^>]+href=["'][^"']*public-ui\.css(?:\?[^"']*)?["'][^>]*>/gi,"");
     if(!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=html.replace(/<body([^>]*)>/i,'<body$1 data-skip-global-footer="true">');
   }
+  html=html.replaceAll('href="/tool/destaques/"','href="/tool/featured/"').replaceAll('href="/tool/populares/"','href="/tool/popular/"').replaceAll('href="/tool/avaliacoes/"','href="/tool/reviews/"').replaceAll('href="/legal/privacidade/"','href="/legal/privacy/"').replaceAll('href="/legal/termos/"','href="/legal/terms/"');
   if(!standalone&&!/data-skip-global-footer(?:\s|=|>)/i.test(html))html=replaceGlobalFooter(html,url.pathname);
   const headers=new Headers(response.headers);headers.delete("content-length");headers.set("cache-control",standalone?"no-store":"public, max-age=60, must-revalidate");
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
