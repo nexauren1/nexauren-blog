@@ -1,6 +1,6 @@
 (()=>{
   const DATA_URL="/api/tool-registry";
-  const requestedLanguage="en";
+  const requestedLanguage="pt";
   const FALLBACK_DATA_URL="/tool/data/data.json";
   const CACHE_KEY="nexauren:tool-registry:v9";
   const CACHE_SCOPE=requestedLanguage;
