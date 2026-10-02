@@ -1,6 +1,6 @@
 {
-  "version": 4,
-  "generatedAt": "2026-10-01T17:17:20.084Z",
+  "version": 3,
+  "generatedAt": "2026-10-02T20:04:41.405985Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -27,6 +27,8 @@
     "/tool/categories/imagem/image-watermark/",
     "/tool/categories/imagem/rotate-flip-image/",
     "/tool/categories/imagem/social-image-resizer/",
+    "/tool/categories/marketplace/",
+    "/tool/categories/marketplace/calculador-de-preco/",
     "/tool/categories/pdf/",
     "/tool/categories/pdf/add-text-to-pdf/",
     "/tool/categories/pdf/delete-pdf-pages/",
