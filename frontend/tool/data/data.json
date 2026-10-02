@@ -1,9 +1,9 @@
 {
-  "version": 28,
+  "version": 29,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-10-01T17:17:19.572Z",
+    "updatedAt": "2026-10-02T00:00:00.000Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -26,6 +26,16 @@
       "path": "/tool/categories/pdf/",
       "name_en": "PDF Tools",
       "description_en": "A focused PDF Lab for creating, converting, editing, organizing, and exporting documents in your browser."
+    },
+    {
+      "id": "marketplace",
+      "name": "Marketplace",
+      "description": "Ferramentas para vendedores, pequenos negócios, preços, custos e lucro.",
+      "icon": "🛒",
+      "sortOrder": 30,
+      "path": "/tool/categories/marketplace/",
+      "name_en": "Marketplace Tools",
+      "description_en": "Commercial tools for sellers and small businesses to calculate prices, costs, fees, margins, and profit."
     }
   ],
   "tools": [
@@ -936,6 +946,43 @@
       "popular": true,
       "access": "public",
       "sortOrder": 15
+    },
+    {
+      "id": "calculador-preco-lucro",
+      "name": "Calculador de Preço & Lucro",
+      "description": "Monte o custo real, inclua taxas, defina margem ou markup e veja preço de vitrine, preço final, lucro, ROI e ponto de equilíbrio.",
+      "category": "marketplace",
+      "group": "marketplace",
+      "icon": "🧮",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/marketplace/calculador-de-preco/",
+      "tags": [
+        "marketplace",
+        "preço",
+        "lucro",
+        "margem",
+        "markup",
+        "custos",
+        "taxas",
+        "vendedores"
+      ],
+      "featured": true,
+      "popular": true,
+      "access": "public",
+      "sortOrder": 10,
+      "name_en": "Pricing & Profit Calculator",
+      "description_en": "Build your real unit cost, add marketplace and payment fees, choose margin or markup, and see the selling price, profit, ROI, and break-even point.",
+      "tags_en": [
+        "marketplace",
+        "pricing calculator",
+        "profit calculator",
+        "profit margin",
+        "markup",
+        "seller",
+        "product pricing",
+        "break-even"
+      ]
     }
   ]
 }

@@ -481,7 +481,7 @@ function seoHead(html,o){
   html=html.replace(/<script id="nexauren-structured-data" type="application\/ld\+json">[\s\S]*?<\/script>/i,'<script id="nexauren-structured-data" type="application/ld+json">'+safeJsonLd(o.structured)+'</script>');
   return html;
 }
-const PUBLIC_TOOL_CATEGORIES=new Set(["imagem","pdf"]);
+const PUBLIC_TOOL_CATEGORIES=new Set(["imagem","pdf","marketplace"]);
 function normalizeToolRegistry(raw){
   const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
     id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
