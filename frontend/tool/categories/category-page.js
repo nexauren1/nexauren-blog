@@ -242,8 +242,8 @@
   }
 
   function applySeo(cat){
-    const name=label(cat,"name")||"Ferramentas";
-    const description=(label(cat,"description")||"Ferramentas online do Nexauren Story.").trim().slice(0,160);
+    const name=label(cat,"name")||"Tools";
+    const description=(label(cat,"description")||"Nexauren Story online tools.").trim().slice(0,160);
     const canonical=new URL(location.pathname.replace(/\/$/,"")+"/",location.origin).href;
     const set=(selector,attr,value)=>{
       let el=document.querySelector(selector);
@@ -251,7 +251,7 @@
       el.setAttribute(attr,value);
     };
     set('meta[name="description"]',"content",description);
-    set('meta[property="og:title"]',"content",name+" — Ferramentas — Nexauren Story");
+    set('meta[property="og:title"]',"content",name+" — Tools — Nexauren Story");
     set('meta[property="og:description"]',"content",description);
     set('meta[property="og:url"]',"content",canonical);
     let link=document.querySelector('link[rel="canonical"]');
@@ -274,7 +274,7 @@
   function render(registry){
     const cat=window.NexaurenToolRegistry.getCategory(registry,slug);
     if(!cat){
-      root.innerHTML='<section class="tool-results"><div class="tool-empty"><strong>'+esc(language==="en"?"Category not found.":"Categoria não encontrada.")+'</strong></div></section>';
+      root.innerHTML='<section class="tool-results"><div class="tool-empty"><strong>'+esc("Category not found.")+'</strong></div></section>';
       return;
     }
     const seo=applySeo(cat);
@@ -283,7 +283,7 @@
     const visibleCategoryName=esc(label(cat,"name"));
     const seoIntro=esc(seo.description);
     const topToolNames=state.tools.slice(0,4).map(tool=>esc(label(tool,"name"))).join(", ");
-    root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+visibleCategoryName+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" "+ui.tool+" available":" "+ui.tool+" disponível"):(language==="en"?" "+ui.toolsPlural+" available":" "+ui.toolsPlural+" disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section><section class="tool-category-seo" aria-labelledby="category-seo-title"><h2 id="category-seo-title">Explore as ferramentas de '+visibleCategoryName+' online</h2><p>'+seoIntro+'</p><p>Cada ferramenta foi criada para uma tarefa prática, com acesso direto no navegador e controlos claros. Entre as ferramentas disponíveis estão '+topToolNames+'.</p></section>';
+    root.innerHTML='<section class="tool-category-head"><a class="tool-back" href="/tool/'+(language==="en"?'?lang=en':'')+'">← '+esc(ui.allCategories)+'</a><div class="tool-eyebrow">'+ui.category+'</div><h1>'+visibleCategoryName+'</h1><p>'+esc(label(cat,"description")||"")+'</p><span class="tool-count">'+state.tools.length+(state.tools.length===1?(language==="en"?" "+ui.tool+" available":" "+ui.tool+" disponível"):(language==="en"?" "+ui.toolsPlural+" available":" "+ui.toolsPlural+" disponíveis"))+'</span></section><section class="tool-category-search" data-category-search aria-label="'+esc(ui.advancedSearch)+'"></section><section class="tool-results" aria-label="'+esc(ui.categoryTools)+'"><div class="tool-grid" data-category-results></div><div class="tool-empty" data-category-empty hidden></div></section><section class="tool-category-seo" aria-labelledby="category-seo-title"><h2 id="category-seo-title">Explore '+visibleCategoryName+' tools online</h2><p>'+seoIntro+'</p><p>Cada ferramenta foi criada para uma tarefa prática, com acesso direto no navegador e controlos claros. Entre as ferramentas disponíveis estão '+topToolNames+'.</p></section>';
     buildSearch();
   }
 
