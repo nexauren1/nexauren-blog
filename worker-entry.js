@@ -442,7 +442,7 @@ async function sitemapPages(env){
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+out+"\n</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}});
 }
 async function sitemapIndex(){const body='<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://nexaurenstory.com/sitemap-pages.xml</loc></sitemap>\n</sitemapindex>';return new Response(body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=900"}})}
-async function robots(){return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}})}
+async function robots(){return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=3600"}})}
 function seoHead(html,o){
   const set=(re,val)=>{html=html.replace(re,val);};
   html=html.replace(/<link[^>]+rel=["'](?:icon|shortcut icon)["'][^>]*type=["']image\/svg\+xml["'][^>]*>/gi,"");
@@ -482,6 +482,14 @@ function seoHead(html,o){
   return html;
 }
 const PUBLIC_TOOL_CATEGORIES=new Set(["imagem","pdf","marketplace"]);
+const INDEXNOW_KEY_PATH="/.well-known/indexnow-key.txt";
+function indexNowKeyResponse(env){
+  const key=String(env.INDEXNOW_KEY||"").trim();
+  if(!/^[A-Za-z0-9-]{8,128}$/.test(key)){
+    return new Response("IndexNow não configurado.\n",{status:404,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
+  }
+  return new Response(key+"\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
+}
 function normalizeToolRegistry(raw){
   const categories=Array.isArray(raw?.categories)?raw.categories.map((c,i)=>({
     id:slugify(c?.id||c?.name||("categoria-"+(i+1))),
@@ -1503,6 +1511,7 @@ async function page(env,request,url){
   if(url.pathname==="/sitemap.xml")return sitemapIndex();
   if(url.pathname==="/sitemap-pages.xml")return sitemapPages(env);
   if(url.pathname==="/robots.txt")return robots();
+  if(url.pathname===INDEXNOW_KEY_PATH)return indexNowKeyResponse(env);
   if(url.pathname==="/social-preview.png")return env.ASSETS.fetch(new Request(new URL("/assets/social-preview-nexauren.png?v=20260926-png",request.url),request));
   if(url.pathname.startsWith("/assets/")||url.pathname.startsWith("/admin-assets/")||url.pathname==="/manifest.json")return env.ASSETS.fetch(request);
   if(url.pathname.startsWith("/tool/frontend/templates/"))return fail("Página não encontrada.",404,"NOT_FOUND");

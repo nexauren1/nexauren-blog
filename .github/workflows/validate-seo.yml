@@ -19,26 +19,45 @@ jobs:
       - name: Validate SEO implementation
         run: |
           set -euo pipefail
+          set -euo pipefail
           test -s frontend/assets/favicon-nexauren.png
           test -s frontend/assets/social-preview-nexauren.png
           test -f frontend/manifest.json
-          grep -Fq '/assets/favicon-nexauren.png' frontend/index.html
-          grep -Fq '/assets/social-preview-nexauren.png' frontend/index.html
-          ! grep -Eq 'nexauren-story-favicon[.]svg|rel="(icon|shortcut icon)"[^>]+image/svg[+]xml' frontend/index.html
-          grep -q 'rel="canonical"' frontend/index.html
-          grep -q 'property="og:title"' frontend/index.html
-          grep -q 'name="twitter:card"' frontend/index.html
-          grep -q 'nexauren-structured-data' frontend/index.html
-          grep -q 'src="/assets/ads.js"' frontend/assets/app.js
-          grep -q '842be0a485a66000fcf7e5d24ee7b149' frontend/assets/ads.js
-          ! grep -q '11177602' frontend/assets/ads.js
-          ! grep -q 'vignette.min.js' frontend/assets/ads.js
-          grep -q 'function sitemap' worker-entry.js
-          grep -q 'function robots' worker-entry.js
-          grep -q 'Disallow: /admin' worker-entry.js
-          grep -q 'Disallow: /api/' worker-entry.js
-          grep -q 'Disallow: /search' worker-entry.js
-          echo "SEO source checks passed."
+          node <<'NODE'
+          const fs = require("fs");
+          function read(path){return fs.readFileSync(path,"utf8");}
+          function requireText(path, text){
+            if(!read(path).includes(text)) throw new Error("Missing expected text in "+path+": "+text);
+          }
+          function forbid(path, text){
+            if(read(path).includes(text)) throw new Error("Forbidden text in "+path+": "+text);
+          }
+
+          const index=read("frontend/index.html");
+          if(!index.includes('/assets/favicon-nexauren.png')) throw new Error("Homepage favicon reference missing.");
+          if(!index.includes('/assets/social-preview-nexauren.png')) throw new Error("Homepage social preview reference missing.");
+          if(/nexauren-story-favicon[.]svg|rel="(icon|shortcut icon)"[^>]+image\/svg\+xml/.test(index)) throw new Error("Legacy SVG favicon reference remains.");
+          if(!index.includes('rel="canonical"')) throw new Error("Homepage canonical link missing.");
+          if(!index.includes('property="og:title"')) throw new Error("Homepage Open Graph title missing.");
+          if(!index.includes('name="twitter:card"')) throw new Error("Homepage Twitter card metadata missing.");
+          if(!index.includes('nexauren-structured-data')) throw new Error("Homepage structured data missing.");
+
+          requireText("frontend/assets/app.js",'src="/assets/ads.js"');
+          requireText("frontend/assets/ads.js","842be0a485a66000fcf7e5d24ee7b149");
+          forbid("frontend/assets/ads.js","11177602");
+          forbid("frontend/assets/ads.js","vignette.min.js");
+
+          const worker=read("worker-entry.js");
+          for(const expected of [
+            "function sitemap",
+            "function robots",
+            "Disallow: /admin",
+            "Disallow: /api/",
+            "Disallow: /search"
+          ]) requireText("worker-entry.js",expected);
+
+          console.log("SEO source checks passed.");
+          NODE
 
       - name: Validate public sitemap
         run: |

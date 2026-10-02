@@ -1,4 +1,1 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://nexaurenstory.com/sitemap.xml
+User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /account\nDisallow: /search\nSitemap: https://nexaurenstory.com/sitemap.xml\n
