@@ -42,6 +42,14 @@ body[data-category="marketplace"] .tool-card>small{color:#8793a5!important}
 body[data-category="marketplace"] .tool-arrow{color:#2962ff!important}
 body[data-category="marketplace"] .tool-empty{background:#fff!important;border:1px dashed #cfd8e6!important;color:#657186!important}
 body[data-category="marketplace"] .tool-footer{background:#fff;border-top:1px solid #edf0f4;color:#718096}
+body[data-category="marketplace"] .tool-category-seo-copy{margin:18px 0 34px;padding:0}
+body[data-category="marketplace"] .tool-category-seo-inner{border:1px solid #e2e7ef;border-radius:22px;background:linear-gradient(135deg,#fff,#f7f9fd);padding:24px 26px;box-shadow:0 12px 30px rgba(30,41,59,.06)}
+body[data-category="marketplace"] .tool-category-seo-inner h2{margin:7px 0 9px;font-size:clamp(22px,3vw,30px);letter-spacing:-.03em}
+body[data-category="marketplace"] .tool-category-seo-inner p{margin:8px 0;color:#667287;line-height:1.7;max-width:900px}
+body[data-category="marketplace"] .tool-category-seo-inner a{color:#1f5cff;font-weight:850;text-decoration:none}
+body[data-category="marketplace"] .tool-category-seo-inner a:hover{text-decoration:underline}
+@media(max-width:640px){body[data-category="marketplace"] .tool-category-seo-inner{padding:18px 16px;border-radius:18px}}
+
 @media(max-width:1100px){body[data-category="marketplace"] .tool-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:820px){body[data-category="marketplace"] .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){body[data-category="marketplace"] .tool-wrap{width:calc(100% - 14px)}body[data-category="marketplace"] .tool-category-head{padding:21px 17px;border-radius:21px}body[data-category="marketplace"] .tool-category-head h1{font-size:clamp(40px,14vw,57px)}body[data-category="marketplace"] .tool-category-head:before{font-size:92px;right:10px;bottom:-18px}body[data-category="marketplace"] .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}body[data-category="marketplace"] .tool-card{min-height:182px;padding:14px!important;border-radius:17px!important}body[data-category="marketplace"] .tool-card h2{font-size:14px!important;margin-top:13px!important}body[data-category="marketplace"] .tool-card p{font-size:11px!important}}
