@@ -322,14 +322,15 @@
 
   (async()=>{
     try{
-      accessApi=await import("/tool/frontend/tool-access.js?v=20260923-access-2");
-      accessApi.onAuthStateChanged(accessApi.auth,async currentUser=>{
-        user=currentUser;
-        await load();
-        if(user)refreshPlan();
-      });
+      // Category pages must render their public catalog without waiting for authentication.
+      // Authentication is only needed later when a protected tool is opened.
+      try{accessApi=await import("/tool/frontend/tool-access.js?v=20260923-access-2")}catch{accessApi=null}
+      const cached=window.NexaurenToolRegistry.getCachedRegistry?.();
+      if(cached?.categories?.some(category=>category.id===slug||category.slug===slug))render(cached);
+      const registry=await window.NexaurenToolRegistry.refreshRegistry();
+      render(registry);
     }catch{
-      accountGate();
+      if(!root.querySelector("[data-category-results]"))root.innerHTML='<section class="tool-results"><div class="tool-empty"><strong>'+esc(ui.unavailable)+'</strong><br>'+esc(ui.tryAgain)+'.</div></section>';
     }
   })();
 })();
