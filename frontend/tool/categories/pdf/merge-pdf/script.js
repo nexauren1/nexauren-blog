@@ -296,12 +296,12 @@ function render(){
 function add(filesList){
   const selected=[...filesList].filter(file=>file&&(/application\/pdf/i.test(file.type)||/\.pdf$/i.test(file.name)));
   if(!selected.length){
-    msg(x().invalid,true);
+    msg(t().invalid,true);
     return;
   }
   files.push(...selected);
   render();
-  msg(x().ready);
+  msg(t().ready);
 }
 
 async function engine(){
@@ -331,7 +331,7 @@ async function merge(){
     let totalPages=0;
 
     for(let i=0;i<files.length;i++){
-      msg(x().reading+" "+(i+1)+"/"+files.length+"…");
+      msg(t().reading+" "+(i+1)+"/"+files.length+"…");
       const source=await PDFDocument.load(await files[i].arrayBuffer(),{ignoreEncryption:true});
       const pages=await merged.copyPages(source,source.getPageIndices());
       pages.forEach(page=>merged.addPage(page));
@@ -349,7 +349,7 @@ async function merge(){
     resultSize.textContent=bytes(output.size);
     result.hidden=false;
     progress.style.width="100%";
-    msg(x().done);
+    msg(t().done);
 
     downloadBtn.onclick=()=>{
       const url=URL.createObjectURL(output);
@@ -373,7 +373,7 @@ async function merge(){
       }
     };
   }catch(error){
-    msg(error?.message||x().error,true);
+    msg(error?.message||t().error,true);
   }finally{
     build.disabled=files.length<2;
     clear.disabled=false;
