@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-10-04T06:37:53.992481Z",
+  "generatedAt": "2026-10-04T06:38:25.639619Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -14,6 +14,9 @@
     "/tool/categories/audio/",
     "/tool/categories/audio/audio-converter/",
     "/tool/categories/audio/audio-trimmer/",
+    "/tool/categories/audio/music-production/bpm-tempo-calculator/",
+    "/tool/categories/audio/music-production/key-scale-finder/",
+    "/tool/categories/audio/music-production/pitch-time-calculator/",
     "/tool/categories/audio/sample-pack-studio/",
     "/tool/categories/images/",
     "/tool/categories/images/before-after/",
