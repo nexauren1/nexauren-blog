@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="/assets/nexauren-language.js?v=20260928-6"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b0c">
+<meta name="description" content="Audio Trimmer Nexauren: corte áudio com precisão, fade, normalização e exportação local em WAV ou MP3.">
+<link rel="canonical" href="https://nexaurenstory.com/tool/categories/audio/audio-trimmer/">
+<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand">
+<link rel="stylesheet" href="/assets/public-ui.css?v=20260923-access">
+<link rel="stylesheet" href="./audio-trimmer.css?v=20260928-2">
+<title>Audio Trimmer — Nexauren</title>
+<script src="/assets/ads.js?v=20260925-auto3"></script>
+<style id="at-critical">
+body.at-page{background:#07090a!important;color:#f5f7f4!important}
+.at-source,.at-editor,.at-control-main,.at-action,.at-result{background:linear-gradient(145deg,rgba(14,19,20,.98),rgba(7,10,10,.98))!important;border-color:rgba(255,255,255,.10)!important}
+.at-eyebrow{color:#ffb84f!important}.at-badge{color:#74f0be!important;border-color:rgba(116,240,190,.28)!important}
+.at-upload{background:linear-gradient(145deg,rgba(255,184,79,.12),rgba(116,240,190,.06))!important;border-color:rgba(255,184,79,.34)!important}
+.at-upload-icon{color:#ffb84f!important}.at-file{background:#0a0d0e!important;border-color:rgba(255,255,255,.10)!important}
+.at-wave-wrap{background:#080b0b!important;border-color:rgba(255,255,255,.10)!important}
+.at-selection-band{background:rgba(255,184,79,.10)!important;border-color:rgba(255,184,79,.35)!important}
+.at-handle span{background:#ffb84f!important}.at-handle.end span{background:#74f0be!important}
+.at-primary{background:linear-gradient(135deg,#ffb84f,#75f0be)!important;color:#07100c!important}
+.at-format button.active{color:#ffb84f!important;border-color:rgba(255,184,79,.5)!important;background:rgba(255,184,79,.08)!important}
+.at-action{background:linear-gradient(180deg,rgba(255,184,79,.10),rgba(116,240,190,.04))!important}
+.at-footer{color:#8b9692!important}.at-footer a{color:inherit!important}
+</style></head>
+<body class="nx-page at-page">
+<div class="at-ad"><span>ADVERTISEMENT</span><div id="at-ad-top"></div></div>
+<header class="at-header">
+  <div class="at-shell at-nav">
+    <a class="at-brand" href="/tool/categories/audio/" aria-label="Nexauren Audio"><span class="at-logo">⌁</span><span><strong>NEXAUREN</strong><small>AUDIO TRIMMER</small></span></a>
+    <div class="at-nav-actions"><a href="/tool/categories/audio/" class="at-back">← <span data-i18n="audioTools">Ferramentas de áudio</span></a><button id="lang-toggle" class="at-lang" type="button">EN</button></div>
+  </div>
+</header>
+
+<main class="at-shell">
+  <section class="at-hero">
+    <div class="at-eyebrow">SIGNAL EDITOR / 02</div>
+    <h1 data-i18n="title">Audio Trimmer</h1>
+    <p data-i18n="lead">Corte exatamente o trecho que precisa. Arraste os marcadores, faça preview do recorte e exporte sem sair do navegador.</p>
+  </section>
+
+  <section class="at-source">
+    <div class="at-source-head">
+      <div><span>INPUT</span><strong data-i18n="loadAudio">Carregar áudio</strong></div>
+      <span id="state-badge" class="at-badge">IDLE</span>
+    </div>
+    <div class="at-load-row">
+      <label class="at-upload">
+        <input id="file-input" type="file" accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a,.aac,.opus,.webm">
+        <span class="at-upload-icon">＋</span>
+        <span><b data-i18n="choose">Escolher ficheiro</b><small data-i18n="supported">WAV, MP3, FLAC, OGG, M4A e outros formatos suportados</small></span>
+      </label>
+      <div class="at-file">
+        <div class="at-file-icon">♫</div>
+        <div><strong id="file-name" data-i18n="noFile">Nenhum ficheiro</strong><small id="file-meta">—</small></div>
+        <button id="clear-file" type="button" hidden>×</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="at-editor">
+    <div class="at-editor-head">
+      <div><span class="at-eyebrow">TIMELINE / 01</span><h2 data-i18n="selectRegion">Selecione a região</h2></div>
+      <div class="at-time-readout"><strong id="start-readout">00:00</strong><i>→</i><strong id="end-readout">00:00</strong><small id="total-readout">/ 00:00</small></div>
+    </div>
+    <div class="at-wave-wrap">
+      <div class="at-wave-labels"><span data-i18n="start">START</span><span data-i18n="selection">SELECTION</span><span data-i18n="end">END</span></div>
+      <canvas id="wave" height="240"></canvas>
+      <div id="wave-hit" class="at-wave-hit" aria-label="Selecionar intervalo de áudio"></div>
+      <div id="start-handle" class="at-handle start" role="slider" aria-label="Início da seleção" tabindex="0"><span></span></div>
+      <div id="end-handle" class="at-handle end" role="slider" aria-label="Fim da seleção" tabindex="0"><span></span></div>
+      <div id="selection-band" class="at-selection-band"><span></span></div>
+    </div>
+    <div class="at-player"><audio id="player" controls preload="metadata"></audio></div>
+    <div class="at-quick">
+      <button type="button" data-mark="start" data-i18n="markStart">Marcar início</button>
+      <button type="button" data-mark="end" data-i18n="markEnd">Marcar fim</button>
+      <button type="button" data-preset="first10">Primeiros 10s</button>
+      <button type="button" data-preset="last10">Últimos 10s</button>
+      <button type="button" data-preset="all">Tudo</button>
+    </div>
+  </section>
+
+  <section class="at-controls">
+    <div class="at-control-main">
+      <div class="at-section-head"><div><span class="at-eyebrow">PROCESS / 02</span><h2 data-i18n="processing">Processamento</h2></div><span data-i18n="local">LOCAL</span></div>
+      <div class="at-fields">
+        <label><span data-i18n="startTime">Início</span><input id="start-input" inputmode="decimal" value="0:00"></label>
+        <label><span data-i18n="endTime">Fim</span><input id="end-input" inputmode="decimal" value="0:00"></label>
+        <label><span data-i18n="fadeIn">Fade in</span><select id="fade-in"><option value="0">0 s</option><option value=".05">0.05 s</option><option value=".1">0.1 s</option><option value=".25">0.25 s</option><option value=".5">0.5 s</option><option value="1">1 s</option><option value="2">2 s</option></select></label>
+        <label><span data-i18n="fadeOut">Fade out</span><select id="fade-out"><option value="0">0 s</option><option value=".05">0.05 s</option><option value=".1">0.1 s</option><option value=".25">0.25 s</option><option value=".5">0.5 s</option><option value="1">1 s</option><option value="2">2 s</option></select></label>
+        <label><span data-i18n="gain">Gain</span><input id="gain" type="range" min="-12" max="12" step=".5" value="0"><output id="gain-val">0 dB</output></label>
+        <label class="at-check"><input id="normalize" type="checkbox"><span><b data-i18n="normalize">Normalize</b><small data-i18n="normalizeHint">Peak control</small></span></label>
+      </div>
+      <div class="at-format"><span data-i18n="format">Export format</span><button class="active" data-format="wav" type="button">WAV<span>PCM</span></button><button data-format="mp3" type="button">MP3<span>192 kbps</span></button></div>
+    </div>
+    <aside class="at-action">
+      <div class="at-action-top"><span class="at-eyebrow">EXPORT</span><b id="out-format">WAV</b></div>
+      <div class="at-action-number" id="clip-duration">00:00</div>
+      <small data-i18n="clipLength">Duração do recorte</small>
+      <button id="trim" class="at-primary" type="button" disabled data-i18n="trimButton">Cortar áudio</button>
+      <div id="progress" hidden><div><span id="progress-label">Rendering</span><b id="progress-pct">0%</b></div><div class="at-bar"><i id="progress-fill"></i></div><button id="cancel" type="button" data-i18n="cancel">Cancelar</button></div>
+      <p id="status" data-i18n="readyHint">Escolha um áudio para começar.</p>
+    </aside>
+  </section>
+
+  <section id="result" class="at-result" hidden>
+    <div class="at-result-head"><div><span class="at-eyebrow">OUTPUT / 03</span><h2 data-i18n="result">Resultado</h2></div><button id="download" class="at-download" type="button" data-i18n="download">Download</button></div>
+    <div class="at-result-file"><span>✓</span><div><strong id="result-name">trimmed.wav</strong><small id="result-meta">—</small></div></div>
+    <div class="at-player"><audio id="result-player" controls></audio></div>
+  </section>
+</main>
+
+<div class="at-ad"><span>ADVERTISEMENT</span><div id="at-ad-bottom"></div></div>
+<footer class="at-footer at-shell"><span>© <span id="year"></span> Nexauren Story · Audio Trimmer</span><span><a href="/tool/categories/audio/">Audio</a> · <a href="/tool/">Tools</a> · <a href="/legal/privacy/">Privacy</a></span></footer>
+<div id="toast" class="at-toast" role="status" aria-live="polite"></div>
+<script>
+window.NexaurenAds&&NexaurenAds.loadBanner(document.getElementById("at-ad-top"));
+window.NexaurenAds&&NexaurenAds.loadResponsive(document.getElementById("at-ad-bottom"));
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+<script src="./audio-trimmer.js?v=20260928-1"></script>
+<script src="/assets/public-ui.js?v=20260923-menu-layer" defer></script>
+</body>
+</html>
