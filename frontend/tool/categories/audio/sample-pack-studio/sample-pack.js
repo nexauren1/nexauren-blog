@@ -9,7 +9,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const state={
   lang:"en",mode:null,source:null,sourceBuffer:null,sourcePreviewUrl:null,generated:[],organized:[],zipBlob:null,
-  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null,selectedEffects:[],effectPreset:"diverse",modalOpen:null,
+  orgFiles:[],orgZipBlob:null,toastTimer:null,zipLib:null,selectedEffects:[],effectPreset:"diverse",packProfile:"smart",packSeed:0,modalOpen:null,
   generating:false,cancelRequested:false
 };
 
@@ -20,7 +20,7 @@ const I18N={
     organizeModeTitle:"Organize a Pack",organizeModeCopy:"Upload many samples, review their categories, and let Nexauren build the folder structure for you.",
     choose:"Choose →",backChoose:"Back to mode selection",createKicker:"CREATE PACK",createTitle:"Turn one sample into a pack.",
     sourceTitle:"Source sample",sourceHint:"One audio file",dropOne:"Drop one sample here",dropFormats:"WAV, MP3, M4A, OGG, FLAC and other browser-supported audio",browse:"Browse file",
-    packInfoTitle:"Pack information",zipTitle:"ZIP package",packName:"Pack name",author:"Author",genre:"Genre / style",bpm:"BPM",key:"Key",
+    packInfoTitle:"Pack information",zipTitle:"ZIP package",packName:"Pack name",author:"Author",genre:"Genre / style",packProfile:"Pack profile",bpm:"BPM",key:"Key",
     sampleSettings:"Sample settings",generatedLocally:"Processed in your browser",sampleType:"Sample type",customType:"Custom type",quantity:"Number of samples",
     variation:"Variation amount",includeOriginal:"Include the original sample",randomize:"Randomize small differences between variations",
     securityTitle:"ZIP & security",optional:"Optional",protectZip:"Protect ZIP with a password",zipPassword:"ZIP password",includeCover:"Include pack cover (SVG)",
@@ -44,7 +44,7 @@ const I18N={
     organizeModeTitle:"Organizar um Pack",organizeModeCopy:"Envie vários samples, reveja as categorias e deixe o Nexauren criar a estrutura de pastas.",
     choose:"Escolher →",backChoose:"Voltar à escolha de modo",createKicker:"CRIAR PACK",createTitle:"Transforme um sample num pack.",
     sourceTitle:"Sample de origem",sourceHint:"Um ficheiro de áudio",dropOne:"Arraste um sample para aqui",dropFormats:"WAV, MP3, M4A, OGG, FLAC e outros formatos suportados pelo navegador",browse:"Escolher ficheiro",
-    packInfoTitle:"Informações do pack",zipTitle:"Pacote ZIP",packName:"Nome do pack",author:"Autor",genre:"Género / estilo",bpm:"BPM",key:"Tonalidade",
+    packInfoTitle:"Informações do pack",zipTitle:"Pacote ZIP",packName:"Nome do pack",author:"Autor",genre:"Género / estilo",packProfile:"Perfil do pack",bpm:"BPM",key:"Tonalidade",
     sampleSettings:"Definições do sample",generatedLocally:"Processado no navegador",sampleType:"Tipo de sample",customType:"Tipo personalizado",quantity:"Número de samples",
     variation:"Quantidade de variação",includeOriginal:"Incluir o sample original",randomize:"Adicionar pequenas diferenças aleatórias",
     securityTitle:"ZIP e segurança",optional:"Opcional",protectZip:"Proteger o ZIP com uma senha",zipPassword:"Senha do ZIP",includeCover:"Incluir capa do pack (SVG)",
@@ -67,17 +67,17 @@ const types=["kick","snare","clap","hi-hat","percussion","bass","guitar","pad","
   effectsTitle:"Effects",optionsTitle:"Generation options",effectsSelected:"{n} effects selected · up to {max} per sample",optionsSummary:"{n} samples · {intensity}% intensity · {length}",
   effectsApply:"Apply effects",cancel:"Cancel",presets:"Professional presets",presetDiverse:"Diverse Lab",presetDrum:"Drum Impact",presetMotion:"Motion Lab",presetSpace:"Space & Echo",presetLofi:"Lo-Fi Lab",presetTight:"Short & Tight",presetLong:"Long & Wide",
   effectGroupsMovement:"Movement & Shape",effectGroupsSpace:"Space & Stereo",effectGroupsTiming:"Timing & Repetition",effectGroupsTone:"Tone & Texture",effectGroupsDynamics:"Dynamics & Length",
-  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Rise · Low → High",effectFall:"Fall · High → Low",effectRiseFall:"Rise & Fall",effectFallRise:"Fall & Rise",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · 360° stereo",effectBounce:"Bounce · forward ↔ reverse",effectStutter:"Stutter · micro repeats",effectChop:"Chop · rhythmic cuts",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Short",effectLong:"Long",
+  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Rise · Low → High",effectFall:"Fall · High → Low",effectRiseFall:"Rise & Fall",effectFallRise:"Fall & Rise",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · 360° stereo",effectBounce:"Bounce · forward ↔ reverse",effectStutter:"Stutter · micro repeats",effectChop:"Chop · rhythmic cuts",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectChorus:"Chorus",effectFlanger:"Flanger",effectPhaser:"Phaser",effectGate:"Gate",effectTelephone:"Telephone",effectCompressor:"Compressor",effectVinyl:"Vinyl Dust",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Short",effectLong:"Long",
   quantity:"Number of samples",variation:"Variation intensity",maxEffects:"Maximum effects per variation",lengthMode:"Length",lengthPreserve:"Preserve",lengthMixed:"Mixed",lengthShort:"Shorter",lengthLong:"Longer",
-  sampleType:"Sample type",customType:"Custom type",includeOriginal:"Include the original sample",randomize:"Randomize variation parameters",effectNaming:"Put effect names in filenames",outputNormalize:"Normalize output level",saved:"Saved",effectsHelp:"Select the effects you want available to the generator. Each variation uses a different combination.",optionsHelp:"Fine-tune the generation without cluttering the main workspace.",chooseEffects:"Choose effects"
+  sampleType:"Sample type",customType:"Custom type",includeOriginal:"Include the original sample",randomize:"Randomize variation parameters",effectNaming:"Put effect names in filenames",outputNormalize:"Normalize output level",saved:"Saved",effectsHelp:"Select the effects you want available to the generator. Each variation uses a different combination.",optionsHelp:"Fine-tune the generation without cluttering the main workspace.",chooseEffects:"Choose effects",profileSmart:"Smart / Unique",profileAmapiano:"Amapiano",profileAfroHouse:"Afro House",profileAfrobeats:"Afrobeats",profileTrap:"Trap",profileHipHop:"Hip-Hop",profileCustom:"Custom"
 });
 Object.assign(I18N.pt,{
   effectsTitle:"Efeitos",optionsTitle:"Opções de geração",effectsSelected:"{n} efeitos selecionados · até {max} por sample",optionsSummary:"{n} samples · {intensity}% intensidade · {length}",
   effectsApply:"Aplicar efeitos",cancel:"Cancelar",presets:"Presets profissionais",presetDiverse:"Laboratório Diverso",presetDrum:"Impacto de Drum",presetMotion:"Laboratório de Movimento",presetSpace:"Espaço & Echo",presetLofi:"Laboratório Lo-Fi",presetTight:"Curto & Tight",presetLong:"Longo & Aberto",
   effectGroupsMovement:"Movimento & Forma",effectGroupsSpace:"Espaço & Stereo",effectGroupsTiming:"Tempo & Repetição",effectGroupsTone:"Timbre & Textura",effectGroupsDynamics:"Dinâmica & Duração",
-  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Subida · Baixo → Alto",effectFall:"Descida · Alto → Baixo",effectRiseFall:"Subida & Descida",effectFallRise:"Descida & Subida",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · stereo 360°",effectBounce:"Bounce · frente ↔ reverse",effectStutter:"Stutter · micro repetições",effectChop:"Chop · cortes rítmicos",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Curto",effectLong:"Longo",
+  effectOriginal:"Original",effectReverse:"Reverse",effectPitchUp:"Pitch Up",effectPitchDown:"Pitch Down",effectRise:"Subida · Baixo → Alto",effectFall:"Descida · Alto → Baixo",effectRiseFall:"Subida & Descida",effectFallRise:"Descida & Subida",effectPingPong:"Ping-Pong",effectOrbit:"Orbit · stereo 360°",effectBounce:"Bounce · frente ↔ reverse",effectStutter:"Stutter · micro repetições",effectChop:"Chop · cortes rítmicos",effectEcho:"Echo",effectDelay:"Delay",effectReverb:"Reverb",effectTremolo:"Tremolo",effectChorus:"Chorus",effectFlanger:"Flanger",effectPhaser:"Phaser",effectGate:"Gate",effectTelephone:"Telefone",effectCompressor:"Compressor",effectVinyl:"Vinyl Dust",effectLowpass:"Low-Pass Sweep",effectHighpass:"High-Pass Sweep",effectDistortion:"Distortion",effectLofi:"Lo-Fi / Bitcrush",effectFadeIn:"Fade In",effectFadeOut:"Fade Out",effectShort:"Curto",effectLong:"Longo",
   quantity:"Número de samples",variation:"Intensidade da variação",maxEffects:"Máximo de efeitos por variação",lengthMode:"Duração",lengthPreserve:"Manter",lengthMixed:"Mista",lengthShort:"Mais curta",lengthLong:"Mais longa",
-  sampleType:"Tipo de sample",customType:"Tipo personalizado",includeOriginal:"Incluir o sample original",randomize:"Variar os parâmetros aleatoriamente",effectNaming:"Colocar os efeitos no nome dos ficheiros",outputNormalize:"Normalizar o nível de saída",saved:"Guardado",effectsHelp:"Escolha os efeitos disponíveis para o gerador. Cada variação usa uma combinação diferente.",optionsHelp:"Ajuste a geração sem encher a área principal.",chooseEffects:"Escolher efeitos"
+  sampleType:"Tipo de sample",customType:"Tipo personalizado",includeOriginal:"Incluir o sample original",randomize:"Variar os parâmetros aleatoriamente",effectNaming:"Colocar os efeitos no nome dos ficheiros",outputNormalize:"Normalizar o nível de saída",saved:"Guardado",effectsHelp:"Escolha os efeitos disponíveis para o gerador. Cada variação usa uma combinação diferente.",optionsHelp:"Ajuste a geração sem encher a área principal.",chooseEffects:"Escolher efeitos",profileSmart:"Inteligente / Único",profileAmapiano:"Amapiano",profileAfroHouse:"Afro House",profileAfrobeats:"Afrobeats",profileTrap:"Trap",profileHipHop:"Hip-Hop",profileCustom:"Personalizado"
 });
 const EFFECT_CATALOG=[
   {id:"rise",group:"movement",icon:"↗",key:"effectRise",descEn:"Controlled low-to-high pitch movement.",descPt:"Movimento controlado de baixo para alto."},
@@ -96,6 +96,13 @@ const EFFECT_CATALOG=[
   {id:"delay",group:"space",icon:"◒",key:"effectDelay",descEn:"Shorter cleaner repeats.",descPt:"Repetições mais curtas e limpas."},
   {id:"reverb",group:"space",icon:"✺",key:"effectReverb",descEn:"Synthetic room and hall tail.",descPt:"Cauda de sala e hall sintetizada."},
   {id:"tremolo",group:"space",icon:"≋",key:"effectTremolo",descEn:"Pulsing amplitude movement.",descPt:"Movimento pulsante de amplitude."},
+  {id:"chorus",group:"space",icon:"✣",key:"effectChorus",descEn:"Layered modulated doubling for width.",descPt:"Duplicação modulada para mais largura."},
+  {id:"flanger",group:"space",icon:"≈",key:"effectFlanger",descEn:"Metallic modulated short delay.",descPt:"Delay curto modulado com textura metálica."},
+  {id:"phaser",group:"space",icon:"◈",key:"effectPhaser",descEn:"Sweeping all-pass phase movement.",descPt:"Movimento de fase com filtros all-pass."},
+  {id:"gate",group:"timing",icon:"▤",key:"effectGate",descEn:"Rhythmic volume gating.",descPt:"Cortes rítmicos de volume."},
+  {id:"telephone",group:"tone",icon:"⌕",key:"effectTelephone",descEn:"Narrow-band radio/telephone tone.",descPt:"Timbre estreito de rádio/telefone."},
+  {id:"compressor",group:"dynamics",icon:"◫",key:"effectCompressor",descEn:"Punchier dynamic control.",descPt:"Controlo dinâmico para mais punch."},
+  {id:"vinyl",group:"tone",icon:"◉",key:"effectVinyl",descEn:"Warm filtered dust and subtle noise.",descPt:"Ruído subtil e textura quente de vinil."},
   {id:"lowpass",group:"tone",icon:"⌄",key:"effectLowpass",descEn:"Sweeping low-pass filter.",descPt:"Filtro low-pass em varredura."},
   {id:"highpass",group:"tone",icon:"⌃",key:"effectHighpass",descEn:"Sweeping high-pass filter.",descPt:"Filtro high-pass em varredura."},
   {id:"distortion",group:"tone",icon:"∿",key:"effectDistortion",descEn:"Harmonic drive and saturation.",descPt:"Drive harmónico e saturação."},
@@ -107,27 +114,37 @@ const EFFECT_CATALOG=[
 ];
 const EFFECT_GROUPS=[{id:"movement",key:"effectGroupsMovement"},{id:"space",key:"effectGroupsSpace"},{id:"timing",key:"effectGroupsTiming"},{id:"tone",key:"effectGroupsTone"},{id:"dynamics",key:"effectGroupsDynamics"}];
 const EFFECT_PRESETS={
-  diverse:["rise","fall","rise-fall","fall-rise","reverse","ping-pong","orbit","bounce","stutter","chop","echo","reverb","pitch-up","pitch-down"],
-  drum:["pitch-down","stutter","chop","short","distortion","lowpass","bounce","fade-out"],
-  motion:["rise","fall","rise-fall","fall-rise","ping-pong","orbit","bounce","tremolo","pitch-up","pitch-down"],
-  space:["echo","delay","reverb","orbit","ping-pong","tremolo","rise","fall"],
-  lofi:["lofi","distortion","lowpass","short","reverse","stutter","echo"],
-  tight:["short","chop","stutter","pitch-down","fade-in","fade-out"],
-  long:["long","echo","delay","reverb","rise","fall","orbit","tremolo"]
+  diverse:["rise","fall","rise-fall","fall-rise","reverse","ping-pong","orbit","bounce","stutter","chop","echo","reverb","pitch-up","pitch-down","chorus","flanger","phaser","gate","telephone","compressor","vinyl"],
+  drum:["pitch-down","stutter","chop","short","distortion","lowpass","bounce","fade-out","gate","compressor","flanger"],
+  motion:["rise","fall","rise-fall","fall-rise","ping-pong","orbit","bounce","tremolo","pitch-up","pitch-down","chorus","phaser"],
+  space:["echo","delay","reverb","orbit","ping-pong","tremolo","rise","fall","chorus","flanger","phaser"],
+  lofi:["lofi","distortion","lowpass","short","reverse","stutter","echo","telephone","vinyl"],
+  tight:["short","chop","stutter","pitch-down","fade-in","fade-out","gate","compressor"],
+  long:["long","echo","delay","reverb","rise","fall","orbit","tremolo","chorus","phaser"]
+};
+const PACK_PROFILES={
+  amapiano:["pitch-down","chop","stutter","echo","delay","lowpass","highpass","short","gate","chorus","flanger"],
+  "afro-house":["echo","reverb","delay","orbit","ping-pong","chorus","flanger","highpass","lowpass","rise","fall","phaser"],
+  afrobeats:["pitch-down","chop","delay","chorus","lowpass","highpass","short","stutter","reverse","compressor"],
+  trap:["distortion","lowpass","highpass","pitch-down","short","stutter","reverse","telephone","compressor","gate","flanger"],
+  "hip-hop":["lofi","distortion","lowpass","reverse","stutter","echo","telephone","compressor","chorus","short","vinyl"],
+  custom:[],
+  diverse:["rise","fall","rise-fall","fall-rise","reverse","ping-pong","orbit","bounce","stutter","chop","echo","reverb","pitch-up","pitch-down","chorus","flanger","phaser","gate","telephone","compressor","vinyl"]
 };
 const DEFAULT_EFFECTS=EFFECT_PRESETS.diverse.slice();
 state.selectedEffects=DEFAULT_EFFECTS.slice();
-state.generation={quantity:8,variation:55,includeOriginal:true,randomize:true,maxEffects:2,lengthMode:"mixed",effectNaming:true,normalize:true};
+state.generation={quantity:12,variation:62,includeOriginal:true,randomize:true,maxEffects:3,lengthMode:"mixed",effectNaming:true,normalize:true};
 try{
   const saved=JSON.parse(localStorage.getItem(PREF_KEY)||"null");
   if(saved&&typeof saved==="object"){
     if(saved.lang==="pt"||saved.lang==="en")state.lang=saved.lang;
     if(Array.isArray(saved.effects)&&saved.effects.length)state.selectedEffects=saved.effects.filter(id=>EFFECT_CATALOG.some(item=>item.id===id));
     if(saved.generation&&typeof saved.generation==="object")state.generation={...state.generation,...saved.generation};
+    if(typeof saved.packProfile==="string")state.packProfile=saved.packProfile;
   }else if(/^pt(?:-|$)/i.test(navigator.language||""))state.lang="pt";
 }catch(_){if(/^pt(?:-|$)/i.test(navigator.language||""))state.lang="pt";}
 function savePrefs(){
-  try{localStorage.setItem(PREF_KEY,JSON.stringify({lang:state.lang,effects:state.selectedEffects,generation:state.generation}));}catch(_){/* storage unavailable */}
+  try{localStorage.setItem(PREF_KEY,JSON.stringify({lang:state.lang,effects:state.selectedEffects,generation:state.generation,packProfile:state.packProfile}));}catch(_){/* storage unavailable */}
 }
 
 function t(key,vars={}){
@@ -361,6 +378,100 @@ async function offlineEffect(buffer,effect,amount,randomize){
     return normalizeBuffer(await context.startRendering());
   }
 
+  if(effect==="chorus"||effect==="flanger"){
+    const delay=context.createDelay(.12);
+    const feedback=context.createGain();
+    const wet=context.createGain();
+    const dry=context.createGain();
+    const lfo=context.createOscillator();
+    const depth=context.createGain();
+    const rate=effect==="flanger" ? .18+(intensity/100)*.5 : .6+(intensity/100)*1.2;
+    delay.delayTime.value=effect==="flanger" ? .004 : .022;
+    feedback.gain.value=effect==="flanger" ? .16 : .06;
+    depth.gain.value=effect==="flanger" ? .003 : .009;
+    wet.gain.value=.26+(intensity/100)*.2;
+    dry.gain.value=.78;
+    lfo.frequency.value=rate;
+    lfo.connect(depth);depth.connect(delay.delayTime);
+    node.connect(dry);node.connect(delay);delay.connect(feedback);feedback.connect(delay);delay.connect(wet);
+    dry.connect(context.destination);wet.connect(context.destination);
+    lfo.start();sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="phaser"){
+    let phaseNode=node;
+    const filters=[];
+    for(let i=0;i<4;i++){
+      const filter=context.createBiquadFilter();
+      filter.type="allpass";
+      filter.frequency.value=500+i*850;
+      filter.Q.value=.6;
+      phaseNode.connect(filter);phaseNode=filter;filters.push(filter);
+    }
+    const lfo=context.createOscillator();
+    const depth=context.createGain();
+    lfo.frequency.value=.25+(intensity/100)*.8;
+    depth.gain.value=500+(intensity*8);
+    lfo.connect(depth);
+    filters.forEach(filter=>depth.connect(filter.frequency));
+    const wet=context.createGain();wet.gain.value=.42;
+    const dry=context.createGain();dry.gain.value=.72;
+    phaseNode.connect(wet);wet.connect(context.destination);
+    node.connect(dry);dry.connect(context.destination);
+    lfo.start();sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="gate"){
+    const gain=context.createGain();
+    const steps=Math.max(4,Math.min(16,4+Math.round(intensity/10)));
+    const step=source.duration/steps;
+    gain.gain.setValueAtTime(.96,0);
+    for(let i=0;i<steps;i++){
+      const value=(i%2===0?.96:.06);
+      const t=i*step;
+      gain.gain.setValueAtTime(value,t);
+      gain.gain.setValueAtTime(value,Math.max(t,((i+1)*step)-.008));
+    }
+    node.connect(gain);gain.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="telephone"){
+    const high=context.createBiquadFilter();
+    const low=context.createBiquadFilter();
+    high.type="highpass";high.frequency.value=280+(intensity*2.2);
+    low.type="lowpass";low.frequency.value=2600+(intensity*10);
+    node.connect(high);high.connect(low);low.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="compressor"){
+    const comp=context.createDynamicsCompressor();
+    comp.threshold.value=-30+(intensity*.05);
+    comp.knee.value=18+(intensity*.18);
+    comp.ratio.value=3+(intensity*.06);
+    comp.attack.value=.004+(1-intensity/100)*.018;
+    comp.release.value=.12+(1-intensity/100)*.12;
+    node.connect(comp);comp.connect(context.destination);sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
+  if(effect==="vinyl"){
+    const filter=context.createBiquadFilter();
+    filter.type="lowpass";filter.frequency.value=Math.max(1800,6500-(intensity*25));
+    const noise=context.createBuffer(1,Math.max(1,Math.ceil(sampleRate*source.duration)),sampleRate);
+    const noiseData=noise.getChannelData(0);
+    for(let i=0;i<noiseData.length;i++)noiseData[i]=(Math.random()-.5)*.035*(intensity/100);
+    const noiseSource=context.createBufferSource();noiseSource.buffer=noise;
+    const noiseGain=context.createGain();noiseGain.gain.value=.18;
+    node.connect(filter);filter.connect(context.destination);
+    noiseSource.connect(noiseGain);noiseGain.connect(context.destination);
+    noiseSource.start();sourceNode.start();
+    return normalizeBuffer(await context.startRendering());
+  }
+
   if(effect==="orbit"||effect==="ping-pong"){
     const panner=context.createStereoPanner();
     const cycles=effect==="orbit"?3:1.6;
@@ -406,6 +517,32 @@ function effectLabel(effect){
   const item=EFFECT_CATALOG.find(function(entry){return entry.id===effect;});
   return item?I18N[state.lang][item.key]:effect;
 }
+function packProfileId(){
+  const selected=String($("#pack-profile")?.value||state.packProfile||"smart");
+  if(selected!=="smart")return selected;
+  const textValue=(String($("#pack-style")?.value||"")+" "+String($("#pack-name")?.value||"")).toLowerCase();
+  if(/amapiano/.test(textValue))return "amapiano";
+  if(/afro\s*house/.test(textValue))return "afro-house";
+  if(/afrobeat/.test(textValue))return "afrobeats";
+  if(/\btrap\b/.test(textValue))return "trap";
+  if(/hip[-\s]?hop/.test(textValue))return "hip-hop";
+  return "diverse";
+}
+function seedFromText(value){
+  let h=2166136261>>>0;
+  const input=String(value||"");
+  for(let i=0;i<input.length;i++){h^=input.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0)||1;
+}
+function seededRandom(){
+  state.packSeed=(Math.imul(state.packSeed,1664525)+1013904223)>>>0;
+  return state.packSeed/4294967296;
+}
+function shuffleSeeded(array){
+  const out=array.slice();
+  for(let i=out.length-1;i>0;i--){const j=Math.floor(seededRandom()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
+  return out;
+}
 function shuffle(array){
   const out=array.slice();
   for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const temp=out[i];out[i]=out[j];out[j]=temp;}
@@ -421,20 +558,23 @@ function lengthModifier(){
 function makeVariationPlan(quantity,includeOriginal){
   const plan=[];
   if(includeOriginal)plan.push({effects:["original"]});
-  const pool=shuffle(state.selectedEffects.length?state.selectedEffects:DEFAULT_EFFECTS);
-  const wanted=Math.max(1,Math.min(3,Number(state.generation.maxEffects)||2));
-  let cursor=0;
-  for(let i=plan.length;i<quantity;i++){
-    const available=Math.max(1,pool.length);
-    const count=Math.min(available,wanted,1+(state.generation.randomize&&Math.random()<.72?Math.floor(Math.random()*wanted):0));
-    const chosen=[];
-    while(chosen.length<count){
-      const effect=pool[cursor%pool.length];
-      cursor++;
-      if(!chosen.includes(effect))chosen.push(effect);
+  const profile=PACK_PROFILES[packProfileId()]||PACK_PROFILES.diverse;
+  const selected=state.selectedEffects.length?state.selectedEffects:DEFAULT_EFFECTS;
+  const pool=[...new Set([...profile,...selected])];
+  const target=Math.max(1,Math.min(24,Number(quantity)||12));
+  const wanted=Math.max(1,Math.min(3,Number(state.generation.maxEffects)||3));
+  const used=new Set();
+  for(let i=plan.length;i<target;i++){
+    const ordered=shuffleSeeded(pool);
+    let chosen=ordered.slice(0,wanted);
+    const signature=chosen.join("+");
+    if(used.has(signature)){
+      const alternatives=ordered.filter(x=>!chosen.includes(x));
+      if(alternatives.length)chosen[chosen.length-1]=alternatives[0];
     }
     const modifier=lengthModifier();
     if(modifier&&!chosen.includes(modifier)&&chosen.length<wanted)chosen.push(modifier);
+    used.add(chosen.join("+"));
     plan.push({effects:chosen.length?chosen:["reverse"]});
   }
   return plan;
@@ -696,6 +836,9 @@ async function generateSamples(){
   const includeOriginal=state.generation.includeOriginal;
   const randomize=state.generation.randomize;
   const type=createTypeFolder();
+  state.packProfile=$("#pack-profile")?.value||state.packProfile||"smart";
+  const profile=packProfileId();
+  state.packSeed=seedFromText([$("#pack-name")?.value||"Nexauren Sample Pack",$("#pack-author")?.value||"",$("#pack-style")?.value||"",profile,state.source.name,state.source.size,Date.now(),crypto.randomUUID?.()||Math.random()].join("|"));
 
   state.generating=true;
   state.cancelRequested=false;
@@ -870,7 +1013,7 @@ async function createZip(){
   $("#download-created").disabled=true;$("#create-status").textContent=t("zipping");
   try{
     const info=packInfoBase($("#pack-name").value.trim()||"Nexauren Sample Pack",$("#pack-author").value.trim(),$("#pack-style").value.trim(),$("#pack-bpm").value.trim(),$("#pack-key").value.trim(),"create");
-    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.effects=state.selectedEffects.slice();info.generationOptions={...state.generation};info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
+    info.typeName=createTypeFolder();info.sampleCount=state.generated.length;info.profile=packProfileId();info.effects=state.selectedEffects.slice();info.profileEffects=(PACK_PROFILES[info.profile]||[]).slice();info.generationSeed=state.packSeed;info.generationOptions={...state.generation};info.outputFormat="WAV";info.sampleRate=state.sourceBuffer.sampleRate;info.channels=state.sourceBuffer.numberOfChannels;info.sourceFile=state.source.name;info.sourceDuration=state.sourceBuffer.duration;
     info.description="Generated locally from one source sample.";
     const items=getCreateItems();state.zipBlob=await zipPack(info,items,passwordEnabled?password:"",$("#include-cover").checked);
     $("#download-created").disabled=false;trackUse();downloadBlob(state.zipBlob,slug(info.packName)+".zip");notify(t("doneCreate",{n:items.length}));
@@ -937,6 +1080,8 @@ $("#download-created").addEventListener("click",createZip);
 $("#organize-pack").addEventListener("click",organizeZip);
 $("#download-organized").addEventListener("click",()=>{if(state.orgZipBlob)downloadBlob(state.orgZipBlob,slug($("#org-pack-name").value)+".zip")});
 $("#year").textContent=new Date().getFullYear();
+if($("#pack-profile"))$("#pack-profile").value=state.packProfile||"smart";
+$("#pack-profile")?.addEventListener("change",()=>{state.packProfile=$("#pack-profile").value||"smart";savePrefs();});
 setLanguage();
 setCustomField();
 })();
