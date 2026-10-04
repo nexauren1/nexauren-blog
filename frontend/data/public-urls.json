@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-10-04T06:37:23.389337Z",
+  "generatedAt": "2026-10-04T06:37:53.992481Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -12,6 +12,9 @@
     "/support/",
     "/tool/",
     "/tool/categories/audio/",
+    "/tool/categories/audio/audio-converter/",
+    "/tool/categories/audio/audio-trimmer/",
+    "/tool/categories/audio/sample-pack-studio/",
     "/tool/categories/images/",
     "/tool/categories/images/before-after/",
     "/tool/categories/images/blur-pixelate/",
