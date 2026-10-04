@@ -1,9 +1,9 @@
 {
-  "version": 30,
+  "version": 31,
   "site": "Nexauren Story",
   "basePath": "/tool/",
   "registry": {
-    "updatedAt": "2026-10-02T21:18:11.574Z",
+    "updatedAt": "2026-10-04T06:38:39.015Z",
     "source": "data/data.json"
   },
   "categories": [
@@ -36,6 +36,17 @@
       "path": "/tool/categories/marketplace/",
       "name_en": "Marketplace Tools",
       "description_en": "Commercial tools for sellers and small businesses to calculate prices, costs, fees, margins, and profit."
+    },
+    {
+      "id": "audio",
+      "name": "Áudio",
+      "description": "Ferramentas para converter, editar, processar e criar áudio para músicos, produtores e criadores.",
+      "icon": "♫",
+      "sortOrder": 25,
+      "path": "/tool/categories/audio/",
+      "name_en": "Audio Tools",
+      "description_en": "Audio tools for music producers, creators, editors, and anyone working with sound.",
+      "showWhenEmpty": true
     }
   ],
   "tools": [
@@ -997,6 +1008,294 @@
         "product pricing",
         "break-even"
       ]
+    },
+    {
+      "id": "gerador-de-sample-pack",
+      "name": "Gerador de Sample Pack",
+      "name_en": "Sample Pack Studio",
+      "description": "Crie um sample pack a partir de um sample ou organize vários ficheiros de áudio numa estrutura de pastas pronta para ZIP.",
+      "description_en": "Create a sample pack from one source sample or organize multiple audio files into a clean ZIP folder structure.",
+      "category": "audio",
+      "group": "creation",
+      "icon": "♫",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/sample-pack-studio/",
+      "tags": [
+        "sample pack",
+        "samples",
+        "audio",
+        "WAV",
+        "drums",
+        "sound design",
+        "organizer",
+        "ZIP"
+      ],
+      "tags_en": [
+        "sample pack",
+        "samples",
+        "audio",
+        "WAV",
+        "drums",
+        "sound design",
+        "organizer",
+        "ZIP"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 10
+    },
+    {
+      "id": "conversor-de-audio",
+      "name": "Conversor de Áudio",
+      "name_en": "Audio Converter",
+      "description": "Converta áudio entre formatos com preview visual, corte, normalização, ganho, fades, velocidade, canais, sample rate e metadados.",
+      "description_en": "Convert audio between formats with a visual preview, trimming, loudness normalization, gain, fades, speed, channels, sample rate, and metadata.",
+      "category": "audio",
+      "group": "conversion",
+      "icon": "⇄",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/audio-converter/",
+      "tags": [
+        "audio",
+        "converter",
+        "MP3",
+        "WAV",
+        "FLAC",
+        "OGG",
+        "M4A",
+        "codec",
+        "sample rate",
+        "bitrate",
+        "normalization"
+      ],
+      "tags_en": [
+        "audio",
+        "converter",
+        "MP3",
+        "WAV",
+        "FLAC",
+        "OGG",
+        "M4A",
+        "codec",
+        "sample rate",
+        "bitrate",
+        "normalization"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 20
+    },
+    {
+      "id": "audio-trimmer",
+      "name": "Audio Trimmer",
+      "name_en": "Audio Trimmer",
+      "description": "Corte áudio com precisão usando uma timeline visual, marcadores arrastáveis, fades, ganho, normalização e exportação local.",
+      "description_en": "Trim audio precisely with a visual timeline, draggable markers, fades, gain, normalization, and local export.",
+      "category": "audio",
+      "group": "editing",
+      "icon": "⌁",
+      "version": "1.0.0",
+      "status": "active",
+      "path": "/tool/categories/audio/audio-trimmer/",
+      "tags": [
+        "audio",
+        "trim",
+        "cutter",
+        "editor",
+        "waveform",
+        "fade",
+        "normalization",
+        "MP3",
+        "WAV"
+      ],
+      "tags_en": [
+        "audio",
+        "trim",
+        "cutter",
+        "editor",
+        "waveform",
+        "fade",
+        "normalization",
+        "MP3",
+        "WAV"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 30
+    },
+    {
+      "id": "calculadora-de-bpm",
+      "name": "Calculadora de BPM & Tempo",
+      "name_en": "BPM & Tempo Calculator",
+      "description": "Converta BPM em milissegundos, segundos, frequência e durações musicais sincronizadas.",
+      "description_en": "Convert BPM into milliseconds, seconds, frequency, and synchronized musical note lengths.",
+      "category": "audio",
+      "group": "music-production",
+      "icon": "◷",
+      "version": "1.1.0",
+      "status": "active",
+      "path": "/tool/categories/audio/music-production/bpm-tempo-calculator/",
+      "tags": [
+        "music production",
+        "producer",
+        "BPM",
+        "tempo",
+        "milliseconds",
+        "note lengths"
+      ],
+      "tags_en": [
+        "music production",
+        "producer",
+        "BPM",
+        "tempo",
+        "milliseconds",
+        "note lengths"
+      ],
+      "featured": true,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 40
+    },
+    {
+      "id": "calculadora-de-pitch-time",
+      "name": "Calculadora de Pitch & Time Stretch",
+      "name_en": "Pitch & Time Stretch Calculator",
+      "description": "Calcule mudança de BPM, duração, percentagem de speed e razão de pitch por semitons.",
+      "description_en": "Calculate BPM changes, duration, speed percentage, and pitch ratio in semitones.",
+      "category": "audio",
+      "group": "music-production",
+      "icon": "↕",
+      "version": "1.1.0",
+      "status": "active",
+      "path": "/tool/categories/audio/music-production/pitch-time-calculator/",
+      "tags": [
+        "music production",
+        "producer",
+        "pitch",
+        "time stretch",
+        "semitones",
+        "BPM"
+      ],
+      "tags_en": [
+        "music production",
+        "producer",
+        "pitch",
+        "time stretch",
+        "semitones",
+        "BPM"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 50
+    },
+    {
+      "id": "finder-de-escala-e-tonalidade",
+      "name": "Finder de Escala & Tonalidade",
+      "name_en": "Key & Scale Finder",
+      "description": "Encontre as notas de uma escala, acordes diatónicos e graus para qualquer tonalidade.",
+      "description_en": "Find scale notes, diatonic chords, and scale degrees for any key.",
+      "category": "audio",
+      "group": "music-production",
+      "icon": "♭",
+      "version": "1.1.0",
+      "status": "active",
+      "path": "/tool/categories/audio/music-production/key-scale-finder/",
+      "tags": [
+        "music production",
+        "producer",
+        "key",
+        "scale",
+        "chords",
+        "music theory"
+      ],
+      "tags_en": [
+        "music production",
+        "producer",
+        "key",
+        "scale",
+        "chords",
+        "music theory"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 60
+    },
+    {
+      "id": "gerador-de-progressao-de-acordes",
+      "name": "Gerador de Progressões de Acordes",
+      "name_en": "Chord Progression Generator",
+      "description": "Gere progressões para pop, trap, house, lo-fi, R&B e outros estilos com graus romanos e acordes.",
+      "description_en": "Generate progressions for pop, trap, house, lo-fi, R&B, and more with roman numerals and chord names.",
+      "category": "audio",
+      "group": "music-production",
+      "icon": "♬",
+      "version": "1.1.0",
+      "status": "active",
+      "path": "/tool/categories/audio/music-production/chord-progression-generator/",
+      "tags": [
+        "music production",
+        "producer",
+        "chords",
+        "progression",
+        "pop",
+        "trap",
+        "house",
+        "R&B"
+      ],
+      "tags_en": [
+        "music production",
+        "producer",
+        "chords",
+        "progression",
+        "pop",
+        "trap",
+        "house",
+        "R&B"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 70
+    },
+    {
+      "id": "gerador-de-drum-pattern",
+      "name": "Gerador de Drum Patterns",
+      "name_en": "Drum Pattern Generator",
+      "description": "Monte grooves de 16 passos, gere variações e reproduza o padrão diretamente no navegador.",
+      "description_en": "Build 16-step grooves, generate variations, and audition the pattern directly in your browser.",
+      "category": "audio",
+      "group": "music-production",
+      "icon": "▦",
+      "version": "1.1.0",
+      "status": "active",
+      "path": "/tool/categories/audio/music-production/drum-pattern-generator/",
+      "tags": [
+        "music production",
+        "producer",
+        "drums",
+        "groove",
+        "beat",
+        "16-step"
+      ],
+      "tags_en": [
+        "music production",
+        "producer",
+        "drums",
+        "groove",
+        "beat",
+        "16-step"
+      ],
+      "featured": false,
+      "popular": false,
+      "access": "public",
+      "sortOrder": 80
     }
   ]
 }
