@@ -1,6 +1,6 @@
 {
-  "version": 5,
-  "generatedAt": "2026-10-02T21:22:40.086Z",
+  "version": 3,
+  "generatedAt": "2026-10-04T06:37:23.389337Z",
   "urls": [
     "/",
     "/ad-test/",
@@ -11,6 +11,7 @@
     "/legal/terms/",
     "/support/",
     "/tool/",
+    "/tool/categories/audio/",
     "/tool/categories/images/",
     "/tool/categories/images/before-after/",
     "/tool/categories/images/blur-pixelate/",
