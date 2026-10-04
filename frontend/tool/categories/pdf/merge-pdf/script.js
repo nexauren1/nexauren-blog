@@ -54,7 +54,7 @@ const ui={
     translate:"Português",
     remove:"Remove",
     result:"PDF created",
-    footer:"Merge PDFs · Nexauren Tools",
+    footer:"Merge PDFs · Nexauren Tools",\n    assembly:"Assembly", add:"Add", organize:"Organize", export:"Export", privacyTitle:"Privacy first", privacyBody:"Your documents stay on your device while the assembly happens."
     seo:seo=>`
       <article class="nx-seo-card">
         <div class="nx-seo-kicker">SEARCH GUIDE</div>
@@ -119,7 +119,7 @@ const ui={
     translate:"English",
     remove:"Remover",
     result:"PDF criado",
-    footer:"Juntar PDFs · Ferramentas Nexauren",
+    footer:"Juntar PDFs · Ferramentas Nexauren",\n    assembly:"Montagem", add:"Adicionar", organize:"Organizar", export:"Exportar", privacyTitle:"Privacidade primeiro", privacyBody:"Os seus documentos permanecem no seu dispositivo enquanto a montagem acontece."
     seo:seo=>`
       <article class="nx-seo-card">
         <div class="nx-seo-kicker">GUIA RÁPIDO</div>
@@ -206,6 +206,13 @@ function applyLanguage(){
   setText("#pdfmerge-lang",x.translate);
   setText(".pdfmerge-back",x.back);
   setText(".pdfmerge-footer",x.footer);
+  setText("#pdfmerge-side-title",x.assembly);
+  setText("#pdfmerge-step1",x.add);
+  setText("#pdfmerge-step2",x.organize);
+  setText("#pdfmerge-step3",x.export);
+  setText("#pdfmerge-privacy-title",x.privacyTitle);
+  setText("#pdfmerge-privacy-body",x.privacyBody);
+  setText("#pdfmerge-status",x.ready);
   const seo=$(".nx-seo");
   if(seo)seo.innerHTML=x.seo();
   setMeta();
