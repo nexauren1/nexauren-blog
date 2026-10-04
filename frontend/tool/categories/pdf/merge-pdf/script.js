@@ -22,7 +22,7 @@ const langBtn=$("#pdfmerge-lang");
 
 const LANG_KEY="nexauren:pdfmerge:language";
 const params=new URLSearchParams(location.search);
-let language=params.get("lang")==="pt"?"pt":params.get("lang")==="en"?"en":(localStorage.getItem(LANG_KEY)==="pt"?"pt":"en");
+let language=params.get("lang")==="pt"?"pt":"en";
 let files=[];
 let output=null;
 
@@ -54,7 +54,8 @@ const ui={
     translate:"Português",
     remove:"Remove",
     result:"PDF created",
-    footer:"Merge PDFs · Nexauren Tools",\n    assembly:"Assembly", add:"Add", organize:"Organize", export:"Export", privacyTitle:"Privacy first", privacyBody:"Your documents stay on your device while the assembly happens."
+    footer:"Merge PDFs · Nexauren Tools",
+assembly:"Assembly", add:"Add", organize:"Organize", export:"Export", privacyTitle:"Privacy first", privacyBody:"Your documents stay on your device while the assembly happens.",
     seo:seo=>`
       <article class="nx-seo-card">
         <div class="nx-seo-kicker">SEARCH GUIDE</div>
@@ -119,7 +120,8 @@ const ui={
     translate:"English",
     remove:"Remover",
     result:"PDF criado",
-    footer:"Juntar PDFs · Ferramentas Nexauren",\n    assembly:"Montagem", add:"Adicionar", organize:"Organizar", export:"Exportar", privacyTitle:"Privacidade primeiro", privacyBody:"Os seus documentos permanecem no seu dispositivo enquanto a montagem acontece."
+    footer:"Juntar PDFs · Ferramentas Nexauren",
+assembly:"Montagem", add:"Adicionar", organize:"Organizar", export:"Exportar", privacyTitle:"Privacidade primeiro", privacyBody:"Os seus documentos permanecem no seu dispositivo enquanto a montagem acontece.",
     seo:seo=>`
       <article class="nx-seo-card">
         <div class="nx-seo-kicker">GUIA RÁPIDO</div>
@@ -424,7 +426,9 @@ clear.onclick=()=>{
   msg(t().ready);
 };
 
-langBtn.onclick=()=>{
+langBtn.onclick=(event)=>{
+  event.preventDefault();
+  event.stopPropagation();
   language=language==="en"?"pt":"en";
   localStorage.setItem(LANG_KEY,language);
   syncLanguageUrl();
