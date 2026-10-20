@@ -1,43 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffffff"><meta name="description" content="Nexauren Story — simple browser tools for images and PDFs. Fast, practical, mobile-friendly, and designed for real results.">
-<meta name="robots" content="index,follow,max-image-preview:large"><meta name="referrer" content="strict-origin-when-cross-origin">
-<link rel="canonical" href="https://nexaurenstory.com/">
-<link rel="alternate" hreflang="en" href="https://nexaurenstory.com/"><link rel="alternate" hreflang="x-default" href="https://nexaurenstory.com/">
-<meta property="og:site_name" content="Nexauren Story"><meta property="og:title" content="Nexauren Story — Simple tools. Real results.">
-<meta property="og:description" content="Fast, practical browser tools for images and PDFs, built for everyday digital work.">
-<meta property="og:type" content="website"><meta property="og:url" content="https://nexaurenstory.com/">
-<meta property="og:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20261001-home"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:type" content="image/png"><meta property="og:image:alt" content="Nexauren Story — Simple tools. Real results.">
-<meta property="og:locale" content="en_US"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Nexauren Story — Simple tools. Real results."><meta name="twitter:description" content="Fast, practical browser tools for images and PDFs."><meta name="twitter:image" content="https://nexaurenstory.com/assets/social-preview-nexauren.png?v=20261001-home">
-<link rel="icon" type="image/png" href="/assets/favicon-nexauren.png?v=20260925-brand"><link rel="apple-touch-icon" href="/assets/favicon-nexauren.png?v=20260925-brand"><link rel="manifest" href="/manifest.json">
-<title>Nexauren Story — Simple tools. Real results.</title>
-<script id="nexauren-structured-data" type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Nexauren","url":"https://nexaurenstory.com/","logo":"https://nexaurenstory.com/assets/favicon-nexauren.png?v=20260925-brand"},{"@type":"WebSite","name":"Nexauren Story","url":"https://nexaurenstory.com/","description":"Simple browser tools for images and PDFs."},{"@type":"ItemList","name":"Nexauren Story primary destinations","itemListElement":[{"@type":"ListItem","position":1,"name":"Tools","url":"https://nexaurenstory.com/tool/"},{"@type":"ListItem","position":2,"name":"FAQ","url":"https://nexaurenstory.com/faq/"},{"@type":"ListItem","position":3,"name":"Account","url":"https://nexaurenstory.com/account"}]}]}</script>
-<link rel="stylesheet" href="/assets/public-ui.css?v=20261001-global"><link rel="stylesheet" href="/assets/nexauren-premium-ui.css?v=20260926-premium-1">
-<script src="/assets/nexauren-language.js?v=20261001-en" data-nx-language-loader="1"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="robots" content="index,follow">
+  <meta name="description" content="Access Nexauren's online tools, account and support services.">
+  <title>Nexauren — Services</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1220; --panel:#121d30; --line:#263650; --text:#f3f6fb; --muted:#b5c1d4; --accent:#8bc5ff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(ellipse at 50% 0%,#1d3554 0%,var(--bg) 60%); color:var(--text); font:16px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(760px,100%); padding:clamp(24px,5vw,48px); border:1px solid var(--line); border-radius:24px; background:rgba(18,29,48,.94); box-shadow:0 24px 80px rgba(0,0,0,.25); }
+    .eyebrow { margin:0 0 12px; color:var(--accent); font-size:.76rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(2.2rem,7vw,3.6rem); line-height:1.05; letter-spacing:-.04em; }
+    .intro { max-width:560px; margin:18px 0 28px; color:var(--muted); font-size:1.08rem; }
+    .links { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; }
+    a { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:60px; padding:16px 18px; border:1px solid var(--line); border-radius:14px; color:var(--text); text-decoration:none; font-weight:700; background:#17243a; transition:border-color .15s,transform .15s; }
+    a:hover, a:focus-visible { border-color:var(--accent); transform:translateY(-2px); outline:none; }
+    a.primary { background:#d9ecff; color:#11233a; border-color:#d9ecff; }
+    .arrow { color:var(--accent); font-size:1.2rem; }
+    a.primary .arrow { color:#11233a; }
+    footer { margin-top:28px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:.87rem; }
+    .legal { display:flex; flex-wrap:wrap; gap:16px; margin-top:10px; }
+    .legal a { display:inline; min-height:0; padding:0; border:0; background:transparent; color:var(--muted); font-size:.87rem; font-weight:500; }
+    .legal a:hover { color:var(--accent); transform:none; }
+  </style>
 </head>
-<body class="nx-page nx-home-page">
-<header class="site-header"><div class="wrap nav">
-<a class="brand" href="/" aria-label="Nexauren Story"><img class="brand-logo" src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="42" height="42"><span class="brand-copy"><strong>Nexauren</strong><span>Story</span></span></a>
-<nav class="nav-links" aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="/tool/">Tools</a><a href="/faq/">FAQ</a><a href="/account">Account</a></nav><button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span></button>
-</div><div class="mobile-menu" data-mobile-menu><div class="wrap"><a href="/">Home</a><a href="/tool/">Tools</a><a href="/faq/">FAQ</a><a href="/account">Account</a><a href="/legal/privacy/">Privacy</a><a href="/legal/terms/">Terms</a><a href="/legal/cookies/">Cookies</a></div></div></header>
-<div class="nx-progress"></div>
-<main class="home-main"><div class="wrap">
-<section class="home-hero"><div class="home-hero-copy nx-reveal"><div class="nx-kicker">NEXAUREN · DIGITAL TOOLKIT</div>
-<h1>Simple tools. <span class="nx-gradient-text">Real results.</span></h1>
-<p>Nexauren Story brings practical image and PDF tools together in one fast, focused experience built for everyday digital work.</p>
-<div class="home-actions"><a class="button primary" href="/tool/">Explore tools <span>→</span></a><a class="button secondary" href="/faq/">Read the FAQ <span>→</span></a></div>
-<div class="home-proof" aria-label="Nexauren capabilities"><span>Image tools</span><span>PDF tools</span><span>Browser processing</span><span>Mobile ready</span></div></div>
-<aside class="home-art nx-reveal" aria-label="Nexauren tools ecosystem"><div class="home-art-orbit home-art-orbit-a"></div><div class="home-art-orbit home-art-orbit-b"></div><div class="home-art-glow"></div><div class="home-art-logo"><img src="/assets/favicon-nexauren.png?v=20260925-brand" alt="" width="68" height="68"></div><div class="home-art-labels" aria-hidden="true"><span>Image</span><span>PDF</span><span>Account</span></div></aside></section>
-<section class="home-section" aria-labelledby="explore-title"><div class="home-section-head nx-reveal"><div><div class="nx-kicker">EXPLORE</div><h2 id="explore-title">Everything you need, without the clutter.</h2></div><p>Focused tools, clear interfaces, and direct navigation built around two useful categories.</p></div>
-<div class="home-grid"><a class="home-card nx-spotlight nx-reveal" href="/tool/categories/imagem/"><div class="home-card-icon">✦</div><h3>Image Tools</h3><p>Compress, resize, convert, crop, watermark, compare, combine, and optimize images in your browser.</p><span class="home-card-link">Open Image Tools <span>→</span></span></a>
-<a class="home-card nx-spotlight nx-reveal" href="/tool/categories/pdf/"><div class="home-card-icon">▤</div><h3>PDF Tools</h3><p>Create, convert, merge, split, rotate, edit, organize, and watermark PDF documents locally.</p><span class="home-card-link">Open PDF Tools <span>→</span></span></a>
-<a class="home-card nx-spotlight nx-reveal" href="/faq/"><div class="home-card-icon">?</div><h3>FAQ</h3><p>Find clear answers about tools, processing, privacy, accounts, and common workflows.</p><span class="home-card-link">View FAQ <span>→</span></span></a></div></section>
-<section class="home-strip" aria-label="Product principles"><div class="home-stat nx-reveal"><strong>01 · Performance</strong><span>Responsive workflows designed to feel fast on modern phones and browsers.</span></div><div class="home-stat nx-reveal"><strong>02 · Clarity</strong><span>Focused screens, direct actions, and a small catalog that is easy to navigate.</span></div><div class="home-stat nx-reveal"><strong>03 · Privacy</strong><span>Many tools process files directly in the browser, reducing unnecessary transfers.</span></div></section>
-<section class="home-cta nx-reveal"><h2>Start with a real task.</h2><p>Open the tools catalog, choose Image or PDF, and get straight to the result.</p><a class="button primary" href="/tool/">Open the tools catalog <span>→</span></a></section>
-</div></main>
-<footer class="site-footer"><div class="wrap nx-footer-grid"><div><div style="font-weight:950;font-size:16px">Nexauren Story</div><p class="nx-footer-copy">Simple browser tools for images and PDFs. Real results without unnecessary complexity.</p></div><div><div class="nx-footer-title">Explore</div><a class="nx-footer-link" href="/tool/">Tools</a><a class="nx-footer-link" href="/faq/">FAQ</a><a class="nx-footer-link" href="/account">Account</a></div><div><div class="nx-footer-title">Legal</div><a class="nx-footer-link" href="/legal/privacy/">Privacy</a><a class="nx-footer-link" href="/legal/terms/">Terms</a><a class="nx-footer-link" href="/legal/cookies/">Cookies</a></div></div>
-<div class="nx-footer-bottom"><div class="wrap"><span>© <span id="year"></span> Nexauren Story</span><span>Simple tools. Real results.</span></div></div></footer>
-<script src="/assets/public-ui.js?v=20261001-global" defer></script>
-</body></html>
+<body>
+  <main>
+    <p class="eyebrow">Nexauren · Service portal</p>
+    <h1>A new home is in progress.</h1>
+    <p class="intro">The previous homepage is being retired while Nexauren is reorganized. Existing online tools, account access, upgrades and support remain available below.</p>
+    <nav class="links" aria-label="Nexauren services">
+      <a class="primary" href="/tool/"><span>Open online tools</span><span class="arrow" aria-hidden="true">→</span></a>
+      <a href="/account"><span>Account and sign in</span><span class="arrow" aria-hidden="true">→</span></a>
+      <a href="/account/upgrade/"><span>Pro plan and upgrades</span><span class="arrow" aria-hidden="true">→</span></a>
+      <a href="/support/"><span>Help and support</span><span class="arrow" aria-hidden="true">→</span></a>
+    </nav>
+    <footer>
+      <div>Core services and account-related features have been kept in place.</div>
+      <nav class="legal" aria-label="Legal information">
+        <a href="/legal/privacidade/">Privacy</a>
+        <a href="/legal/termos/">Terms</a>
+        <a href="/legal/cookies/">Cookies</a>
+      </nav>
+    </footer>
+  </main>
+</body>
+</html>
